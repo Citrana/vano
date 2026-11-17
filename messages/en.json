@@ -284,5 +284,28 @@
     "accountTitle": "Your account is suspended",
     "accountBody": "You can't use your shop for now. Contact Vano support if you think this is a mistake.",
     "shopBanner": "Your shop is suspended, so you can't make changes for now. Contact Vano support if you think this is a mistake."
+  },
+  "Admin": {
+    "title": "Admin",
+    "menu": "Admin menu",
+    "openMenu": "Open menu",
+    "myShop": "My shop",
+    "welcome": "Welcome",
+    "signedInAs": "Signed in as {email}",
+    "noSectionsTitle": "No sections yet",
+    "noSectionsBody": "No admin sections are available for your role yet.",
+    "nav": {
+      "dashboard": "Dashboard",
+      "users": "Users",
+      "shops": "Shops",
+      "products": "Products",
+      "roles": "Roles & permissions",
+      "activity": "Activity history",
+      "settings": "Settings"
+    }
+  },
+  "Roles": {
+    "super_admin": "Super admin",
+    "seller": "Seller"
   }
 }
