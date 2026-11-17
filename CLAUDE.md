@@ -86,6 +86,10 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   only through `deleteFilesNotIn` (`convex/lib/seller.ts`). The `uploads`
   table records who first attached each storage id, so a seller can never
   attach — and later delete — another seller's image.
+- **UI design assets** (illustrations, brand marks, sample photos, custom
+  icons) live in `src/assets/images/` (see its README for folders,
+  formats and credits) and are statically imported into `next/image`.
+  `public/` is only for files that need a fixed URL.
 
 ## Public pages
 
