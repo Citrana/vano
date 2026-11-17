@@ -97,6 +97,8 @@ export default defineSchema({
     imageIds: v.array(v.id("_storage")),
     soldOut: v.boolean(),
     updatedAt: v.number(),
+    /** Hidden by an admin. Optional until `migrations:rbacV1`; missing = visible. */
+    hidden: v.optional(v.boolean()),
   })
     .index("by_shopId", ["shopId"])
     .index("by_shopId_and_category", ["shopId", "category"]),

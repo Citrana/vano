@@ -2,7 +2,7 @@ import { Password } from "@convex-dev/auth/providers/Password";
 import { convexAuth } from "@convex-dev/auth/server";
 import { ConvexError } from "convex/values";
 import type { MutationCtx } from "./_generated/server";
-import { assertCanStartSession, assignSellerRoleIfMissing } from "./lib/accounts";
+import { assertCanStartSession, setUpNewAccount } from "./lib/accounts";
 import { normalizeEmail, passwordProblem } from "./lib/credentials";
 
 const password = Password({
@@ -28,9 +28,10 @@ const ourCtx = (ctx: unknown) => ctx as MutationCtx;
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   providers: [password],
   callbacks: {
-    // Every new account is an active seller (CLAUDE.md "Roles & permissions").
+    // Every new account is an active seller (CLAUDE.md "Roles & permissions")
+    // and is counted in the platform stats.
     async afterUserCreatedOrUpdated(ctx, { userId }) {
-      await assignSellerRoleIfMissing(ourCtx(ctx), userId);
+      await setUpNewAccount(ourCtx(ctx), userId);
     },
     // Runs on every sign-in / sign-up: suspended users can't log in.
     async beforeSessionCreation(ctx, { userId }) {

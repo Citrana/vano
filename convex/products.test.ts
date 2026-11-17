@@ -101,6 +101,19 @@ describe("ownership", () => {
 });
 
 describe("products.update / setSoldOut / remove", () => {
+  test("update keeps the admin-controlled hidden flag", async () => {
+    const t = setup();
+    const { userId } = await sellerWithShop(t);
+    const me = as(t, userId);
+    const productId = await me.mutation(api.products.create, await productArgs(t));
+    await t.run((ctx) => ctx.db.patch("products", productId, { hidden: true }));
+    await me.mutation(api.products.update, { productId, ...(await productArgs(t)), name: "Renamed" });
+    expect(await t.run((ctx) => ctx.db.get("products", productId))).toMatchObject({
+      name: "Renamed",
+      hidden: true,
+    });
+  });
+
   test("update deletes images removed from the list", async () => {
     const { t, a } = await twoSellers();
     const [keep, drop] = [await storeFile(t), await storeFile(t)];
