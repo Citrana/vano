@@ -58,6 +58,7 @@
     "ROLE_NAME_TAKEN": "Un rôle porte déjà ce nom.",
     "PERMISSION_ESCALATION": "Vous ne pouvez donner que les autorisations que vous avez vous-même.",
     "SUPER_ADMIN_EXISTS": "Un super admin existe déjà.",
+    "ANNOUNCEMENT_INVALID": "Écrivez l'annonce en anglais et en français (280 caractères maximum chacune), ou laissez les deux vides.",
     "UNKNOWN": "Un problème est survenu. Réessayez."
   },
   "Validation": {

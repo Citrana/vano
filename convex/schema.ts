@@ -120,6 +120,21 @@ export default defineSchema({
     ownerId: v.id("users"),
   }).index("by_storageId", ["storageId"]),
 
+  /** Platform settings: a single document (see convex/lib/settings.ts). */
+  platformSettings: defineTable({
+    signupEnabled: v.boolean(),
+    announcement: v.optional(v.object({ en: v.string(), fr: v.string() })),
+  }),
+
+  /**
+   * One-time permission for the terminal seed command to create an
+   * account while public sign-up is closed (created by internal code only).
+   */
+  signupBypasses: defineTable({
+    email: v.string(),
+    expiresAt: v.number(),
+  }).index("by_email", ["email"]),
+
   /** One row per one-time data migration (e.g. "rbacV1"). */
   migrations: defineTable({
     name: v.string(),

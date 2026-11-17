@@ -58,6 +58,7 @@
     "ROLE_NAME_TAKEN": "A role with this name already exists.",
     "PERMISSION_ESCALATION": "You can only give permissions you have yourself.",
     "SUPER_ADMIN_EXISTS": "A super admin already exists.",
+    "ANNOUNCEMENT_INVALID": "Write the announcement in both English and French (at most 280 characters each), or leave both empty.",
     "UNKNOWN": "Something went wrong. Try again."
   },
   "Validation": {

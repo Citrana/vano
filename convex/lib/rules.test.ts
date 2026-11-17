@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { cleanTags, tagsProblem } from "./catalog";
 import { normalizeEmail, passwordProblem } from "./credentials";
+import { announcementProblem } from "./settings";
 import { addDays, isDay, utcDay } from "./days";
 import { imageProblem, MAX_IMAGE_BYTES } from "./images";
 import { formatMoney, minorToInput, parseMoneyToMinor, priceProblem } from "./money";
@@ -137,5 +138,19 @@ describe("credentials", () => {
   test("passwordProblem", () => {
     expect(passwordProblem("1234567")).toBe("too_short");
     expect(passwordProblem("12345678")).toBeNull();
+  });
+});
+
+describe("announcementProblem", () => {
+  test.each([
+    [{ en: "", fr: "" }, null],
+    [{ en: "  ", fr: " " }, null],
+    [{ en: "Maintenance tonight", fr: "Maintenance ce soir" }, null],
+    [{ en: "Maintenance tonight", fr: "" }, "both_required"],
+    [{ en: "", fr: "Maintenance ce soir" }, "both_required"],
+    [{ en: "x".repeat(281), fr: "ok" }, "too_long"],
+    [{ en: "x".repeat(280), fr: "y".repeat(280) }, null],
+  ])("%j → %s", (announcement, expected) => {
+    expect(announcementProblem(announcement)).toBe(expected);
   });
 });
