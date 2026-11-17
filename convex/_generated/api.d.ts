@@ -16,6 +16,7 @@ import type * as lib_accounts from "../lib/accounts.js";
 import type * as lib_audit from "../lib/audit.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_catalog from "../lib/catalog.js";
+import type * as lib_credentials from "../lib/credentials.js";
 import type * as lib_days from "../lib/days.js";
 import type * as lib_errors from "../lib/errors.js";
 import type * as lib_guards from "../lib/guards.js";
@@ -47,6 +48,7 @@ declare const fullApi: ApiFromModules<{
   "lib/audit": typeof lib_audit;
   "lib/auth": typeof lib_auth;
   "lib/catalog": typeof lib_catalog;
+  "lib/credentials": typeof lib_credentials;
   "lib/days": typeof lib_days;
   "lib/errors": typeof lib_errors;
   "lib/guards": typeof lib_guards;

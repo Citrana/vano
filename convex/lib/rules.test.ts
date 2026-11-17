@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { cleanTags, tagsProblem } from "./catalog";
+import { normalizeEmail, passwordProblem } from "./credentials";
 import { addDays, isDay, utcDay } from "./days";
 import { imageProblem, MAX_IMAGE_BYTES } from "./images";
 import { formatMoney, minorToInput, parseMoneyToMinor, priceProblem } from "./money";
@@ -117,5 +118,24 @@ describe("days", () => {
     expect(isDay("2026-02-30")).toBe(false);
     expect(isDay("2026-02-28")).toBe(true);
     expect(isDay("nope")).toBe(false);
+  });
+});
+
+describe("credentials", () => {
+  test.each([
+    ["  Amani@Example.COM ", "amani@example.com"],
+    ["a@b.co", "a@b.co"],
+    ["no-at-sign.com", null],
+    ["a@b", null],
+    ["a b@c.com", null],
+    ["", null],
+    [undefined, null],
+  ])("normalizeEmail(%s) = %s", (raw, expected) => {
+    expect(normalizeEmail(raw)).toBe(expected);
+  });
+
+  test("passwordProblem", () => {
+    expect(passwordProblem("1234567")).toBe("too_short");
+    expect(passwordProblem("12345678")).toBeNull();
   });
 });
