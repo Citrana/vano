@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as admin_dashboard from "../admin/dashboard.js";
 import type * as auth from "../auth.js";
 import type * as files from "../files.js";
 import type * as http from "../http.js";
@@ -43,6 +44,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "admin/dashboard": typeof admin_dashboard;
   auth: typeof auth;
   files: typeof files;
   http: typeof http;
