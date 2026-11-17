@@ -100,6 +100,27 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   `loading.tsx` can only stream a 200. Keep `loading.tsx` files inside the
   `(shop)` group / product segment so they never wrap a child's check.
 
+## Marketing site
+
+- Pages live in the `src/app/(marketing)/` group (Home, Features, Pricing,
+  Demo, Help, Terms, Privacy). The group layout adds the announcement
+  banner, `MarketingNav` and `MarketingFooter`; code is organised by page in
+  `src/features/marketing/{shared,home,features,pricing,demo,help}`.
+- Plans, prices, limits and feature lists live **only** in
+  `src/features/marketing/pricing/plans.ts` (labels in `Pricing.*`
+  messages). Display only: no billing yet.
+- Contact values come from `shared/site-config.ts`
+  (`NEXT_PUBLIC_CONTACT_WHATSAPP`, `NEXT_PUBLIC_CONTACT_EMAIL`).
+- Sign-up buttons always use `OpenShopCta` (sign-up closed note, signed-in
+  → dashboard). Coral stays the one main action per screen.
+- The demo shop (`/demo`) is static data in `demo/demo-shop.ts` rendered
+  with the public shop components: no Convex, no stats.
+- Shop looks (`bold | soft | dark`) are token overrides under
+  `[data-shop-theme]` in `globals.css`, listed in
+  `src/features/shop-themes/themes.ts`.
+- Server components must not import values from `"use client"` modules
+  (they arrive as client references); shared constants go in plain `.ts`.
+
 ## Stats
 
 - Views and WhatsApp clicks are counted in daily rows (`shopDailyStats`,
@@ -141,8 +162,8 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 - Forms: react-hook-form + Zod. Required fields use `<Label required>`;
   forms with several fields show `<RequiredFieldsHint />`.
 - Components are small and grouped by feature in `src/features/<feature>/`
-  (`auth`, `shop`, `product`, `public`, `stats`, `i18n`, `landing`,
-  `admin/*`).
+  (`auth`, `shop`, `product`, `public`, `stats`, `i18n`, `marketing/*`,
+  `shop-themes`, `admin/*`).
   Generic primitives live in `src/components/ui/`.
 - Admin pages live under `src/app/admin/` and wrap their content in
   `<RequirePermission permission="…">`. Sidebar sections are defined only
