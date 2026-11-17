@@ -1,0 +1,68 @@
+import { v, type Infer } from "convex/values";
+
+/**
+ * Money helpers (CLAUDE.md "Money"): amounts are integer minor units
+ * (×100 for every currency) plus a currency. Shared by the server and UI.
+ */
+
+export const CURRENCIES = ["USD", "CDF", "KES", "EUR"] as const;
+
+export const currencyValidator = v.union(
+  v.literal("USD"),
+  v.literal("CDF"),
+  v.literal("KES"),
+  v.literal("EUR"),
+);
+export type Currency = Infer<typeof currencyValidator>;
+
+/** Highest accepted price, in minor units (1 billion major units). */
+export const MAX_PRICE_MINOR = 100_000_000_000;
+
+/**
+ * "12", "12.5", "12.50", "1,234.56", "1 234,5" → minor units. A comma is a
+ * decimal separator only when it is followed by 1–2 digits at the end and
+ * there is no dot. Returns null for anything else (negative, more than 2
+ * decimals, not a number).
+ */
+export function parseMoneyToMinor(input: string): number | null {
+  let cleaned = input.trim().replace(/\s/g, "");
+  if (!cleaned.includes(".") && /,\d{1,2}$/.test(cleaned)) {
+    cleaned = cleaned.replace(/,(\d{1,2})$/, ".$1");
+  }
+  cleaned = cleaned.replace(/,/g, "");
+  const match = /^(\d+)(?:\.(\d{0,2}))?$/.exec(cleaned);
+  if (!match) return null;
+  const minor = Number(match[1]) * 100 + Number((match[2] ?? "").padEnd(2, "0"));
+  return Number.isSafeInteger(minor) ? minor : null;
+}
+
+/** Minor units → "12.50" for editing (no symbol, no grouping). */
+export function minorToInput(minor: number): string {
+  const sign = minor < 0 ? "-" : "";
+  const abs = Math.abs(minor);
+  const cents = abs % 100;
+  const whole = Math.floor(abs / 100);
+  return cents === 0 ? `${sign}${whole}` : `${sign}${whole}.${String(cents).padStart(2, "0")}`;
+}
+
+/**
+ * Minor units → "$12.50" / "12,50 $US" / "CDF 25,000". Whole amounts show
+ * no decimals ("$25", "25 000 FC"), which reads better on a shop page.
+ */
+export function formatMoney(minor: number, currency: Currency, locale: string): string {
+  const digits = minor % 100 === 0 ? 0 : 2;
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency,
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(minor / 100);
+}
+
+/** "notInteger" | "notPositive" | "tooHigh" | null. */
+export function priceProblem(minor: number): "notInteger" | "notPositive" | "tooHigh" | null {
+  if (!Number.isSafeInteger(minor)) return "notInteger";
+  if (minor <= 0) return "notPositive";
+  if (minor > MAX_PRICE_MINOR) return "tooHigh";
+  return null;
+}
