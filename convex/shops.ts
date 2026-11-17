@@ -171,7 +171,12 @@ export const update = sellerMutation({
       input.logoId ? [input.logoId] : [],
     );
 
-    await ctx.db.replace("shops", shop._id, { ...input, ownerId: shop.ownerId });
+    // Fields the seller doesn't control are carried over, or `replace` would drop them.
+    await ctx.db.replace("shops", shop._id, {
+      ...input,
+      ownerId: shop.ownerId,
+      status: shop.status,
+    });
     return null;
   },
 });

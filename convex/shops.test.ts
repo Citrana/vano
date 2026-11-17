@@ -118,6 +118,15 @@ describe("shops.checkSlug", () => {
 });
 
 describe("shops.update", () => {
+  test("keeps the shop's moderation status", async () => {
+    const t = setup();
+    const { userId, shopId } = await sellerWithShop(t);
+    await t.run((ctx) => ctx.db.patch("shops", shopId, { status: "active" }));
+    await as(t, userId).mutation(api.shops.update, shopArgs({ name: "Renamed" }));
+    const shop = await t.run((ctx) => ctx.db.get("shops", shopId));
+    expect(shop).toMatchObject({ name: "Renamed", status: "active" });
+  });
+
   test("requires a shop", async () => {
     const t = setup();
     const me = as(t, await insertUser(t));
