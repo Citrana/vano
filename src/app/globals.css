@@ -22,6 +22,7 @@
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
@@ -47,7 +48,7 @@
 :root {
   /*
    * Vano brand. Contrast (WCAG AA): white on coral-strong 4.6:1, white on
-   * whatsapp 4.5:1, muted on cream 5.9:1. Plain coral (#F4511E) is only
+   * whatsapp 4.5:1, muted on cream 7.8:1. Plain coral (#F4511E) is only
    * for large text (>= 24px: one highlighted headline word), icons and
    * glows. Coral fills only the main button of a screen.
    */
@@ -69,13 +70,15 @@
   --secondary: var(--blush);
   --secondary-foreground: var(--ink);
   --muted: #f7ede6;
-  --muted-foreground: #6b5f59;
+  --muted-foreground: #574b45;
   --accent: var(--blush);
   --accent-foreground: var(--plum);
   --destructive: oklch(0.577 0.245 27.325);
   --success: #25a55f;
   --whatsapp: #1e874d;
   --border: #ede0d8;
+  /* Outline (secondary) button border: 3.3:1 on cream, passes non-text AA. */
+  --border-strong: #958780;
   --input: #e3d4ca;
   --ring: var(--coral);
   --radius: 0.875rem;
