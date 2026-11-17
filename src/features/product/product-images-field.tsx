@@ -51,7 +51,7 @@ export function ProductImagesField({
               </div>
             ) : null}
             {index === 0 && item.status === "done" ? (
-              <span className="absolute bottom-1 left-1 rounded bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
+              <span className="absolute bottom-1 left-1 rounded bg-foreground px-1.5 py-0.5 text-[10px] font-semibold text-background">
                 {t("cover")}
               </span>
             ) : null}

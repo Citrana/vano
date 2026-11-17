@@ -34,8 +34,8 @@ export function PlatformGrowth({ last7, last30 }: { last7: Window | undefined; l
           {rows.map(({ key, label }) => (
             <tr key={key} className="border-t">
               <th scope="row" className="py-3 text-left font-medium">{label}</th>
-              <td className="py-3 text-right font-heading text-lg font-semibold tabular-nums">{cell(last7?.[key])}</td>
-              <td className="py-3 text-right font-heading text-lg font-semibold tabular-nums">{cell(last30?.[key])}</td>
+              <td className="py-3 text-right font-heading text-lg font-bold tracking-tight tabular-nums">{cell(last7?.[key])}</td>
+              <td className="py-3 text-right font-heading text-lg font-bold tracking-tight tabular-nums">{cell(last30?.[key])}</td>
             </tr>
           ))}
         </tbody>

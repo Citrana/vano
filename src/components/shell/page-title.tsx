@@ -10,7 +10,7 @@ export function PageTitle({ title, backHref, backLabel }: { title: string; backH
           <ArrowLeftIcon />
         </Link>
       ) : null}
-      <h1 className="font-heading text-2xl font-semibold">{title}</h1>
+      <h1 className="font-heading text-2xl font-bold tracking-tight">{title}</h1>
     </div>
   )
 }

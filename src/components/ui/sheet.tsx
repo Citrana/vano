@@ -43,7 +43,7 @@ function SheetContent({ className, children, ...props }: SheetPrimitive.Popup.Pr
 }
 
 function SheetTitle({ className, ...props }: SheetPrimitive.Title.Props) {
-  return <SheetPrimitive.Title className={cn("pr-12 font-heading text-lg font-semibold", className)} {...props} />
+  return <SheetPrimitive.Title className={cn("pr-12 font-heading text-lg font-bold tracking-tight", className)} {...props} />
 }
 
 export { Sheet, SheetContent, SheetTitle, SheetTrigger }

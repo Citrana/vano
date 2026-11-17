@@ -68,7 +68,7 @@ export default async function ProductPage({ params }: PageProps<"/[slug]/[produc
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{tc(product.category)}</p>
-            <h1 className="font-heading text-2xl leading-tight font-semibold text-balance md:text-3xl">{product.name}</h1>
+            <h1 className="font-heading text-2xl leading-tight font-bold tracking-tight text-balance md:text-3xl">{product.name}</h1>
             {product.soldOut ? (
               <span className="w-fit rounded-full bg-foreground px-2.5 py-1 text-xs font-semibold text-background">
                 {t("soldOut")}

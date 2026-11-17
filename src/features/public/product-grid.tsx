@@ -46,7 +46,7 @@ export function ProductGrid({ slug, currency, products }: { slug: string; curren
               onClick={() => setActive(key)}
               className={cn(
                 "min-h-10 shrink-0 rounded-full border px-4 text-sm font-medium whitespace-nowrap transition-colors",
-                active === key ? "border-primary bg-primary text-primary-foreground" : "bg-card hover:bg-muted"
+                active === key ? "chip-selected" : "bg-card hover:bg-muted"
               )}
             >
               {key === "all" ? t("all") : tc(key)}

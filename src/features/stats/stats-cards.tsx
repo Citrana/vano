@@ -52,7 +52,7 @@ export function StatsCards({ summary }: { summary: StatsSummary | undefined }) {
               <Icon className="size-3.5 shrink-0" aria-hidden />
               <span className="leading-tight">{t(key)}</span>
             </dt>
-            <dd className="font-heading text-2xl font-semibold tabular-nums">
+            <dd className="font-heading text-2xl font-bold tracking-tight tabular-nums">
               {totals ? totals[key].toLocaleString() : <Skeleton className="h-7 w-10" />}
             </dd>
           </div>

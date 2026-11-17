@@ -94,7 +94,7 @@ export function ProductGallery({ images, name }: { images: string[]; name: strin
               onClick={() => go(i)}
               aria-label={t("photo", { index: i + 1, total: images.length })}
               aria-current={i === index}
-              className={cn("size-16 overflow-hidden rounded-lg border-2", i === index ? "border-primary" : "border-transparent opacity-70")}
+              className={cn("size-16 overflow-hidden rounded-lg border-2", i === index ? "border-foreground" : "border-transparent opacity-70")}
             >
               {/* eslint-disable-next-line @next/next/no-img-element -- Convex storage URL */}
               <img src={src} alt="" className="size-full object-cover" />

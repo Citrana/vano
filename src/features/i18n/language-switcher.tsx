@@ -39,7 +39,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
           onClick={() => choose(lang)}
           className={cn(
             "min-h-10 min-w-10 rounded-md px-2 text-xs font-semibold uppercase md:min-h-8 md:min-w-8",
-            lang === locale ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            lang === locale ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
           )}
         >
           {lang}

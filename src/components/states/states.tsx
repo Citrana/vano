@@ -38,7 +38,7 @@ export function EmptyState({
       )}
     >
       {icon ? <div className="text-muted-foreground [&_svg]:size-8">{icon}</div> : null}
-      <h2 className="font-heading text-lg font-semibold">{title}</h2>
+      <h2 className="font-heading text-lg font-bold tracking-tight">{title}</h2>
       {body ? <p className="max-w-sm text-sm text-muted-foreground">{body}</p> : null}
       {action}
     </div>
@@ -51,7 +51,7 @@ export function ErrorState({ onRetry, className }: { onRetry?: () => void; class
   return (
     <div role="alert" className={cn("flex flex-col items-center gap-3 px-6 py-12 text-center", className)}>
       <AlertTriangleIcon className="size-8 text-destructive" aria-hidden />
-      <h2 className="font-heading text-lg font-semibold">{t("errorTitle")}</h2>
+      <h2 className="font-heading text-lg font-bold tracking-tight">{t("errorTitle")}</h2>
       <p className="max-w-sm text-sm text-muted-foreground">{t("errorBody")}</p>
       {onRetry ? (
         <Button variant="outline" onClick={onRetry}>

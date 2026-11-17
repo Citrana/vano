@@ -21,7 +21,7 @@ export async function ShopHeader({ shop, compact = false }: { shop: PublicShop; 
     return (
       <Link href={`/${shop.slug}`} className="flex min-w-0 items-center gap-3">
         {logo}
-        <span className="truncate font-heading text-lg font-semibold">{shop.name}</span>
+        <span className="truncate font-heading text-lg font-bold tracking-tight">{shop.name}</span>
       </Link>
     )
   }
@@ -31,7 +31,7 @@ export async function ShopHeader({ shop, compact = false }: { shop: PublicShop; 
       <div className="flex items-center gap-4">
         {logo}
         <div className="min-w-0">
-          <h1 className="font-heading text-2xl leading-tight font-semibold text-balance md:text-3xl">{shop.name}</h1>
+          <h1 className="font-heading text-2xl leading-tight font-bold tracking-tight text-balance md:text-3xl">{shop.name}</h1>
           <p className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
             <MapPinIcon className="size-3.5 shrink-0" aria-hidden />
             {t("location", { city: shop.city, country: countryName(shop.country, shop.language) })}
