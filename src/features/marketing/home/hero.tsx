@@ -1,24 +1,23 @@
 import { CheckIcon, CircleCheckIcon, EyeIcon } from "lucide-react"
 import { getTranslations } from "next-intl/server"
 import Image from "next/image"
+import Link from "next/link"
 import type { ReactNode } from "react"
 import { cn } from "cn"
 import linkIcon from "@/assets/images/icons/link.png"
 import whatsappIcon from "@/assets/images/icons/whatsapp.png"
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
-import { demoShopPath } from "./config"
-import { FloatingCard } from "./floating-card"
-import { HeroParallax } from "./hero-parallax"
-import { highlight } from "./highlight"
-import { OpenShopCta } from "./open-shop-cta"
-import { OrderBadge } from "./order-badge"
-import { PhoneMockup } from "./phone-mockup"
-import { SAMPLE_PRODUCTS } from "./photos"
+import { FloatingCard } from "@/features/marketing/shared/floating-card"
+import { HeroParallax } from "@/features/marketing/home/hero-parallax"
+import { highlight } from "@/features/marketing/shared/highlight"
+import { OpenShopCta } from "@/features/marketing/shared/open-shop-cta"
+import { OrderBadge } from "@/features/marketing/home/order-badge"
+import { PhoneMockup } from "@/features/marketing/home/phone-mockup"
+import { SAMPLE_PRODUCTS } from "@/features/marketing/home/photos"
 
 export async function Hero() {
   const t = await getTranslations("Landing")
-  const demoHref = demoShopPath ?? "#demo"
 
   const iconChip = (children: ReactNode, className: string) => (
     <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-full lg:size-10", className)}>{children}</span>
@@ -46,9 +45,9 @@ export async function Hero() {
         <p className="max-w-2xl text-base text-muted-foreground text-pretty md:text-xl">{t("heroSubtitle")}</p>
         <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
           <OpenShopCta className="w-full sm:w-auto" />
-          <a href={demoHref} className={buttonVariants({ variant: "outline", size: "lg", className: "w-full sm:w-auto" })}>
+          <Link href="/demo" className={buttonVariants({ variant: "outline", size: "lg", className: "w-full sm:w-auto" })}>
             {t("seeDemo")}
-          </a>
+          </Link>
         </div>
         <ul className="flex flex-wrap justify-center gap-x-6 gap-y-1 text-base font-medium">
           {[t("trustFree"), t("trustFast")].map((line) => (

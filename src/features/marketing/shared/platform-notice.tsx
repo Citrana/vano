@@ -3,7 +3,7 @@
 import { useQuery } from "convex/react"
 import { MegaphoneIcon } from "lucide-react"
 import { useLocale, useTranslations } from "next-intl"
-import { api } from "../../../convex/_generated/api"
+import { api } from "../../../../convex/_generated/api"
 
 /** The admin announcement (e.g. maintenance) above the landing nav. */
 export function PlatformNotice() {

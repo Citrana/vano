@@ -714,5 +714,33 @@
     "privacyS3Body": "Vano ne gère pas les paiements : nous ne voyons jamais vos coordonnées bancaires ou mobile money, ni celles de vos clients.",
     "privacyS4Title": "Contact",
     "privacyS4Body": "Pour toute question sur vos données ou pour supprimer votre compte, utilisez le lien de contact en bas de la page."
+  },
+  "Marketing": {
+    "navLabel": "Principal",
+    "navFeatures": "Fonctionnalités",
+    "navPricing": "Tarifs",
+    "navDemo": "Boutique démo",
+    "navHelp": "Aide",
+    "login": "Se connecter",
+    "menu": "Menu",
+    "cta": "Ouvrir ma boutique gratuitement",
+    "ctaShort": "Ouvrir ma boutique",
+    "ctaDashboard": "Aller à mon tableau de bord",
+    "ctaDashboardShort": "Mon tableau de bord",
+    "signupClosed": "Les inscriptions sont actuellement fermées.",
+    "signupClosedLogin": "Vous avez déjà une boutique ? Connectez-vous",
+    "comingSoon": "Bientôt",
+    "ctaBandTitle": "Arrêtez d'envoyer 20 photos dans chaque discussion. Envoyez <hl>un seul lien</hl>.",
+    "ctaBandSubtitle": "Tout votre catalogue, toujours à jour, dans un lien que vos clients ouvrent sur n'importe quel téléphone.",
+    "footerTagline": "Des boutiques en ligne pour les petits commerces de mode. Un seul lien, des commandes sur WhatsApp.",
+    "footerPages": "Vano",
+    "footerAccount": "Compte",
+    "footerContact": "Contact",
+    "footerWhatsapp": "Discuter sur WhatsApp",
+    "footerEmail": "Nous écrire",
+    "footerLegal": "Mentions légales",
+    "footerTerms": "Conditions",
+    "footerPrivacy": "Confidentialité",
+    "footerRights": "© {year} Vano. Tous droits réservés."
   }
 }

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 import { cn } from "cn"
-import { Reveal } from "./reveal"
+import { Reveal } from "@/features/marketing/shared/reveal"
 
 /** Shared landing section: width, spacing, eyebrow + title + subtitle. */
 export function Section({

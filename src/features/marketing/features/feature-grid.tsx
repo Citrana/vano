@@ -1,8 +1,8 @@
 import { GlobeIcon, LayoutDashboardIcon, LinkIcon, MessageCircleIcon, SmartphoneIcon } from "lucide-react"
 import { getTranslations } from "next-intl/server"
 import { cn } from "cn"
-import { Reveal } from "./reveal"
-import { Section } from "./section"
+import { Reveal } from "@/features/marketing/shared/reveal"
+import { Section } from "@/features/marketing/shared/section"
 
 export async function WhyVano() {
   const t = await getTranslations("Landing")

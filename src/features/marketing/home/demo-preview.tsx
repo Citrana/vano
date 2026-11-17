@@ -3,15 +3,16 @@ import { getLocale, getTranslations } from "next-intl/server"
 import Image from "next/image"
 import Link from "next/link"
 import type { ReactNode } from "react"
-import { formatMoney } from "../../../convex/lib/money"
+import { formatMoney } from "../../../../convex/lib/money"
 import { buttonVariants } from "@/components/ui/button"
-import { demoShopPath } from "./config"
-import { SAMPLE_CURRENCY, SAMPLE_PRODUCTS } from "./photos"
-import { Reveal } from "./reveal"
-import { Section } from "./section"
+import { SAMPLE_CURRENCY, SAMPLE_PRODUCTS } from "@/features/marketing/home/photos"
+import { Reveal } from "@/features/marketing/shared/reveal"
+import { Section } from "@/features/marketing/shared/section"
 
 const cardClass =
   "group block h-full overflow-hidden rounded-2xl bg-card shadow-soft ring-1 ring-foreground/5 transition-shadow outline-none"
+
+const demoShopPath: string | null = "/demo"
 
 export async function DemoPreview() {
   const t = await getTranslations("Landing")

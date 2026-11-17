@@ -1,5 +1,5 @@
 import type { StaticImageData } from "next/image"
-import type { Currency } from "../../../convex/lib/money"
+import type { Currency } from "../../../../convex/lib/money"
 import bomberJacket from "@/assets/images/photos/products/bomber-jacket.webp"
 import floralHeels from "@/assets/images/photos/products/floral-heels.webp"
 import knitPoncho from "@/assets/images/photos/products/knit-poncho.webp"

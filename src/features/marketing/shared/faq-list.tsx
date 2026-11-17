@@ -1,7 +1,7 @@
 import { ChevronDownIcon } from "lucide-react"
 import { getTranslations } from "next-intl/server"
-import { Reveal } from "./reveal"
-import { Section } from "./section"
+import { Reveal } from "@/features/marketing/shared/reveal"
+import { Section } from "@/features/marketing/shared/section"
 
 const ITEMS = [1, 2, 3, 4] as const
 

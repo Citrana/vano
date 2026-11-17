@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { getTranslations } from "next-intl/server"
-import { LegalPage } from "@/features/landing/legal-page"
+import { LegalPage } from "@/features/marketing/shared/legal-page"
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Legal")

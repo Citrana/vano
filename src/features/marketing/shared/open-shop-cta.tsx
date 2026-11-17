@@ -5,7 +5,7 @@ import { ArrowRightIcon, LockIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
 import Link from "next/link"
 import { cn } from "cn"
-import { api } from "../../../convex/_generated/api"
+import { api } from "../../../../convex/_generated/api"
 import { buttonVariants } from "@/components/ui/button"
 
 /**
@@ -16,7 +16,7 @@ import { buttonVariants } from "@/components/ui/button"
  * the server refuses the account anyway.
  */
 export function OpenShopCta({ compact = false, className }: { compact?: boolean; className?: string }) {
-  const t = useTranslations("Landing")
+  const t = useTranslations("Marketing")
   const { isLoading, isAuthenticated } = useConvexAuth()
   const signupOpen = useQuery(api.public.signupOpen, isLoading || isAuthenticated ? "skip" : {})
 

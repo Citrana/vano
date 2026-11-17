@@ -1,8 +1,8 @@
 import { Rotate3dIcon, SparklesIcon } from "lucide-react"
 import { getTranslations } from "next-intl/server"
 import { Badge } from "@/components/ui/badge"
-import { Reveal } from "./reveal"
-import { Section } from "./section"
+import { Reveal } from "@/features/marketing/shared/reveal"
+import { Section } from "@/features/marketing/shared/section"
 
 /** Teaser only: these features don't exist yet and are labelled so. */
 export async function ComingSoon() {

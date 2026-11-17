@@ -714,5 +714,33 @@
     "privacyS3Body": "Vano doesn't handle payments, so we never see your or your customers' card or mobile money details.",
     "privacyS4Title": "Contact",
     "privacyS4Body": "To ask about your data or delete your account, use the contact link at the bottom of the page."
+  },
+  "Marketing": {
+    "navLabel": "Main",
+    "navFeatures": "Features",
+    "navPricing": "Pricing",
+    "navDemo": "Demo shop",
+    "navHelp": "Help",
+    "login": "Log in",
+    "menu": "Menu",
+    "cta": "Open my shop for free",
+    "ctaShort": "Open my shop",
+    "ctaDashboard": "Go to my dashboard",
+    "ctaDashboardShort": "My dashboard",
+    "signupClosed": "Sign-ups are currently closed.",
+    "signupClosedLogin": "Already have a shop? Log in",
+    "comingSoon": "Coming soon",
+    "ctaBandTitle": "Stop sending 20 photos in every chat. Send <hl>one link</hl>.",
+    "ctaBandSubtitle": "Your whole catalog, always up to date, in a link your customers can open on any phone.",
+    "footerTagline": "Online shops for small fashion businesses. Share one link, get orders on WhatsApp.",
+    "footerPages": "Vano",
+    "footerAccount": "Account",
+    "footerContact": "Contact",
+    "footerWhatsapp": "Chat on WhatsApp",
+    "footerEmail": "Email us",
+    "footerLegal": "Legal",
+    "footerTerms": "Terms",
+    "footerPrivacy": "Privacy",
+    "footerRights": "© {year} Vano. All rights reserved."
   }
 }

@@ -1,7 +1,7 @@
 import { Share2Icon, ShirtIcon, StoreIcon } from "lucide-react"
 import { getTranslations } from "next-intl/server"
-import { Reveal } from "./reveal"
-import { Section } from "./section"
+import { Reveal } from "@/features/marketing/shared/reveal"
+import { Section } from "@/features/marketing/shared/section"
 
 export async function HowItWorks() {
   const t = await getTranslations("Landing")
