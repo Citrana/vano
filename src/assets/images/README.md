@@ -41,7 +41,9 @@ file is a build error. Use `public/` only for files that need a fixed URL
   `messages/en.json` + `messages/fr.json`; use `alt=""` only for purely
   decorative images.
 - **Licensing**: own work or free-license only, and no visible third-party
-  brand logos. Add every external file to the credits table below.
+  brand logos. Exception: the WhatsApp icon (`icons/whatsapp.png`), used
+  only to show "order / chat on WhatsApp". Add every external file to the
+  credits table below.
 
 ## Credits
 
@@ -53,3 +55,6 @@ file is a build error. Use `public/` only for files that need a fixed URL
 | `photos/products/bomber-jacket.webp` | https://images.unsplash.com/photo-1591047139829-d91aecb6caea | Unsplash License |
 | `photos/products/knit-poncho.webp` | https://images.unsplash.com/photo-1434389677669-e08b4cac3105 | Unsplash License |
 | `photos/products/yellow-set.webp` | https://images.unsplash.com/photo-1515886657613-9f3515b0c78f | Unsplash License |
+| `brand/vano-mobile.png` | Vano design team | Own work |
+| `icons/whatsapp.png` | Vano design team (WhatsApp mark) | WhatsApp brand guidelines |
+| `icons/link.png` | Vano design team | Own work |

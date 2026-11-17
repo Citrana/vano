@@ -1,7 +1,9 @@
-import { CheckIcon, LinkIcon, MessageCircleIcon } from "lucide-react"
+import { CheckIcon } from "lucide-react"
 import { getTranslations } from "next-intl/server"
 import Image from "next/image"
 import { cn } from "cn"
+import linkIcon from "@/assets/images/icons/link.png"
+import whatsappIcon from "@/assets/images/icons/whatsapp.png"
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import { demoShopPath } from "./config"
@@ -19,9 +21,7 @@ export async function Hero() {
     <FloatingCard
       className={className}
       icon={
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-success text-white">
-          <MessageCircleIcon className="size-5" aria-hidden />
-        </span>
+        <Image src={whatsappIcon} alt="" width={40} height={40} className="size-10 shrink-0" />
       }
       title={t("floatOrderTitle")}
       body={
@@ -36,8 +36,8 @@ export async function Hero() {
     <FloatingCard
       className={className}
       icon={
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-blush text-coral-strong">
-          <LinkIcon className="size-4" aria-hidden />
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-blush">
+          <Image src={linkIcon} alt="" width={20} height={20} className="size-5" />
         </span>
       }
       title={t("floatLinkTitle")}
