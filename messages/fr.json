@@ -131,7 +131,8 @@
     "dashboard": "Tableau de bord",
     "settings": "Paramètres de la boutique",
     "viewShop": "Voir ma boutique",
-    "menu": "Menu"
+    "menu": "Menu",
+    "admin": "Admin"
   },
   "Onboarding": {
     "title": "Créez votre boutique",

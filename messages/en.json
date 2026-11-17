@@ -131,7 +131,8 @@
     "dashboard": "Dashboard",
     "settings": "Shop settings",
     "viewShop": "View my shop",
-    "menu": "Menu"
+    "menu": "Menu",
+    "admin": "Admin"
   },
   "Onboarding": {
     "title": "Create your shop",

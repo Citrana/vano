@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery } from "convex/react"
-import { ExternalLinkIcon, LayoutGridIcon, SettingsIcon } from "lucide-react"
+import { ExternalLinkIcon, LayoutGridIcon, SettingsIcon, ShieldIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -17,9 +17,12 @@ export function SellerHeader() {
   const t = useTranslations("Seller")
   const pathname = usePathname()
   const shop = useQuery(api.shops.myShop, {})
+  const viewer = useQuery(api.users.viewer, {})
   const links = [
     { href: "/dashboard", label: t("dashboard"), icon: LayoutGridIcon, active: pathname === "/dashboard" || pathname.startsWith("/dashboard/products") },
     { href: "/dashboard/settings", label: t("settings"), icon: SettingsIcon, active: pathname === "/dashboard/settings" },
+    // Admins who also sell can switch to the admin (the server checks access).
+    ...(viewer?.isAdmin ? [{ href: "/admin", label: t("admin"), icon: ShieldIcon, active: false }] : []),
   ]
 
   const nav = (
