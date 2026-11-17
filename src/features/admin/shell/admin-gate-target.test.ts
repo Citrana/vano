@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest"
 import type { GateViewer } from "../../auth/gate-target"
 import { adminGateTarget } from "./admin-gate-target"
+import { firstAllowedAdminPath } from "./nav"
 
 const signedIn = { isLoading: false, isAuthenticated: true }
 const viewer = (over: Partial<NonNullable<GateViewer>> = {}): GateViewer => ({
@@ -32,8 +33,15 @@ describe("adminGateTarget", () => {
     expect(adminGateTarget({ ...signedIn, viewer: viewer({ isAdmin: false, permissions: [] }) })).toBe("noAccess")
   })
 
-  test("missing the page's permission goes to an allowed section (the home while none is ready)", () => {
-    expect(adminGateTarget({ ...signedIn, viewer: viewer(), permission: "roles.manage" })).toBe("/admin")
+  test("missing the page's permission goes to the first section they can open", () => {
+    const v = viewer()
+    expect(adminGateTarget({ ...signedIn, viewer: v, permission: "roles.manage" })).toBe(
+      firstAllowedAdminPath(v!.permissions),
+    )
+    // Nothing they can open: the admin home.
+    expect(adminGateTarget({ ...signedIn, viewer: viewer({ permissions: ["roles.manage"] }), permission: "users.view" })).toBe(
+      "/admin",
+    )
   })
 
   test("admins with the permission see the page", () => {
