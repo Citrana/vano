@@ -3,6 +3,7 @@
 import { useQuery } from "convex/react"
 import { ExternalLinkIcon, UserXIcon } from "lucide-react"
 import { useFormatter, useTranslations } from "next-intl"
+import Link from "next/link"
 import { api } from "../../../../convex/_generated/api"
 import { PageTitle } from "@/components/shell/page-title"
 import { EmptyState, LoadingState } from "@/components/states/states"
@@ -65,6 +66,11 @@ export function UserDetails({ userId }: { userId: string }) {
             <dd className="flex flex-wrap items-center gap-2">
               {user.shop ? (
                 <>
+                  {viewer.permissions.includes("shops.view") ? (
+                    <Link href={`/admin/shops/${user.shop._id}`} className="font-medium hover:underline">
+                      {t("manageShop")}
+                    </Link>
+                  ) : null}
                   <a
                     href={`/${user.shop.slug}`}
                     target="_blank"
