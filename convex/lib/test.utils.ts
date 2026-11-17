@@ -1,12 +1,25 @@
 // Test-only helpers shared by convex/*.test.ts. The two dots in the file
 // name are deliberate: the Convex CLI skips files with more than one dot,
 // so this is never pushed to a deployment.
-import type { TestConvex } from "convex-test";
+import aggregateTest from "@convex-dev/aggregate/test";
+import { convexTest, type TestConvex } from "convex-test";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
-import type schema from "../schema";
+import schema from "../schema";
 
 export type T = TestConvex<typeof schema>;
+
+const modules = import.meta.glob("../**/*.*s");
+
+/** Components mounted in convex/convex.config.ts. */
+const AGGREGATES = ["usersByCreation", "shopsByCreation", "productsByCreation", "clicksByDay"];
+
+/** A fresh test deployment with the app's components registered. */
+export function newTest(): T {
+  const t = convexTest(schema, modules);
+  for (const name of AGGREGATES) aggregateTest.register(t, name);
+  return t;
+}
 
 export async function insertUser(t: T, email = "seller@example.com"): Promise<Id<"users">> {
   return await t.run((ctx) => ctx.db.insert("users", { email }));

@@ -19,3 +19,8 @@ export function isDay(value: string): boolean {
 export function addDays(day: string, delta: number): string {
   return utcDay(Date.parse(`${day}T00:00:00Z`) + delta * DAY_MS);
 }
+
+/** "2026-03-01" → the timestamp of 2026-03-01T00:00:00Z. */
+export function dayStartMs(day: string): number {
+  return Date.parse(`${day}T00:00:00Z`);
+}

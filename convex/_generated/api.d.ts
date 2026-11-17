@@ -24,6 +24,7 @@ import type * as lib_images from "../lib/images.js";
 import type * as lib_money from "../lib/money.js";
 import type * as lib_permissions from "../lib/permissions.js";
 import type * as lib_phone from "../lib/phone.js";
+import type * as lib_platformStats from "../lib/platformStats.js";
 import type * as lib_roles from "../lib/roles.js";
 import type * as lib_seller from "../lib/seller.js";
 import type * as lib_slug from "../lib/slug.js";
@@ -57,6 +58,7 @@ declare const fullApi: ApiFromModules<{
   "lib/money": typeof lib_money;
   "lib/permissions": typeof lib_permissions;
   "lib/phone": typeof lib_phone;
+  "lib/platformStats": typeof lib_platformStats;
   "lib/roles": typeof lib_roles;
   "lib/seller": typeof lib_seller;
   "lib/slug": typeof lib_slug;
@@ -94,4 +96,9 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  usersByCreation: import("@convex-dev/aggregate/_generated/component.js").ComponentApi<"usersByCreation">;
+  shopsByCreation: import("@convex-dev/aggregate/_generated/component.js").ComponentApi<"shopsByCreation">;
+  productsByCreation: import("@convex-dev/aggregate/_generated/component.js").ComponentApi<"productsByCreation">;
+  clicksByDay: import("@convex-dev/aggregate/_generated/component.js").ComponentApi<"clicksByDay">;
+};

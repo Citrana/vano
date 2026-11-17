@@ -1,12 +1,9 @@
-import { convexTest } from "convex-test";
 import { describe, expect, test } from "vitest";
-import schema from "../schema";
 import { assertCanStartSession, assignSellerRoleIfMissing } from "./accounts";
 import { findRoleByKey } from "./roles";
-import { builtInRoles, insertUser, insertUserWithRole } from "./test.utils";
+import { builtInRoles, insertUser, insertUserWithRole, newTest } from "./test.utils";
 
-const modules = import.meta.glob("../**/*.*s");
-const setup = () => convexTest(schema, modules);
+const setup = newTest;
 
 describe("assignSellerRoleIfMissing (after sign-up)", () => {
   test("a new user becomes an active seller, creating the built-in roles", async () => {

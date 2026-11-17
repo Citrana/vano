@@ -1,7 +1,5 @@
-import { convexTest } from "convex-test";
 import { describe, expect, test } from "vitest";
 import { api } from "./_generated/api";
-import schema from "./schema";
 import {
   as,
   insertUser,
@@ -9,10 +7,10 @@ import {
   sellerWithShop,
   shopArgs,
   storeFile,
+  newTest,
 } from "./lib/test.utils";
 
-const modules = import.meta.glob("./**/*.*s");
-const setup = () => convexTest(schema, modules);
+const setup = newTest;
 
 describe("users.viewer", () => {
   test("null when signed out, hasShop after onboarding", async () => {

@@ -1,11 +1,8 @@
-import { convexTest } from "convex-test";
 import { describe, expect, test } from "vitest";
 import { api } from "./_generated/api";
-import schema from "./schema";
-import { as, productArgs, sellerWithShop } from "./lib/test.utils";
+import { as, productArgs, sellerWithShop, newTest } from "./lib/test.utils";
 
-const modules = import.meta.glob("./**/*.*s");
-const setup = () => convexTest(schema, modules);
+const setup = newTest;
 
 describe("public.shopBasics", () => {
   test("public fields only, null for unknown", async () => {

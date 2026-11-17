@@ -1,7 +1,5 @@
-import { convexTest } from "convex-test";
 import { describe, expect, test } from "vitest";
 import { api } from "./_generated/api";
-import schema from "./schema";
 import {
   as,
   builtInRoles,
@@ -10,6 +8,7 @@ import {
   productArgs,
   sellerWithShop,
   shopArgs,
+  newTest,
 } from "./lib/test.utils";
 
 /**
@@ -18,8 +17,7 @@ import {
  * and the ownership rules are unchanged (see products.test.ts).
  */
 
-const modules = import.meta.glob("./**/*.*s");
-const setup = () => convexTest(schema, modules);
+const setup = newTest;
 
 describe("seller permissions", () => {
   test("a user with the seller role can use every seller function", async () => {

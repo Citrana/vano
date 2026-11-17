@@ -1,12 +1,9 @@
-import { convexTest } from "convex-test";
 import { describe, expect, test } from "vitest";
 import { api } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
-import schema from "./schema";
-import { as, insertUser, productArgs, sellerWithShop, storeFile } from "./lib/test.utils";
+import { as, insertUser, productArgs, sellerWithShop, storeFile, newTest } from "./lib/test.utils";
 
-const modules = import.meta.glob("./**/*.*s");
-const setup = () => convexTest(schema, modules);
+const setup = newTest;
 
 async function twoSellers() {
   const t = setup();
