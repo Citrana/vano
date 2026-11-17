@@ -97,3 +97,29 @@ export async function productArgs(
     ...overrides,
   };
 }
+
+/** Creates the built-in roles and returns their ids. */
+export async function builtInRoles(t: T) {
+  return await t.run(async (ctx) => {
+    const { ensureBuiltInRoles } = await import("./roles");
+    return await ensureBuiltInRoles(ctx);
+  });
+}
+
+export async function insertRole(
+  t: T,
+  name: string,
+  permissions: string[],
+): Promise<Id<"roles">> {
+  return await t.run((ctx) => ctx.db.insert("roles", { name, permissions }));
+}
+
+/** A user with the given role (and status, default active). */
+export async function insertUserWithRole(
+  t: T,
+  email: string,
+  roleId: Id<"roles">,
+  status: "active" | "suspended" = "active",
+): Promise<Id<"users">> {
+  return await t.run((ctx) => ctx.db.insert("users", { email, roleId, status }));
+}
