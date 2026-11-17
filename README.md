@@ -34,6 +34,39 @@ local backend instead.
 | Convex | `SITE_URL` | Same origin, used by Convex Auth |
 | Convex | `JWT_PRIVATE_KEY`, `JWKS` | Convex Auth signing keys (`npx @convex-dev/auth`) |
 
+## First super admin
+
+Super admins can't sign up: the first one is created from the terminal.
+Run this in the project folder while `npx convex dev` is running (so the
+functions are pushed):
+
+```bash
+npx convex run seed:superAdmin '{"email":"you@example.com","password":"a-strong-password"}'
+```
+
+- **Production:** `npx convex run --prod seed:superAdmin '{"email":"...","password":"..."}'`
+- **Another super admin** (once one exists, the command refuses unless you
+  pass `force`):
+  `npx convex run seed:superAdmin '{"email":"...","password":"...","force":true}'`
+
+It sets up the built-in roles (Super admin, Seller) if they don't exist yet
+and prints one of:
+
+| Result | Meaning |
+|---|---|
+| `created` | New account created as an active super admin. Log in at `/login`. |
+| `promoted` | The email already had an account; it is now a super admin. **Its password is unchanged.** |
+| `already_super_admin` | Nothing changed. Safe to run again. |
+
+The command can only be run from the terminal or the Convex dashboard, never
+from the app. If the only super admin is suspended, running it again
+(for them, or for a new email) works without `force`. Each run is recorded in
+the admin activity history as "system".
+
+Tip: the password lands in your shell history. Start the command with a
+space (zsh/bash skip it when `HIST_IGNORE_SPACE` / `HISTCONTROL=ignorespace`
+is set) or clear the history afterwards.
+
 ## Scripts
 
 | Command | What it does |
