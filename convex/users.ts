@@ -4,6 +4,7 @@ import { accessOf, isAdmin } from "./lib/access";
 import { getCurrentUserOrNull } from "./lib/auth";
 import { roleKeyValidator } from "./lib/permissions";
 import { findShopByOwner } from "./lib/seller";
+import { readSettings } from "./lib/settings";
 
 const statusValidator = v.union(v.literal("active"), v.literal("suspended"));
 
@@ -33,6 +34,8 @@ export const viewer = query({
       roleName: v.string(),
       permissions: v.array(v.string()),
       isAdmin: v.boolean(),
+      /** The platform announcement (admin settings), in both languages. */
+      announcement: v.union(v.object({ en: v.string(), fr: v.string() }), v.null()),
     }),
   ),
   handler: async (ctx) => {
@@ -50,6 +53,7 @@ export const viewer = query({
       roleName: access.role?.name ?? "Seller",
       permissions: [...access.permissions],
       isAdmin: isAdmin(access),
+      announcement: (await readSettings(ctx)).announcement,
     };
   },
 });

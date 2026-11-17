@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { assertCanStartSession, assignSellerRoleIfMissing } from "./accounts";
+import { assertCanStartSession, assignSellerRoleIfMissing, setUpNewAccount } from "./accounts";
 import { findRoleByKey } from "./roles";
 import { builtInRoles, insertUser, insertUserWithRole, newTest } from "./test.utils";
 
@@ -51,6 +51,50 @@ describe("assertCanStartSession (before every sign-in)", () => {
       await expect(assertCanStartSession(ctx, active)).resolves.toBeUndefined();
       await expect(assertCanStartSession(ctx, legacy)).resolves.toBeUndefined();
       await expect(assertCanStartSession(ctx, suspended)).rejects.toThrow(/ACCOUNT_SUSPENDED/);
+    });
+  });
+});
+
+describe("sign-up switch", () => {
+  const closeSignup = (t: ReturnType<typeof setup>) =>
+    t.run((ctx) => ctx.db.insert("platformSettings", { signupEnabled: false }));
+
+  test("a new account is refused while sign-up is closed", async () => {
+    const t = setup();
+    await closeSignup(t);
+    await expect(
+      t.run(async (ctx) => {
+        const userId = await ctx.db.insert("users", { email: "new@x.com" });
+        await setUpNewAccount(ctx, userId);
+      }),
+    ).rejects.toThrow(/SIGNUP_DISABLED/);
+    // The whole transaction rolled back: no user was created.
+    expect(await t.run((ctx) => ctx.db.query("users").collect())).toEqual([]);
+  });
+
+  test("a valid one-time bypass lets one account through; an expired one doesn't", async () => {
+    const t = setup();
+    await closeSignup(t);
+    await t.run((ctx) => ctx.db.insert("signupBypasses", { email: "ok@x.com", expiresAt: Date.now() + 60_000 }));
+    await t.run((ctx) => ctx.db.insert("signupBypasses", { email: "late@x.com", expiresAt: Date.now() - 1 }));
+    await t.run(async (ctx) => {
+      const userId = await ctx.db.insert("users", { email: "ok@x.com" });
+      await setUpNewAccount(ctx, userId);
+    });
+    expect(await t.run((ctx) => ctx.db.query("signupBypasses").collect())).toHaveLength(1);
+    await expect(
+      t.run(async (ctx) => {
+        const userId = await ctx.db.insert("users", { email: "late@x.com" });
+        await setUpNewAccount(ctx, userId);
+      }),
+    ).rejects.toThrow(/SIGNUP_DISABLED/);
+  });
+
+  test("open by default", async () => {
+    const t = setup();
+    await t.run(async (ctx) => {
+      const userId = await ctx.db.insert("users", { email: "new@x.com" });
+      await setUpNewAccount(ctx, userId);
     });
   });
 });

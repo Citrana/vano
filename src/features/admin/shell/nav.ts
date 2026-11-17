@@ -24,7 +24,7 @@ export const ADMIN_NAV: readonly AdminNavItem[] = [
   { key: "products", href: "/admin/products", permission: "products.view", ready: true },
   { key: "roles", href: "/admin/roles", permission: "roles.view", ready: true },
   { key: "activity", href: "/admin/activity", permission: "audit.view", ready: true },
-  { key: "settings", href: "/admin/settings", permission: "settings.view", ready: false },
+  { key: "settings", href: "/admin/settings", permission: "settings.view", ready: true },
 ]
 
 /** The admin home; open to every admin, whatever their permissions. */

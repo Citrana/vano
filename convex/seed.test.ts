@@ -131,4 +131,20 @@ describe("seed:superAdmin", () => {
     expect(await count(t, "users")).toBe(0);
     expect(await count(t, "authAccounts")).toBe(0);
   });
+
+  test("still works while public sign-up is closed (one-time bypass, used up)", async () => {
+    const t = setup();
+    await t.run((ctx) => ctx.db.insert("platformSettings", { signupEnabled: false }));
+    expect((await seed(t, "boss@example.com")).result).toBe("created");
+    expect((await userByEmail(t, "boss@example.com"))?.roleId).toBe(await superAdminRoleId(t));
+    expect(await t.run((ctx) => ctx.db.query("signupBypasses").collect())).toEqual([]);
+  });
+
+  test("a refused run leaves no sign-up permission behind", async () => {
+    const t = setup();
+    await seed(t, "boss@example.com");
+    await t.run((ctx) => ctx.db.insert("platformSettings", { signupEnabled: false }));
+    await expect(seed(t, "second@example.com")).rejects.toThrow(/SUPER_ADMIN_EXISTS/);
+    expect(await t.run((ctx) => ctx.db.query("signupBypasses").collect())).toEqual([]);
+  });
 });

@@ -43,6 +43,9 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   `SELLER_PERMISSIONS`. Neither can be renamed, edited or deleted.
 - Public sign-up always creates an active seller. Super admins are created
   only by `seed:superAdmin` (internal action, run from the terminal).
+- Admins can close public sign-up (`platformSettings`). It's enforced in
+  `setUpNewAccount` (the account is never created); the seed command gets
+  a one-time `signupBypasses` row created by internal code only.
 - Every authenticated function goes through `loadAccess`
   (`convex/lib/access.ts`): signed-out → `NOT_AUTHENTICATED`, suspended →
   `ACCOUNT_SUSPENDED`. Admin functions use `adminQuery` / `adminMutation`

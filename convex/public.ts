@@ -3,6 +3,7 @@ import type { Doc } from "./_generated/dataModel";
 import { query, type QueryCtx } from "./_generated/server";
 import { LIMITS } from "./lib/catalog";
 import { urlOf, urlsOf } from "./lib/images";
+import { readSettings } from "./lib/settings";
 
 /**
  * Unauthenticated reads for the public shop pages. They never return
@@ -115,4 +116,11 @@ export const productForPage = query({
       },
     };
   },
+});
+
+/** Whether public sign-up is open (admin settings). Only a boolean. */
+export const signupOpen = query({
+  args: {},
+  returns: v.boolean(),
+  handler: async (ctx) => (await readSettings(ctx)).signupEnabled,
 });

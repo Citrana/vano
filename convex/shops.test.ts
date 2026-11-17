@@ -30,6 +30,7 @@ describe("users.viewer", () => {
       roleName: "Seller",
       permissions: ["ownShop.manage", "ownProducts.manage", "ownStats.view"],
       isAdmin: false,
+      announcement: null,
     });
     await as(t, userId).mutation(api.shops.create, shopArgs());
     expect(await as(t, userId).query(api.users.viewer, {})).toMatchObject({
@@ -80,6 +81,15 @@ describe("users.viewer", () => {
       status: "suspended",
       isAdmin: true,
     });
+  });
+
+  test("includes the platform announcement", async () => {
+    const t = setup();
+    const userId = await insertUser(t);
+    await t.run((ctx) =>
+      ctx.db.insert("platformSettings", { signupEnabled: true, announcement: { en: "Hello", fr: "Bonjour" } }),
+    );
+    expect((await as(t, userId).query(api.users.viewer, {}))?.announcement).toEqual({ en: "Hello", fr: "Bonjour" });
   });
 
   test("reports a suspended shop", async () => {

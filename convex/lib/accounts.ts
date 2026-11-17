@@ -3,6 +3,10 @@ import type { MutationCtx } from "../_generated/server";
 import { fail } from "./errors";
 import { onUserCreated } from "./platformStats";
 import { ensureBuiltInRoles } from "./roles";
+import { readSettings } from "./settings";
+
+/** How long a seed command's sign-up permission stays valid. */
+export const SIGNUP_BYPASS_MS = 5 * 60 * 1000;
 
 /**
  * Account lifecycle hooks, called from the Convex Auth callbacks in
@@ -24,8 +28,30 @@ export async function assignSellerRoleIfMissing(
   await ctx.db.patch("users", userId, { roleId: seller, status: user.status ?? "active" });
 }
 
-/** After a new account is created: seller role if missing + users counter. */
+/**
+ * While public sign-up is closed, refuses a new account unless the
+ * terminal seed command left a one-time permission for its email (used up
+ * here). Throwing aborts the transaction, so the account is never created.
+ */
+async function assertSignupAllowed(ctx: MutationCtx, email: string | undefined): Promise<void> {
+  if ((await readSettings(ctx)).signupEnabled) return;
+  const bypass = email
+    ? await ctx.db
+        .query("signupBypasses")
+        .withIndex("by_email", (q) => q.eq("email", email))
+        .first()
+    : null;
+  if (!bypass || bypass.expiresAt < Date.now()) fail("SIGNUP_DISABLED");
+  await ctx.db.delete("signupBypasses", bypass._id);
+}
+
+/**
+ * After a new account is created: sign-up must be open (or the seed
+ * command allowed it), then seller role if missing + users counter.
+ */
 export async function setUpNewAccount(ctx: MutationCtx, userId: Id<"users">): Promise<void> {
+  const created = await ctx.db.get("users", userId);
+  if (created && created.roleId === undefined) await assertSignupAllowed(ctx, created.email);
   await assignSellerRoleIfMissing(ctx, userId);
   const user = await ctx.db.get("users", userId);
   if (user) await onUserCreated(ctx, user);

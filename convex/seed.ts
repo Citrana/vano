@@ -6,7 +6,9 @@ import { internalAction, internalMutation, type QueryCtx } from "./_generated/se
 import { logAdminAction } from "./lib/audit";
 import { normalizeEmail, passwordProblem } from "./lib/credentials";
 import { fail } from "./lib/errors";
+import { SIGNUP_BYPASS_MS } from "./lib/accounts";
 import { ensureBuiltInRoles } from "./lib/roles";
+import { readSettings } from "./lib/settings";
 
 /**
  * Creates the first super admin from the terminal (README "First super
@@ -36,6 +38,9 @@ export const superAdmin = internalAction({
 
     let userId = existing.userId;
     if (userId === null) {
+      // Only now, after every check passed: if public sign-up is closed,
+      // allow exactly this account (one-time, short-lived).
+      await ctx.runMutation(internal.seed.allowSignup, { email });
       // Same path as sign-up: the Password provider hashes the secret and
       // the auth callback makes the new user an active seller first.
       const { user } = await createAccount(ctx, {
@@ -92,6 +97,20 @@ export const prepare = internalMutation({
     const isSuperAdmin = user?.roleId === roles.super_admin && user.status !== "suspended";
     const others = (await activeSuperAdminIds(ctx, roles.super_admin)).filter((id) => id !== userId);
     return { userId, isSuperAdmin, otherActiveSuperAdmin: others.length > 0 };
+  },
+});
+
+/**
+ * If public sign-up is closed (admin settings), leaves a one-time,
+ * short-lived permission for this email, used up by `setUpNewAccount`.
+ */
+export const allowSignup = internalMutation({
+  args: { email: v.string() },
+  returns: v.null(),
+  handler: async (ctx, { email }) => {
+    if ((await readSettings(ctx)).signupEnabled) return null;
+    await ctx.db.insert("signupBypasses", { email, expiresAt: Date.now() + SIGNUP_BYPASS_MS });
+    return null;
   },
 });
 

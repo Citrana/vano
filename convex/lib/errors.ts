@@ -40,6 +40,7 @@ export const ERROR_CODES = [
   "ROLE_NAME_TAKEN",
   "PERMISSION_ESCALATION",
   "SUPER_ADMIN_EXISTS",
+  "ANNOUNCEMENT_INVALID",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

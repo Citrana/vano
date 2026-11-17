@@ -58,6 +58,7 @@
     "ROLE_NAME_TAKEN": "Un rôle porte déjà ce nom.",
     "PERMISSION_ESCALATION": "Vous ne pouvez donner que les autorisations que vous avez vous-même.",
     "SUPER_ADMIN_EXISTS": "Un super admin existe déjà.",
+    "ANNOUNCEMENT_INVALID": "Écrivez l'annonce en anglais et en français (280 caractères maximum chacune), ou laissez les deux vides.",
     "UNKNOWN": "Un problème est survenu. Réessayez."
   },
   "Validation": {
@@ -76,7 +77,8 @@
     "emailInvalid": "Entrez une adresse e-mail valide.",
     "passwordShort": "Utilisez au moins {min} caractères.",
     "tagsInvalid": "Jusqu'à 20 éléments, de 20 caractères chacun.",
-    "uploadsPending": "Attendez la fin de l'envoi des photos."
+    "uploadsPending": "Attendez la fin de l'envoi des photos.",
+    "announcementBothRequired": "Écrivez l'annonce dans les deux langues, ou laissez les deux vides."
   },
   "Categories": {
     "clothes": "Vêtements",
@@ -125,7 +127,10 @@
     "invalidCredentials": "E-mail ou mot de passe incorrect.",
     "accountExists": "Un compte existe déjà avec cet e-mail. Connectez-vous.",
     "noAccessTitle": "Aucun accès",
-    "noAccessBody": "Votre compte ne donne accès ni à une boutique ni à l'administration. Contactez le support Vano."
+    "noAccessBody": "Votre compte ne donne accès ni à une boutique ni à l'administration. Contactez le support Vano.",
+    "signupClosedTitle": "Les inscriptions sont fermées",
+    "signupClosedBody": "Il n'est pas possible de créer de nouvelles boutiques pour le moment. Revenez plus tard.",
+    "goToLogin": "J'ai déjà un compte"
   },
   "Seller": {
     "dashboard": "Tableau de bord",
@@ -587,5 +592,23 @@
     "emptyFilteredTitle": "Aucune activité trouvée",
     "emptyFilteredBody": "Aucune activité ne correspond à ces filtres.",
     "loadMore": "Afficher plus"
+  },
+  "AdminSettings": {
+    "title": "Paramètres",
+    "signupTitle": "Inscriptions",
+    "signupLabel": "Autoriser les nouvelles inscriptions",
+    "signupHelp": "Désactivé, personne ne peut créer de compte depuis le site. Les utilisateurs existants peuvent toujours se connecter, et des super admins peuvent toujours être créés depuis le terminal.",
+    "announcementTitle": "Annonce pour les vendeurs",
+    "announcementHelp": "Affichée en haut du tableau de bord de chaque vendeur, dans sa langue. Laissez les deux vides pour ne rien afficher.",
+    "announcementEn": "Anglais",
+    "announcementFr": "Français",
+    "count": "{count}/{max}",
+    "clear": "Effacer l'annonce",
+    "save": "Enregistrer les paramètres",
+    "saved": "Paramètres enregistrés.",
+    "readOnly": "Vous pouvez voir ces paramètres mais pas les modifier."
+  },
+  "Announcement": {
+    "label": "Annonce de Vano"
   }
 }
