@@ -1,0 +1,51 @@
+import type { Metadata } from "next"
+import { getTranslations } from "next-intl/server"
+import { notFound } from "next/navigation"
+import { getShopPage } from "@/features/public/data"
+import { ProductGrid } from "@/features/public/product-grid"
+import { PublicFooter } from "@/features/public/public-footer"
+import { ShopHeader } from "@/features/public/shop-header"
+import { ShopLocaleProvider } from "@/features/public/shop-locale-provider"
+import { ViewTracker } from "@/features/public/view-tracker"
+
+export async function generateMetadata({ params }: PageProps<"/[slug]">): Promise<Metadata> {
+  const { slug } = await params
+  const page = await getShopPage(slug)
+  if (!page) return {}
+  const { shop, products } = page
+  const t = await getTranslations({ locale: shop.language, namespace: "Public" })
+  const description = shop.description ?? t("metaShopDescription", { shop: shop.name })
+  const image = shop.logoUrl ?? products.find((p) => p.coverUrl)?.coverUrl ?? undefined
+  return {
+    title: { absolute: shop.name },
+    description,
+    alternates: { canonical: `/${shop.slug}` },
+    openGraph: {
+      type: "website",
+      title: shop.name,
+      description,
+      url: `/${shop.slug}`,
+      locale: shop.language === "fr" ? "fr_FR" : "en_US",
+      images: image ? [{ url: image }] : undefined,
+    },
+    twitter: { card: image ? "summary_large_image" : "summary", title: shop.name, description, images: image ? [image] : undefined },
+  }
+}
+
+export default async function ShopPage({ params }: PageProps<"/[slug]">) {
+  const { slug } = await params
+  const page = await getShopPage(slug)
+  if (!page) notFound()
+  const { shop, products } = page
+
+  return (
+    <ShopLocaleProvider language={shop.language}>
+      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 pt-6 pb-10 md:pt-10">
+        <ShopHeader shop={shop} />
+        <ProductGrid slug={shop.slug} currency={shop.currency} products={products} />
+      </main>
+      <PublicFooter language={shop.language} />
+      <ViewTracker shopId={shop._id} />
+    </ShopLocaleProvider>
+  )
+}
