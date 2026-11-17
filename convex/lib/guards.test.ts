@@ -1,16 +1,13 @@
-import { convexTest } from "convex-test";
 import { describe, expect, test } from "vitest";
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
-import schema from "../schema";
 import { hasPermission, isAdmin, type Access } from "./access";
 import { assertCanChangeUser, assertCanDeleteRole, assertCanWriteRole } from "./guards";
 import { cleanPermissions } from "./permissions";
 import { ensureBuiltInRoles, permissionsOf } from "./roles";
-import { builtInRoles, insertRole, insertUserWithRole } from "./test.utils";
+import { builtInRoles, insertRole, insertUserWithRole, newTest } from "./test.utils";
 
-const modules = import.meta.glob("../**/*.*s");
-const setup = () => convexTest(schema, modules);
+const setup = newTest;
 
 async function accessOf(ctx: MutationCtx, userId: Id<"users">): Promise<Access> {
   const user = (await ctx.db.get("users", userId))!;

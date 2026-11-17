@@ -4,6 +4,7 @@ import { categoryValidator, cleanTags, LIMITS, tagsProblem } from "./lib/catalog
 import { fail } from "./lib/errors";
 import { urlOf } from "./lib/images";
 import { priceProblem } from "./lib/money";
+import { onProductCreated, onProductDeleted } from "./lib/platformStats";
 import {
   claimImages,
   deleteFilesNotIn,
@@ -115,11 +116,13 @@ export const create = sellerMutation({
       .take(LIMITS.maxProducts);
     if (existing.length >= LIMITS.maxProducts) fail("TOO_MANY_PRODUCTS");
     await claimImages(ctx, input.imageIds);
-    return await ctx.db.insert("products", {
+    const productId = await ctx.db.insert("products", {
       ...input,
       shopId: shop._id,
       updatedAt: Date.now(),
     });
+    await onProductCreated(ctx, (await ctx.db.get("products", productId))!);
+    return productId;
   },
 });
 
@@ -137,9 +140,11 @@ export const update = sellerMutation({
       input.imageIds.filter((id) => !known.has(id)),
     );
     await deleteFilesNotIn(ctx, product.imageIds, input.imageIds);
+    // `hidden` is admin-controlled; carry it over or `replace` would drop it.
     await ctx.db.replace("products", productId, {
       ...input,
       shopId: shop._id,
+      hidden: product.hidden,
       updatedAt: Date.now(),
     });
     return null;
@@ -170,6 +175,7 @@ export const remove = sellerMutation({
       .withIndex("by_productId_and_day", (q) => q.eq("productId", productId))) {
       await ctx.db.delete("productDailyStats", row._id);
     }
+    await onProductDeleted(ctx, product);
     await ctx.db.delete("products", productId);
     return null;
   },

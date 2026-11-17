@@ -34,6 +34,22 @@ local backend instead.
 | Convex | `SITE_URL` | Same origin, used by Convex Auth |
 | Convex | `JWT_PRIVATE_KEY`, `JWKS` | Convex Auth signing keys (`npx @convex-dev/auth`) |
 
+## Migrating existing data (once per deployment)
+
+A deployment that has users or shops from before roles and permissions needs
+a one-time migration. It makes existing users active sellers (an existing
+role or status is never changed), marks existing shops active and products
+visible, and fills the platform counters used by the admin dashboard.
+
+```bash
+npx convex run migrations:rbacV1          # "started" (or "already_done")
+npx convex run migrations:rbacV1Status    # status: "done" + totals
+```
+
+Add `--prod` after `run` for production. It runs in the background in
+batches; running it again is harmless. A brand-new deployment doesn't need
+it.
+
 ## First super admin
 
 Super admins can't sign up: the first one is created from the terminal.

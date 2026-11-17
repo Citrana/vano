@@ -1,6 +1,7 @@
 import type { Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { fail } from "./errors";
+import { onUserCreated } from "./platformStats";
 import { ensureBuiltInRoles } from "./roles";
 
 /**
@@ -21,6 +22,13 @@ export async function assignSellerRoleIfMissing(
   if (!user || user.roleId !== undefined) return;
   const { seller } = await ensureBuiltInRoles(ctx);
   await ctx.db.patch("users", userId, { roleId: seller, status: user.status ?? "active" });
+}
+
+/** After a new account is created: seller role if missing + users counter. */
+export async function setUpNewAccount(ctx: MutationCtx, userId: Id<"users">): Promise<void> {
+  await assignSellerRoleIfMissing(ctx, userId);
+  const user = await ctx.db.get("users", userId);
+  if (user) await onUserCreated(ctx, user);
 }
 
 /** Before every new session (sign-in or sign-up): suspended users can't log in. */

@@ -3,6 +3,7 @@ import type { Id } from "./_generated/dataModel";
 import { mutation, type MutationCtx } from "./_generated/server";
 import { addDays, isDay, utcDay } from "./lib/days";
 import { LIMITS } from "./lib/catalog";
+import { onShopDayStatsWritten } from "./lib/platformStats";
 import { requireOwnShop, sellerQuery } from "./lib/seller";
 
 /**
@@ -21,8 +22,9 @@ async function bumpShop(ctx: MutationCtx, shopId: Id<"shops">, day: string, fiel
     .unique();
   if (row) {
     await ctx.db.patch("shopDailyStats", row._id, { [field]: row[field] + 1 });
+    await onShopDayStatsWritten(ctx, row, (await ctx.db.get("shopDailyStats", row._id))!);
   } else {
-    await ctx.db.insert("shopDailyStats", {
+    const id = await ctx.db.insert("shopDailyStats", {
       shopId,
       day,
       shopViews: 0,
@@ -30,6 +32,7 @@ async function bumpShop(ctx: MutationCtx, shopId: Id<"shops">, day: string, fiel
       whatsappClicks: 0,
       [field]: 1,
     });
+    await onShopDayStatsWritten(ctx, null, (await ctx.db.get("shopDailyStats", id))!);
   }
 }
 

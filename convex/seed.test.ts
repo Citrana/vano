@@ -1,13 +1,10 @@
-import { convexTest } from "convex-test";
 import { describe, expect, test } from "vitest";
 import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
-import schema from "./schema";
 import { findRoleByKey } from "./lib/roles";
-import { as, shopArgs } from "./lib/test.utils";
+import { as, shopArgs, newTest } from "./lib/test.utils";
 
-const modules = import.meta.glob("./**/*.*s");
-const setup = () => convexTest(schema, modules);
+const setup = newTest;
 type T = ReturnType<typeof setup>;
 
 const seed = (t: T, email: string, extra: { password?: string; force?: boolean } = {}) =>

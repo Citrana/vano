@@ -97,6 +97,8 @@ export default defineSchema({
     imageIds: v.array(v.id("_storage")),
     soldOut: v.boolean(),
     updatedAt: v.number(),
+    /** Hidden by an admin. Optional until `migrations:rbacV1`; missing = visible. */
+    hidden: v.optional(v.boolean()),
   })
     .index("by_shopId", ["shopId"])
     .index("by_shopId_and_category", ["shopId", "category"]),
@@ -110,6 +112,14 @@ export default defineSchema({
     storageId: v.id("_storage"),
     ownerId: v.id("users"),
   }).index("by_storageId", ["storageId"]),
+
+  /** One row per one-time data migration (e.g. "rbacV1"). */
+  migrations: defineTable({
+    name: v.string(),
+    status: v.union(v.literal("running"), v.literal("done")),
+    startedAt: v.number(),
+    doneAt: v.optional(v.number()),
+  }).index("by_name", ["name"]),
 
   /** Per shop per UTC day. No personal data. */
   shopDailyStats: defineTable({

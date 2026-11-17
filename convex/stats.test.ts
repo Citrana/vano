@@ -1,11 +1,8 @@
-import { convexTest } from "convex-test";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { api } from "./_generated/api";
-import schema from "./schema";
-import { as, insertUser, productArgs, sellerWithShop } from "./lib/test.utils";
+import { as, insertUser, productArgs, sellerWithShop, newTest } from "./lib/test.utils";
 
-const modules = import.meta.glob("./**/*.*s");
-const setup = () => convexTest(schema, modules);
+const setup = newTest;
 
 afterEach(() => {
   vi.useRealTimers();

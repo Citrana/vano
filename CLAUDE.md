@@ -99,6 +99,12 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   `productDailyStats`, UTC day) — never as counters on the shop/product
   documents. No personal data (no IP, no user agent) is ever stored.
 - The client sends each view once per browser session (`trackOnce`).
+- Platform-wide totals (admin dashboard) live in `@convex-dev/aggregate`
+  components. **Every insert or delete** of a user, shop, product or
+  `shopDailyStats` row calls the matching helper in
+  `convex/lib/platformStats.ts` (`onShopCreated`, `onProductDeleted`, …)
+  in the same mutation, or the counters drift. Tests use `newTest()` from
+  `convex/lib/test.utils.ts`, which registers the components.
 
 ## Internationalization
 

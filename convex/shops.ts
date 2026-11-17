@@ -8,6 +8,7 @@ import { fail } from "./lib/errors";
 import { urlOf } from "./lib/images";
 import { currencyValidator } from "./lib/money";
 import { normalizeWhatsapp } from "./lib/phone";
+import { onShopCreated } from "./lib/platformStats";
 import {
   claimImages,
   deleteFilesNotIn,
@@ -130,7 +131,9 @@ export const create = sellerMutation({
     const input = cleanShopInput(args);
     if ((await slugOwner(ctx, input.slug)) !== null) fail("SLUG_TAKEN");
     if (input.logoId) await claimImages(ctx, [input.logoId]);
-    return await ctx.db.insert("shops", { ...input, ownerId: ctx.user._id });
+    const shopId = await ctx.db.insert("shops", { ...input, ownerId: ctx.user._id });
+    await onShopCreated(ctx, (await ctx.db.get("shops", shopId))!);
+    return shopId;
   },
 });
 
