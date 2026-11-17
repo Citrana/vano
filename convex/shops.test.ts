@@ -20,9 +20,34 @@ describe("users.viewer", () => {
     expect(await as(t, userId).query(api.users.viewer, {})).toEqual({
       email: "seller@example.com",
       hasShop: false,
+      status: "active",
+      shopStatus: null,
     });
     await as(t, userId).mutation(api.shops.create, shopArgs());
-    expect((await as(t, userId).query(api.users.viewer, {}))?.hasShop).toBe(true);
+    expect(await as(t, userId).query(api.users.viewer, {})).toMatchObject({
+      hasShop: true,
+      shopStatus: "active",
+    });
+  });
+
+  test("reports a suspended account without throwing", async () => {
+    const t = setup();
+    const { userId } = await sellerWithShop(t);
+    await t.run((ctx) => ctx.db.patch("users", userId, { status: "suspended" }));
+    expect(await as(t, userId).query(api.users.viewer, {})).toMatchObject({
+      status: "suspended",
+      hasShop: true,
+    });
+  });
+
+  test("reports a suspended shop", async () => {
+    const t = setup();
+    const { userId, shopId } = await sellerWithShop(t);
+    await t.run((ctx) => ctx.db.patch("shops", shopId, { status: "suspended" }));
+    expect(await as(t, userId).query(api.users.viewer, {})).toMatchObject({
+      status: "active",
+      shopStatus: "suspended",
+    });
   });
 });
 
