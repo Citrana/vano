@@ -568,5 +568,24 @@
     "owner": "Propriétaire",
     "products": "Produits",
     "force": "Forcé"
+  },
+  "AdminActivity": {
+    "title": "Historique d'activité",
+    "person": "Personne",
+    "allPeople": "Tout le monde",
+    "system": "Système (terminal)",
+    "action": "Action",
+    "allActions": "Toutes les actions",
+    "from": "Du",
+    "to": "Au",
+    "clear": "Effacer les filtres",
+    "utcNote": "Les jours sont en UTC.",
+    "yes": "Oui",
+    "no": "Non",
+    "emptyTitle": "Aucune activité pour l'instant",
+    "emptyBody": "Les actions des admins (suspensions, changements de rôle, suppressions…) apparaîtront ici.",
+    "emptyFilteredTitle": "Aucune activité trouvée",
+    "emptyFilteredBody": "Aucune activité ne correspond à ces filtres.",
+    "loadMore": "Afficher plus"
   }
 }

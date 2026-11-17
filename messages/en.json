@@ -568,5 +568,24 @@
     "owner": "Owner",
     "products": "Products",
     "force": "Forced"
+  },
+  "AdminActivity": {
+    "title": "Activity history",
+    "person": "Person",
+    "allPeople": "Everyone",
+    "system": "System (terminal)",
+    "action": "Action",
+    "allActions": "All actions",
+    "from": "From",
+    "to": "To",
+    "clear": "Clear filters",
+    "utcNote": "Days are in UTC.",
+    "yes": "Yes",
+    "no": "No",
+    "emptyTitle": "No admin activity yet",
+    "emptyBody": "Admin actions (suspensions, role changes, deletions…) will appear here.",
+    "emptyFilteredTitle": "No activity found",
+    "emptyFilteredBody": "No activity matches these filters.",
+    "loadMore": "Load more"
   }
 }
