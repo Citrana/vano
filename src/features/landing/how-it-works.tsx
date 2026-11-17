@@ -1,6 +1,5 @@
 import { Share2Icon, ShirtIcon, StoreIcon } from "lucide-react"
 import { getTranslations } from "next-intl/server"
-import { highlight } from "./highlight"
 import { Reveal } from "./reveal"
 import { Section } from "./section"
 
@@ -12,7 +11,7 @@ export async function HowItWorks() {
     { icon: Share2Icon, title: t("step3"), body: t("step3Body") },
   ]
   return (
-    <Section id="how" eyebrow={t("howEyebrow")} title={t.rich("howTitle", highlight)}>
+    <Section id="how" eyebrow={t("howEyebrow")} title={t("howTitle")}>
       <ol className="grid gap-4 md:grid-cols-3 md:gap-6">
         {steps.map(({ icon: Icon, title, body }, i) => (
           <li key={title}>
@@ -22,7 +21,7 @@ export async function HowItWorks() {
                   <Icon className="size-6" aria-hidden />
                 </span>
                 <div className="flex flex-col gap-1">
-                  <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                  <p className="text-sm font-semibold tracking-wide text-plum uppercase">
                     {t("stepLabel", { n: i + 1 })}
                   </p>
                   <h3 className="text-lg font-bold md:text-xl">{title}</h3>

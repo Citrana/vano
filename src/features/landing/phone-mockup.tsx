@@ -16,18 +16,18 @@ export async function PhoneMockup() {
   return (
     <figure
       aria-label={t("mockupLabel")}
-      className="relative w-[248px] rounded-[2.5rem] text-left bg-ink p-2.5 shadow-lift md:w-[300px]"
+      className="relative w-[280px] rounded-[2.75rem] bg-ink p-2.5 text-left shadow-lift sm:w-[320px] md:w-[360px] lg:w-[380px]"
     >
-      <div className="relative overflow-hidden rounded-[2rem] bg-background">
-        <div aria-hidden className="absolute top-2 left-1/2 z-10 h-5 w-20 -translate-x-1/2 rounded-full bg-ink" />
-        <div className="flex flex-col gap-3 px-3 pt-10 pb-4">
-          <div className="flex items-center gap-2.5">
-            <span className="flex size-9 items-center justify-center rounded-full bg-blush text-sm font-extrabold text-plum">
+      <div className="relative overflow-hidden rounded-[2.25rem] bg-background">
+        <div aria-hidden className="absolute top-2.5 left-1/2 z-10 h-6 w-24 -translate-x-1/2 rounded-full bg-ink" />
+        <div className="flex flex-col gap-3 px-3.5 pt-12 pb-4 md:gap-4 md:px-4">
+          <div className="flex items-center gap-3">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-blush text-base font-extrabold text-plum">
               A
             </span>
             <div className="min-w-0 leading-tight">
-              <p className="text-sm font-bold">{t("mockupShop")}</p>
-              <p className="truncate text-[11px] text-muted-foreground">{t("mockupTagline")}</p>
+              <p className="text-base font-bold">{t("mockupShop")}</p>
+              <p className="truncate text-sm text-muted-foreground">{t("mockupTagline")}</p>
             </div>
           </div>
           <div aria-hidden className="flex gap-1.5 overflow-hidden">
@@ -35,16 +35,15 @@ export async function PhoneMockup() {
               <span
                 key={chip}
                 className={
-                  i === 0
-                    ? "chip-selected rounded-full border px-2.5 py-1 text-[10px] font-semibold"
-                    : "rounded-full border bg-card px-2.5 py-1 text-[10px] font-medium"
+                  (i === 0 ? "chip-selected font-semibold" : "bg-card font-medium") +
+                  " shrink-0 rounded-full border px-3 py-1 text-xs sm:text-sm"
                 }
               >
                 {chip}
               </span>
             ))}
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2.5">
             {products.map((p, i) => (
               <div key={p.key} className="overflow-hidden rounded-xl bg-card shadow-soft">
                 <div className="relative aspect-[4/5] bg-muted">
@@ -52,19 +51,19 @@ export async function PhoneMockup() {
                     src={p.src}
                     alt={t(p.key)}
                     fill
-                    sizes="(min-width: 768px) 136px, 112px"
+                    sizes="(min-width: 1024px) 170px, (min-width: 768px) 160px, (min-width: 640px) 140px, 124px"
                     className="object-cover"
                     {...(i === 0 ? { fetchPriority: "high" as const, loading: "eager" as const } : {})}
                   />
                 </div>
-                <div className="px-2 py-1.5 leading-tight">
-                  <p className="truncate text-[10px] font-medium">{t(p.key)}</p>
-                  <p className="text-[11px] font-bold">{formatMoney(p.price, SAMPLE_CURRENCY, lang)}</p>
+                <div className="px-2.5 py-2 leading-tight">
+                  <p className="truncate text-sm font-medium">{t(p.key)}</p>
+                  <p className="text-sm font-bold">{formatMoney(p.price, SAMPLE_CURRENCY, lang)}</p>
                 </div>
               </div>
             ))}
           </div>
-          <span aria-hidden className="mt-1 rounded-lg bg-whatsapp py-2 text-center text-[11px] font-semibold text-white">
+          <span aria-hidden className="mt-1 rounded-xl bg-whatsapp py-2.5 text-center text-sm font-semibold text-white">
             {t("mockupOrder")}
           </span>
         </div>

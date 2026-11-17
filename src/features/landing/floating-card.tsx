@@ -6,14 +6,14 @@ export function FloatingCard({ icon, title, body, className }: { icon: ReactNode
   return (
     <div
       className={cn(
-        "flex items-center gap-2.5 rounded-2xl bg-card p-2.5 pr-4 shadow-lift ring-1 ring-foreground/5 md:gap-3 md:p-3 md:pr-5",
+        "flex items-center gap-3 rounded-2xl bg-card p-3 pr-4 text-left shadow-lift ring-1 ring-foreground/5 md:pr-5",
         className,
       )}
     >
       {icon}
-      <div className="min-w-0 leading-tight">
-        <p className="text-xs font-bold md:text-sm">{title}</p>
-        <div className="truncate text-[11px] text-muted-foreground md:text-xs">{body}</div>
+      <div className="min-w-0 leading-snug">
+        <p className="text-sm font-bold md:text-base">{title}</p>
+        <div className="truncate text-sm text-muted-foreground">{body}</div>
       </div>
     </div>
   )

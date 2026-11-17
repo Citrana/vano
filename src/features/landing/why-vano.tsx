@@ -1,7 +1,6 @@
 import { GlobeIcon, LayoutDashboardIcon, LinkIcon, MessageCircleIcon, SmartphoneIcon } from "lucide-react"
 import { getTranslations } from "next-intl/server"
 import { cn } from "cn"
-import { highlight } from "./highlight"
 import { Reveal } from "./reveal"
 import { Section } from "./section"
 
@@ -15,7 +14,7 @@ export async function WhyVano() {
     { icon: LayoutDashboardIcon, title: t("featDashboard"), body: t("featDashboardBody") },
   ]
   return (
-    <Section id="why" eyebrow={t("whyEyebrow")} title={t.rich("whyTitle", highlight)} subtitle={t("whySubtitle")} className="bg-card/60">
+    <Section id="why" eyebrow={t("whyEyebrow")} title={t("whyTitle")} subtitle={t("whySubtitle")} className="bg-card/60">
       <ul className="grid gap-4 md:grid-cols-3 md:gap-6">
         {features.map(({ icon: Icon, title, body, wide }, i) => (
           <li key={title} className={cn(wide && "md:col-span-2")}>

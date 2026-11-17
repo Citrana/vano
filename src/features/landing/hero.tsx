@@ -1,6 +1,7 @@
 import { CheckIcon, LinkIcon, MessageCircleIcon } from "lucide-react"
 import { getTranslations } from "next-intl/server"
 import Image from "next/image"
+import { cn } from "cn"
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import { demoShopPath } from "./config"
@@ -13,16 +14,49 @@ import { SAMPLE_PRODUCTS } from "./photos"
 export async function Hero() {
   const t = await getTranslations("Landing")
   const demoHref = demoShopPath ?? "#demo"
+
+  const orderCard = (className: string) => (
+    <FloatingCard
+      className={className}
+      icon={
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-success text-white">
+          <MessageCircleIcon className="size-5" aria-hidden />
+        </span>
+      }
+      title={t("floatOrderTitle")}
+      body={
+        <span className="inline-flex items-center gap-1.5">
+          <Image src={SAMPLE_PRODUCTS[0].src} alt="" width={16} height={20} className="rounded-sm object-cover" />
+          {t("floatOrderBody")}
+        </span>
+      }
+    />
+  )
+  const linkCard = (className: string) => (
+    <FloatingCard
+      className={className}
+      icon={
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-blush text-coral-strong">
+          <LinkIcon className="size-4" aria-hidden />
+        </span>
+      }
+      title={t("floatLinkTitle")}
+      body={<span className="font-mono font-medium text-foreground">{t("floatLinkUrl")}</span>}
+    />
+  )
+
   return (
-    <section aria-labelledby="hero-title" className="relative overflow-hidden px-4 pt-10 pb-16 md:pt-16 md:pb-24">
-      {/* Soft brand glow (CSS only, no image download). */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 [mask-image:linear-gradient(to_bottom,black_75%,transparent)]">
-        <div className="absolute -top-24 -left-32 size-[28rem] rounded-full bg-coral/25 blur-3xl md:size-[36rem]" />
-        <div className="absolute top-1/3 -right-40 size-[26rem] rounded-full bg-blush blur-3xl md:size-[34rem]" />
-        <div className="absolute bottom-0 left-1/4 size-80 rounded-full bg-plum/10 blur-3xl" />
+    <section aria-labelledby="hero-title" className="relative overflow-hidden px-4 pt-8 pb-10 md:pt-14 md:pb-14">
+      {/* Soft brand glow behind the headline only (CSS, no image download). */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[38rem] [mask-image:linear-gradient(to_bottom,black_40%,transparent)] md:h-[44rem]"
+      >
+        <div className="absolute -top-28 -left-32 size-[24rem] rounded-full bg-coral/20 blur-3xl md:size-[30rem]" />
+        <div className="absolute top-10 -right-40 size-[22rem] rounded-full bg-blush blur-3xl md:size-[28rem]" />
       </div>
 
-      <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-6 text-center">
+      <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-5 text-center">
         <Badge variant="brand">{t("badge")}</Badge>
         <h1
           id="hero-title"
@@ -37,42 +71,23 @@ export async function Hero() {
             {t("seeDemo")}
           </a>
         </div>
-        <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm font-medium">
+        <ul className="flex flex-wrap justify-center gap-x-6 gap-y-1 text-base font-medium">
           {[t("trustFree"), t("trustFast")].map((line) => (
             <li key={line} className="inline-flex items-center gap-1.5">
-              <CheckIcon className="size-4 text-success" strokeWidth={3} aria-hidden />
+              <CheckIcon className="size-5 text-success" strokeWidth={3} aria-hidden />
               {line}
             </li>
           ))}
         </ul>
 
-        <div className="relative mt-6 flex justify-center md:mt-10">
+        <div className="relative mt-2 flex flex-col items-center md:mt-4">
+          {/* Phones: cards sit above/below the phone, touching only the bezel. */}
+          {orderCard("relative z-10 -mb-3 w-64 self-start md:hidden")}
           <PhoneMockup />
-          <FloatingCard
-            className="absolute top-[42%] -left-5 w-48 sm:top-24 sm:-left-36 md:-left-60 md:w-64"
-            icon={
-              <span className="relative flex size-9 shrink-0 items-center justify-center rounded-full bg-success text-white md:size-10">
-                <MessageCircleIcon className="size-5" aria-hidden />
-              </span>
-            }
-            title={t("floatOrderTitle")}
-            body={
-              <span className="inline-flex items-center gap-1.5">
-                <Image src={SAMPLE_PRODUCTS[0].src} alt="" width={16} height={20} className="rounded-sm object-cover" />
-                {t("floatOrderBody")}
-              </span>
-            }
-          />
-          <FloatingCard
-            className="absolute -right-5 bottom-20 w-48 sm:-right-32 md:bottom-32 md:-right-56 md:w-60"
-            icon={
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-blush text-coral-strong md:size-10">
-                <LinkIcon className="size-4" aria-hidden />
-              </span>
-            }
-            title={t("floatLinkTitle")}
-            body={<span className="font-mono font-medium text-foreground">{t("floatLinkUrl")}</span>}
-          />
+          {linkCard("relative z-10 -mt-3 w-60 self-end md:hidden")}
+          {/* Desktop: cards beside the phone, touching only the bezel. */}
+          {orderCard(cn("absolute top-28 right-[calc(100%-0.5rem)] hidden w-72 md:flex"))}
+          {linkCard(cn("absolute bottom-36 left-[calc(100%-0.5rem)] hidden w-64 md:flex"))}
         </div>
       </div>
     </section>
