@@ -21,9 +21,19 @@ export const sellerQuery = customQuery(
   customCtx((ctx: QueryCtx, extra: PermissionArg) => accessWith(ctx, extra)),
 );
 
+/**
+ * Same as `sellerQuery`, and a suspended shop is read-only: every seller
+ * write (shop, products, uploads) throws SHOP_SUSPENDED. Reads still work
+ * so the dashboard can explain what happened.
+ */
 export const sellerMutation = customMutation(
   mutation,
-  customCtx((ctx: MutationCtx, extra: PermissionArg) => accessWith(ctx, extra)),
+  customCtx(async (ctx: MutationCtx, extra: PermissionArg) => {
+    const result = await accessWith(ctx, extra);
+    const shop = await findShopByOwner(ctx, result.user._id);
+    if (shop?.status === "suspended") fail("SHOP_SUSPENDED");
+    return result;
+  }),
 );
 
 type WithAccess<C> = C & { user: Doc<"users">; access: Access };

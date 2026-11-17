@@ -82,3 +82,40 @@ describe("seller permissions", () => {
     await expect(me.mutation(api.files.generateUploadUrl, {})).rejects.toThrow(/ACCOUNT_SUSPENDED/);
   });
 });
+
+describe("suspended shop", () => {
+  test("is read-only for its seller", async () => {
+    const t = setup();
+    const { userId, shopId } = await sellerWithShop(t);
+    const me = as(t, userId);
+    const productId = await me.mutation(api.products.create, await productArgs(t));
+    await t.run((ctx) => ctx.db.patch("shops", shopId, { status: "suspended" }));
+
+    // Reads still work.
+    expect((await me.query(api.shops.myShop, {}))?.status).toBe("suspended");
+    expect(await me.query(api.products.listMine, {})).toHaveLength(1);
+    await me.query(api.stats.summary, { today: "2026-11-17" });
+
+    // Every write is refused.
+    await expect(me.mutation(api.shops.update, shopArgs())).rejects.toThrow(/SHOP_SUSPENDED/);
+    await expect(me.mutation(api.products.create, await productArgs(t))).rejects.toThrow(
+      /SHOP_SUSPENDED/,
+    );
+    await expect(
+      me.mutation(api.products.update, { productId, ...(await productArgs(t)) }),
+    ).rejects.toThrow(/SHOP_SUSPENDED/);
+    await expect(
+      me.mutation(api.products.setSoldOut, { productId, soldOut: true }),
+    ).rejects.toThrow(/SHOP_SUSPENDED/);
+    await expect(me.mutation(api.products.remove, { productId })).rejects.toThrow(/SHOP_SUSPENDED/);
+    await expect(me.mutation(api.files.generateUploadUrl, {})).rejects.toThrow(/SHOP_SUSPENDED/);
+  });
+
+  test("doesn't affect other sellers", async () => {
+    const t = setup();
+    const { shopId } = await sellerWithShop(t, "a@x.com", { slug: "shop-a" });
+    const { userId: other } = await sellerWithShop(t, "b@x.com", { slug: "shop-b" });
+    await t.run((ctx) => ctx.db.patch("shops", shopId, { status: "suspended" }));
+    await as(t, other).mutation(api.products.create, await productArgs(t));
+  });
+});
