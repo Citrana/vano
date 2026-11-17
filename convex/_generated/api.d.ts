@@ -12,6 +12,7 @@ import type * as auth from "../auth.js";
 import type * as files from "../files.js";
 import type * as http from "../http.js";
 import type * as lib_access from "../lib/access.js";
+import type * as lib_accounts from "../lib/accounts.js";
 import type * as lib_audit from "../lib/audit.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_catalog from "../lib/catalog.js";
@@ -42,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   files: typeof files;
   http: typeof http;
   "lib/access": typeof lib_access;
+  "lib/accounts": typeof lib_accounts;
   "lib/audit": typeof lib_audit;
   "lib/auth": typeof lib_auth;
   "lib/catalog": typeof lib_catalog;

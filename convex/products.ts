@@ -60,6 +60,7 @@ function cleanProductInput(shop: Doc<"shops">, input: ProductInput): ProductInpu
 
 /** The caller's products, newest first, with cover image. */
 export const listMine = sellerQuery({
+  permission: "ownProducts.manage",
   args: {},
   handler: async (ctx) => {
     const shop = await requireOwnShop(ctx);
@@ -84,6 +85,7 @@ export const listMine = sellerQuery({
 
 /** One of the caller's products for the edit form, or null (bad id / not theirs). */
 export const getMine = sellerQuery({
+  permission: "ownProducts.manage",
   args: { productId: v.string() },
   handler: async (ctx, { productId }) => {
     const shop = await requireOwnShop(ctx);
@@ -101,6 +103,7 @@ export const getMine = sellerQuery({
 });
 
 export const create = sellerMutation({
+  permission: "ownProducts.manage",
   args: productInput.fields,
   returns: v.id("products"),
   handler: async (ctx, args) => {
@@ -122,6 +125,7 @@ export const create = sellerMutation({
 
 /** Saves a product; images dropped from the list are deleted from storage. */
 export const update = sellerMutation({
+  permission: "ownProducts.manage",
   args: { productId: v.id("products"), ...productInput.fields },
   returns: v.null(),
   handler: async (ctx, { productId, ...args }) => {
@@ -143,6 +147,7 @@ export const update = sellerMutation({
 });
 
 export const setSoldOut = sellerMutation({
+  permission: "ownProducts.manage",
   args: { productId: v.id("products"), soldOut: v.boolean() },
   returns: v.null(),
   handler: async (ctx, { productId, soldOut }) => {
@@ -154,6 +159,7 @@ export const setSoldOut = sellerMutation({
 
 /** Deletes the product, its images and its stats rows. */
 export const remove = sellerMutation({
+  permission: "ownProducts.manage",
   args: { productId: v.id("products") },
   returns: v.null(),
   handler: async (ctx, { productId }) => {

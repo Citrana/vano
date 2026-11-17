@@ -110,6 +110,7 @@ const totals = v.object({
  * from the client because queries must not read the clock.
  */
 export const summary = sellerQuery({
+  permission: "ownStats.view",
   args: { today: v.string() },
   returns: v.object({
     today: totals,

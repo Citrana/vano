@@ -5,27 +5,40 @@ import {
 } from "convex-helpers/server/customFunctions";
 import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, query, type MutationCtx, type QueryCtx } from "../_generated/server";
-import { requireCurrentUser } from "./auth";
+import { accessWith, type Access, type PermissionArg } from "./access";
 import { fail } from "./errors";
 import { imageProblem } from "./images";
 
 /**
  * The wrappers every seller function uses (CLAUDE.md "Security &
- * ownership"): they reject unauthenticated callers and add `ctx.user`.
+ * ownership"): `sellerQuery({ permission: "ownProducts.manage", args,
+ * handler })`. They reject signed-out and suspended callers and callers
+ * without the permission, and add `ctx.user` / `ctx.access`. Ownership is
+ * still checked by `requireOwnShop` / `requireOwnProduct`.
  */
 export const sellerQuery = customQuery(
   query,
-  customCtx(async (ctx) => ({ user: await requireCurrentUser(ctx) })),
+  customCtx((ctx: QueryCtx, extra: PermissionArg) => accessWith(ctx, extra)),
 );
 
+/**
+ * Same as `sellerQuery`, and a suspended shop is read-only: every seller
+ * write (shop, products, uploads) throws SHOP_SUSPENDED. Reads still work
+ * so the dashboard can explain what happened.
+ */
 export const sellerMutation = customMutation(
   mutation,
-  customCtx(async (ctx) => ({ user: await requireCurrentUser(ctx) })),
+  customCtx(async (ctx: MutationCtx, extra: PermissionArg) => {
+    const result = await accessWith(ctx, extra);
+    const shop = await findShopByOwner(ctx, result.user._id);
+    if (shop?.status === "suspended") fail("SHOP_SUSPENDED");
+    return result;
+  }),
 );
 
-type WithUser<C> = C & { user: Doc<"users"> };
-export type SellerQueryCtx = WithUser<QueryCtx>;
-export type SellerMutationCtx = WithUser<MutationCtx>;
+type WithAccess<C> = C & { user: Doc<"users">; access: Access };
+export type SellerQueryCtx = WithAccess<QueryCtx>;
+export type SellerMutationCtx = WithAccess<MutationCtx>;
 
 export async function findShopByOwner(
   ctx: QueryCtx,
