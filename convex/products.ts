@@ -4,7 +4,8 @@ import { categoryValidator, cleanTags, LIMITS, tagsProblem } from "./lib/catalog
 import { fail } from "./lib/errors";
 import { urlOf } from "./lib/images";
 import { priceProblem } from "./lib/money";
-import { onProductCreated, onProductDeleted } from "./lib/platformStats";
+import { onProductCreated } from "./lib/platformStats";
+import { deleteProduct } from "./lib/productWrites";
 import {
   claimImages,
   deleteFilesNotIn,
@@ -169,14 +170,7 @@ export const remove = sellerMutation({
   returns: v.null(),
   handler: async (ctx, { productId }) => {
     const { product } = await requireOwnProduct(ctx, productId);
-    await deleteFilesNotIn(ctx, product.imageIds, []);
-    for await (const row of ctx.db
-      .query("productDailyStats")
-      .withIndex("by_productId_and_day", (q) => q.eq("productId", productId))) {
-      await ctx.db.delete("productDailyStats", row._id);
-    }
-    await onProductDeleted(ctx, product);
-    await ctx.db.delete("products", productId);
+    await deleteProduct(ctx, product);
     return null;
   },
 });
