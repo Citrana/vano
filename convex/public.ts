@@ -124,3 +124,14 @@ export const signupOpen = query({
   returns: v.boolean(),
   handler: async (ctx) => (await readSettings(ctx)).signupEnabled,
 });
+
+/**
+ * The admin announcement (e.g. planned maintenance) for the public landing
+ * page, in both languages, or null when none is set. Admin-written text
+ * only — nothing personal.
+ */
+export const platformNotice = query({
+  args: {},
+  returns: v.union(v.null(), v.object({ en: v.string(), fr: v.string() })),
+  handler: async (ctx) => (await readSettings(ctx)).announcement,
+});

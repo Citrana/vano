@@ -122,3 +122,30 @@ describe("public.signupOpen", () => {
     expect(await t.query(api.public.signupOpen, {})).toBe(false);
   });
 });
+
+describe("public.platformNotice", () => {
+  test("null by default, the announcement when set, null once cleared", async () => {
+    const t = setup();
+    expect(await t.query(api.public.platformNotice, {})).toBeNull();
+    const id = await t.run((ctx) =>
+      ctx.db.insert("platformSettings", {
+        signupEnabled: true,
+        announcement: { en: "Maintenance tonight", fr: "Maintenance ce soir" },
+      }),
+    );
+    expect(await t.query(api.public.platformNotice, {})).toEqual({
+      en: "Maintenance tonight",
+      fr: "Maintenance ce soir",
+    });
+    await t.run((ctx) => ctx.db.replace("platformSettings", id, { signupEnabled: true }));
+    expect(await t.query(api.public.platformNotice, {})).toBeNull();
+  });
+
+  test("works signed out and doesn't depend on sign-up being open", async () => {
+    const t = setup();
+    await t.run((ctx) =>
+      ctx.db.insert("platformSettings", { signupEnabled: false, announcement: { en: "Hi", fr: "Salut" } }),
+    );
+    expect(await t.query(api.public.platformNotice, {})).toEqual({ en: "Hi", fr: "Salut" });
+  });
+});
