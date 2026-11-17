@@ -29,6 +29,7 @@ import type * as lib_seller from "../lib/seller.js";
 import type * as lib_slug from "../lib/slug.js";
 import type * as products from "../products.js";
 import type * as public_ from "../public.js";
+import type * as seed from "../seed.js";
 import type * as shops from "../shops.js";
 import type * as stats from "../stats.js";
 import type * as users from "../users.js";
@@ -61,6 +62,7 @@ declare const fullApi: ApiFromModules<{
   "lib/slug": typeof lib_slug;
   products: typeof products;
   public: typeof public_;
+  seed: typeof seed;
   shops: typeof shops;
   stats: typeof stats;
   users: typeof users;
