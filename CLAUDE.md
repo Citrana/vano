@@ -29,6 +29,25 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   reference project (Convex Auth + `proxy.ts` upstream bug
   get-convex/convex-auth#271). The real boundary is always server-side.
 
+## Roles & permissions
+
+- Every user has one role; a role is a set of permissions. Permissions
+  are defined **only** in `convex/lib/permissions.ts` (`"<area>.<action>"`,
+  grouped in `PERMISSION_GROUPS`). Never check a role by name — check a
+  permission.
+- Built-in roles (`roles.key`): `super_admin` has every permission,
+  including future ones (never stored); `seller` has the fixed
+  `SELLER_PERMISSIONS`. Neither can be renamed, edited or deleted.
+- Public sign-up always creates an active seller. Super admins are created
+  only by `seed:superAdmin` (internal action, run from the terminal).
+- Every authenticated function goes through `loadAccess`
+  (`convex/lib/access.ts`): signed-out → `NOT_AUTHENTICATED`, suspended →
+  `ACCOUNT_SUSPENDED`. Admin functions use `adminQuery` / `adminMutation`
+  with a `permission`; missing it → `FORBIDDEN`. Hiding UI is never enough.
+- Admin writes run the safety rules in `convex/lib/guards.ts` (no
+  self-change, last super admin protected, no escalation, built-in roles
+  locked) and call `logAdminAction` in the same mutation.
+
 ## Money
 
 - Prices are **integers in minor units** (×100 for every currency) plus the
