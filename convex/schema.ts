@@ -105,7 +105,10 @@ export default defineSchema({
     hidden: v.optional(v.boolean()),
   })
     .index("by_shopId", ["shopId"])
-    .index("by_shopId_and_category", ["shopId", "category"]),
+    .index("by_shopId_and_category", ["shopId", "category"])
+    .index("by_hidden_and_category", ["hidden", "category"])
+    .index("by_category", ["category"])
+    .searchIndex("search_name", { searchField: "name", filterFields: ["hidden", "category"] }),
 
   /**
    * Who uploaded each storage file. A file is claimed by the first seller
