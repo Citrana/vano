@@ -34,6 +34,7 @@ export default defineSchema({
     .index("email", ["email"])
     .index("phone", ["phone"])
     .index("by_roleId_and_status", ["roleId", "status"])
+    .index("by_status", ["status"])
     .searchIndex("search_email", { searchField: "email", filterFields: ["roleId", "status"] }),
 
   /**
