@@ -77,7 +77,8 @@
     "emailInvalid": "Enter a valid email address.",
     "passwordShort": "Use at least {min} characters.",
     "tagsInvalid": "Up to 20 entries, 20 characters each.",
-    "uploadsPending": "Wait for the photos to finish uploading."
+    "uploadsPending": "Wait for the photos to finish uploading.",
+    "announcementBothRequired": "Write the announcement in both languages, or leave both empty."
   },
   "Categories": {
     "clothes": "Clothes",
@@ -591,5 +592,23 @@
     "emptyFilteredTitle": "No activity found",
     "emptyFilteredBody": "No activity matches these filters.",
     "loadMore": "Load more"
+  },
+  "AdminSettings": {
+    "title": "Settings",
+    "signupTitle": "Sign-ups",
+    "signupLabel": "Allow new sign-ups",
+    "signupHelp": "When off, nobody can create a new account from the website. Existing users can still log in, and super admins can still be created from the terminal.",
+    "announcementTitle": "Announcement for sellers",
+    "announcementHelp": "Shown at the top of every seller's dashboard, in their language. Leave both empty for no announcement.",
+    "announcementEn": "English",
+    "announcementFr": "French",
+    "count": "{count}/{max}",
+    "clear": "Clear announcement",
+    "save": "Save settings",
+    "saved": "Settings saved.",
+    "readOnly": "You can view these settings but not change them."
+  },
+  "Announcement": {
+    "label": "Announcement from Vano"
   }
 }
