@@ -113,3 +113,12 @@ describe("hidden products", () => {
     expect((await t.run((ctx) => ctx.db.get("products", hidden)))?.hidden).toBe(true);
   });
 });
+
+describe("public.signupOpen", () => {
+  test("follows the admin setting", async () => {
+    const t = setup();
+    expect(await t.query(api.public.signupOpen, {})).toBe(true);
+    await t.run((ctx) => ctx.db.insert("platformSettings", { signupEnabled: false }));
+    expect(await t.query(api.public.signupOpen, {})).toBe(false);
+  });
+});

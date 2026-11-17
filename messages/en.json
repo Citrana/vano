@@ -126,7 +126,10 @@
     "invalidCredentials": "Wrong email or password.",
     "accountExists": "An account with this email already exists. Sign in instead.",
     "noAccessTitle": "No access",
-    "noAccessBody": "Your account doesn't give access to a shop or to the admin. Contact Vano support."
+    "noAccessBody": "Your account doesn't give access to a shop or to the admin. Contact Vano support.",
+    "signupClosedTitle": "Sign-ups are closed",
+    "signupClosedBody": "New shops can't be created right now. Please come back later.",
+    "goToLogin": "I already have an account"
   },
   "Seller": {
     "dashboard": "Dashboard",

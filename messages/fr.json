@@ -126,7 +126,10 @@
     "invalidCredentials": "E-mail ou mot de passe incorrect.",
     "accountExists": "Un compte existe déjà avec cet e-mail. Connectez-vous.",
     "noAccessTitle": "Aucun accès",
-    "noAccessBody": "Votre compte ne donne accès ni à une boutique ni à l'administration. Contactez le support Vano."
+    "noAccessBody": "Votre compte ne donne accès ni à une boutique ni à l'administration. Contactez le support Vano.",
+    "signupClosedTitle": "Les inscriptions sont fermées",
+    "signupClosedBody": "Il n'est pas possible de créer de nouvelles boutiques pour le moment. Revenez plus tard.",
+    "goToLogin": "J'ai déjà un compte"
   },
   "Seller": {
     "dashboard": "Tableau de bord",
