@@ -88,3 +88,28 @@ describe("suspended shops", () => {
     expect(await t.query(api.public.shopBasics, { slug: "chez-amani" })).toMatchObject({ suspended: false });
   });
 });
+
+describe("hidden products", () => {
+  test("leave the shop page, 404 on their own page, and aren't counted", async () => {
+    const t = setup();
+    const { userId } = await sellerWithShop(t);
+    const me = as(t, userId);
+    const visible = await me.mutation(api.products.create, await productArgs(t, { name: "Robe" }));
+    const hidden = await me.mutation(api.products.create, await productArgs(t, { name: "Jupe" }));
+    await t.run((ctx) => ctx.db.patch("products", hidden, { hidden: true }));
+
+    const page = active(await t.query(api.public.shopBySlug, { slug: "chez-amani" }));
+    expect(page.products.map((p) => p.name)).toEqual(["Robe"]);
+    expect(await t.query(api.public.productForPage, { slug: "chez-amani", productId: hidden })).toBeNull();
+    expect(await t.query(api.public.productForPage, { slug: "chez-amani", productId: visible })).not.toBeNull();
+    expect(await t.mutation(api.stats.recordProductView, { productId: hidden })).toBe(false);
+    expect(await t.mutation(api.stats.recordWhatsappClick, { productId: hidden })).toBe(false);
+
+    // The seller still sees it, flagged, and saving it doesn't unhide it.
+    const mine = await me.query(api.products.listMine, {});
+    expect(mine.map((p) => [p.name, p.hidden])).toEqual([["Jupe", true], ["Robe", false]]);
+    expect((await me.query(api.products.getMine, { productId: hidden }))?.hidden).toBe(true);
+    await me.mutation(api.products.update, { productId: hidden, ...(await productArgs(t, { name: "Jupe 2" })) });
+    expect((await t.run((ctx) => ctx.db.get("products", hidden)))?.hidden).toBe(true);
+  });
+});

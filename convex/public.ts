@@ -11,7 +11,8 @@ import { urlOf, urlsOf } from "./lib/images";
  *
  * A suspended shop returns only `{ suspended: true, name, language }` so
  * the page can say "temporarily unavailable" in the shop's language —
- * no WhatsApp number, products or logo.
+ * no WhatsApp number, products or logo. Products hidden by an admin are
+ * left out (and their page is a 404).
  */
 
 function suspendedMarker(shop: Doc<"shops">) {
@@ -69,8 +70,9 @@ export const shopBySlug = query({
     return {
       suspended: false as const,
       shop: await publicShop(ctx, shop),
+      // Products hidden by an admin are never shown.
       products: await Promise.all(
-        products.map(async (p) => ({
+        products.filter((p) => !p.hidden).map(async (p) => ({
           _id: p._id,
           name: p.name,
           price: p.price,
@@ -96,7 +98,7 @@ export const productForPage = query({
     if (isSuspended(shop)) return suspendedMarker(shop);
     const id = ctx.db.normalizeId("products", productId);
     const product = id ? await ctx.db.get("products", id) : null;
-    if (!product || product.shopId !== shop._id) return null;
+    if (!product || product.shopId !== shop._id || product.hidden) return null;
     return {
       suspended: false as const,
       shop: await publicShop(ctx, shop),

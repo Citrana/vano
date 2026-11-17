@@ -188,7 +188,8 @@
     "deleteBody": "\"{name}\" and its photos will be deleted. This can't be undone.",
     "deleted": "Product deleted",
     "views": "{count, plural, one {# view} other {# views}}",
-    "clicks": "{count, plural, one {# order click} other {# order clicks}}"
+    "clicks": "{count, plural, one {# order click} other {# order clicks}}",
+    "hiddenByAdmin": "Hidden by admin"
   },
   "Share": {
     "title": "Your shop link",
@@ -241,7 +242,8 @@
     "saved": "Product saved",
     "notFoundTitle": "Product not found",
     "notFoundBody": "It may have been deleted.",
-    "backToDashboard": "Back to dashboard"
+    "backToDashboard": "Back to dashboard",
+    "hiddenNotice": "An admin hid this product, so customers can't see it. Contact Vano support if you think this is a mistake."
   },
   "TagInput": {
     "add": "Add",

@@ -188,7 +188,8 @@
     "deleteBody": "« {name} » et ses photos seront supprimés. Cette action est définitive.",
     "deleted": "Produit supprimé",
     "views": "{count, plural, one {# vue} other {# vues}}",
-    "clicks": "{count, plural, one {# clic commande} other {# clics commande}}"
+    "clicks": "{count, plural, one {# clic commande} other {# clics commande}}",
+    "hiddenByAdmin": "Masqué par l'admin"
   },
   "Share": {
     "title": "Le lien de votre boutique",
@@ -241,7 +242,8 @@
     "saved": "Produit enregistré",
     "notFoundTitle": "Produit introuvable",
     "notFoundBody": "Il a peut-être été supprimé.",
-    "backToDashboard": "Retour au tableau de bord"
+    "backToDashboard": "Retour au tableau de bord",
+    "hiddenNotice": "Un admin a masqué ce produit : les clients ne peuvent pas le voir. Contactez le support Vano si vous pensez qu'il s'agit d'une erreur."
   },
   "TagInput": {
     "add": "Ajouter",

@@ -78,6 +78,7 @@ export const listMine = sellerQuery({
         price: p.price,
         category: p.category,
         soldOut: p.soldOut,
+        hidden: p.hidden ?? false,
         imageCount: p.imageIds.length,
         coverUrl: await urlOf(ctx, p.imageIds[0]),
       })),

@@ -22,6 +22,8 @@ export type ProductRowData = {
   price: number
   category: Category
   soldOut: boolean
+  /** Hidden by an admin: customers can't see it; the seller can't unhide it. */
+  hidden?: boolean
   coverUrl: string | null
 }
 
@@ -82,6 +84,7 @@ export function ProductRow({
         </div>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <Badge variant="muted">{tc(product.category)}</Badge>
+          {product.hidden ? <Badge variant="destructive">{t("hiddenByAdmin")}</Badge> : null}
           {product.soldOut ? <Badge variant="destructive">{t("soldOut")}</Badge> : null}
           {stats ? (
             <span>
