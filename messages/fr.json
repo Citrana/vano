@@ -866,5 +866,136 @@
     "soon360Body": "Bientôt, vos clients pourront faire tourner une chaussure sous tous les angles avant de commander.",
     "soonTryOn": "Essayage virtuel",
     "soonTryOnBody": "Bientôt, vos clients pourront voir à quoi une tenue pourrait ressembler sur eux."
+  },
+  "Pricing": {
+    "metaTitle": "Tarifs · Vano",
+    "metaDescription": "Des tarifs simples en KSh. Commencez gratuitement pendant 2 mois avec toutes les fonctions Pro. Aucun moyen de paiement requis, résiliable à tout moment.",
+    "eyebrow": "Tarifs",
+    "title": "Des tarifs simples. Gratuit pendant {months, plural, one {# mois} other {# mois}}.",
+    "subtitle": "Aucun moyen de paiement pour commencer. Résiliable à tout moment.",
+    "perMonth": "/mois",
+    "customPrice": "Sur mesure",
+    "mostPopular": "Le plus choisi",
+    "trialLine": "{months, plural, one {Votre premier mois inclut} other {Vos # premiers mois incluent}} toutes les fonctions Pro, gratuitement. Ensuite, choisissez une formule ou restez sur Gratuit.",
+    "yearlyNote": "Payez Pro à l'année et profitez de {months, plural, one {# mois} other {# mois}} offerts.",
+    "ctaTalk": "Parlons-en",
+    "enterpriseMessage": "Bonjour Vano ! J'aimerais parler d'une formule personnalisée pour ma boutique.",
+    "plans": {
+      "free": {
+        "name": "Gratuit",
+        "tagline": "Pour bien démarrer"
+      },
+      "pro": {
+        "name": "Pro",
+        "tagline": "Pour les vendeurs qui grandissent"
+      },
+      "business": {
+        "name": "Business",
+        "tagline": "Pour les boutiques actives et les équipes"
+      },
+      "enterprise": {
+        "name": "Entreprise",
+        "tagline": "Parlons-en",
+        "priceNote": "Prix communiqué quand vous décidez de la prendre"
+      }
+    },
+    "features": {
+      "products": "Jusqu'à {count} produits",
+      "unlimitedProducts": "Produits illimités",
+      "vanoLink": "Votre lien Vano",
+      "whatsappOrders": "Commandes sur WhatsApp",
+      "basicLook": "Style de boutique de base",
+      "fullDesign": "Toutes les options de style",
+      "stats": "Statistiques (vues et clics WhatsApp)",
+      "prioritySupport": "Assistance prioritaire",
+      "everythingPro": "Tout ce qu'inclut Pro",
+      "teamAccounts": "Comptes d'équipe",
+      "advancedStats": "Statistiques avancées",
+      "salesReports": "Suivi des ventes et rapports",
+      "personalized": "Une formule personnalisée pour votre activité"
+    },
+    "faqEyebrow": "Questions",
+    "faqTitle": "Questions sur les tarifs",
+    "faq": {
+      "q1": "Que se passe-t-il après l'essai ?",
+      "a1": "Après vos 2 mois gratuits, vous choisissez une formule. Sans choix de votre part, votre boutique passe sur Gratuit et reste en ligne avec jusqu'à 10 produits.",
+      "q2": "Puis-je changer de formule ?",
+      "a2": "Oui. Vous pourrez passer à une formule supérieure ou inférieure à tout moment, depuis votre tableau de bord.",
+      "q3": "Comment payer ?",
+      "a3": "Rien à payer pendant l'essai. Les moyens de paiement seront annoncés avant la fin de l'essai ; M-Pesa est prévu."
+    }
+  },
+  "Help": {
+    "metaTitle": "Aide · Vano",
+    "metaDescription": "Réponses sur l'ouverture de votre boutique, les produits, les commandes WhatsApp, le lien de votre boutique, les tarifs et votre compte.",
+    "eyebrow": "Aide",
+    "title": "Comment pouvons-nous vous aider ?",
+    "searchLabel": "Rechercher dans l'aide",
+    "searchPlaceholder": "Rechercher, par ex. « photos »",
+    "noResults": "Aucune réponse pour « {query} ». Essayez un autre mot ou contactez-nous ci-dessous.",
+    "resultsCount": "{count, plural, one {# réponse} other {# réponses}}",
+    "contactTitle": "Besoin d'aide ?",
+    "contactBody": "Écrivez-nous, une vraie personne vous répondra.",
+    "contactWhatsapp": "Discuter sur WhatsApp",
+    "contactEmail": "Nous écrire",
+    "contactSoon": "Les coordonnées seront ajoutées ici bientôt.",
+    "legalTitle": "Conditions et confidentialité",
+    "legalBody": "Comment fonctionne Vano et ce que nous faisons de vos données.",
+    "groups": {
+      "start": {
+        "title": "Bien démarrer",
+        "q1": "Comment ouvrir ma boutique ?",
+        "a1": "Touchez « Ouvrir ma boutique gratuitement », créez votre compte avec votre e-mail et un mot de passe, puis indiquez le nom, le lien et le numéro WhatsApp de votre boutique. Cela prend environ 2 minutes.",
+        "q2": "Faut-il un site web ou des compétences techniques ?",
+        "a2": "Non. Vano est votre boutique : ni designer, ni hébergement, ni code. Si vous savez utiliser WhatsApp, vous savez utiliser Vano.",
+        "q3": "Est-ce que ça marche sur mon téléphone ?",
+        "a3": "Oui. Vano est pensé d'abord pour le téléphone, pour vous comme pour vos clients, même avec une connexion lente."
+      },
+      "products": {
+        "title": "Produits",
+        "q1": "Comment ajouter un produit ?",
+        "a1": "Depuis votre tableau de bord, touchez « Ajouter un produit », prenez ou choisissez une photo, puis ajoutez un nom, un prix, une catégorie, des tailles et des couleurs.",
+        "q2": "Combien de photos puis-je ajouter ?",
+        "a2": "Jusqu'à 6 photos par produit. Elles sont compressées automatiquement pour que votre boutique reste rapide.",
+        "q3": "Puis-je indiquer qu'un produit est épuisé ?",
+        "a3": "Oui. Un produit épuisé reste visible avec l'étiquette « Épuisé », et le bouton de commande est désactivé."
+      },
+      "orders": {
+        "title": "Commandes sur WhatsApp",
+        "q1": "Comment les clients commandent-ils ?",
+        "a1": "Ils touchent « Commander sur WhatsApp » sur un produit. WhatsApp s'ouvre avec un message pour vous qui contient déjà le produit, la taille, la couleur et le prix.",
+        "q2": "Mes clients doivent-ils créer un compte ?",
+        "a2": "Non. Ils ouvrent votre lien, regardent et commandent. Rien à installer, aucune inscription.",
+        "q3": "Comment les clients paient-ils ?",
+        "a3": "Directement à vous. Vous convenez du paiement dans la discussion : à la livraison, mobile money ou ce que vous utilisez déjà. Vano ne gère pas les paiements."
+      },
+      "link": {
+        "title": "Le lien de votre boutique",
+        "q1": "À quoi ressemble mon lien ?",
+        "a1": "vano.app/nom-de-votre-boutique. Vous le choisissez en créant votre boutique.",
+        "q2": "Où le partager ?",
+        "a2": "Dans votre statut et vos discussions WhatsApp, votre bio Instagram et votre page Facebook. Partout où se trouvent vos clients.",
+        "q3": "Puis-je changer mon lien plus tard ?",
+        "a3": "Oui, dans les paramètres de votre boutique, si le nouveau lien est libre. L'ancien lien ne fonctionnera plus : partagez le nouveau."
+      },
+      "pricing": {
+        "title": "Tarifs et essai",
+        "q1": "Vano est-il gratuit ?",
+        "a1": "Vos 2 premiers mois sont gratuits avec toutes les fonctions Pro, sans moyen de paiement. Ensuite, vous choisissez une formule ou restez sur Gratuit.",
+        "q2": "Que comprennent les formules ?",
+        "a2": "Gratuit : jusqu'à 10 produits. Pro : jusqu'à 50 produits, toutes les options de style et les statistiques. Business : produits illimités et comptes d'équipe. Détails sur la page Tarifs.",
+        "q3": "Comment paierai-je une formule ?",
+        "a3": "Les moyens de paiement seront annoncés avant la fin de votre essai. M-Pesa est prévu."
+      },
+      "account": {
+        "title": "Compte",
+        "q1": "J'ai oublié mon mot de passe. Que faire ?",
+        "a1": "Contactez-nous via WhatsApp ou e-mail ci-dessous et nous vous aiderons à retrouver l'accès à votre boutique.",
+        "q2": "Puis-je changer la langue de ma boutique ?",
+        "a2": "Oui. Votre boutique peut être en anglais ou en français, depuis ses paramètres. Vos clients la voient toujours dans la langue choisie.",
+        "q3": "Comment supprimer mon compte ?",
+        "a3": "Contactez-nous avec les coordonnées ci-dessous et nous supprimerons votre compte et votre boutique."
+      }
+    }
   }
 }

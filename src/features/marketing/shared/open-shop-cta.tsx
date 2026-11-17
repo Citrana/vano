@@ -18,9 +18,12 @@ import { buttonVariants } from "@/components/ui/button"
 export function OpenShopCta({
   compact = false,
   hideWhenClosed = false,
+  variant = "default",
   className,
 }: {
   compact?: boolean
+  /** "outline" for secondary placements (e.g. non-highlighted plan cards). */
+  variant?: "default" | "outline"
   /** The nav already shows "Log in", so it hides the button instead of showing the note. */
   hideWhenClosed?: boolean
   className?: string
@@ -33,7 +36,7 @@ export function OpenShopCta({
 
   if (isAuthenticated) {
     return (
-      <Link href="/dashboard" className={cn(buttonVariants({ size }), className)}>
+      <Link href="/dashboard" className={cn(buttonVariants({ size, variant }), className)}>
         {compact ? t("ctaDashboardShort") : t("ctaDashboard")}
         {compact ? null : <ArrowRightIcon aria-hidden />}
       </Link>
@@ -64,7 +67,7 @@ export function OpenShopCta({
   }
 
   return (
-    <Link href="/signup" className={cn(buttonVariants({ size }), className)}>
+    <Link href="/signup" className={cn(buttonVariants({ size, variant }), className)}>
       {compact ? t("ctaShort") : t("cta")}
       {compact ? null : <ArrowRightIcon aria-hidden />}
     </Link>
