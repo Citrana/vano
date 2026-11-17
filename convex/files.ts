@@ -6,6 +6,7 @@ import { sellerMutation } from "./lib/seller";
  * only checked and claimed when a shop or product mutation attaches it.
  */
 export const generateUploadUrl = sellerMutation({
+  permission: ["ownShop.manage", "ownProducts.manage"],
   args: {},
   returns: v.string(),
   handler: async (ctx) => {

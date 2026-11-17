@@ -5,27 +5,30 @@ import {
 } from "convex-helpers/server/customFunctions";
 import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, query, type MutationCtx, type QueryCtx } from "../_generated/server";
-import { requireCurrentUser } from "./auth";
+import { accessWith, type Access, type PermissionArg } from "./access";
 import { fail } from "./errors";
 import { imageProblem } from "./images";
 
 /**
  * The wrappers every seller function uses (CLAUDE.md "Security &
- * ownership"): they reject unauthenticated callers and add `ctx.user`.
+ * ownership"): `sellerQuery({ permission: "ownProducts.manage", args,
+ * handler })`. They reject signed-out and suspended callers and callers
+ * without the permission, and add `ctx.user` / `ctx.access`. Ownership is
+ * still checked by `requireOwnShop` / `requireOwnProduct`.
  */
 export const sellerQuery = customQuery(
   query,
-  customCtx(async (ctx) => ({ user: await requireCurrentUser(ctx) })),
+  customCtx((ctx: QueryCtx, extra: PermissionArg) => accessWith(ctx, extra)),
 );
 
 export const sellerMutation = customMutation(
   mutation,
-  customCtx(async (ctx) => ({ user: await requireCurrentUser(ctx) })),
+  customCtx((ctx: MutationCtx, extra: PermissionArg) => accessWith(ctx, extra)),
 );
 
-type WithUser<C> = C & { user: Doc<"users"> };
-export type SellerQueryCtx = WithUser<QueryCtx>;
-export type SellerMutationCtx = WithUser<MutationCtx>;
+type WithAccess<C> = C & { user: Doc<"users">; access: Access };
+export type SellerQueryCtx = WithAccess<QueryCtx>;
+export type SellerMutationCtx = WithAccess<MutationCtx>;
 
 export async function findShopByOwner(
   ctx: QueryCtx,

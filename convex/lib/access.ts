@@ -41,16 +41,25 @@ export function requirePermission(access: Access, permission: Permission): void 
   if (!hasPermission(access, permission)) fail("FORBIDDEN");
 }
 
+/** One permission, or a list meaning "any of these". */
+export type PermissionRequirement = Permission | readonly Permission[];
+
+export function requireAnyPermission(access: Access, required: PermissionRequirement): void {
+  const list: readonly Permission[] = typeof required === "string" ? [required] : required;
+  if (!list.some((p) => hasPermission(access, p))) fail("FORBIDDEN");
+}
+
 /** True when the caller may open /admin at all. */
 export function isAdmin(access: Access): boolean {
   return ADMIN_PERMISSIONS.some((p) => hasPermission(access, p));
 }
 
-type PermissionArg = { permission: Permission };
+export type PermissionArg = { permission: PermissionRequirement };
 
-async function accessWith(ctx: QueryCtx | MutationCtx, { permission }: PermissionArg) {
+/** Loads the caller's access and checks the function's declared permission. */
+export async function accessWith(ctx: QueryCtx | MutationCtx, { permission }: PermissionArg) {
   const access = await loadAccess(ctx);
-  requirePermission(access, permission);
+  requireAnyPermission(access, permission);
   return { user: access.user, access };
 }
 

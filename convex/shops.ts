@@ -112,6 +112,7 @@ export const checkSlug = query({
 
 /** The caller's shop (with logo URL), or null before onboarding. */
 export const myShop = sellerQuery({
+  permission: "ownShop.manage",
   args: {},
   handler: async (ctx) => {
     const shop = await findShopByOwner(ctx, ctx.user._id);
@@ -121,6 +122,7 @@ export const myShop = sellerQuery({
 });
 
 export const create = sellerMutation({
+  permission: "ownShop.manage",
   args: shopInput.fields,
   returns: v.id("shops"),
   handler: async (ctx, args) => {
@@ -137,6 +139,7 @@ export const create = sellerMutation({
  * a category still used by a product can't be removed.
  */
 export const update = sellerMutation({
+  permission: "ownShop.manage",
   args: shopInput.fields,
   returns: v.null(),
   handler: async (ctx, args) => {
