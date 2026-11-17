@@ -749,5 +749,52 @@
     "bold": "Bold",
     "soft": "Soft",
     "dark": "Dark"
+  },
+  "Demo": {
+    "shopName": "Vano Demo",
+    "shopDescription": "Sample products to show what your Vano shop can look like.",
+    "bannerText": "This is a demo shop. Open yours in 2 minutes.",
+    "themeLabel": "Try a look:",
+    "metaTitle": "Demo shop · Vano",
+    "metaDescription": "See a real Vano shop: products, filters, product pages and ordering on WhatsApp. Open yours in 2 minutes.",
+    "backToShop": "Back to the demo shop",
+    "products": {
+      "slip-dress": {
+        "name": "Black slip dress",
+        "description": "Soft stretch fabric with thin straps. Easy to dress up or down."
+      },
+      "kente-shirt": {
+        "name": "Kente print shirt",
+        "description": "Bold woven-pattern shirt with a relaxed fit."
+      },
+      "printed-top": {
+        "name": "Printed off-shoulder top",
+        "description": "Lightweight printed top with an off-shoulder neckline."
+      },
+      "blue-heels": {
+        "name": "Blue block heels",
+        "description": "Comfortable block heels in a bright blue satin finish."
+      },
+      "wax-print-shirt": {
+        "name": "Wax print shirt",
+        "description": "Short-sleeve shirt in a colourful wax print."
+      },
+      "wide-brim-hat": {
+        "name": "Wide-brim black hat",
+        "description": "A statement hat that finishes any outfit."
+      },
+      "kente-crop-top": {
+        "name": "Kente crop top",
+        "description": "Vibrant kente-pattern top, great with denim."
+      },
+      "leather-boots": {
+        "name": "Leather boots",
+        "description": "Classic black leather boots with a low heel."
+      },
+      "white-sunglasses": {
+        "name": "White retro sunglasses",
+        "description": "Oversized frames with a retro feel."
+      }
+    }
   }
 }

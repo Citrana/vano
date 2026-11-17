@@ -749,5 +749,52 @@
     "bold": "Audacieux",
     "soft": "Doux",
     "dark": "Sombre"
+  },
+  "Demo": {
+    "shopName": "Vano Démo",
+    "shopDescription": "Des produits d'exemple pour montrer à quoi peut ressembler votre boutique Vano.",
+    "bannerText": "Ceci est une boutique de démonstration. Ouvrez la vôtre en 2 minutes.",
+    "themeLabel": "Essayez un style :",
+    "metaTitle": "Boutique démo · Vano",
+    "metaDescription": "Découvrez une vraie boutique Vano : produits, filtres, fiches produit et commande sur WhatsApp. Ouvrez la vôtre en 2 minutes.",
+    "backToShop": "Retour à la boutique démo",
+    "products": {
+      "slip-dress": {
+        "name": "Robe nuisette noire",
+        "description": "Tissu doux et extensible à fines bretelles. Facile à porter, en journée comme en soirée."
+      },
+      "kente-shirt": {
+        "name": "Chemise imprimé kente",
+        "description": "Chemise à motif tissé audacieux, coupe décontractée."
+      },
+      "printed-top": {
+        "name": "Haut épaules dénudées imprimé",
+        "description": "Haut léger imprimé avec encolure épaules dénudées."
+      },
+      "blue-heels": {
+        "name": "Escarpins bleus à talon carré",
+        "description": "Talons carrés confortables, finition satin bleu vif."
+      },
+      "wax-print-shirt": {
+        "name": "Chemise en wax",
+        "description": "Chemise à manches courtes en wax coloré."
+      },
+      "wide-brim-hat": {
+        "name": "Chapeau noir à larges bords",
+        "description": "Un chapeau qui sublime toutes les tenues."
+      },
+      "kente-crop-top": {
+        "name": "Crop top kente",
+        "description": "Haut court à motif kente, parfait avec un jean."
+      },
+      "leather-boots": {
+        "name": "Bottines en cuir",
+        "description": "Bottines classiques en cuir noir, petit talon."
+      },
+      "white-sunglasses": {
+        "name": "Lunettes de soleil rétro blanches",
+        "description": "Grandes montures au style rétro."
+      }
+    }
   }
 }

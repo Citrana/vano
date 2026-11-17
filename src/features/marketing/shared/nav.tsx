@@ -10,14 +10,9 @@ import { Brand } from "@/components/shell/brand"
 import { buttonVariants } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { LanguageSwitcher } from "@/features/i18n/language-switcher"
+import { MARKETING_LINKS } from "./links"
 import { OpenShopCta } from "./open-shop-cta"
 
-export const MARKETING_LINKS = [
-  { href: "/features", key: "navFeatures" },
-  { href: "/pricing", key: "navPricing" },
-  { href: "/demo", key: "navDemo" },
-  { href: "/help", key: "navHelp" },
-] as const
 
 function isCurrent(href: string, pathname: string) {
   return pathname === href || pathname.startsWith(`${href}/`)
@@ -73,7 +68,7 @@ export function MarketingNav() {
           <Link href="/login" className={cn(buttonVariants({ variant: "outline" }), "hidden md:inline-flex")}>
             {t("login")}
           </Link>
-          <OpenShopCta compact />
+          <OpenShopCta compact hideWhenClosed />
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "md:hidden")} aria-label={t("menu")}>
               <MenuIcon aria-hidden />

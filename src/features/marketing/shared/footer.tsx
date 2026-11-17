@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server"
 import Link from "next/link"
 import { Brand } from "@/components/shell/brand"
 import { LanguageSwitcher } from "@/features/i18n/language-switcher"
-import { MARKETING_LINKS } from "./nav"
+import { MARKETING_LINKS } from "./links"
 import { contactEmail, whatsappHref } from "./site-config"
 
 const linkClass = "inline-flex min-h-11 items-center text-muted-foreground hover:text-foreground md:min-h-8"

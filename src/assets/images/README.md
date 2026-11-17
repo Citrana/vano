@@ -58,3 +58,15 @@ file is a build error. Use `public/` only for files that need a fixed URL
 | `brand/vano-mobile.png` | Vano design team | Own work |
 | `icons/whatsapp.png` | Vano design team (WhatsApp mark) | WhatsApp brand guidelines |
 | `icons/link.png` | Vano design team | Own work |
+| `photos/products/demo/slip-dress.webp` | https://unsplash.com/photos/PTFAGC9Whmg | Unsplash License |
+| `photos/products/demo/slip-dress-2.webp` | https://unsplash.com/photos/qZRrpXgCio8 | Unsplash License |
+| `photos/products/demo/kente-shirt.webp` | https://unsplash.com/photos/5buvyK3DPsI | Unsplash License |
+| `photos/products/demo/printed-top.webp` | https://unsplash.com/photos/DVMRYuULLgk | Unsplash License |
+| `photos/products/demo/wax-print-shirt.webp` | https://unsplash.com/photos/t3vn-jyl85U | Unsplash License |
+| `photos/products/demo/blue-heels.webp` | https://unsplash.com/photos/yjwehHiMGpg | Unsplash License |
+| `photos/products/demo/white-sunglasses.webp` | https://unsplash.com/photos/YZrlDELuvHQ | Unsplash License |
+| `photos/products/demo/wide-brim-hat.webp` | https://unsplash.com/photos/2KTODAQ3q9Y | Unsplash License |
+| `photos/products/demo/wide-brim-hat-2.webp` | https://unsplash.com/photos/7Nb3YHCpNIs | Unsplash License |
+| `photos/products/demo/leather-jacket.webp` | https://unsplash.com/photos/PbiYceITwt0 | Unsplash License |
+| `photos/products/demo/kente-crop-top.webp` | https://unsplash.com/photos/ZrprnquSplY | Unsplash License |
+| `photos/products/demo/kente-crop-top-2.webp` | https://unsplash.com/photos/_VYEcLzGJYk | Unsplash License |

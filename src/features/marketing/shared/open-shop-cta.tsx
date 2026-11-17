@@ -15,7 +15,16 @@ import { buttonVariants } from "@/components/ui/button"
  * see a "closed" note instead. /signup is gated too (SignupClosedGate) and
  * the server refuses the account anyway.
  */
-export function OpenShopCta({ compact = false, className }: { compact?: boolean; className?: string }) {
+export function OpenShopCta({
+  compact = false,
+  hideWhenClosed = false,
+  className,
+}: {
+  compact?: boolean
+  /** The nav already shows "Log in", so it hides the button instead of showing the note. */
+  hideWhenClosed?: boolean
+  className?: string
+}) {
   const t = useTranslations("Marketing")
   const { isLoading, isAuthenticated } = useConvexAuth()
   const signupOpen = useQuery(api.public.signupOpen, isLoading || isAuthenticated ? "skip" : {})
@@ -32,8 +41,15 @@ export function OpenShopCta({ compact = false, className }: { compact?: boolean;
   }
 
   if (signupOpen === false) {
-    // The nav already shows "Log in"; the note lives in the page CTAs.
-    if (compact) return null
+    if (hideWhenClosed) return null
+    if (compact) {
+      return (
+        <p role="status" className={cn("inline-flex items-center gap-1.5 text-sm font-medium", className)}>
+          <LockIcon className="size-4 text-muted-foreground" aria-hidden />
+          {t("signupClosed")}
+        </p>
+      )
+    }
     return (
       <div role="status" className={cn("flex flex-col items-center gap-1 text-center", className)}>
         <p className="inline-flex items-center gap-2 rounded-lg border bg-card px-4 py-3 text-sm font-medium">
