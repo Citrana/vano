@@ -308,5 +308,19 @@
   "Roles": {
     "super_admin": "Super admin",
     "seller": "Vendeur"
+  },
+  "AdminDashboard": {
+    "title": "Tableau de bord",
+    "totals": "Totaux",
+    "users": "Utilisateurs",
+    "shops": "Boutiques",
+    "products": "Produits",
+    "whatsappClicks": "Clics WhatsApp",
+    "growth": "Nouveaux sur les derniers…",
+    "signups": "Nouvelles inscriptions",
+    "newShops": "Nouvelles boutiques",
+    "last7": "7 jours",
+    "last30": "30 jours",
+    "utcNote": "Les jours sont comptés en UTC, aujourd'hui compris."
   }
 }

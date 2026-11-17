@@ -5,18 +5,20 @@ import { useTranslations } from "next-intl"
 import Link from "next/link"
 import { EmptyState, LoadingState } from "@/components/states/states"
 import { Card, CardTitle } from "@/components/ui/card"
+import { AdminDashboard } from "@/features/admin/dashboard/admin-dashboard"
 import { ADMIN_HOME, visibleNav } from "@/features/admin/shell/nav"
 import { useAdminViewer, useRoleLabel } from "@/features/admin/shell/use-admin-viewer"
 
 /**
- * Admin home: who you are and the sections your role opens. Becomes the
- * dashboard for `dashboard.view` holders in the next step.
+ * Admin home. With `dashboard.view`: the dashboard. Without it: who you
+ * are and the sections your role opens, so every admin has a home.
  */
 export default function AdminHomePage() {
   const t = useTranslations("Admin")
   const { viewer } = useAdminViewer()
   const roleLabel = useRoleLabel()
   if (!viewer) return <LoadingState />
+  if (viewer.permissions.includes("dashboard.view")) return <AdminDashboard />
   const sections = visibleNav(viewer.permissions).filter((item) => item.href !== ADMIN_HOME)
 
   return (
