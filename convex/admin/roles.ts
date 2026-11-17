@@ -1,9 +1,18 @@
 import { v } from "convex/values";
-import type { Doc } from "../_generated/dataModel";
+import type { Doc, Id } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
-import { adminQuery } from "../lib/access";
-import { roleKeyValidator } from "../lib/permissions";
-import { permissionsOf } from "../lib/roles";
+import { adminMutation, adminQuery } from "../lib/access";
+import { logAdminAction } from "../lib/audit";
+import { fail } from "../lib/errors";
+import { assertCanDeleteRole, assertCanWriteRole } from "../lib/guards";
+import {
+  cleanPermissions,
+  ROLE_DESCRIPTION_MAX,
+  roleKeyValidator,
+  roleNameProblem,
+  type Permission,
+} from "../lib/permissions";
+import { BUILT_IN_ROLE_NAMES, permissionsOf } from "../lib/roles";
 
 /**
  * Admin roles section (CLAUDE.md "Roles & permissions"). Reads need
@@ -82,5 +91,116 @@ export const get = adminQuery({
       isBuiltIn: role.key !== undefined,
       isOwnRole: ctx.user.roleId === role._id,
     };
+  },
+});
+
+const roleInput = {
+  name: v.string(),
+  description: v.optional(v.string()),
+  permissions: v.array(v.string()),
+};
+
+/**
+ * Validates a role form (same helpers as the client schema). Names are
+ * unique ignoring case, built-in names included; unknown permissions are
+ * dropped.
+ */
+async function cleanRoleInput(
+  ctx: QueryCtx,
+  input: { name: string; description?: string; permissions: string[] },
+  self?: Id<"roles">,
+): Promise<{ name: string; description: string | undefined; permissions: Permission[] }> {
+  const name = input.name.trim();
+  if (roleNameProblem(name) !== null) fail("ROLE_NAME_INVALID");
+  const description = input.description?.trim() || undefined;
+  if (description && description.length > ROLE_DESCRIPTION_MAX) fail("DESCRIPTION_TOO_LONG");
+
+  // Only custom roles are ever written here, so built-in names are simply
+  // reserved (even before the built-in rows exist).
+  const lower = name.toLowerCase();
+  const reserved = Object.values(BUILT_IN_ROLE_NAMES).some((n) => n.toLowerCase() === lower);
+  const roles = await ctx.db.query("roles").take(200);
+  const taken = roles.some((r) => r._id !== self && r.name.toLowerCase() === lower);
+  if (reserved || taken) fail("ROLE_NAME_TAKEN");
+
+  return { name, description, permissions: cleanPermissions(input.permissions) };
+}
+
+/** Creates a custom role. You can only grant permissions you hold. */
+export const create = adminMutation({
+  permission: "roles.manage",
+  args: roleInput,
+  returns: v.id("roles"),
+  handler: async (ctx, args) => {
+    const input = await cleanRoleInput(ctx, args);
+    assertCanWriteRole(ctx.access, null, input.permissions);
+    const roleId = await ctx.db.insert("roles", input);
+    await logAdminAction(ctx, {
+      actor: ctx.user,
+      action: "role.create",
+      targetType: "role",
+      targetId: roleId,
+      targetLabel: input.name,
+      details: { permissions: input.permissions.join(", ") },
+    });
+    return roleId;
+  },
+});
+
+/**
+ * Edits a custom role. Built-in roles and (for non-super admins) your own
+ * role can't be edited; you can neither add nor remove permissions you
+ * don't hold. Holders get the change immediately.
+ */
+export const update = adminMutation({
+  permission: "roles.manage",
+  args: { roleId: v.id("roles"), ...roleInput },
+  returns: v.null(),
+  handler: async (ctx, { roleId, ...args }) => {
+    const role = await ctx.db.get("roles", roleId);
+    if (!role) fail("NOT_FOUND");
+    // Built-in / own-role / escalation checks come before input validation,
+    // so a built-in role is always reported as ROLE_BUILT_IN.
+    assertCanWriteRole(ctx.access, role, cleanPermissions(args.permissions));
+    const input = await cleanRoleInput(ctx, args, roleId);
+
+    const before = cleanPermissions(role.permissions);
+    const added = input.permissions.filter((p) => !before.includes(p));
+    const removed = before.filter((p) => !input.permissions.includes(p));
+    await ctx.db.replace("roles", roleId, input);
+    await logAdminAction(ctx, {
+      actor: ctx.user,
+      action: "role.update",
+      targetType: "role",
+      targetId: roleId,
+      targetLabel: input.name,
+      details: {
+        added: added.join(", "),
+        removed: removed.join(", "),
+        ...(role.name !== input.name ? { renamedFrom: role.name } : {}),
+      },
+    });
+    return null;
+  },
+});
+
+/** Deletes a custom role nobody has (suspended users count). */
+export const remove = adminMutation({
+  permission: "roles.manage",
+  args: { roleId: v.id("roles") },
+  returns: v.null(),
+  handler: async (ctx, { roleId }) => {
+    const role = await ctx.db.get("roles", roleId);
+    if (!role) fail("NOT_FOUND");
+    await assertCanDeleteRole(ctx, ctx.access, role);
+    await ctx.db.delete("roles", roleId);
+    await logAdminAction(ctx, {
+      actor: ctx.user,
+      action: "role.delete",
+      targetType: "role",
+      targetId: roleId,
+      targetLabel: role.name,
+    });
+    return null;
   },
 });
