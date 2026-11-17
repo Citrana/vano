@@ -11,9 +11,16 @@ export function useAdminViewer() {
   return { isLoading, isAuthenticated, viewer }
 }
 
-/** Built-in roles are translated; custom roles show their own name. */
+type RoleKey = "super_admin" | "seller" | null
+
+/**
+ * Built-in roles are translated; custom roles show their own name. Accepts
+ * the viewer / list-row shape (`roleKey`, `roleName`) or a role (`key`, `name`).
+ */
 export function useRoleLabel() {
   const t = useTranslations("Roles")
-  return (viewer: { roleKey: "super_admin" | "seller" | null; roleName: string }) =>
-    viewer.roleKey ? t(viewer.roleKey) : viewer.roleName
+  return (role: { roleKey: RoleKey; roleName: string } | { key: RoleKey; name: string }) => {
+    const [key, name] = "roleKey" in role ? [role.roleKey, role.roleName] : [role.key, role.name]
+    return key ? t(key) : name
+  }
 }
