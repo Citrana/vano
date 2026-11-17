@@ -6,13 +6,13 @@ import vanoMobile from "@/assets/images/brand/vano-mobile.png"
 export async function PhoneMockup() {
   const t = await getTranslations("Landing")
   return (
-    <figure className="relative w-[280px] rounded-[2.75rem] bg-ink p-2.5 shadow-lift sm:w-[320px] md:w-[360px] lg:w-[380px]">
-      <div className="relative overflow-hidden rounded-[2.25rem] bg-background">
+    <figure className="relative w-[240px] rounded-[2.5rem] bg-ink p-2 shadow-lift sm:w-[260px] md:w-[280px] lg:w-[300px]">
+      <div className="relative overflow-hidden rounded-[2rem] bg-background">
         <Image
           src={vanoMobile}
           alt={t("mockupLabel")}
           placeholder="blur"
-          sizes="(min-width: 1024px) 360px, (min-width: 768px) 340px, (min-width: 640px) 300px, 260px"
+          sizes="(min-width: 1024px) 284px, (min-width: 768px) 264px, (min-width: 640px) 244px, 224px"
           fetchPriority="high"
           loading="eager"
           className="block h-auto w-full"
