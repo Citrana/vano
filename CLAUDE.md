@@ -14,8 +14,11 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 
 - Every Convex function declares `args` validators. Never trust the client.
 - Seller functions are built with `sellerQuery` / `sellerMutation`
-  (`convex/lib/seller.ts`): they reject unauthenticated callers and add
-  `ctx.user`. Load the caller's shop with `requireOwnShop(ctx)` and a
+  (`convex/lib/seller.ts`) and **declare a `permission`** (`ownShop.manage`,
+  `ownProducts.manage`, `ownStats.view`, or a list meaning "any of").
+  They reject signed-out, suspended and unpermitted callers and add
+  `ctx.user` / `ctx.access`. A suspended shop is read-only: every
+  `sellerMutation` throws `SHOP_SUSPENDED`. Load the caller's shop with `requireOwnShop(ctx)` and a
   product with `requireOwnProduct(ctx, id)` — a seller can only read or
   change **their own** shop and products. A product that isn't yours is
   reported as `NOT_FOUND`, never as "forbidden" (don't leak existence).
