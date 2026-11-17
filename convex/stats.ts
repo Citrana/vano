@@ -9,7 +9,8 @@ import { requireOwnShop, sellerQuery } from "./lib/seller";
 /**
  * Anonymous view / WhatsApp-click counters (CLAUDE.md "Stats"): daily rows,
  * no personal data. The record mutations take plain strings and quietly
- * return false for unknown ids, so a stale page never shows an error.
+ * return false for unknown ids — or a suspended / deleted shop — so a
+ * stale page never shows an error.
  */
 
 type ShopCounter = "shopViews" | "productViews" | "whatsappClicks";
@@ -66,7 +67,8 @@ export const recordShopView = mutation({
   returns: v.boolean(),
   handler: async (ctx, args) => {
     const shopId = ctx.db.normalizeId("shops", args.shopId);
-    if (!shopId || !(await ctx.db.get("shops", shopId))) return false;
+    const shop = shopId ? await ctx.db.get("shops", shopId) : null;
+    if (!shopId || !shop || shop.status === "suspended") return false;
     await bumpShop(ctx, shopId, utcDay(Date.now()), "shopViews");
     return true;
   },
@@ -81,6 +83,9 @@ async function recordForProduct(
   const productId = ctx.db.normalizeId("products", rawId);
   const product = productId ? await ctx.db.get("products", productId) : null;
   if (!product) return false;
+  // A suspended shop, or a deleted one whose products are being purged.
+  const shop = await ctx.db.get("shops", product.shopId);
+  if (!shop || shop.status === "suspended") return false;
   const day = utcDay(Date.now());
   await bumpShop(ctx, product.shopId, day, shopField);
   await bumpProduct(ctx, product.shopId, product._id, day, productField);

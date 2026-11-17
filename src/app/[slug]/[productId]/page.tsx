@@ -10,12 +10,14 @@ import { ProductGallery } from "@/features/public/product-gallery"
 import { PublicFooter } from "@/features/public/public-footer"
 import { ShopHeader } from "@/features/public/shop-header"
 import { ShopLocaleProvider } from "@/features/public/shop-locale-provider"
+import { ShopUnavailable } from "@/features/public/shop-unavailable"
 import { ViewTracker } from "@/features/public/view-tracker"
 
 export async function generateMetadata({ params }: PageProps<"/[slug]/[productId]">): Promise<Metadata> {
   const { slug, productId } = await params
   const page = await getProductPage(slug, productId)
-  if (!page) return {}
+  // Suspended shop: the [slug] layout's metadata applies (noindex).
+  if (!page || page.suspended) return {}
   const { shop, product } = page
   const title = `${product.name} – ${shop.name}`
   const price = formatMoney(product.price, shop.currency, shop.language)
@@ -42,6 +44,7 @@ export default async function ProductPage({ params }: PageProps<"/[slug]/[produc
   const { slug, productId } = await params
   const page = await getProductPage(slug, productId)
   if (!page) notFound()
+  if (page.suspended) return <ShopUnavailable name={page.name} language={page.language} />
   const { shop, product } = page
   const t = await getTranslations({ locale: shop.language, namespace: "Public" })
   const tc = await getTranslations({ locale: shop.language, namespace: "Categories" })

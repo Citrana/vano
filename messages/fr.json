@@ -274,7 +274,10 @@
     "orderColor": "Couleur : {color}",
     "orderLink": "Lien : {url}",
     "metaShopDescription": "Découvrez la boutique {shop} en ligne. Commandez sur WhatsApp.",
-    "location": "{city}, {country}"
+    "location": "{city}, {country}",
+    "unavailableTitle": "{shop} est temporairement indisponible",
+    "unavailableBody": "Cette boutique ne peut pas prendre de commandes pour le moment. Revenez plus tard.",
+    "unavailableMetaTitle": "{shop} – temporairement indisponible"
   },
   "NotFound": {
     "title": "Page introuvable",
@@ -284,7 +287,7 @@
   "Suspension": {
     "accountTitle": "Votre compte est suspendu",
     "accountBody": "Vous ne pouvez pas utiliser votre boutique pour le moment. Contactez le support Vano si vous pensez qu'il s'agit d'une erreur.",
-    "shopBanner": "Votre boutique est suspendue : vous ne pouvez pas la modifier pour le moment. Contactez le support Vano si vous pensez qu'il s'agit d'une erreur."
+    "shopBanner": "Votre boutique est suspendue : les clients voient une page « temporairement indisponible » et vous ne pouvez pas la modifier pour le moment. Contactez le support Vano si vous pensez qu'il s'agit d'une erreur."
   },
   "Admin": {
     "title": "Admin",

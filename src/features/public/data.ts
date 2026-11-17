@@ -15,7 +15,9 @@ export const getProductPage = cache((slug: string, productId: string) =>
   fetchQuery(api.public.productForPage, { slug, productId }),
 )
 
-export type ShopPage = NonNullable<Awaited<ReturnType<typeof getShopPage>>>
+/** A suspended shop only exposes its name and language. */
+type Active<T> = Extract<NonNullable<T>, { suspended: false }>
+export type ShopPage = Active<Awaited<ReturnType<typeof getShopPage>>>
 export type PublicShop = ShopPage["shop"]
 export type PublicProductCard = ShopPage["products"][number]
-export type ProductPage = NonNullable<Awaited<ReturnType<typeof getProductPage>>>
+export type ProductPage = Active<Awaited<ReturnType<typeof getProductPage>>>
