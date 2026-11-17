@@ -9,6 +9,7 @@
  */
 
 import type * as admin_dashboard from "../admin/dashboard.js";
+import type * as admin_products from "../admin/products.js";
 import type * as admin_roles from "../admin/roles.js";
 import type * as admin_shops from "../admin/shops.js";
 import type * as admin_users from "../admin/users.js";
@@ -29,6 +30,7 @@ import type * as lib_money from "../lib/money.js";
 import type * as lib_permissions from "../lib/permissions.js";
 import type * as lib_phone from "../lib/phone.js";
 import type * as lib_platformStats from "../lib/platformStats.js";
+import type * as lib_productWrites from "../lib/productWrites.js";
 import type * as lib_roles from "../lib/roles.js";
 import type * as lib_seller from "../lib/seller.js";
 import type * as lib_slug from "../lib/slug.js";
@@ -48,6 +50,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   "admin/dashboard": typeof admin_dashboard;
+  "admin/products": typeof admin_products;
   "admin/roles": typeof admin_roles;
   "admin/shops": typeof admin_shops;
   "admin/users": typeof admin_users;
@@ -68,6 +71,7 @@ declare const fullApi: ApiFromModules<{
   "lib/permissions": typeof lib_permissions;
   "lib/phone": typeof lib_phone;
   "lib/platformStats": typeof lib_platformStats;
+  "lib/productWrites": typeof lib_productWrites;
   "lib/roles": typeof lib_roles;
   "lib/seller": typeof lib_seller;
   "lib/slug": typeof lib_slug;

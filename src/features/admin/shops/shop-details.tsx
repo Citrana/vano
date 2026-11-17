@@ -103,7 +103,13 @@ export function ShopDetails({ shopId }: { shopId: string }) {
         </Card>
       ) : null}
 
-      <ShopProducts shopId={shop._id} currency={shop.currency} total={shop.productCount} />
+      <ShopProducts
+        shopId={shop._id}
+        shopSlug={shop.slug}
+        shopActive={shop.status === "active"}
+        currency={shop.currency}
+        total={shop.productCount}
+      />
     </div>
   )
 }

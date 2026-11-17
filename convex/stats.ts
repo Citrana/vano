@@ -82,7 +82,7 @@ async function recordForProduct(
 ): Promise<boolean> {
   const productId = ctx.db.normalizeId("products", rawId);
   const product = productId ? await ctx.db.get("products", productId) : null;
-  if (!product) return false;
+  if (!product || product.hidden) return false;
   // A suspended shop, or a deleted one whose products are being purged.
   const shop = await ctx.db.get("shops", product.shopId);
   if (!shop || shop.status === "suspended") return false;

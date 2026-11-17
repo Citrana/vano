@@ -1,7 +1,7 @@
 "use client"
 
 import { useMutation, useQuery } from "convex/react"
-import { PackageXIcon } from "lucide-react"
+import { EyeOffIcon, PackageXIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
 import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
@@ -42,6 +42,12 @@ export default function EditProductPage() {
   return (
     <div className="mx-auto max-w-2xl">
       <PageTitle title={t("editTitle")} backHref="/dashboard" backLabel={tc("back")} />
+      {product.hidden ? (
+        <p role="status" className="mb-5 flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-sm">
+          <EyeOffIcon className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden />
+          {t("hiddenNotice")}
+        </p>
+      ) : null}
       <ProductForm
         key={product._id}
         shop={shop}
