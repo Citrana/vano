@@ -94,12 +94,7 @@ export async function readPlatformStats(
   ctx: QueryCtx | MutationCtx,
   today: string,
 ): Promise<PlatformStats> {
-  const [users, shops, products, whatsappClicks] = await Promise.all([
-    usersByCreation.count(ctx),
-    shopsByCreation.count(ctx),
-    productsByCreation.count(ctx),
-    clicksByDay.sum(ctx),
-  ]);
+  const totals = await readPlatformTotals(ctx);
   const since = async (days: number) => {
     if (!isDay(today)) return { signups: 0, shops: 0 };
     const bounds = { lower: { key: dayStartMs(addDays(today, 1 - days)), inclusive: true } };
@@ -110,10 +105,23 @@ export async function readPlatformStats(
     return { signups, shops: newShops };
   };
   return {
-    totals: { users, shops, products, whatsappClicks },
+    totals,
     last7: await since(7),
     last30: await since(30),
   };
+}
+
+/** All-time totals only (no clock needed). */
+export async function readPlatformTotals(
+  ctx: QueryCtx | MutationCtx,
+): Promise<PlatformStats["totals"]> {
+  const [users, shops, products, whatsappClicks] = await Promise.all([
+    usersByCreation.count(ctx),
+    shopsByCreation.count(ctx),
+    productsByCreation.count(ctx),
+    clicksByDay.sum(ctx),
+  ]);
+  return { users, shops, products, whatsappClicks };
 }
 
 /** Backfill helpers for `migrations:rbacV1` (same idempotent writes). */

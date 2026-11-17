@@ -28,6 +28,7 @@ import type * as lib_platformStats from "../lib/platformStats.js";
 import type * as lib_roles from "../lib/roles.js";
 import type * as lib_seller from "../lib/seller.js";
 import type * as lib_slug from "../lib/slug.js";
+import type * as migrations from "../migrations.js";
 import type * as products from "../products.js";
 import type * as public_ from "../public.js";
 import type * as seed from "../seed.js";
@@ -62,6 +63,7 @@ declare const fullApi: ApiFromModules<{
   "lib/roles": typeof lib_roles;
   "lib/seller": typeof lib_seller;
   "lib/slug": typeof lib_slug;
+  migrations: typeof migrations;
   products: typeof products;
   public: typeof public_;
   seed: typeof seed;

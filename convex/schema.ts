@@ -113,6 +113,14 @@ export default defineSchema({
     ownerId: v.id("users"),
   }).index("by_storageId", ["storageId"]),
 
+  /** One row per one-time data migration (e.g. "rbacV1"). */
+  migrations: defineTable({
+    name: v.string(),
+    status: v.union(v.literal("running"), v.literal("done")),
+    startedAt: v.number(),
+    doneAt: v.optional(v.number()),
+  }).index("by_name", ["name"]),
+
   /** Per shop per UTC day. No personal data. */
   shopDailyStats: defineTable({
     shopId: v.id("shops"),
