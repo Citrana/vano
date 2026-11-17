@@ -28,7 +28,7 @@ export function PlatformTotals({ totals }: { totals: Totals | undefined }) {
               <Icon className="size-3.5 shrink-0" aria-hidden />
               <span className="leading-tight">{t(key)}</span>
             </dt>
-            <dd className="font-heading text-2xl font-semibold tabular-nums">
+            <dd className="font-heading text-2xl font-bold tracking-tight tabular-nums">
               {totals ? format.number(totals[key]) : <Skeleton className="h-7 w-12" />}
             </dd>
           </div>

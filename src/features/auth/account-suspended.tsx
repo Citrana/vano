@@ -24,7 +24,7 @@ export function AccountSuspended({ header = true }: { header?: boolean }) {
       <main className="flex flex-1 items-start justify-center px-4 pt-10 pb-12 sm:items-center sm:pt-0">
         <div role="alert" className="flex max-w-sm flex-col items-center gap-3 text-center">
           <BanIcon className="size-10 text-destructive" aria-hidden />
-          <h1 className="font-heading text-2xl font-semibold">{t("accountTitle")}</h1>
+          <h1 className="font-heading text-2xl font-bold tracking-tight">{t("accountTitle")}</h1>
           <p className="text-muted-foreground">{t("accountBody")}</p>
           <SignOutButton variant="outline" showLabel />
         </div>

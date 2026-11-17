@@ -15,7 +15,7 @@ export default async function ProductNotFound() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-4 px-4 py-16 text-center">
       <PackageXIcon className="size-10 text-muted-foreground" aria-hidden />
-      <h1 className="font-heading text-2xl font-semibold">{t("productNotFoundTitle")}</h1>
+      <h1 className="font-heading text-2xl font-bold tracking-tight">{t("productNotFoundTitle")}</h1>
       <p className="max-w-sm text-muted-foreground">{t("notFoundBody")}</p>
       <Link href="/" className={buttonVariants({ variant: "outline" })}>
         {tn("home")}

@@ -24,7 +24,7 @@ export default function AdminHomePage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <h1 className="font-heading text-2xl font-semibold">{t("welcome")}</h1>
+        <h1 className="font-heading text-2xl font-bold tracking-tight">{t("welcome")}</h1>
         <p className="text-sm break-words text-muted-foreground">
           {t("signedInAs", { email: viewer.email ?? "" })} · {roleLabel(viewer)}
         </p>

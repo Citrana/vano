@@ -9,15 +9,15 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/85",
+        default: "bg-primary font-semibold text-primary-foreground shadow-soft hover:bg-primary/90 hover:shadow-lift",
         outline:
-          "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted",
+          "border-border bg-card hover:bg-muted hover:text-foreground aria-expanded:bg-muted",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_6%)]",
         ghost: "hover:bg-muted hover:text-foreground aria-expanded:bg-muted",
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20",
-        whatsapp: "bg-whatsapp text-white hover:bg-whatsapp/90",
+        whatsapp: "bg-whatsapp font-semibold text-white shadow-soft hover:bg-whatsapp/90",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

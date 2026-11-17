@@ -11,7 +11,7 @@ export default async function NotFound() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-4 px-4 py-16 text-center">
       <StoreIcon className="size-10 text-muted-foreground" aria-hidden />
-      <h1 className="font-heading text-2xl font-semibold">{t("title")}</h1>
+      <h1 className="font-heading text-2xl font-bold tracking-tight">{t("title")}</h1>
       <p className="max-w-sm text-muted-foreground">{tp("notFoundBody")}</p>
       <Link href="/" className={buttonVariants({ variant: "outline" })}>
         {t("home")}

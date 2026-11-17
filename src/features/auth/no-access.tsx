@@ -10,7 +10,7 @@ export function NoAccess() {
   return (
     <div role="alert" className="mx-auto flex max-w-sm flex-1 flex-col items-center justify-center gap-3 px-4 py-16 text-center">
       <LockIcon className="size-10 text-muted-foreground" aria-hidden />
-      <h1 className="font-heading text-2xl font-semibold">{t("noAccessTitle")}</h1>
+      <h1 className="font-heading text-2xl font-bold tracking-tight">{t("noAccessTitle")}</h1>
       <p className="text-muted-foreground">{t("noAccessBody")}</p>
       <SignOutButton variant="outline" showLabel />
     </div>

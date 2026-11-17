@@ -28,7 +28,7 @@ export default function OnboardingPage() {
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 pt-4 pb-10">
         <SellerGate need="noShop">
           <div className="mb-6 flex flex-col gap-1">
-            <h1 className="font-heading text-3xl font-semibold">{t("title")}</h1>
+            <h1 className="font-heading text-3xl font-bold tracking-tight">{t("title")}</h1>
             <p className="text-muted-foreground">{t("subtitle")}</p>
           </div>
           <ShopForm

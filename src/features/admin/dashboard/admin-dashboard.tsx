@@ -22,7 +22,7 @@ export function AdminDashboard() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <h1 className="font-heading text-2xl font-semibold">{t("title")}</h1>
+        <h1 className="font-heading text-2xl font-bold tracking-tight">{t("title")}</h1>
         {viewer ? (
           <p className="text-sm break-words text-muted-foreground">
             {ta("signedInAs", { email: viewer.email ?? "" })} · {roleLabel(viewer)}

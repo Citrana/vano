@@ -53,7 +53,7 @@ export function AuthForm({ flow }: { flow: "signIn" | "signUp" }) {
   return (
     <Card className="w-full max-w-sm gap-6">
       <div className="flex flex-col gap-1">
-        <h1 className="font-heading text-2xl font-semibold">
+        <h1 className="font-heading text-2xl font-bold tracking-tight">
           {isSignUp ? t("signupTitle") : t("loginTitle")}
         </h1>
         {isSignUp ? <p className="text-sm text-muted-foreground">{t("signupSubtitle")}</p> : null}

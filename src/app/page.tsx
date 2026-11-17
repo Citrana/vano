@@ -25,7 +25,7 @@ export default async function LandingPage() {
       </header>
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-12 px-4 py-10 md:py-20">
         <section className="flex max-w-2xl flex-col gap-5">
-          <h1 className="font-heading text-4xl leading-tight font-semibold text-balance md:text-6xl">{t("title")}</h1>
+          <h1 className="font-heading text-4xl leading-tight font-bold tracking-tight text-balance md:text-6xl">{t("title")}</h1>
           <p className="text-lg text-muted-foreground text-pretty">{t("subtitle")}</p>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Link href="/signup" className={buttonVariants({ size: "lg" })}>

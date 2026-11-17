@@ -42,7 +42,7 @@ export default function DashboardPage() {
       <section className="flex flex-col gap-4 lg:order-1" aria-labelledby="products-title">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <h1 id="products-title" className="font-heading text-2xl font-semibold">
+            <h1 id="products-title" className="font-heading text-2xl font-bold tracking-tight">
               {shop.name}
             </h1>
             <p className="text-sm text-muted-foreground">{t("productCount", { count: products.length })}</p>
