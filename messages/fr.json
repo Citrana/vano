@@ -123,13 +123,16 @@
     "goSignup": "Créer un compte",
     "goLogin": "Se connecter",
     "invalidCredentials": "E-mail ou mot de passe incorrect.",
-    "accountExists": "Un compte existe déjà avec cet e-mail. Connectez-vous."
+    "accountExists": "Un compte existe déjà avec cet e-mail. Connectez-vous.",
+    "noAccessTitle": "Aucun accès",
+    "noAccessBody": "Votre compte ne donne accès ni à une boutique ni à l'administration. Contactez le support Vano."
   },
   "Seller": {
     "dashboard": "Tableau de bord",
     "settings": "Paramètres de la boutique",
     "viewShop": "Voir ma boutique",
-    "menu": "Menu"
+    "menu": "Menu",
+    "admin": "Admin"
   },
   "Onboarding": {
     "title": "Créez votre boutique",
@@ -282,5 +285,28 @@
     "accountTitle": "Votre compte est suspendu",
     "accountBody": "Vous ne pouvez pas utiliser votre boutique pour le moment. Contactez le support Vano si vous pensez qu'il s'agit d'une erreur.",
     "shopBanner": "Votre boutique est suspendue : vous ne pouvez pas la modifier pour le moment. Contactez le support Vano si vous pensez qu'il s'agit d'une erreur."
+  },
+  "Admin": {
+    "title": "Admin",
+    "menu": "Menu admin",
+    "openMenu": "Ouvrir le menu",
+    "myShop": "Ma boutique",
+    "welcome": "Bienvenue",
+    "signedInAs": "Connecté en tant que {email}",
+    "noSectionsTitle": "Aucune section pour l'instant",
+    "noSectionsBody": "Aucune section d'administration n'est encore disponible pour votre rôle.",
+    "nav": {
+      "dashboard": "Tableau de bord",
+      "users": "Utilisateurs",
+      "shops": "Boutiques",
+      "products": "Produits",
+      "roles": "Rôles et autorisations",
+      "activity": "Historique d'activité",
+      "settings": "Paramètres"
+    }
+  },
+  "Roles": {
+    "super_admin": "Super admin",
+    "seller": "Vendeur"
   }
 }

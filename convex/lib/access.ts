@@ -27,6 +27,15 @@ export type Access = {
 export async function loadAccess(ctx: QueryCtx | MutationCtx): Promise<Access> {
   const user = await requireCurrentUser(ctx);
   if (user.status === "suspended") fail("ACCOUNT_SUSPENDED");
+  return await accessOf(ctx, user);
+}
+
+/**
+ * The user's role and permissions, without the signed-in / suspended
+ * checks. Only `loadAccess` and `users.viewer` (which must not throw for a
+ * suspended user) call this directly.
+ */
+export async function accessOf(ctx: QueryCtx | MutationCtx, user: Doc<"users">): Promise<Access> {
   const role = user.roleId ? await ctx.db.get("roles", user.roleId) : null;
   // Missing role (pre-migration user, or a dangling id) = least privilege.
   const permissions = new Set(role ? permissionsOf(role) : SELLER_PERMISSIONS);

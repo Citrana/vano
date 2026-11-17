@@ -2,7 +2,10 @@ import { describe, expect, test } from "vitest";
 import { api } from "./_generated/api";
 import {
   as,
+  builtInRoles,
+  insertRole,
   insertUser,
+  insertUserWithRole,
   productArgs,
   sellerWithShop,
   shopArgs,
@@ -22,6 +25,11 @@ describe("users.viewer", () => {
       hasShop: false,
       status: "active",
       shopStatus: null,
+      // Not migrated yet (no role): treated as a seller.
+      roleKey: "seller",
+      roleName: "Seller",
+      permissions: ["ownShop.manage", "ownProducts.manage", "ownStats.view"],
+      isAdmin: false,
     });
     await as(t, userId).mutation(api.shops.create, shopArgs());
     expect(await as(t, userId).query(api.users.viewer, {})).toMatchObject({
@@ -37,6 +45,40 @@ describe("users.viewer", () => {
     expect(await as(t, userId).query(api.users.viewer, {})).toMatchObject({
       status: "suspended",
       hasShop: true,
+    });
+  });
+
+  test("role and permissions for seller, super admin and a custom role", async () => {
+    const t = setup();
+    const ids = await builtInRoles(t);
+    const support = await insertRole(t, "Support", ["users.view", "users.suspend"]);
+    const seller = await insertUserWithRole(t, "s@example.com", ids.seller);
+    const admin = await insertUserWithRole(t, "a@example.com", ids.super_admin);
+    const agent = await insertUserWithRole(t, "c@example.com", support);
+
+    expect(await as(t, seller).query(api.users.viewer, {})).toMatchObject({
+      roleKey: "seller",
+      permissions: ["ownShop.manage", "ownProducts.manage", "ownStats.view"],
+      isAdmin: false,
+    });
+    const sa = await as(t, admin).query(api.users.viewer, {});
+    expect(sa).toMatchObject({ roleKey: "super_admin", roleName: "Super admin", isAdmin: true });
+    expect(sa?.permissions).toEqual(expect.arrayContaining(["roles.manage", "ownShop.manage"]));
+    expect(await as(t, agent).query(api.users.viewer, {})).toMatchObject({
+      roleKey: null,
+      roleName: "Support",
+      permissions: ["users.view", "users.suspend"],
+      isAdmin: true,
+    });
+  });
+
+  test("a suspended admin is still described, without throwing", async () => {
+    const t = setup();
+    const ids = await builtInRoles(t);
+    const admin = await insertUserWithRole(t, "a@example.com", ids.super_admin, "suspended");
+    expect(await as(t, admin).query(api.users.viewer, {})).toMatchObject({
+      status: "suspended",
+      isAdmin: true,
     });
   });
 

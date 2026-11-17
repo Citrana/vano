@@ -11,28 +11,80 @@ Read `CLAUDE.md` for the permanent rules before contributing.
 
 ## Requirements
 
-- Node 22+ (`nvm use` reads `.nvmrc`), pnpm 10
+- **Node 22 or newer** (Convex refuses older versions). The repo pins 24 in `.nvmrc`.
+- **pnpm 10** (the version is pinned in `package.json` → `packageManager`).
+- A free **Convex account**: https://dashboard.convex.dev
 
-## Getting started
+## Getting started (first time)
+
+### 1. Get the code and the right Node
 
 ```bash
-pnpm install          # also installs the Husky hooks
-npx convex dev        # first run: log in / create a project, writes .env.local
-npx @convex-dev/auth  # sets JWT_PRIVATE_KEY, JWKS and SITE_URL on the deployment
-pnpm dev              # http://localhost:3000
+git clone https://github.com/Citrana/vano.git
+cd vano
+git switch develop
+
+nvm install          # reads .nvmrc (Node 24); skip if already installed
+nvm use              # run this in every new terminal for this project
+corepack enable      # makes the pinned pnpm version available
 ```
 
-No Convex account yet? `CONVEX_AGENT_MODE=anonymous npx convex dev` runs a
-local backend instead.
+### 2. Install dependencies
 
-### Environment
+```bash
+pnpm install         # also installs the Husky git hooks
+```
 
-| Where | Variable | Purpose |
-|---|---|---|
-| `.env.local` | `NEXT_PUBLIC_CONVEX_URL` | Convex deployment URL (written by `convex dev`) |
-| `.env.local` | `NEXT_PUBLIC_SITE_URL` | Public origin for share links and OG tags, e.g. `https://vano.app` (defaults to the browser origin / `http://localhost:3000`) |
-| Convex | `SITE_URL` | Same origin, used by Convex Auth |
-| Convex | `JWT_PRIVATE_KEY`, `JWKS` | Convex Auth signing keys (`npx @convex-dev/auth`) |
+### 3. Connect Convex (terminal 1, keep it running)
+
+```bash
+npx convex login     # once per computer: opens the browser to sign in
+npx convex dev       # first run: choose your project (or create "vano")
+```
+
+`npx convex dev` pushes the schema and functions, writes `.env.local`
+(`CONVEX_DEPLOYMENT`, `NEXT_PUBLIC_CONVEX_URL`), then **keeps running** and
+redeploys on every change in `convex/`. Wait for
+`Convex functions ready!` before going on.
+
+### 4. Set up authentication (terminal 2, once per deployment)
+
+```bash
+npx @convex-dev/auth
+```
+
+It sets `JWT_PRIVATE_KEY`, `JWKS` and `SITE_URL` on the Convex deployment.
+When asked for the site URL, use the address the app runs on:
+`http://localhost:3000` (or the port `pnpm dev` prints, see below).
+
+Check they are set (names only):
+
+```bash
+npx convex env list
+```
+
+### 5. Optional: public site URL
+
+Share links and link previews (OG tags) use `NEXT_PUBLIC_SITE_URL`. In dev
+it defaults to the browser address, so you can skip this. To set it, add a
+line to `.env.local`:
+
+```bash
+echo 'NEXT_PUBLIC_SITE_URL=http://localhost:3000' >> .env.local
+```
+
+### 6. Start the app (terminal 2)
+
+```bash
+pnpm dev             # http://localhost:3000
+```
+
+If port 3000 is taken (e.g. by Docker / Colima), Next uses the next free
+port (3001…). Then make `SITE_URL` match it:
+`npx convex env set SITE_URL http://localhost:3001`.
+
+Open the app → **Open my shop** → sign up → create your shop → add
+products → open your shop link.
 
 ## Migrating existing data (once per deployment)
 
@@ -82,6 +134,68 @@ the admin activity history as "system".
 Tip: the password lands in your shell history. Start the command with a
 space (zsh/bash skip it when `HIST_IGNORE_SPACE` / `HISTCONTROL=ignorespace`
 is set) or clear the history afterwards.
+
+## Every day
+
+Two terminals, in the project folder:
+
+```bash
+# terminal 1
+nvm use
+npx convex dev
+
+# terminal 2
+nvm use
+pnpm dev
+```
+
+## Before committing
+
+```bash
+git switch -c feat/my-change   # <type>/<kebab-case>: feat, fix, refactor, chore, docs, test
+pnpm typecheck
+pnpm lint
+pnpm test                      # also runs automatically in the pre-commit hook
+```
+
+Open the PR into `develop`.
+
+## Production
+
+```bash
+npx convex deploy                         # push functions to the prod deployment
+npx @convex-dev/auth --prod               # auth keys + SITE_URL on prod (once)
+npx convex env set SITE_URL https://your-domain --prod
+pnpm build && pnpm start                  # or deploy the Next app on Vercel
+```
+
+On the hosting side (e.g. Vercel), set `NEXT_PUBLIC_CONVEX_URL` (the prod
+deployment URL) and `NEXT_PUBLIC_SITE_URL` (your domain). On Vercel you can
+instead set `CONVEX_DEPLOY_KEY` and use the build command
+`npx convex deploy --cmd 'pnpm build'`.
+
+## Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| `Your Node version … is too old. Convex requires at least Node v22` | `nvm use` (or `nvm install`) in that terminal |
+| `A local backend is still running on port 3210` | A local/anonymous Convex backend is still running. Stop it (Ctrl+C in its terminal, or `lsof -iTCP:3210 -sTCP:LISTEN` and quit that process), then rerun `npx convex dev` |
+| Sign up / login fails with a server error | Auth isn't set up on this deployment: run `npx @convex-dev/auth`, check with `npx convex env list` |
+| Login works but you're logged out on refresh / redirect issues | `SITE_URL` doesn't match the address in your browser (port!): `npx convex env set SITE_URL http://localhost:<port>` |
+| Blank pages / "Convex URL not set" | `.env.local` is missing `NEXT_PUBLIC_CONVEX_URL`: run `npx convex dev`, then restart `pnpm dev` |
+| Commit refused: `Invalid branch name` | Rename the branch: `git branch -m feat/short-description` |
+
+No Convex account? `CONVEX_AGENT_MODE=anonymous npx convex dev` runs a
+throwaway local backend instead (then run step 4 against it too).
+
+### Environment
+
+| Where | Variable | Purpose |
+|---|---|---|
+| `.env.local` | `NEXT_PUBLIC_CONVEX_URL` | Convex deployment URL (written by `convex dev`) |
+| `.env.local` | `NEXT_PUBLIC_SITE_URL` | Public origin for share links and OG tags, e.g. `https://vano.app` (defaults to the browser origin / `http://localhost:3000`) |
+| Convex | `SITE_URL` | Same origin, used by Convex Auth |
+| Convex | `JWT_PRIVATE_KEY`, `JWKS` | Convex Auth signing keys (`npx @convex-dev/auth`) |
 
 ## Scripts
 

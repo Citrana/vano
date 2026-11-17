@@ -33,7 +33,9 @@ export function AuthForm({ flow }: { flow: "signIn" | "signUp" }) {
     setServerError(null)
     try {
       await signIn("password", { ...values, flow })
-      router.replace(isSignUp ? "/onboarding" : "/dashboard")
+      // New accounts are always sellers. After a sign-in, the page's guest
+      // gate sends admins to /admin and sellers to /dashboard.
+      if (isSignUp) router.replace("/onboarding")
     } catch (error) {
       const result = classifyAuthError(error, flow)
       setServerError(

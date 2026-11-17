@@ -125,8 +125,14 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 - Forms: react-hook-form + Zod. Required fields use `<Label required>`;
   forms with several fields show `<RequiredFieldsHint />`.
 - Components are small and grouped by feature in `src/features/<feature>/`
-  (`auth`, `shop`, `product`, `public`, `stats`, `i18n`). Generic
-  primitives live in `src/components/ui/`.
+  (`auth`, `shop`, `product`, `public`, `stats`, `i18n`, `admin/*`).
+  Generic primitives live in `src/components/ui/`.
+- Admin pages live under `src/app/admin/` and wrap their content in
+  `<RequirePermission permission="…">`. Sidebar sections are defined only
+  in `src/features/admin/shell/nav.ts` (flip `ready` when a page ships).
+  Hiding a link or button is never security — the Convex function checks.
+- Pure modules imported by Vitest use relative imports (Vitest has no `@/`
+  alias).
 
 ## Workflow
 
