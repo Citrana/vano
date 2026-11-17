@@ -3,21 +3,17 @@ import { convexAuth } from "@convex-dev/auth/server";
 import { ConvexError } from "convex/values";
 import type { MutationCtx } from "./_generated/server";
 import { assertCanStartSession, assignSellerRoleIfMissing } from "./lib/accounts";
-import { LIMITS } from "./lib/catalog";
+import { normalizeEmail, passwordProblem } from "./lib/credentials";
 
 const password = Password({
   // Public self-serve sign-up is enabled for sellers.
   profile(params) {
-    const email = String(params.email ?? "")
-      .trim()
-      .toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      throw new ConvexError({ code: "EMAIL_INVALID" });
-    }
+    const email = normalizeEmail(params.email);
+    if (email === null) throw new ConvexError({ code: "EMAIL_INVALID" });
     return { email };
   },
   validatePasswordRequirements(value) {
-    if (value.length < LIMITS.passwordMin) {
+    if (passwordProblem(value) !== null) {
       throw new ConvexError({ code: "PASSWORD_TOO_SHORT" });
     }
   },
