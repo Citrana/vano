@@ -366,7 +366,8 @@
     "location": "{city}, {country}",
     "unavailableTitle": "{shop} is temporarily unavailable",
     "unavailableBody": "This shop can't take orders right now. Please come back later.",
-    "unavailableMetaTitle": "{shop} – temporarily unavailable"
+    "unavailableMetaTitle": "{shop} – temporarily unavailable",
+    "demoOrderNote": "(Demo order from the Vano demo shop.)"
   },
   "NotFound": {
     "title": "Page not found",
@@ -742,5 +743,11 @@
     "footerTerms": "Terms",
     "footerPrivacy": "Privacy",
     "footerRights": "© {year} Vano. All rights reserved."
+  },
+  "ShopThemes": {
+    "label": "Shop look",
+    "bold": "Bold",
+    "soft": "Soft",
+    "dark": "Dark"
   }
 }

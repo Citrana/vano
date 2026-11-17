@@ -366,7 +366,8 @@
     "location": "{city}, {country}",
     "unavailableTitle": "{shop} est temporairement indisponible",
     "unavailableBody": "Cette boutique ne peut pas prendre de commandes pour le moment. Revenez plus tard.",
-    "unavailableMetaTitle": "{shop} – temporairement indisponible"
+    "unavailableMetaTitle": "{shop} – temporairement indisponible",
+    "demoOrderNote": "(Commande de démonstration depuis la boutique démo Vano.)"
   },
   "NotFound": {
     "title": "Page introuvable",
@@ -742,5 +743,11 @@
     "footerTerms": "Conditions",
     "footerPrivacy": "Confidentialité",
     "footerRights": "© {year} Vano. Tous droits réservés."
+  },
+  "ShopThemes": {
+    "label": "Style de la boutique",
+    "bold": "Audacieux",
+    "soft": "Doux",
+    "dark": "Sombre"
   }
 }
