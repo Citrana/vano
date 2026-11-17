@@ -1,9 +1,14 @@
 import { filter } from "convex-helpers/server/filter";
 import { paginationOptsValidator, paginationResultValidator, type PaginationResult } from "convex/server";
 import { v } from "convex/values";
+import { internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
-import type { QueryCtx } from "../_generated/server";
-import { adminQuery } from "../lib/access";
+import { internalMutation, type QueryCtx } from "../_generated/server";
+import { adminMutation, adminQuery } from "../lib/access";
+import { logAdminAction } from "../lib/audit";
+import { fail } from "../lib/errors";
+import { onProductDeleted, onShopDayStatsDeleted, onShopDeleted } from "../lib/platformStats";
+import { deleteFilesNotIn } from "../lib/seller";
 import { categoryValidator, languageValidator, LIMITS, type Category } from "../lib/catalog";
 import { urlOf } from "../lib/images";
 import { currencyValidator, type Currency } from "../lib/money";
@@ -194,5 +199,116 @@ export const products = adminQuery({
       })),
     );
     return { ...result, page };
+  },
+});
+
+/**
+ * Suspends or reactivates a shop. Suspended: the seller can't change
+ * anything (SHOP_SUSPENDED) and visitors see "temporarily unavailable".
+ * No-op if nothing changes.
+ */
+export const setStatus = adminMutation({
+  permission: "shops.suspend",
+  args: { shopId: v.id("shops"), status: shopStatusValidator },
+  returns: v.null(),
+  handler: async (ctx, { shopId, status }) => {
+    const shop = await ctx.db.get("shops", shopId);
+    if (!shop) fail("NOT_FOUND");
+    if ((shop.status ?? "active") === status) return null;
+    await ctx.db.patch("shops", shopId, { status });
+    await logAdminAction(ctx, {
+      actor: ctx.user,
+      action: status === "suspended" ? "shop.suspend" : "shop.reactivate",
+      targetType: "shop",
+      targetId: shopId,
+      targetLabel: `${shop.name} (/${shop.slug})`,
+    });
+    return null;
+  },
+});
+
+/**
+ * Deletes a shop. The shop, its logo and its counter go now (its link is
+ * a 404 at once, the owner can open a new shop); products, their photos
+ * and the stats rows are purged in small background batches, because a
+ * shop can have up to 200 products x 6 photos. The owner account is kept.
+ */
+export const remove = adminMutation({
+  permission: "shops.delete",
+  args: { shopId: v.id("shops") },
+  returns: v.null(),
+  handler: async (ctx, { shopId }) => {
+    const shop = await ctx.db.get("shops", shopId);
+    if (!shop) fail("NOT_FOUND");
+    const products = await ctx.db
+      .query("products")
+      .withIndex("by_shopId", (q) => q.eq("shopId", shopId))
+      .take(LIMITS.maxProducts);
+    await deleteFilesNotIn(ctx, shop.logoId ? [shop.logoId] : [], []);
+    await onShopDeleted(ctx, shop);
+    await ctx.db.delete("shops", shopId);
+    await logAdminAction(ctx, {
+      actor: ctx.user,
+      action: "shop.delete",
+      targetType: "shop",
+      targetId: shopId,
+      targetLabel: `${shop.name} (/${shop.slug})`,
+      details: { owner: await ownerEmail(ctx, shop.ownerId), products: products.length },
+    });
+    await ctx.scheduler.runAfter(0, internal.admin.shops.purgeShop, { shopId });
+    return null;
+  },
+});
+
+const PRODUCTS_PER_BATCH = 25;
+const STATS_PER_BATCH = 200;
+
+/**
+ * Background clean-up after `remove`: products (photos, upload rows,
+ * counter), then product stats, then shop stats (and the clicks counter).
+ * One small batch per run; reschedules itself until nothing is left.
+ */
+export const purgeShop = internalMutation({
+  args: { shopId: v.id("shops") },
+  returns: v.null(),
+  handler: async (ctx, { shopId }) => {
+    const again = () => ctx.scheduler.runAfter(0, internal.admin.shops.purgeShop, { shopId });
+
+    const products = await ctx.db
+      .query("products")
+      .withIndex("by_shopId", (q) => q.eq("shopId", shopId))
+      .take(PRODUCTS_PER_BATCH);
+    if (products.length > 0) {
+      for (const product of products) {
+        await deleteFilesNotIn(ctx, product.imageIds, []);
+        await onProductDeleted(ctx, product);
+        await ctx.db.delete("products", product._id);
+      }
+      await again();
+      return null;
+    }
+
+    const productStats = await ctx.db
+      .query("productDailyStats")
+      .withIndex("by_shopId_and_day", (q) => q.eq("shopId", shopId))
+      .take(STATS_PER_BATCH);
+    if (productStats.length > 0) {
+      for (const row of productStats) await ctx.db.delete("productDailyStats", row._id);
+      await again();
+      return null;
+    }
+
+    const shopStats = await ctx.db
+      .query("shopDailyStats")
+      .withIndex("by_shopId_and_day", (q) => q.eq("shopId", shopId))
+      .take(STATS_PER_BATCH);
+    if (shopStats.length > 0) {
+      for (const row of shopStats) {
+        await onShopDayStatsDeleted(ctx, row);
+        await ctx.db.delete("shopDailyStats", row._id);
+      }
+      await again();
+    }
+    return null;
   },
 });
