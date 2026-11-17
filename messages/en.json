@@ -46,6 +46,18 @@
     "IMAGES_COUNT": "Add between 1 and 6 photos.",
     "IMAGE_INVALID": "One of the photos couldn't be used. Upload it again.",
     "TOO_MANY_PRODUCTS": "You reached the maximum number of products.",
+    "FORBIDDEN": "You don't have permission to do this.",
+    "ACCOUNT_SUSPENDED": "Your account is suspended. Contact Vano support.",
+    "SHOP_SUSPENDED": "Your shop is suspended, so it can't be changed for now.",
+    "SIGNUP_DISABLED": "New sign-ups are closed for now.",
+    "LAST_SUPER_ADMIN": "This is the last super admin. Add another one first.",
+    "CANNOT_MODIFY_SELF": "You can't change your own role or suspend yourself.",
+    "ROLE_BUILT_IN": "Built-in roles can't be changed or deleted.",
+    "ROLE_IN_USE": "Some users still have this role. Give them another role first.",
+    "ROLE_NAME_INVALID": "Use between 2 and 40 characters for the role name.",
+    "ROLE_NAME_TAKEN": "A role with this name already exists.",
+    "PERMISSION_ESCALATION": "You can only give permissions you have yourself.",
+    "SUPER_ADMIN_EXISTS": "A super admin already exists.",
     "UNKNOWN": "Something went wrong. Try again."
   },
   "Validation": {
