@@ -123,7 +123,9 @@
     "goSignup": "Create one",
     "goLogin": "Sign in",
     "invalidCredentials": "Wrong email or password.",
-    "accountExists": "An account with this email already exists. Sign in instead."
+    "accountExists": "An account with this email already exists. Sign in instead.",
+    "noAccessTitle": "No access",
+    "noAccessBody": "Your account doesn't give access to a shop or to the admin. Contact Vano support."
   },
   "Seller": {
     "dashboard": "Dashboard",

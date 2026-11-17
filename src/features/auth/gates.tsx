@@ -7,6 +7,7 @@ import { api } from "../../../convex/_generated/api"
 import { LoadingState } from "@/components/states/states"
 import { AccountSuspended } from "./account-suspended"
 import { sellerGateTarget, type GateNeed } from "./gate-target"
+import { NoAccess } from "./no-access"
 
 /**
  * Client-side route protection (CLAUDE.md "Security & ownership"): Convex
@@ -27,5 +28,6 @@ export function SellerGate({ need, children }: { need: GateNeed; children: React
   if (target === "show") return <>{children}</>
   // Onboarding already has its own top bar around the gate.
   if (target === "suspended") return <AccountSuspended header={need !== "noShop"} />
+  if (target === "noAccess") return <NoAccess />
   return <LoadingState className="min-h-[60vh]" />
 }

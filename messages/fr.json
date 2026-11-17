@@ -123,7 +123,9 @@
     "goSignup": "Créer un compte",
     "goLogin": "Se connecter",
     "invalidCredentials": "E-mail ou mot de passe incorrect.",
-    "accountExists": "Un compte existe déjà avec cet e-mail. Connectez-vous."
+    "accountExists": "Un compte existe déjà avec cet e-mail. Connectez-vous.",
+    "noAccessTitle": "Aucun accès",
+    "noAccessBody": "Votre compte ne donne accès ni à une boutique ni à l'administration. Contactez le support Vano."
   },
   "Seller": {
     "dashboard": "Tableau de bord",
