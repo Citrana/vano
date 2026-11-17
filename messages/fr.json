@@ -277,5 +277,9 @@
     "title": "Page introuvable",
     "body": "Cette page n'existe pas.",
     "home": "Aller à l'accueil"
+  },
+  "Suspension": {
+    "accountTitle": "Votre compte est suspendu",
+    "accountBody": "Vous ne pouvez pas utiliser votre boutique pour le moment. Contactez le support Vano si vous pensez qu'il s'agit d'une erreur."
   }
 }

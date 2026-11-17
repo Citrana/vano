@@ -277,5 +277,9 @@
     "title": "Page not found",
     "body": "This page doesn't exist.",
     "home": "Go to home page"
+  },
+  "Suspension": {
+    "accountTitle": "Your account is suspended",
+    "accountBody": "You can't use your shop for now. Contact Vano support if you think this is a mistake."
   }
 }
