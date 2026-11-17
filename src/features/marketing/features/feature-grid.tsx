@@ -1,47 +1,36 @@
-import { GlobeIcon, LayoutDashboardIcon, LinkIcon, MessageCircleIcon, SmartphoneIcon } from "lucide-react"
+import { GlobeIcon, LayoutDashboardIcon, LinkIcon, MessageCircleIcon, PaletteIcon, SmartphoneIcon } from "lucide-react"
 import { getTranslations } from "next-intl/server"
 import { cn } from "cn"
 import { Reveal } from "@/features/marketing/shared/reveal"
-import { Section } from "@/features/marketing/shared/section"
 
-export async function WhyVano() {
-  const t = await getTranslations("Landing")
+/** All features; the two flagship ones (look, WhatsApp) are wider and tinted. */
+export async function FeatureGrid() {
+  const t = await getTranslations("Features")
   const features = [
-    { icon: MessageCircleIcon, title: t("featChat"), body: t("featChatBody"), wide: true },
-    { icon: GlobeIcon, title: t("featNoSite"), body: t("featNoSiteBody") },
-    { icon: SmartphoneIcon, title: t("featPhone"), body: t("featPhoneBody") },
-    { icon: LinkIcon, title: t("featLink"), body: t("featLinkBody") },
-    { icon: LayoutDashboardIcon, title: t("featDashboard"), body: t("featDashboardBody") },
+    { icon: PaletteIcon, title: t("designTitle"), body: t("designBody"), wide: true },
+    { icon: LinkIcon, title: t("linkTitle"), body: t("linkBody") },
+    { icon: MessageCircleIcon, title: t("whatsappTitle"), body: t("whatsappBody"), wide: true, whatsapp: true },
+    { icon: SmartphoneIcon, title: t("phoneTitle"), body: t("phoneBody") },
+    { icon: GlobeIcon, title: t("noSiteTitle"), body: t("noSiteBody") },
+    { icon: LayoutDashboardIcon, title: t("dashboardTitle"), body: t("dashboardBody") },
   ]
   return (
-    <Section id="why" eyebrow={t("whyEyebrow")} title={t("whyTitle")} subtitle={t("whySubtitle")} className="bg-card/60">
-      <ul className="grid gap-4 md:grid-cols-3 md:gap-6">
-        {features.map(({ icon: Icon, title, body, wide }, i) => (
+    <section className="px-4 py-10 md:py-16">
+      <ul className="mx-auto grid w-full max-w-6xl gap-4 md:grid-cols-3 md:gap-6">
+        {features.map(({ icon: Icon, title, body, wide, whatsapp }, i) => (
           <li key={title} className={cn(wide && "md:col-span-2")}>
             <Reveal delay={(i % 3) * 100} className="h-full">
-              <div
-                className={cn(
-                  "flex h-full gap-4 rounded-2xl p-5 ring-1 ring-foreground/5 md:flex-col md:p-7",
-                  wide ? "bg-blush" : "bg-card shadow-soft",
-                )}
-              >
-                <span
-                  className={cn(
-                    "flex size-11 shrink-0 items-center justify-center rounded-xl",
-                    wide ? "bg-success text-white" : "bg-blush text-plum",
-                  )}
-                >
-                  <Icon className="size-5" aria-hidden />
+              <div className={cn("flex h-full flex-col gap-3 rounded-2xl p-6 ring-1 ring-foreground/5 md:p-8", wide ? "bg-blush" : "bg-card shadow-soft")}>
+                <span className={cn("flex size-12 items-center justify-center rounded-xl", whatsapp ? "bg-success text-white" : wide ? "bg-card text-plum" : "bg-blush text-plum")}>
+                  <Icon className="size-6" aria-hidden />
                 </span>
-                <div className="flex flex-col gap-1">
-                  <h3 className={cn("font-bold", wide ? "text-xl md:text-2xl" : "text-lg")}>{title}</h3>
-                  <p className={cn(wide ? "text-foreground/80 md:text-lg" : "text-muted-foreground")}>{body}</p>
-                </div>
+                <h2 className={cn("font-bold", wide ? "text-xl md:text-2xl" : "text-lg")}>{title}</h2>
+                <p className={cn("text-base", wide ? "text-foreground/80 md:text-lg" : "text-muted-foreground")}>{body}</p>
               </div>
             </Reveal>
           </li>
         ))}
       </ul>
-    </Section>
+    </section>
   )
 }
