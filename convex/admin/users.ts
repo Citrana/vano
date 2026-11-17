@@ -1,8 +1,11 @@
 import { paginationOptsValidator, paginationResultValidator, type PaginationResult } from "convex/server";
 import { v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
-import type { QueryCtx } from "../_generated/server";
-import { adminQuery } from "../lib/access";
+import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { adminMutation, adminQuery } from "../lib/access";
+import { logAdminAction } from "../lib/audit";
+import { fail } from "../lib/errors";
+import { assertCanChangeUser } from "../lib/guards";
 import { roleKeyValidator, userStatusValidator } from "../lib/permissions";
 import { findShopByOwner } from "../lib/seller";
 
@@ -165,5 +168,78 @@ export const get = adminQuery({
       isSelf: user._id === ctx.user._id,
       isSuperAdmin: role?.key === "super_admin",
     };
+  },
+});
+
+/** Signs the user out everywhere: their sessions and refresh tokens. */
+async function revokeSessions(ctx: MutationCtx, userId: Id<"users">): Promise<void> {
+  for await (const session of ctx.db
+    .query("authSessions")
+    .withIndex("userId", (q) => q.eq("userId", userId))) {
+    for await (const token of ctx.db
+      .query("authRefreshTokens")
+      .withIndex("sessionId", (q) => q.eq("sessionId", session._id))) {
+      await ctx.db.delete("authRefreshTokens", token._id);
+    }
+    await ctx.db.delete("authSessions", session._id);
+  }
+}
+
+/**
+ * Suspends or reactivates a user. Safety rules: not yourself, only a super
+ * admin acts on a super admin, the last active super admin stays active.
+ * Suspending also signs them out everywhere (every function already
+ * refuses a suspended user). No-op if nothing changes.
+ */
+export const setStatus = adminMutation({
+  permission: "users.suspend",
+  args: { userId: v.id("users"), status: userStatusValidator },
+  returns: v.null(),
+  handler: async (ctx, { userId, status }) => {
+    const target = await ctx.db.get("users", userId);
+    if (!target) fail("NOT_FOUND");
+    if ((target.status ?? "active") === status) return null;
+    await assertCanChangeUser(ctx, ctx.access, target, { active: status === "active" });
+
+    await ctx.db.patch("users", userId, { status });
+    if (status === "suspended") await revokeSessions(ctx, userId);
+    await logAdminAction(ctx, {
+      actor: ctx.user,
+      action: status === "suspended" ? "user.suspend" : "user.reactivate",
+      targetType: "user",
+      targetId: userId,
+      targetLabel: target.email ?? "",
+    });
+    return null;
+  },
+});
+
+/**
+ * Gives a user another role. Safety rules: not yourself, no escalation,
+ * only a super admin grants or removes super admin, the last super admin
+ * is protected. No-op if the role doesn't change.
+ */
+export const assignRole = adminMutation({
+  permission: "users.assignRole",
+  args: { userId: v.id("users"), roleId: v.id("roles") },
+  returns: v.null(),
+  handler: async (ctx, { userId, roleId }) => {
+    const target = await ctx.db.get("users", userId);
+    const role = await ctx.db.get("roles", roleId);
+    if (!target || !role) fail("NOT_FOUND");
+    if (target.roleId === roleId) return null;
+    await assertCanChangeUser(ctx, ctx.access, target, { role });
+
+    const before = target.roleId ? await ctx.db.get("roles", target.roleId) : null;
+    await ctx.db.patch("users", userId, { roleId });
+    await logAdminAction(ctx, {
+      actor: ctx.user,
+      action: "user.assignRole",
+      targetType: "user",
+      targetId: userId,
+      targetLabel: target.email ?? "",
+      details: { from: before?.name ?? "Seller", to: role.name },
+    });
+    return null;
   },
 });

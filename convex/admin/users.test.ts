@@ -133,3 +133,141 @@ describe("admin.users.roleOptions", () => {
     await expect(as(t, w.amani).query(api.admin.users.roleOptions, {})).rejects.toThrow(/FORBIDDEN/);
   });
 });
+
+async function signIn(t: T, userId: Id<"users">) {
+  return await t.run(async (ctx) => {
+    const sessionId = await ctx.db.insert("authSessions", { userId, expirationTime: Date.now() + 1e9 });
+    await ctx.db.insert("authRefreshTokens", { sessionId, expirationTime: Date.now() + 1e9 });
+    return sessionId;
+  });
+}
+
+const audit = (t: T) => t.run((ctx) => ctx.db.query("auditLogs").collect());
+
+describe("admin.users.setStatus", () => {
+  test("suspending signs the user out everywhere and is logged", async () => {
+    const t = newTest();
+    const w = await world(t);
+    await signIn(t, w.amani);
+    await signIn(t, w.amani);
+    const other = await signIn(t, w.agent);
+
+    await as(t, w.admin).mutation(api.admin.users.setStatus, { userId: w.amani, status: "suspended" });
+
+    expect((await t.run((ctx) => ctx.db.get("users", w.amani)))?.status).toBe("suspended");
+    const sessions = await t.run((ctx) => ctx.db.query("authSessions").collect());
+    expect(sessions.map((s) => s._id)).toEqual([other]);
+    const tokens = await t.run((ctx) => ctx.db.query("authRefreshTokens").collect());
+    expect(tokens.map((tk) => tk.sessionId)).toEqual([other]);
+    expect(await audit(t)).toEqual([
+      expect.objectContaining({
+        actorId: w.admin,
+        actorEmail: "boss@vano.app",
+        action: "user.suspend",
+        targetType: "user",
+        targetId: w.amani,
+        targetLabel: "amani@shop.cd",
+      }),
+    ]);
+    // Every function now refuses them.
+    await expect(as(t, w.amani).query(api.shops.myShop, {})).rejects.toThrow(/ACCOUNT_SUSPENDED/);
+  });
+
+  test("reactivating works; the same status again changes nothing", async () => {
+    const t = newTest();
+    const w = await world(t);
+    await as(t, w.admin).mutation(api.admin.users.setStatus, { userId: w.baraka, status: "active" });
+    await as(t, w.admin).mutation(api.admin.users.setStatus, { userId: w.baraka, status: "active" });
+    expect((await t.run((ctx) => ctx.db.get("users", w.baraka)))?.status).toBe("active");
+    expect((await audit(t)).map((a) => a.action)).toEqual(["user.reactivate"]);
+  });
+
+  test("safety rules: not yourself, super admins only by super admins", async () => {
+    const t = newTest();
+    const w = await world(t);
+    await expect(
+      as(t, w.admin).mutation(api.admin.users.setStatus, { userId: w.admin, status: "suspended" }),
+    ).rejects.toThrow(/CANNOT_MODIFY_SELF/);
+    // Support has users.suspend but isn't a super admin.
+    await expect(
+      as(t, w.agent).mutation(api.admin.users.setStatus, { userId: w.admin, status: "suspended" }),
+    ).rejects.toThrow(/FORBIDDEN/);
+    await as(t, w.agent).mutation(api.admin.users.setStatus, { userId: w.amani, status: "suspended" });
+    expect(await audit(t)).toHaveLength(1);
+  });
+
+  test("needs users.suspend", async () => {
+    const t = newTest();
+    const w = await world(t);
+    const viewer = await insertUserWithRole(t, "v@vano.app", await insertRole(t, "Viewer", ["users.view"]));
+    await expect(
+      as(t, viewer).mutation(api.admin.users.setStatus, { userId: w.amani, status: "suspended" }),
+    ).rejects.toThrow(/FORBIDDEN/);
+  });
+});
+
+describe("admin.users.assignRole", () => {
+  test("changes the role and logs old and new names", async () => {
+    const t = newTest();
+    const w = await world(t);
+    await as(t, w.admin).mutation(api.admin.users.assignRole, { userId: w.amani, roleId: w.support });
+    expect((await t.run((ctx) => ctx.db.get("users", w.amani)))?.roleId).toBe(w.support);
+    expect(await audit(t)).toEqual([
+      expect.objectContaining({
+        action: "user.assignRole",
+        targetId: w.amani,
+        details: { from: "Seller", to: "Support" },
+      }),
+    ]);
+    // Same role again: nothing happens.
+    await as(t, w.admin).mutation(api.admin.users.assignRole, { userId: w.amani, roleId: w.support });
+    expect(await audit(t)).toHaveLength(1);
+  });
+
+  test("no escalation; super admin only granted by a super admin", async () => {
+    const t = newTest();
+    const w = await world(t);
+    const manager = await insertUserWithRole(
+      t,
+      "m@vano.app",
+      await insertRole(t, "Manager", ["users.view", "users.assignRole"]),
+    );
+    // Support has users.suspend, which the manager doesn't hold.
+    await expect(
+      as(t, manager).mutation(api.admin.users.assignRole, { userId: w.amani, roleId: w.support }),
+    ).rejects.toThrow(/PERMISSION_ESCALATION/);
+    await expect(
+      as(t, manager).mutation(api.admin.users.assignRole, { userId: w.amani, roleId: w.ids.super_admin }),
+    ).rejects.toThrow(/FORBIDDEN/);
+    // A role within their own permissions is fine.
+    const viewerRole = await insertRole(t, "Viewer", ["users.view"]);
+    await as(t, manager).mutation(api.admin.users.assignRole, { userId: w.amani, roleId: viewerRole });
+  });
+
+  test("not yourself; unknown role; needs users.assignRole", async () => {
+    const t = newTest();
+    const w = await world(t);
+    await expect(
+      as(t, w.admin).mutation(api.admin.users.assignRole, { userId: w.admin, roleId: w.ids.seller }),
+    ).rejects.toThrow(/CANNOT_MODIFY_SELF/);
+    const ghost = await t.run(async (ctx) => {
+      const id = await ctx.db.insert("roles", { name: "Ghost", permissions: [] });
+      await ctx.db.delete("roles", id);
+      return id;
+    });
+    await expect(
+      as(t, w.admin).mutation(api.admin.users.assignRole, { userId: w.amani, roleId: ghost }),
+    ).rejects.toThrow(/NOT_FOUND/);
+    await expect(
+      as(t, w.agent).mutation(api.admin.users.assignRole, { userId: w.amani, roleId: w.ids.seller }),
+    ).rejects.toThrow(/FORBIDDEN/);
+  });
+
+  test("a second super admin can demote the first", async () => {
+    const t = newTest();
+    const w = await world(t);
+    const second = await insertUserWithRole(t, "two@vano.app", w.ids.super_admin);
+    await as(t, second).mutation(api.admin.users.assignRole, { userId: w.admin, roleId: w.ids.seller });
+    expect((await t.run((ctx) => ctx.db.get("users", w.admin)))?.roleId).toBe(w.ids.seller);
+  });
+});
