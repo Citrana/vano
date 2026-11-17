@@ -364,5 +364,89 @@
   "UserStatus": {
     "active": "Actif",
     "suspended": "Suspendu"
+  },
+  "Permissions": {
+    "dashboard": {
+      "title": "Tableau de bord",
+      "view": "Voir le tableau de bord"
+    },
+    "users": {
+      "title": "Utilisateurs",
+      "view": "Voir les utilisateurs",
+      "suspend": "Suspendre et réactiver des utilisateurs",
+      "assignRole": "Changer le rôle des utilisateurs"
+    },
+    "shops": {
+      "title": "Boutiques",
+      "view": "Voir les boutiques",
+      "suspend": "Suspendre et réactiver des boutiques",
+      "delete": "Supprimer des boutiques"
+    },
+    "products": {
+      "title": "Produits",
+      "view": "Voir les produits",
+      "hide": "Masquer et réafficher des produits",
+      "delete": "Supprimer des produits"
+    },
+    "roles": {
+      "title": "Rôles et autorisations",
+      "view": "Voir les rôles",
+      "manage": "Créer, modifier et supprimer des rôles"
+    },
+    "audit": {
+      "title": "Historique d'activité",
+      "view": "Voir l'historique d'activité"
+    },
+    "settings": {
+      "title": "Paramètres",
+      "view": "Voir les paramètres",
+      "manage": "Modifier les paramètres"
+    },
+    "ownShop": {
+      "title": "Sa boutique",
+      "manage": "Créer et modifier sa propre boutique"
+    },
+    "ownProducts": {
+      "title": "Ses produits",
+      "manage": "Gérer ses propres produits"
+    },
+    "ownStats": {
+      "title": "Ses statistiques",
+      "view": "Voir les statistiques de sa boutique"
+    }
+  },
+  "AdminRoles": {
+    "title": "Rôles et autorisations",
+    "roleTitle": "Rôle",
+    "back": "Retour aux rôles",
+    "newRole": "Nouveau rôle",
+    "create": "Créer le rôle",
+    "save": "Enregistrer",
+    "created": "Rôle créé.",
+    "saved": "Rôle enregistré.",
+    "builtIn": "Intégré",
+    "allPermissions": "Toutes les autorisations",
+    "permissionCount": "{count, plural, one {# autorisation} other {# autorisations}}",
+    "userCount": "{count, plural, =0 {Aucun utilisateur} one {# utilisateur} other {# utilisateurs}}",
+    "userCountMany": "100+ utilisateurs",
+    "name": "Nom",
+    "description": "Description",
+    "permissions": "Autorisations",
+    "selectAll": "Tout sélectionner",
+    "notYours": "Vous n'avez pas cette autorisation",
+    "sellerAreas": "La propre boutique de la personne",
+    "readOnlySuperAdmin": "Le super admin a toujours toutes les autorisations, y compris les futures. Il ne peut pas être modifié.",
+    "readOnlySeller": "Vendeur est le rôle de chaque nouveau compte. Ses autorisations sont fixes pour que personne ne bloque les vendeurs par erreur.",
+    "readOnlyOwn": "C'est votre propre rôle, vous ne pouvez donc pas le modifier. Demandez à un super admin.",
+    "readOnlyNoPermission": "Vous pouvez voir ce rôle mais pas le modifier.",
+    "delete": "Supprimer le rôle",
+    "deleteTitle": "Supprimer ce rôle ?",
+    "deleteBody": "« {name} » sera supprimé. Cette action est irréversible.",
+    "deleteInUse": "« {name} » est encore attribué à des utilisateurs. Donnez-leur un autre rôle d'abord, puis supprimez-le.",
+    "deleted": "Rôle supprimé.",
+    "emptyTitle": "Aucun rôle personnalisé",
+    "emptyBody": "Créez des rôles comme « Support » ou « Modérateur » et choisissez exactement ce qu'ils peuvent faire.",
+    "notFoundTitle": "Rôle introuvable",
+    "notFoundBody": "Ce rôle n'existe pas ou a été supprimé."
   }
 }

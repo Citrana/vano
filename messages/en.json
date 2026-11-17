@@ -364,5 +364,89 @@
   "UserStatus": {
     "active": "Active",
     "suspended": "Suspended"
+  },
+  "Permissions": {
+    "dashboard": {
+      "title": "Dashboard",
+      "view": "View the dashboard"
+    },
+    "users": {
+      "title": "Users",
+      "view": "View users",
+      "suspend": "Suspend and reactivate users",
+      "assignRole": "Change users' roles"
+    },
+    "shops": {
+      "title": "Shops",
+      "view": "View shops",
+      "suspend": "Suspend and reactivate shops",
+      "delete": "Delete shops"
+    },
+    "products": {
+      "title": "Products",
+      "view": "View products",
+      "hide": "Hide and unhide products",
+      "delete": "Delete products"
+    },
+    "roles": {
+      "title": "Roles & permissions",
+      "view": "View roles",
+      "manage": "Create, edit and delete roles"
+    },
+    "audit": {
+      "title": "Activity history",
+      "view": "View the activity history"
+    },
+    "settings": {
+      "title": "Settings",
+      "view": "View settings",
+      "manage": "Change settings"
+    },
+    "ownShop": {
+      "title": "Own shop",
+      "manage": "Create and edit their own shop"
+    },
+    "ownProducts": {
+      "title": "Own products",
+      "manage": "Manage their own products"
+    },
+    "ownStats": {
+      "title": "Own statistics",
+      "view": "View their shop's statistics"
+    }
+  },
+  "AdminRoles": {
+    "title": "Roles & permissions",
+    "roleTitle": "Role",
+    "back": "Back to roles",
+    "newRole": "New role",
+    "create": "Create role",
+    "save": "Save changes",
+    "created": "Role created.",
+    "saved": "Role saved.",
+    "builtIn": "Built-in",
+    "allPermissions": "All permissions",
+    "permissionCount": "{count, plural, one {# permission} other {# permissions}}",
+    "userCount": "{count, plural, =0 {No users} one {# user} other {# users}}",
+    "userCountMany": "100+ users",
+    "name": "Name",
+    "description": "Description",
+    "permissions": "Permissions",
+    "selectAll": "Select all",
+    "notYours": "You don't have this permission",
+    "sellerAreas": "The person's own shop",
+    "readOnlySuperAdmin": "Super admin always has every permission, including future ones. It can't be changed.",
+    "readOnlySeller": "Seller is the role every new account gets. Its permissions are fixed so no one can lock sellers out by mistake.",
+    "readOnlyOwn": "This is your own role, so you can't change it. Ask a super admin.",
+    "readOnlyNoPermission": "You can view this role but not change it.",
+    "delete": "Delete role",
+    "deleteTitle": "Delete this role?",
+    "deleteBody": "\"{name}\" will be deleted. This can't be undone.",
+    "deleteInUse": "\"{name}\" is still assigned to some users. Give them another role first, then delete it.",
+    "deleted": "Role deleted.",
+    "emptyTitle": "No custom roles yet",
+    "emptyBody": "Create roles like \"Support\" or \"Moderator\" and choose exactly what they can do.",
+    "notFoundTitle": "Role not found",
+    "notFoundBody": "This role doesn't exist or was deleted."
   }
 }
