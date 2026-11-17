@@ -280,6 +280,7 @@
   },
   "Suspension": {
     "accountTitle": "Your account is suspended",
-    "accountBody": "You can't use your shop for now. Contact Vano support if you think this is a mistake."
+    "accountBody": "You can't use your shop for now. Contact Vano support if you think this is a mistake.",
+    "shopBanner": "Your shop is suspended, so you can't make changes for now. Contact Vano support if you think this is a mistake."
   }
 }
