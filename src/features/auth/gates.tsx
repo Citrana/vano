@@ -5,34 +5,27 @@ import { useRouter } from "next/navigation"
 import { useEffect, type ReactNode } from "react"
 import { api } from "../../../convex/_generated/api"
 import { LoadingState } from "@/components/states/states"
+import { AccountSuspended } from "./account-suspended"
+import { sellerGateTarget, type GateNeed } from "./gate-target"
 
 /**
  * Client-side route protection (CLAUDE.md "Security & ownership"): Convex
  * Auth's proxy-based protection has an open upstream bug with Next's
  * proxy.ts. The real boundary is server-side, in every Convex function.
- *
- * - `need="guest"`: login / signup — signed-in users go to the dashboard.
- * - `need="noShop"`: onboarding — sellers with a shop go to the dashboard.
- * - `need="shop"`: dashboard — no session → /login, no shop → /onboarding.
+ * The rules live in `sellerGateTarget` (gate-target.ts).
  */
-export function SellerGate({ need, children }: { need: "guest" | "noShop" | "shop"; children: ReactNode }) {
+export function SellerGate({ need, children }: { need: GateNeed; children: ReactNode }) {
   const { isLoading, isAuthenticated } = useConvexAuth()
   const viewer = useQuery(api.users.viewer, isAuthenticated ? {} : "skip")
   const router = useRouter()
-
-  const target = (() => {
-    if (isLoading) return "wait"
-    if (!isAuthenticated) return need === "guest" ? "show" : "/login"
-    if (viewer === undefined) return "wait"
-    if (viewer === null) return need === "guest" ? "show" : "/login"
-    if (need === "guest") return "/dashboard"
-    if (need === "noShop") return viewer.hasShop ? "/dashboard" : "show"
-    return viewer.hasShop ? "show" : "/onboarding"
-  })()
+  const target = sellerGateTarget({ need, isLoading, isAuthenticated, viewer })
 
   useEffect(() => {
-    if (target !== "wait" && target !== "show") router.replace(target)
+    if (target.startsWith("/")) router.replace(target)
   }, [target, router])
 
-  return target === "show" ? <>{children}</> : <LoadingState className="min-h-[60vh]" />
+  if (target === "show") return <>{children}</>
+  // Onboarding already has its own top bar around the gate.
+  if (target === "suspended") return <AccountSuspended header={need !== "noShop"} />
+  return <LoadingState className="min-h-[60vh]" />
 }

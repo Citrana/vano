@@ -27,6 +27,8 @@ export default function DashboardPage() {
 
   if (shop === undefined || products === undefined) return <LoadingState />
   if (shop === null) return null // SellerGate redirects to onboarding
+  // A suspended shop is read-only (the banner explains why).
+  const canAdd = shop.status !== "suspended"
 
   const addButton = (
     <Link href="/dashboard/products/new" className={buttonVariants()}>
@@ -45,10 +47,15 @@ export default function DashboardPage() {
             </h1>
             <p className="text-sm text-muted-foreground">{t("productCount", { count: products.length })}</p>
           </div>
-          {products.length > 0 ? addButton : null}
+          {products.length > 0 && canAdd ? addButton : null}
         </div>
         {products.length === 0 ? (
-          <EmptyState icon={<PackageIcon />} title={t("emptyTitle")} body={t("emptyBody")} action={addButton} />
+          <EmptyState
+            icon={<PackageIcon />}
+            title={t("emptyTitle")}
+            body={t("emptyBody")}
+            action={canAdd ? addButton : undefined}
+          />
         ) : (
           <ul className="flex flex-col gap-3">
             {products.map((product) => (
