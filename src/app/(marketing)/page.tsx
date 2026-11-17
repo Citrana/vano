@@ -1,15 +1,14 @@
 import type { Metadata } from "next"
 import { getTranslations } from "next-intl/server"
-import { ComingSoon } from "@/features/marketing/features/coming-soon"
-import { WhyVano } from "@/features/marketing/features/feature-grid"
-import { HowItWorks } from "@/features/marketing/features/how-it-works"
-import { DemoPreview } from "@/features/marketing/home/demo-preview"
 import { Hero } from "@/features/marketing/home/hero"
+import { Highlights } from "@/features/marketing/home/highlights"
+import { LegacyAnchorRedirect } from "@/features/marketing/home/legacy-anchor-redirect"
+import { PricingTeaser } from "@/features/marketing/home/pricing-teaser"
+import { StepsTeaser } from "@/features/marketing/home/steps-teaser"
 import { CtaBand } from "@/features/marketing/shared/cta-band"
-import { Faq } from "@/features/marketing/shared/faq-list"
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("Landing")
+  const t = await getTranslations("Home")
   const title = t("metaTitle")
   const description = t("metaDescription")
   return {
@@ -24,12 +23,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function HomePage() {
   return (
     <>
+      <LegacyAnchorRedirect />
       <Hero />
-      <HowItWorks />
-      <WhyVano />
-      <DemoPreview />
-      <ComingSoon />
-      <Faq />
+      <StepsTeaser />
+      <Highlights />
+      <PricingTeaser />
       <CtaBand />
     </>
   )

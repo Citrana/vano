@@ -13,11 +13,13 @@ import { HeroParallax } from "@/features/marketing/home/hero-parallax"
 import { highlight } from "@/features/marketing/shared/highlight"
 import { OpenShopCta } from "@/features/marketing/shared/open-shop-cta"
 import { OrderBadge } from "@/features/marketing/home/order-badge"
-import { PhoneMockup } from "@/features/marketing/home/phone-mockup"
-import { SAMPLE_PRODUCTS } from "@/features/marketing/home/photos"
+import { LivePhone } from "@/features/marketing/home/live-phone"
+import { PhoneThemeControls } from "@/features/marketing/home/phone-theme"
+import { DEMO_PRODUCTS } from "@/features/marketing/demo/demo-shop"
+import { TRIAL_MONTHS } from "@/features/marketing/pricing/plans"
 
 export async function Hero() {
-  const t = await getTranslations("Landing")
+  const t = await getTranslations("Home")
 
   const iconChip = (children: ReactNode, className: string) => (
     <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-full lg:size-10", className)}>{children}</span>
@@ -50,7 +52,7 @@ export async function Hero() {
           </Link>
         </div>
         <ul className="flex flex-wrap justify-center gap-x-6 gap-y-1 text-base font-medium">
-          {[t("trustFree"), t("trustFast")].map((line) => (
+          {[t("trustTrial", { months: TRIAL_MONTHS }), t("trustNoPayment"), t("trustFast")].map((line) => (
             <li key={line} className="inline-flex items-center gap-1.5">
               <CheckIcon className="size-5 text-success" strokeWidth={3} aria-hidden />
               {line}
@@ -63,13 +65,13 @@ export async function Hero() {
           are % of the phone height, chosen to cover only photos and headers,
           never product names or prices. Compact layout below lg.
         */}
-        <div className="relative mt-2 pt-10 pb-12 md:mt-4 lg:py-0">
+        <div className="relative mt-2 pt-10 md:mt-4 lg:pt-0">
           <div className="relative">
             <HeroParallax>
-              <PhoneMockup />
+              <LivePhone />
             </HeroParallax>
 
-            <Floater delay={300} float={6} className="-top-[7%] -left-9 lg:top-[26%] lg:right-[calc(100%-24px)] lg:left-auto">
+            <Floater delay={300} float={6} className="-top-[7%] -left-9 lg:top-[36%] lg:right-[calc(100%-24px)] lg:left-auto">
               <span aria-hidden className="absolute inset-0 animate-pulse-ring rounded-2xl ring-2 ring-success/60 [animation-delay:1.2s] motion-reduce:hidden" />
               <FloatingCard
                 className="relative w-max max-w-[15rem] lg:max-w-none"
@@ -82,7 +84,7 @@ export async function Hero() {
                 title={t("floatOrderTitle")}
                 body={
                   <span className="inline-flex items-center gap-1.5">
-                    <Image src={SAMPLE_PRODUCTS[0].src} alt="" width={16} height={20} className="rounded-sm object-cover" />
+                    <Image src={DEMO_PRODUCTS[0].photos[0]} alt="" width={16} height={20} className="rounded-sm object-cover" />
                     {t("floatOrderBody")}
                   </span>
                 }
@@ -123,6 +125,9 @@ export async function Hero() {
                 body={<span className="hidden lg:inline">{t("floatConfirmedBody")}</span>}
               />
             </Floater>
+          </div>
+          <div className="mt-14 lg:mt-6">
+            <PhoneThemeControls />
           </div>
         </div>
       </div>
