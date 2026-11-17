@@ -6,10 +6,11 @@ import { useLocale, useTranslations } from "next-intl"
 import { useState } from "react"
 import { cn } from "cn"
 import { api } from "../../../convex/_generated/api"
+import type { Id } from "../../../convex/_generated/dataModel"
 import { formatMoney, type Currency } from "../../../convex/lib/money"
 import { buttonVariants } from "@/components/ui/button"
 import { productUrl } from "@/lib/site"
-import { buildOrderMessage, waChatLink } from "@/lib/whatsapp"
+import { buildOrderMessage, waChatLink, waShareLink } from "@/lib/whatsapp"
 
 function OptionChips({
   label,
@@ -48,16 +49,20 @@ function OptionChips({
 
 /**
  * Price, size/colour choice and the "Order on WhatsApp" button. The click
- * is recorded (anonymously) without delaying the link.
+ * is recorded (anonymously) without delaying the link. In `demo` mode
+ * (marketing demo shop) WhatsApp opens with a labelled demo message for
+ * any contact, and nothing is recorded.
  */
 export function OrderPanel({
   slug,
   whatsappNumber,
   currency,
   product,
+  demo = false,
 }: {
   slug: string
-  whatsappNumber: string
+  whatsappNumber?: string
+  demo?: boolean
   currency: Currency
   product: { _id: string; name: string; price: number; sizes: string[]; colors: string[]; soldOut: boolean }
 }) {
@@ -67,10 +72,9 @@ export function OrderPanel({
   const [size, setSize] = useState<string>()
   const [color, setColor] = useState<string>()
   const price = formatMoney(product.price, currency, locale)
-  const href = waChatLink(
-    whatsappNumber,
-    buildOrderMessage(t, { product: product.name, price, size, color, url: productUrl(slug, product._id) }),
-  )
+  const message = buildOrderMessage(t, { product: product.name, price, size, color, url: productUrl(slug, product._id) })
+  const href =
+    demo || !whatsappNumber ? waShareLink(`${t("demoOrderNote")}\n\n${message}`) : waChatLink(whatsappNumber, message)
 
   return (
     <div className="flex flex-col gap-5">
@@ -88,7 +92,7 @@ export function OrderPanel({
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => {
-              recordClick({ productId: product._id }).catch(() => {})
+              if (!demo) recordClick({ productId: product._id as Id<"products"> }).catch(() => {})
             }}
             className={buttonVariants({ size: "lg", variant: "whatsapp", className: "w-full" })}
           >

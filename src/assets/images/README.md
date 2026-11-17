@@ -22,7 +22,7 @@ file is a build error. Use `public/` only for files that need a fixed URL
 | `illustrations/onboarding/` | Welcome and create-shop steps |
 | `illustrations/errors/` | 404, error page, shop suspended / unavailable |
 | `illustrations/marketing/` | Landing page spot art, coming-soon teasers |
-| `photos/products/` | Sample product photos (landing mockup, demo grid) |
+| `photos/products/` | Sample product photos (`demo/`: the built-in demo shop and Home phone) |
 | `photos/lifestyle/` | Sellers and people for marketing pages |
 | `patterns/` | Background shapes and textures |
 | `icons/` | Custom SVG icons that `lucide-react` doesn't have |
@@ -49,12 +49,18 @@ file is a build error. Use `public/` only for files that need a fixed URL
 
 | File | Source | License |
 |---|---|---|
-| `photos/products/red-dress.webp` | https://images.unsplash.com/photo-1595777457583-95e059d581b8 | Unsplash License |
-| `photos/products/red-bag.webp` | https://images.unsplash.com/photo-1584917865442-de89df76afd3 | Unsplash License |
-| `photos/products/floral-heels.webp` | https://images.unsplash.com/photo-1543163521-1bf539c55dd2 | Unsplash License |
-| `photos/products/bomber-jacket.webp` | https://images.unsplash.com/photo-1591047139829-d91aecb6caea | Unsplash License |
-| `photos/products/knit-poncho.webp` | https://images.unsplash.com/photo-1434389677669-e08b4cac3105 | Unsplash License |
-| `photos/products/yellow-set.webp` | https://images.unsplash.com/photo-1515886657613-9f3515b0c78f | Unsplash License |
-| `brand/vano-mobile.png` | Vano design team | Own work |
+| `brand/vano-mobile.png` | Vano design team (not used right now: the Home phone renders the live demo shop) | Own work |
 | `icons/whatsapp.png` | Vano design team (WhatsApp mark) | WhatsApp brand guidelines |
 | `icons/link.png` | Vano design team | Own work |
+| `photos/products/demo/slip-dress.webp` | https://unsplash.com/photos/PTFAGC9Whmg | Unsplash License |
+| `photos/products/demo/slip-dress-2.webp` | https://unsplash.com/photos/qZRrpXgCio8 | Unsplash License |
+| `photos/products/demo/kente-shirt.webp` | https://unsplash.com/photos/5buvyK3DPsI | Unsplash License |
+| `photos/products/demo/printed-top.webp` | https://unsplash.com/photos/DVMRYuULLgk | Unsplash License |
+| `photos/products/demo/wax-print-shirt.webp` | https://unsplash.com/photos/t3vn-jyl85U | Unsplash License |
+| `photos/products/demo/blue-heels.webp` | https://unsplash.com/photos/yjwehHiMGpg | Unsplash License |
+| `photos/products/demo/white-sunglasses.webp` | https://unsplash.com/photos/YZrlDELuvHQ | Unsplash License |
+| `photos/products/demo/wide-brim-hat.webp` | https://unsplash.com/photos/2KTODAQ3q9Y | Unsplash License |
+| `photos/products/demo/wide-brim-hat-2.webp` | https://unsplash.com/photos/7Nb3YHCpNIs | Unsplash License |
+| `photos/products/demo/leather-jacket.webp` | https://unsplash.com/photos/PbiYceITwt0 | Unsplash License |
+| `photos/products/demo/kente-crop-top.webp` | https://unsplash.com/photos/ZrprnquSplY | Unsplash License |
+| `photos/products/demo/kente-crop-top-2.webp` | https://unsplash.com/photos/_VYEcLzGJYk | Unsplash License |

@@ -18,7 +18,18 @@ type Item = {
 }
 
 /** Category filter chips (only categories that have products) + grid. */
-export function ProductGrid({ slug, currency, products }: { slug: string; currency: Currency; products: Item[] }) {
+export function ProductGrid({
+  slug,
+  currency,
+  products,
+  columns = "responsive",
+}: {
+  slug: string
+  currency: Currency
+  products: Item[]
+  /** "phone": always 2 columns (e.g. inside a phone mockup, whatever the viewport). */
+  columns?: "responsive" | "phone"
+}) {
   const t = useTranslations("Public")
   const tc = useTranslations("Categories")
   const [active, setActive] = useState<Category | "all">("all")
@@ -57,7 +68,7 @@ export function ProductGrid({ slug, currency, products }: { slug: string; curren
       {visible.length === 0 ? (
         <p className="py-10 text-center text-muted-foreground">{t("emptyCategory")}</p>
       ) : (
-        <ul className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 lg:grid-cols-4">
+        <ul className={cn("grid grid-cols-2 gap-x-3 gap-y-6", columns === "responsive" && "sm:grid-cols-3 lg:grid-cols-4")}>
           {visible.map((p) => (
             <li key={p._id}>
               <ProductCard
