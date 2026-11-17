@@ -529,5 +529,63 @@
     "deleteTitle": "Supprimer ce produit ?",
     "deleteBody": "« {name} » et ses photos seront supprimés définitivement. Cette action est irréversible.",
     "deleted": "Produit supprimé."
+  },
+  "AuditActions": {
+    "user": {
+      "suspend": "A suspendu un utilisateur",
+      "reactivate": "A réactivé un utilisateur",
+      "assignRole": "A changé le rôle d'un utilisateur"
+    },
+    "shop": {
+      "suspend": "A suspendu une boutique",
+      "reactivate": "A réactivé une boutique",
+      "delete": "A supprimé une boutique"
+    },
+    "product": {
+      "hide": "A masqué un produit",
+      "unhide": "A réaffiché un produit",
+      "delete": "A supprimé un produit"
+    },
+    "role": {
+      "create": "A créé un rôle",
+      "update": "A modifié un rôle",
+      "delete": "A supprimé un rôle"
+    },
+    "settings": {
+      "update": "A modifié les paramètres"
+    },
+    "superAdmin": {
+      "seed": "A créé un super admin (terminal)"
+    }
+  },
+  "AuditDetails": {
+    "permissions": "Autorisations",
+    "added": "Ajoutées",
+    "removed": "Retirées",
+    "renamedFrom": "Ancien nom",
+    "from": "De",
+    "to": "À",
+    "owner": "Propriétaire",
+    "products": "Produits",
+    "force": "Forcé"
+  },
+  "AdminActivity": {
+    "title": "Historique d'activité",
+    "person": "Personne",
+    "allPeople": "Tout le monde",
+    "system": "Système (terminal)",
+    "action": "Action",
+    "allActions": "Toutes les actions",
+    "from": "Du",
+    "to": "Au",
+    "clear": "Effacer les filtres",
+    "utcNote": "Les jours sont en UTC.",
+    "yes": "Oui",
+    "no": "Non",
+    "emptyTitle": "Aucune activité pour l'instant",
+    "emptyBody": "Les actions des admins (suspensions, changements de rôle, suppressions…) apparaîtront ici.",
+    "emptyFilteredTitle": "Aucune activité trouvée",
+    "emptyFilteredBody": "Aucune activité ne correspond à ces filtres.",
+    "loadMore": "Afficher plus"
   }
 }

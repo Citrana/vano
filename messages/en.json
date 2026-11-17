@@ -529,5 +529,63 @@
     "deleteTitle": "Delete this product?",
     "deleteBody": "\"{name}\" and its photos will be deleted for good. This can't be undone.",
     "deleted": "Product deleted."
+  },
+  "AuditActions": {
+    "user": {
+      "suspend": "Suspended a user",
+      "reactivate": "Reactivated a user",
+      "assignRole": "Changed a user's role"
+    },
+    "shop": {
+      "suspend": "Suspended a shop",
+      "reactivate": "Reactivated a shop",
+      "delete": "Deleted a shop"
+    },
+    "product": {
+      "hide": "Hid a product",
+      "unhide": "Unhid a product",
+      "delete": "Deleted a product"
+    },
+    "role": {
+      "create": "Created a role",
+      "update": "Edited a role",
+      "delete": "Deleted a role"
+    },
+    "settings": {
+      "update": "Changed the settings"
+    },
+    "superAdmin": {
+      "seed": "Created a super admin (terminal)"
+    }
+  },
+  "AuditDetails": {
+    "permissions": "Permissions",
+    "added": "Added",
+    "removed": "Removed",
+    "renamedFrom": "Previous name",
+    "from": "From",
+    "to": "To",
+    "owner": "Owner",
+    "products": "Products",
+    "force": "Forced"
+  },
+  "AdminActivity": {
+    "title": "Activity history",
+    "person": "Person",
+    "allPeople": "Everyone",
+    "system": "System (terminal)",
+    "action": "Action",
+    "allActions": "All actions",
+    "from": "From",
+    "to": "To",
+    "clear": "Clear filters",
+    "utcNote": "Days are in UTC.",
+    "yes": "Yes",
+    "no": "No",
+    "emptyTitle": "No admin activity yet",
+    "emptyBody": "Admin actions (suspensions, role changes, deletions…) will appear here.",
+    "emptyFilteredTitle": "No activity found",
+    "emptyFilteredBody": "No activity matches these filters.",
+    "loadMore": "Load more"
   }
 }
