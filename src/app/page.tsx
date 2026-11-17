@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { getTranslations } from "next-intl/server"
 import { ComingSoon } from "@/features/landing/coming-soon"
 import { DemoPreview } from "@/features/landing/demo-preview"
+import { Faq } from "@/features/landing/faq"
 import { FinalCta } from "@/features/landing/final-cta"
 import { Hero } from "@/features/landing/hero"
 import { HowItWorks } from "@/features/landing/how-it-works"
@@ -34,6 +35,7 @@ export default function LandingPage() {
         <WhyVano />
         <DemoPreview />
         <ComingSoon />
+        <Faq />
         <FinalCta />
       </main>
       <LandingFooter />
