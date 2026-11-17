@@ -20,7 +20,7 @@ export type AdminNavItem = {
 export const ADMIN_NAV: readonly AdminNavItem[] = [
   { key: "dashboard", href: "/admin", permission: "dashboard.view", ready: true },
   { key: "users", href: "/admin/users", permission: "users.view", ready: true },
-  { key: "shops", href: "/admin/shops", permission: "shops.view", ready: false },
+  { key: "shops", href: "/admin/shops", permission: "shops.view", ready: true },
   { key: "products", href: "/admin/products", permission: "products.view", ready: false },
   { key: "roles", href: "/admin/roles", permission: "roles.view", ready: true },
   { key: "activity", href: "/admin/activity", permission: "audit.view", ready: false },

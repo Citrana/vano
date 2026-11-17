@@ -8,7 +8,17 @@ import { urlOf, urlsOf } from "./lib/images";
  * Unauthenticated reads for the public shop pages. They never return
  * `ownerId` or anything personal about the seller beyond what the seller
  * chose to publish (CLAUDE.md "Security & ownership").
+ *
+ * A suspended shop returns only `{ suspended: true, name, language }` so
+ * the page can say "temporarily unavailable" in the shop's language —
+ * no WhatsApp number, products or logo.
  */
+
+function suspendedMarker(shop: Doc<"shops">) {
+  return { suspended: true as const, name: shop.name, language: shop.language };
+}
+
+const isSuspended = (shop: Doc<"shops">) => shop.status === "suspended";
 
 async function publicShop(ctx: QueryCtx, shop: Doc<"shops">) {
   return {
@@ -38,7 +48,9 @@ export const shopBasics = query({
   args: { slug: v.string() },
   handler: async (ctx, { slug }) => {
     const shop = await shopFromSlug(ctx, slug);
-    return shop ? await publicShop(ctx, shop) : null;
+    if (!shop) return null;
+    if (isSuspended(shop)) return suspendedMarker(shop);
+    return { suspended: false as const, ...(await publicShop(ctx, shop)) };
   },
 });
 
@@ -48,12 +60,14 @@ export const shopBySlug = query({
   handler: async (ctx, { slug }) => {
     const shop = await shopFromSlug(ctx, slug);
     if (!shop) return null;
+    if (isSuspended(shop)) return suspendedMarker(shop);
     const products = await ctx.db
       .query("products")
       .withIndex("by_shopId", (q) => q.eq("shopId", shop._id))
       .order("desc")
       .take(LIMITS.maxProducts);
     return {
+      suspended: false as const,
       shop: await publicShop(ctx, shop),
       products: await Promise.all(
         products.map(async (p) => ({
@@ -79,10 +93,12 @@ export const productForPage = query({
   handler: async (ctx, { slug, productId }) => {
     const shop = await shopFromSlug(ctx, slug);
     if (!shop) return null;
+    if (isSuspended(shop)) return suspendedMarker(shop);
     const id = ctx.db.normalizeId("products", productId);
     const product = id ? await ctx.db.get("products", id) : null;
     if (!product || product.shopId !== shop._id) return null;
     return {
+      suspended: false as const,
       shop: await publicShop(ctx, shop),
       product: {
         _id: product._id,

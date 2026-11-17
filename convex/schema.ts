@@ -83,7 +83,10 @@ export default defineSchema({
     status: v.optional(shopStatusValidator),
   })
     .index("by_ownerId", ["ownerId"])
-    .index("by_slug", ["slug"]),
+    .index("by_slug", ["slug"])
+    .index("by_status_and_currency", ["status", "currency"])
+    .index("by_currency", ["currency"])
+    .searchIndex("search_name", { searchField: "name", filterFields: ["status", "currency"] }),
 
   products: defineTable({
     shopId: v.id("shops"),

@@ -6,12 +6,14 @@ import { ProductGrid } from "@/features/public/product-grid"
 import { PublicFooter } from "@/features/public/public-footer"
 import { ShopHeader } from "@/features/public/shop-header"
 import { ShopLocaleProvider } from "@/features/public/shop-locale-provider"
+import { ShopUnavailable } from "@/features/public/shop-unavailable"
 import { ViewTracker } from "@/features/public/view-tracker"
 
 export async function generateMetadata({ params }: PageProps<"/[slug]">): Promise<Metadata> {
   const { slug } = await params
   const page = await getShopPage(slug)
-  if (!page) return {}
+  // Suspended: the layout's metadata applies (noindex).
+  if (!page || page.suspended) return {}
   const { shop, products } = page
   const t = await getTranslations({ locale: shop.language, namespace: "Public" })
   const description = shop.description ?? t("metaShopDescription", { shop: shop.name })
@@ -36,6 +38,8 @@ export default async function ShopPage({ params }: PageProps<"/[slug]">) {
   const { slug } = await params
   const page = await getShopPage(slug)
   if (!page) notFound()
+  // Layouts and pages render in parallel, so this page handles it too.
+  if (page.suspended) return <ShopUnavailable name={page.name} language={page.language} />
   const { shop, products } = page
 
   return (
