@@ -122,13 +122,23 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 
 ## UI
 
+- **Brand tokens** live only in `src/app/globals.css` (`--coral`,
+  `--coral-strong`, `--ink`, `--cream`, `--blush`, `--plum`, shadows) and
+  map to the shadcn semantic tokens. Never hard-code a hex color in a
+  component. Font: Plus Jakarta Sans, bold headings.
+- **Coral is for the main action only**: one default (`bg-primary`)
+  button per screen, plus one `<hl>` highlighted word per landing
+  headline. Selected chips / toggles use `chip-selected` (ink), badges
+  plum. Button fills use `--coral-strong` and WhatsApp `--whatsapp` so
+  white text passes WCAG AA; plain `--coral` text only at >= 24px.
 - **Mobile-first**: design for ~360px first, tap targets ≥ 44px, no
   horizontal page scroll.
 - Every page has loading, empty and error states (`src/components/states`).
 - Forms: react-hook-form + Zod. Required fields use `<Label required>`;
   forms with several fields show `<RequiredFieldsHint />`.
 - Components are small and grouped by feature in `src/features/<feature>/`
-  (`auth`, `shop`, `product`, `public`, `stats`, `i18n`, `admin/*`).
+  (`auth`, `shop`, `product`, `public`, `stats`, `i18n`, `landing`,
+  `admin/*`).
   Generic primitives live in `src/components/ui/`.
 - Admin pages live under `src/app/admin/` and wrap their content in
   `<RequirePermission permission="…">`. Sidebar sections are defined only
