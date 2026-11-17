@@ -505,5 +505,29 @@
   "ShopStatus": {
     "active": "Active",
     "suspended": "Suspended"
+  },
+  "AdminProducts": {
+    "title": "Products",
+    "search": "Search products",
+    "searchPlaceholder": "Search by product name",
+    "visibility": "Visibility",
+    "allVisibility": "All products",
+    "visible": "Visible",
+    "hidden": "Hidden",
+    "category": "Category",
+    "allCategories": "All categories",
+    "soldOut": "Sold out",
+    "shopSuspended": "Shop suspended",
+    "emptyTitle": "No products found",
+    "emptyBody": "No products match these filters.",
+    "loadMore": "Load more",
+    "view": "View public page",
+    "hide": "Hide from customers",
+    "unhide": "Show to customers again",
+    "hiddenToast": "Product hidden.",
+    "unhidden": "Product visible again.",
+    "deleteTitle": "Delete this product?",
+    "deleteBody": "\"{name}\" and its photos will be deleted for good. This can't be undone.",
+    "deleted": "Product deleted."
   }
 }

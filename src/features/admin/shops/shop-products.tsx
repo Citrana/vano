@@ -10,11 +10,24 @@ import { EmptyState, LoadingState } from "@/components/states/states"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardTitle } from "@/components/ui/card"
+import { ProductActions } from "../products/product-actions"
 
 const PAGE_SIZE = 20
 
 /** A shop's products (hidden ones included), with "Load more". */
-export function ShopProducts({ shopId, currency, total }: { shopId: Id<"shops">; currency: Currency; total: number }) {
+export function ShopProducts({
+  shopId,
+  shopSlug,
+  shopActive,
+  currency,
+  total,
+}: {
+  shopId: Id<"shops">
+  shopSlug: string
+  shopActive: boolean
+  currency: Currency
+  total: number
+}) {
   const t = useTranslations("AdminShops")
   const tc = useTranslations("Categories")
   const locale = useLocale()
@@ -54,6 +67,7 @@ export function ShopProducts({ shopId, currency, total }: { shopId: Id<"shops">;
                   {p.hidden ? <Badge variant="destructive">{t("hidden")}</Badge> : null}
                   {p.soldOut ? <Badge variant="muted">{t("soldOut")}</Badge> : null}
                 </div>
+                <ProductActions product={{ _id: p._id, name: p.name, hidden: p.hidden, shopSlug, shopActive }} />
               </li>
             ))}
           </ul>
