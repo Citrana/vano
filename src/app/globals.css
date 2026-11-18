@@ -51,6 +51,7 @@
   --animate-float: float 6s ease-in-out infinite;
   --animate-pulse-ring: pulse-ring 4s ease-out infinite;
   --animate-badge-pop: badge-pop 300ms ease-out;
+  --animate-typing: typing 1.2s ease-in-out infinite;
 
   @keyframes card-in {
     from {
@@ -80,6 +81,18 @@
     100% {
       opacity: 0;
       transform: scale(1.12);
+    }
+  }
+  @keyframes typing {
+    0%,
+    60%,
+    100% {
+      opacity: 0.45;
+      transform: translateY(0);
+    }
+    30% {
+      opacity: 1;
+      transform: translateY(-3px);
     }
   }
   @keyframes badge-pop {
