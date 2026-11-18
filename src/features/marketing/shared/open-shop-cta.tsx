@@ -19,6 +19,7 @@ export function OpenShopCta({
   compact = false,
   hideWhenClosed = false,
   variant = "default",
+  label,
   className,
 }: {
   compact?: boolean
@@ -26,6 +27,8 @@ export function OpenShopCta({
   variant?: "default" | "outline"
   /** The nav already shows "Log in", so it hides the button instead of showing the note. */
   hideWhenClosed?: boolean
+  /** Replaces the sign-up label (e.g. "Start free trial" on plan cards). */
+  label?: string
   className?: string
 }) {
   const t = useTranslations("Marketing")
@@ -68,7 +71,7 @@ export function OpenShopCta({
 
   return (
     <Link href="/signup" className={cn(buttonVariants({ size, variant }), className)}>
-      {compact ? t("ctaShort") : t("cta")}
+      {label ?? (compact ? t("ctaShort") : t("cta"))}
       {compact ? null : <ArrowRightIcon aria-hidden />}
     </Link>
   )

@@ -42,14 +42,14 @@ export function HelpFaq({ groups }: { groups: HelpGroup[] }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t("searchPlaceholder")}
-            className="h-12 rounded-2xl bg-card pr-12 pl-12 text-base md:h-12"
+            className="h-12 bg-card pr-12 pl-12 text-base md:h-12"
           />
           {query ? (
             <button
               type="button"
               onClick={() => setQuery("")}
               aria-label={t("searchLabel")}
-              className="absolute top-1/2 right-1 flex size-11 -translate-y-1/2 items-center justify-center rounded-xl text-muted-foreground hover:text-foreground"
+              className="absolute top-1/2 right-1 flex size-11 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground focus-ring hover:text-foreground"
             >
               <XIcon className="size-5" aria-hidden />
             </button>
@@ -78,7 +78,7 @@ export function HelpFaq({ groups }: { groups: HelpGroup[] }) {
           <h2 id={`${g.key}-title`} className="text-xl font-extrabold md:text-2xl">
             {g.title}
           </h2>
-          <FaqList items={g.items} />
+          <FaqList items={g.items} name={`help-${g.key}`} />
         </section>
       ))}
     </div>

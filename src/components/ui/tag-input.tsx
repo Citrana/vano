@@ -38,12 +38,12 @@ function TagInput({
   return (
     <div
       className={cn(
-        "flex min-h-11 flex-wrap items-center gap-1.5 rounded-lg border border-input bg-card px-2 py-1.5 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50 md:min-h-9",
+        "flex min-h-11 flex-wrap items-center gap-1.5 rounded-md border border-input bg-card px-2 py-1.5 focus-within:border-ring focus-within:outline-2 focus-within:outline-solid focus-within:outline-ring md:min-h-9",
         aria["aria-invalid"] && "border-destructive"
       )}
     >
       {value.map((tag) => (
-        <span key={tag} className="inline-flex h-8 items-center gap-1 rounded-md bg-secondary pr-1 pl-2.5 text-sm md:h-7">
+        <span key={tag} className="inline-flex h-8 items-center gap-1 rounded-sm bg-secondary pr-1 pl-2.5 text-sm md:h-7">
           {tag}
           <button
             type="button"

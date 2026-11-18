@@ -49,7 +49,7 @@ export function ActivityList({ entries }: { entries: ActivityEntry[] }) {
         const page = TARGET_PAGES[e.targetType]
         const details = Object.entries(e.details ?? {}).filter(([, v]) => v !== "" && v !== null)
         return (
-          <li key={e._id} className="flex flex-col gap-2 rounded-xl bg-card p-3 ring-1 ring-foreground/10">
+          <li key={e._id} className="flex flex-col gap-2 rounded-xl bg-card p-3 border">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <Badge variant="secondary">{ta(e.action)}</Badge>
               <time dateTime={new Date(e.at).toISOString()} className="text-xs text-muted-foreground">

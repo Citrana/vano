@@ -72,7 +72,7 @@ export async function Hero() {
             </HeroParallax>
 
             <Floater delay={300} float={6} className="-top-[7%] -left-9 lg:top-[36%] lg:right-[calc(100%-24px)] lg:left-auto">
-              <span aria-hidden className="absolute inset-0 animate-pulse-ring rounded-2xl ring-2 ring-success/60 [animation-delay:1.2s] motion-reduce:hidden" />
+              <span aria-hidden className="absolute inset-0 animate-pulse-ring rounded-xl ring-2 ring-success/60 [animation-delay:1.2s] motion-reduce:hidden" />
               <FloatingCard
                 className="relative w-max max-w-[15rem] lg:max-w-none"
                 icon={

@@ -156,6 +156,12 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   headline. Selected chips / toggles use `chip-selected` (ink), badges
   plum. Button fills use `--coral-strong` and WhatsApp `--whatsapp` so
   white text passes WCAG AA; plain `--coral` text only at >= 24px.
+- **Surfaces**: one radius scale (`rounded-sm` 6px tags/badges,
+  `rounded-md` 10px buttons/inputs, `rounded-lg` 12px tiles, `rounded-xl`
+  16px cards; `rounded-full` only for chips, avatars, dots, switches, the
+  language switch). Surfaces use a 1px `border` (`--border`), never a
+  shadow; `shadow-float` is the only shadow, for floating things (sheet,
+  dialog, hero cards). Focus uses `focus-ring` (2px, keyboard only).
 - **Mobile-first**: design for ~360px first, tap targets ≥ 44px, no
   horizontal page scroll.
 - Every page has loading, empty and error states (`src/components/states`).

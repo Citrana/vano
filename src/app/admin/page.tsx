@@ -35,7 +35,7 @@ export default function AdminHomePage() {
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {sections.map((item) => (
             <li key={item.key}>
-              <Link href={item.href} className="block rounded-xl focus-visible:ring-2 focus-visible:ring-ring">
+              <Link href={item.href} className="block rounded-xl focus-ring">
                 <Card className="hover:bg-muted">
                   <CardTitle>{t(`nav.${item.key}`)}</CardTitle>
                 </Card>

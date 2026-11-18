@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import { OpenShopCta } from "@/features/marketing/shared/open-shop-cta"
 import { contactEmail, whatsappHref } from "@/features/marketing/shared/site-config"
-import { formatPlanPrice, type Plan } from "./plans"
+import { YEARLY, formatPlanPrice, type Plan } from "./plans"
 
 /** Where "Talk to us" goes: WhatsApp (prefilled), else email, else Help contact. */
 function talkHref(message: string): string {
@@ -14,7 +14,6 @@ function talkHref(message: string): string {
 
 export async function PlanCard({ plan, locale }: { plan: Plan; locale: string }) {
   const t = await getTranslations("Pricing")
-  const tm = await getTranslations("Marketing")
   const highlight = plan.highlight === true
   const headingId = `plan-${plan.id}`
 
@@ -22,8 +21,9 @@ export async function PlanCard({ plan, locale }: { plan: Plan; locale: string })
     <article
       aria-labelledby={headingId}
       className={cn(
-        "relative flex h-full flex-col gap-5 rounded-3xl bg-card p-6 ring-1",
-        highlight ? "shadow-lift ring-2 ring-plum/60 lg:-my-3 lg:py-9" : "shadow-soft ring-foreground/5",
+        "relative flex h-full flex-col gap-5 rounded-xl border bg-card p-6",
+        // Pro: a stronger plum line (border + 1px ring, no layout shift).
+        highlight && "border-plum/60 ring-1 ring-plum/60",
       )}
     >
       {highlight ? <Badge className="absolute -top-3 left-6 h-7 px-3 text-sm">{t("mostPopular")}</Badge> : null}
@@ -45,35 +45,43 @@ export async function PlanCard({ plan, locale }: { plan: Plan; locale: string })
             {plan.priceMinor > 0 ? <span className="text-base text-muted-foreground">{t("perMonth")}</span> : null}
           </p>
         )}
+        {plan.id === YEARLY.plan ? (
+          <p className="mt-1 text-sm text-muted-foreground">{t("yearlyNote", { months: YEARLY.freeMonths })}</p>
+        ) : null}
       </div>
       <ul className="flex flex-1 flex-col gap-2.5">
         {plan.features.map((f) => (
           <li key={f.key} className="flex items-start gap-2 text-base">
-            <CheckIcon className={cn("mt-0.5 size-5 shrink-0", f.comingSoon ? "text-muted-foreground" : "text-success")} strokeWidth={3} aria-hidden />
-            <span className={cn(f.comingSoon && "text-muted-foreground")}>
-              {t(`features.${f.key}`, { count: f.count ?? 0 })}
-              {f.comingSoon ? (
-                <Badge variant="muted" className="ml-2 align-middle">
-                  {tm("comingSoon")}
-                </Badge>
+            <CheckIcon className="mt-0.5 size-5 shrink-0 text-success" strokeWidth={3} aria-hidden />
+            <span>
+              {t(`features.${f.key}`, f.values)}
+              {f.hint ? (
+                <span className="block text-sm text-muted-foreground">{t(`featureHints.${f.key as "salesPromotions"}`)}</span>
               ) : null}
             </span>
           </li>
         ))}
       </ul>
-      {plan.cta === "whatsapp" ? (
-        <a
-          href={talkHref(t("enterpriseMessage"))}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={buttonVariants({ variant: "outline", size: "lg", className: "w-full" })}
-        >
-          <MessageCircleIcon aria-hidden />
-          {t("ctaTalk")}
-        </a>
-      ) : (
-        <OpenShopCta variant={highlight ? "default" : "outline"} className="w-full" />
-      )}
+      {/* mt-auto pins the button to the card bottom so all cards line up. */}
+      <div className="mt-auto">
+        {plan.cta === "talk" ? (
+          <a
+            href={talkHref(t("enterpriseMessage"))}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonVariants({ variant: "outline", size: "lg", className: "w-full" })}
+          >
+            <MessageCircleIcon aria-hidden />
+            {t("ctaTalk")}
+          </a>
+        ) : (
+          <OpenShopCta
+            variant={highlight ? "default" : "outline"}
+            label={plan.cta === "free" ? t("ctaFree") : t("ctaTrial")}
+            className="w-full"
+          />
+        )}
+      </div>
     </article>
   )
 }

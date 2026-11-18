@@ -37,7 +37,7 @@ export function StatsCards({ summary }: { summary: StatsSummary | undefined }) {
               onClick={() => setPeriod(p)}
               className={cn(
                 "min-h-9 rounded-md px-3 text-xs font-medium md:min-h-7",
-                p === period ? "bg-card shadow-sm" : "text-muted-foreground"
+                p === period ? "bg-card ring-1 ring-border" : "text-muted-foreground"
               )}
             >
               {t(p)}

@@ -33,7 +33,7 @@ export function CategoryPicker({
             aria-checked={checked}
             onClick={() => toggle(key)}
             className={cn(
-              "inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 text-sm font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 md:min-h-9",
+              "inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 text-sm font-medium transition-colors focus-ring md:min-h-9",
               checked ? "chip-selected" : "bg-card hover:bg-muted",
               invalid && !checked && "border-destructive/50"
             )}

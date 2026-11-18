@@ -24,10 +24,10 @@ export function FloatingCard({
   return (
     <div
       className={cn(
-        "flex items-center bg-card text-left shadow-lift ring-1 ring-foreground/5",
+        "flex items-center bg-card text-left border shadow-float",
         toast
           ? "gap-2 rounded-full py-1.5 pr-3.5 pl-1.5 lg:py-2 lg:pr-4 lg:pl-2"
-          : "gap-2.5 rounded-2xl p-2.5 pr-3.5 lg:gap-3 lg:p-3 lg:pr-5",
+          : "gap-2.5 rounded-xl p-2.5 pr-3.5 lg:gap-3 lg:p-3 lg:pr-5",
         className,
       )}
     >

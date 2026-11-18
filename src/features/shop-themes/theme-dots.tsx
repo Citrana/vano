@@ -28,7 +28,7 @@ export function ThemeDots({
             aria-checked={selected}
             aria-label={t(theme)}
             onClick={() => onChange(theme)}
-            className="group flex size-11 items-center justify-center rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="group flex size-11 items-center justify-center rounded-full focus-ring"
           >
             <span
               className={cn(
