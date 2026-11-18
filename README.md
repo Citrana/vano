@@ -105,6 +105,8 @@ To test an ending trial or plan, set a subscription's `periodEnd` to the
 past in the Convex dashboard, then run `npx convex run billingJobs:expireDue`
 (it also runs every hour).
 
+How plans, checkout, providers and limits work: [docs/payments.md](docs/payments.md).
+
 ## Migrating existing data (once per deployment)
 
 A deployment that has users or shops from before roles and permissions needs

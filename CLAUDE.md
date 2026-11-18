@@ -124,6 +124,12 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 
 ## Billing
 
+- **`docs/payments.md` is the reference for payments and billing.** Any
+  change to how payments, plans, trials, limits, providers, checkout, the
+  expiry / reconcile jobs or billing admin work must update that doc **in
+  the same commit**: add a dated entry (`YYYY-MM-DD HH:MM` with timezone,
+  e.g. `2026-11-18 19:29 CAT (UTC+02:00)`) at the top of its change log
+  and refresh its "Last updated" line. Never ship a payment change without it.
 - One `subscriptions` row per shop (`trialing | active | expired | free`),
   written only through `convex/lib/subscriptions.ts` (`writeSubscription`,
   which also logs the change). New shops start a `TRIAL_MONTHS` Pro trial
