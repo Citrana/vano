@@ -5,6 +5,7 @@ import { useEffect } from "react"
 
 /** Old one-page anchors → their new pages (hashes never reach the server). */
 const MOVED: Record<string, string> = {
+  "#how": "/features#how",
   "#why": "/features",
   "#demo": "/demo",
   "#faq": "/help",
