@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery } from "convex/react"
-import { ExternalLinkIcon, LayoutGridIcon, SettingsIcon, ShieldIcon } from "lucide-react"
+import { CreditCardIcon, ExternalLinkIcon, LayoutGridIcon, SettingsIcon, ShieldIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -21,24 +21,30 @@ export function SellerHeader() {
   const links = [
     { href: "/dashboard", label: t("dashboard"), icon: LayoutGridIcon, active: pathname === "/dashboard" || pathname.startsWith("/dashboard/products") },
     { href: "/dashboard/settings", label: t("settings"), icon: SettingsIcon, active: pathname === "/dashboard/settings" },
+    { href: "/dashboard/billing", label: t("billing"), icon: CreditCardIcon, active: pathname.startsWith("/dashboard/billing") },
     // Admins who also sell can switch to the admin (the server checks access).
     ...(viewer?.isAdmin ? [{ href: "/admin", label: t("admin"), icon: ShieldIcon, active: false }] : []),
   ]
 
-  const nav = (
+  // Phones: a tab bar (icon over a short label) so four links fit in 360px.
+  const nav = (mobile: boolean) => (
     <nav aria-label={t("menu")} className="flex gap-1">
       {links.map(({ href, label, icon: Icon, active }) => (
         <Link
           key={href}
           href={href}
           aria-current={active ? "page" : undefined}
-          className={cn(buttonVariants({ variant: active ? "secondary" : "ghost" }), "flex-1 sm:flex-none")}
+          className={cn(
+            buttonVariants({ variant: active ? "secondary" : "ghost" }),
+            mobile && "h-auto min-h-11 min-w-0 flex-1 flex-col gap-0.5 px-1 py-1 text-[0.7rem] leading-tight",
+          )}
         >
           <Icon />
-          {label}
+          {/* 640–768px: icons only (labels stay for screen readers). */}
+          <span className={cn(mobile ? "w-full truncate text-center" : "sr-only md:not-sr-only")}>{label}</span>
         </Link>
       ))}
-      {shop ? (
+      {shop && !mobile ? (
         <a
           href={`/${shop.slug}`}
           target="_blank"
@@ -57,14 +63,14 @@ export function SellerHeader() {
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-2 px-4">
         <div className="flex items-center gap-6">
           <Brand href="/dashboard" />
-          <div className="hidden sm:block">{nav}</div>
+          <div className="hidden sm:block">{nav(false)}</div>
         </div>
         <div className="flex items-center gap-1">
           <LanguageSwitcher />
           <SignOutButton />
         </div>
       </div>
-      <div className="mx-auto max-w-5xl px-4 pb-2 sm:hidden">{nav}</div>
+      <div className="mx-auto max-w-5xl px-4 pb-2 sm:hidden">{nav(true)}</div>
     </header>
   )
 }
