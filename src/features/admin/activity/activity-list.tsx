@@ -20,7 +20,10 @@ export type ActivityEntry = {
 }
 
 /** Detail keys written by the audit log (see AuditDetails in messages). */
-const DETAIL_KEYS = ["permissions", "added", "removed", "renamedFrom", "from", "to", "owner", "products", "force"] as const
+const DETAIL_KEYS = [
+  "permissions", "added", "removed", "renamedFrom", "from", "to", "owner", "products", "force",
+  "plan", "previousPlan", "days", "reason", "periodEnd", "previousEnd", "amount", "provider", "reference", "shop",
+] as const
 type DetailKey = (typeof DETAIL_KEYS)[number]
 const isDetailKey = (key: string): key is DetailKey => (DETAIL_KEYS as readonly string[]).includes(key)
 
@@ -29,6 +32,8 @@ const TARGET_PAGES: Partial<Record<AuditTargetType, string>> = {
   user: "/admin/users/",
   shop: "/admin/shops/",
   role: "/admin/roles/",
+  // Subscription entries use the shop id as their target.
+  subscription: "/admin/shops/",
 }
 
 /** One card per entry: action, actor → target, time, details. */

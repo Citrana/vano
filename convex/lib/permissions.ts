@@ -17,10 +17,14 @@ export const PERMISSION_GROUPS = {
   roles: ["view", "manage"],
   audit: ["view"],
   settings: ["view", "manage"],
+  /** Subscriptions and payments: view them; grant or extend plans. */
+  billing: ["view", "manage"],
   /** The seller's own shop — always combined with the ownership checks. */
   ownShop: ["manage"],
   ownProducts: ["manage"],
   ownStats: ["view"],
+  /** Their own shop's plan, checkout and payment history. */
+  ownBilling: ["manage"],
 } as const satisfies Record<string, readonly string[]>;
 
 type Groups = typeof PERMISSION_GROUPS;
@@ -35,7 +39,7 @@ export const ALL_PERMISSIONS: readonly Permission[] = PERMISSION_AREAS.flatMap((
   PERMISSION_GROUPS[area].map((action) => `${area}.${action}` as Permission),
 );
 
-const SELLER_AREAS: readonly PermissionArea[] = ["ownShop", "ownProducts", "ownStats"];
+const SELLER_AREAS: readonly PermissionArea[] = ["ownShop", "ownProducts", "ownStats", "ownBilling"];
 
 /** Areas of the seller's own shop; everything else is an admin area. */
 export function isSellerArea(area: PermissionArea): boolean {

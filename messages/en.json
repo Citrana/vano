@@ -59,7 +59,15 @@
     "PERMISSION_ESCALATION": "You can only give permissions you have yourself.",
     "SUPER_ADMIN_EXISTS": "A super admin already exists.",
     "ANNOUNCEMENT_INVALID": "Write the announcement in both English and French (at most 280 characters each), or leave both empty.",
-    "UNKNOWN": "Something went wrong. Try again."
+    "UNKNOWN": "Something went wrong. Try again.",
+    "PLAN_INVALID": "This plan can't be chosen here.",
+    "PLAN_LIMIT_PRODUCTS": "You reached your plan's product limit. Upgrade to add more.",
+    "PLAN_LIMIT_PHOTOS": "Your plan allows fewer photos per product. Remove some or upgrade.",
+    "PLAN_FEATURE_LOCKED": "This feature isn't included in your plan.",
+    "PAYMENTS_UNAVAILABLE": "Payments aren't available yet. Talk to us to upgrade.",
+    "PAYMENT_NOT_OPEN": "This payment is already finished.",
+    "REASON_INVALID": "Enter a reason (5 to 500 characters).",
+    "DAYS_INVALID": "Enter a number of days between 1 and 366."
   },
   "Validation": {
     "required": "This field is required.",
@@ -412,6 +420,15 @@
     "ownStats": {
       "title": "Own statistics",
       "view": "View their shop's statistics"
+    },
+    "billing": {
+      "title": "Subscriptions & payments",
+      "view": "View subscriptions and payments",
+      "manage": "Grant and extend plans"
+    },
+    "ownBilling": {
+      "title": "Own billing",
+      "manage": "Manage their shop's plan and payments"
     }
   },
   "AdminRoles": {
@@ -549,6 +566,22 @@
     },
     "superAdmin": {
       "seed": "Created a super admin (terminal)"
+    },
+    "subscription": {
+      "trialStarted": "Started a free trial",
+      "activated": "Activated a plan",
+      "trialEnded": "Trial ended (moved to Free)",
+      "expired": "Plan expired (moved to Free)",
+      "grant": "Granted a plan",
+      "extend": "Extended a plan"
+    },
+    "payment": {
+      "started": "Started a payment",
+      "succeeded": "Payment succeeded",
+      "failed": "Payment failed",
+      "pending": "Payment pending",
+      "cancelled": "Payment cancelled",
+      "expired": "Payment expired"
     }
   },
   "AuditDetails": {
@@ -560,13 +593,23 @@
     "to": "To",
     "owner": "Owner",
     "products": "Products",
-    "force": "Forced"
+    "force": "Forced",
+    "plan": "Plan",
+    "previousPlan": "Previous plan",
+    "days": "Days",
+    "reason": "Reason",
+    "periodEnd": "Ends",
+    "previousEnd": "Previous end",
+    "amount": "Amount",
+    "provider": "Provider",
+    "reference": "Reference",
+    "shop": "Shop"
   },
   "AdminActivity": {
     "title": "Activity history",
     "person": "Person",
     "allPeople": "Everyone",
-    "system": "System (terminal)",
+    "system": "System",
     "action": "Action",
     "allActions": "All actions",
     "from": "From",

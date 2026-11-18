@@ -59,7 +59,15 @@
     "PERMISSION_ESCALATION": "Vous ne pouvez donner que les autorisations que vous avez vous-même.",
     "SUPER_ADMIN_EXISTS": "Un super admin existe déjà.",
     "ANNOUNCEMENT_INVALID": "Écrivez l'annonce en anglais et en français (280 caractères maximum chacune), ou laissez les deux vides.",
-    "UNKNOWN": "Un problème est survenu. Réessayez."
+    "UNKNOWN": "Un problème est survenu. Réessayez.",
+    "PLAN_INVALID": "Ce forfait ne peut pas être choisi ici.",
+    "PLAN_LIMIT_PRODUCTS": "Vous avez atteint la limite de produits de votre forfait. Passez à un forfait supérieur pour en ajouter.",
+    "PLAN_LIMIT_PHOTOS": "Votre forfait permet moins de photos par produit. Retirez-en ou changez de forfait.",
+    "PLAN_FEATURE_LOCKED": "Cette fonctionnalité n'est pas incluse dans votre forfait.",
+    "PAYMENTS_UNAVAILABLE": "Les paiements ne sont pas encore disponibles. Contactez-nous pour changer de forfait.",
+    "PAYMENT_NOT_OPEN": "Ce paiement est déjà terminé.",
+    "REASON_INVALID": "Indiquez une raison (5 à 500 caractères).",
+    "DAYS_INVALID": "Indiquez un nombre de jours entre 1 et 366."
   },
   "Validation": {
     "required": "Ce champ est obligatoire.",
@@ -412,6 +420,15 @@
     "ownStats": {
       "title": "Ses statistiques",
       "view": "Voir les statistiques de sa boutique"
+    },
+    "billing": {
+      "title": "Abonnements et paiements",
+      "view": "Voir les abonnements et paiements",
+      "manage": "Offrir et prolonger des forfaits"
+    },
+    "ownBilling": {
+      "title": "Facturation de sa boutique",
+      "manage": "Gérer le forfait et les paiements de sa boutique"
     }
   },
   "AdminRoles": {
@@ -549,6 +566,22 @@
     },
     "superAdmin": {
       "seed": "A créé un super admin (terminal)"
+    },
+    "subscription": {
+      "trialStarted": "Essai gratuit commencé",
+      "activated": "Forfait activé",
+      "trialEnded": "Essai terminé (passage au forfait Gratuit)",
+      "expired": "Forfait expiré (passage au forfait Gratuit)",
+      "grant": "Forfait offert",
+      "extend": "Forfait prolongé"
+    },
+    "payment": {
+      "started": "Paiement commencé",
+      "succeeded": "Paiement réussi",
+      "failed": "Paiement échoué",
+      "pending": "Paiement en attente",
+      "cancelled": "Paiement annulé",
+      "expired": "Paiement expiré"
     }
   },
   "AuditDetails": {
@@ -560,13 +593,23 @@
     "to": "À",
     "owner": "Propriétaire",
     "products": "Produits",
-    "force": "Forcé"
+    "force": "Forcé",
+    "plan": "Forfait",
+    "previousPlan": "Forfait précédent",
+    "days": "Jours",
+    "reason": "Raison",
+    "periodEnd": "Fin",
+    "previousEnd": "Fin précédente",
+    "amount": "Montant",
+    "provider": "Prestataire",
+    "reference": "Référence",
+    "shop": "Boutique"
   },
   "AdminActivity": {
     "title": "Historique d'activité",
     "person": "Personne",
     "allPeople": "Tout le monde",
-    "system": "Système (terminal)",
+    "system": "Système",
     "action": "Action",
     "allActions": "Toutes les actions",
     "from": "Du",
