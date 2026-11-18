@@ -197,7 +197,8 @@
     "stopShowing": "Ne plus forcer l'affichage",
     "overLimitNotice": "{count, plural, one {# produit est masqué} other {# produits sont masqués}} dans votre boutique à cause de la limite de votre forfait. Choisissez ceux qui s'affichent, ou changez de forfait.",
     "limitReached": "Vous avez atteint la limite de {count} produits de votre forfait.",
-    "upgrade": "Changer de forfait"
+    "upgrade": "Changer de forfait",
+    "pinLimit": "Toutes les places visibles sont déjà réservées à d'autres produits. Retirez-en une d'abord."
   },
   "Share": {
     "title": "Le lien de votre boutique",

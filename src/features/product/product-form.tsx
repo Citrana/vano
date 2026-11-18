@@ -50,10 +50,13 @@ type Initial = Pick<Doc<"products">, "name" | "price" | "category" | "descriptio
 export function ProductForm({
   shop,
   initial,
+  maxImages = LIMITS.maxImages,
   onSubmit,
 }: {
   shop: ShopInfo
   initial?: Initial
+  /** Photos allowed by the shop's plan (`photoCap`); the server checks again. */
+  maxImages?: number
   onSubmit: (values: ProductSubmit) => Promise<void>
 }) {
   const t = useTranslations("ProductForm")
@@ -61,7 +64,7 @@ export function ProductForm({
   const te = useTranslations("Errors")
   const tc = useTranslations("Categories")
   const tCommon = useTranslations("Common")
-  const images = useProductImages(initial?.images)
+  const images = useProductImages(initial?.images, maxImages)
   const [imagesError, setImagesError] = useState<string>()
 
   const form = useForm<ProductFormValues>({
@@ -83,7 +86,7 @@ export function ProductForm({
   function checkImages(): boolean {
     if (images.busy) setImagesError(tv("uploadsPending"))
     else if (images.readyIds.length === 0) setImagesError(tv("imagesRequired"))
-    else if (images.readyIds.length > LIMITS.maxImages) setImagesError(tv("imagesTooMany", { max: LIMITS.maxImages }))
+    else if (images.readyIds.length > maxImages) setImagesError(tv("imagesTooMany", { max: maxImages }))
     else {
       setImagesError(undefined)
       return true
@@ -107,7 +110,7 @@ export function ProductForm({
     } catch (error) {
       const code = errorCodeOf(error)
       const field = code ? FIELD_OF[code] : undefined
-      if (code === "IMAGES_COUNT" || code === "IMAGE_INVALID") setImagesError(te(code))
+      if (code === "IMAGES_COUNT" || code === "IMAGE_INVALID" || code === "PLAN_LIMIT_PHOTOS") setImagesError(te(code))
       else if (code && field) setError(field, { message: te(code) }, { shouldFocus: true })
       else toast.error(code ? te(code) : te("UNKNOWN"))
     }
@@ -133,6 +136,8 @@ export function ProductForm({
           onRemove={images.remove}
           onMakeCover={images.makeCover}
           error={imagesError}
+          maxImages={maxImages}
+          planHint={maxImages < LIMITS.maxImages}
         />
         <Field id="name" label={t("name")} required error={errors.name?.message}>
           {(p) => <Input {...p} maxLength={LIMITS.productNameMax} placeholder={t("namePlaceholder")} {...register("name")} />}

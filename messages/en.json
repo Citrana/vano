@@ -197,7 +197,8 @@
     "stopShowing": "Stop keeping visible",
     "overLimitNotice": "{count, plural, one {# product is} other {# products are}} hidden from your shop because of your plan's limit. Pick which ones show, or upgrade.",
     "limitReached": "You've reached your plan's limit of {count} products.",
-    "upgrade": "Upgrade"
+    "upgrade": "Upgrade",
+    "pinLimit": "Every visible spot is already kept for another product. Stop keeping one visible first."
   },
   "Share": {
     "title": "Your shop link",

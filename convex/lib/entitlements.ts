@@ -4,6 +4,7 @@ import { LIMITS } from "./catalog";
 import { fail, type ErrorCode } from "./errors";
 import {
   PLAN_LIMITS,
+  photoCap,
   productCap,
   type PlanFeatureFlag,
   type PlanId,
@@ -65,9 +66,7 @@ export function canShopDo(limits: PlanLimits, action: PlanAction): ErrorCode | n
     case "setPhotos":
       // A product already over the limit (after a downgrade) can keep or
       // drop photos, but never gain more than the plan allows.
-      return action.count > Math.max(limits.photosPerProduct, action.previousCount ?? 0)
-        ? "PLAN_LIMIT_PHOTOS"
-        : null;
+      return action.count > photoCap(limits, action.previousCount) ? "PLAN_LIMIT_PHOTOS" : null;
     case "pinProduct":
       return action.pinned >= productCap(limits) ? "PLAN_LIMIT_PRODUCTS" : null;
     case "feature":

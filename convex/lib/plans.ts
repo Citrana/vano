@@ -100,6 +100,15 @@ export function productCap(limits: PlanLimits): number {
   return limits.products ?? LIMITS.maxProducts;
 }
 
+/**
+ * Photos allowed on a product: the plan's number, or — for a product that
+ * already had more before a downgrade — what it has (it can keep them,
+ * never gain more).
+ */
+export function photoCap(limits: PlanLimits, previousCount = 0): number {
+  return Math.max(limits.photosPerProduct, previousCount);
+}
+
 /** free < pro < business < enterprise. */
 export function planRank(plan: PlanId): number {
   return PLAN_IDS.indexOf(plan);

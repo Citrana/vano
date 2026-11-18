@@ -1,7 +1,7 @@
 "use client"
 
 import { useMutation } from "convex/react"
-import { ImageIcon, PencilIcon } from "lucide-react"
+import { EyeIcon, EyeOffIcon, ImageIcon, PencilIcon, PinIcon } from "lucide-react"
 import { useLocale, useTranslations } from "next-intl"
 import Link from "next/link"
 import { toast } from "sonner"
@@ -9,9 +9,10 @@ import { cn } from "cn"
 import { api } from "../../../convex/_generated/api"
 import type { Id } from "../../../convex/_generated/dataModel"
 import type { Category } from "../../../convex/lib/catalog"
+import { errorCodeOf } from "../../../convex/lib/errors"
 import { formatMoney, type Currency } from "../../../convex/lib/money"
 import { Badge } from "@/components/ui/badge"
-import { buttonVariants } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { useErrorMessage } from "@/lib/use-error-message"
 import { DeleteProductDialog } from "./delete-product-dialog"
@@ -24,6 +25,10 @@ export type ProductRowData = {
   soldOut: boolean
   /** Hidden by an admin: customers can't see it; the seller can't unhide it. */
   hidden?: boolean
+  /** Not shown publicly: the shop has more products than its plan allows. */
+  overLimit?: boolean
+  /** Kept visible by the seller while the shop is over its limit. */
+  pinned?: boolean
   coverUrl: string | null
 }
 
@@ -31,10 +36,13 @@ export function ProductRow({
   product,
   currency,
   stats,
+  overLimitMode = false,
 }: {
   product: ProductRowData
   currency: Currency
   stats?: { views: number; whatsappClicks: number }
+  /** The shop is over its plan's product limit: offer show / stop showing. */
+  overLimitMode?: boolean
 }) {
   const t = useTranslations("Dashboard")
   const tc = useTranslations("Categories")
@@ -50,7 +58,12 @@ export function ProductRow({
       )
     }
   })
+  const setPinned = useMutation(api.products.setPinned)
   const errorMessage = useErrorMessage()
+  const pin = (pinned: boolean) =>
+    setPinned({ productId: product._id, pinned }).catch((error) =>
+      toast.error(errorCodeOf(error) === "PLAN_LIMIT_PRODUCTS" ? t("pinLimit") : errorMessage(error)),
+    )
   const switchLabelId = `sold-out-${product._id}`
 
   return (
@@ -85,6 +98,18 @@ export function ProductRow({
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <Badge variant="muted">{tc(product.category)}</Badge>
           {product.hidden ? <Badge variant="destructive">{t("hiddenByAdmin")}</Badge> : null}
+          {product.overLimit ? (
+            <Badge variant="destructive">
+              <EyeOffIcon aria-hidden />
+              {t("overLimit")}
+            </Badge>
+          ) : null}
+          {overLimitMode && product.pinned && !product.overLimit ? (
+            <Badge variant="secondary">
+              <PinIcon aria-hidden />
+              {t("pinned")}
+            </Badge>
+          ) : null}
           {product.soldOut ? <Badge variant="destructive">{t("soldOut")}</Badge> : null}
           {stats ? (
             <span>
@@ -92,6 +117,17 @@ export function ProductRow({
             </span>
           ) : null}
         </div>
+        {overLimitMode && !product.hidden && (product.overLimit || product.pinned) ? (
+          <Button
+            variant="outline"
+            size="sm"
+            className="self-start"
+            onClick={() => pin(product.overLimit === true)}
+          >
+            {product.overLimit ? <EyeIcon /> : <EyeOffIcon />}
+            {product.overLimit ? t("showInShop") : t("stopShowing")}
+          </Button>
+        ) : null}
         <div className="mt-auto flex items-center gap-2 self-start">
           <Switch
             aria-labelledby={switchLabelId}

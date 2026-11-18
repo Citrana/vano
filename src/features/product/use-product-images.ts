@@ -14,7 +14,10 @@ export type ImageItem = {
 }
 
 /** The product photo list: add (compress + upload), remove, set cover. */
-export function useProductImages(initial: Array<{ storageId: Id<"_storage">; url: string | null }> = []) {
+export function useProductImages(
+  initial: Array<{ storageId: Id<"_storage">; url: string | null }> = [],
+  maxImages: number = LIMITS.maxImages,
+) {
   const upload = useImageUpload()
   const [items, setItems] = useState<ImageItem[]>(() =>
     initial
@@ -29,7 +32,7 @@ export function useProductImages(initial: Array<{ storageId: Id<"_storage">; url
   // Uploads start outside the state updater (updaters may run twice).
   const add = useCallback(
     (files: File[]) => {
-      const room = LIMITS.maxImages - items.length
+      const room = maxImages - items.length
       const accepted = files.slice(0, Math.max(0, room)).map((file) => ({
         file,
         item: { key: crypto.randomUUID(), url: URL.createObjectURL(file), status: "compressing" as const },
@@ -47,7 +50,7 @@ export function useProductImages(initial: Array<{ storageId: Id<"_storage">; url
           )
       }
     },
-    [items.length, upload, patch],
+    [items.length, maxImages, upload, patch],
   )
 
   const remove = useCallback((key: string) => {
