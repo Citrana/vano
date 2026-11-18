@@ -29,7 +29,7 @@ function Switch({
     >
       <span
         className={cn(
-          "relative inline-flex h-6 w-11 items-center rounded-full transition-colors group-focus-visible:ring-3 group-focus-visible:ring-ring/50",
+          "relative inline-flex h-6 w-11 items-center rounded-full transition-colors group-focus-visible:outline-2 group-focus-visible:outline-solid group-focus-visible:outline-offset-2 group-focus-visible:outline-ring",
           checked ? "bg-foreground" : "bg-input"
         )}
       >
