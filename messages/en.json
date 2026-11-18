@@ -86,7 +86,9 @@
     "passwordShort": "Use at least {min} characters.",
     "tagsInvalid": "Up to 20 entries, 20 characters each.",
     "uploadsPending": "Wait for the photos to finish uploading.",
-    "announcementBothRequired": "Write the announcement in both languages, or leave both empty."
+    "announcementBothRequired": "Write the announcement in both languages, or leave both empty.",
+    "reasonLength": "Write a reason of {min} to {max} characters.",
+    "daysRange": "Enter a whole number of days from {min} to {max}."
   },
   "Categories": {
     "clothes": "Clothes",
@@ -318,7 +320,9 @@
       "products": "Products",
       "roles": "Roles & permissions",
       "activity": "Activity history",
-      "settings": "Settings"
+      "settings": "Settings",
+      "subscriptions": "Subscriptions",
+      "payments": "Payments"
     }
   },
   "Roles": {
@@ -1165,5 +1169,58 @@
     "unavailableTitle": "Test payments are off",
     "unavailableBody": "The test checkout is turned off on this server.",
     "backToBilling": "Back to my plan"
+  },
+  "AdminBilling": {
+    "subscriptionsTitle": "Subscriptions",
+    "paymentsTitle": "Payments",
+    "search": "Search by shop name",
+    "searchPlaceholder": "Search by shop name",
+    "plan": "Plan",
+    "allPlans": "All plans",
+    "status": "Status",
+    "allStatuses": "All statuses",
+    "endsFrom": "Ends from",
+    "endsTo": "Ends until",
+    "from": "From",
+    "to": "To",
+    "clear": "Clear filters",
+    "utcNote": "Days are in UTC.",
+    "shop": "Shop",
+    "ends": "Ends",
+    "noEnd": "—",
+    "source": "Source",
+    "sources": {
+      "trial": "Trial",
+      "payment": "Payment",
+      "admin": "Admin",
+      "system": "Automatic"
+    },
+    "date": "Date",
+    "amount": "Amount",
+    "provider": "Provider",
+    "reference": "Reference",
+    "emptySubscriptionsTitle": "No subscriptions found",
+    "emptySubscriptionsBody": "Shops' plans will show here.",
+    "emptyPaymentsTitle": "No payments found",
+    "emptyPaymentsBody": "Plan payments will show here.",
+    "emptyFilteredBody": "Nothing matches these filters.",
+    "loadMore": "Load more",
+    "panelTitle": "Plan",
+    "panelUntil": "Until {date}",
+    "recentPayments": "Recent payments",
+    "noPayments": "No payments yet.",
+    "grant": "Grant a plan",
+    "extend": "Extend",
+    "grantTitle": "Grant a plan to {shop}",
+    "grantBody": "The plan starts now and lasts the number of days you choose. It replaces the current plan.",
+    "extendTitle": "Extend {shop}'s plan",
+    "extendBody": "Adds days to the current plan or trial.",
+    "days": "Days",
+    "reason": "Reason",
+    "reasonHelp": "Saved in the activity history.",
+    "granted": "Plan granted",
+    "extended": "Plan extended",
+    "cantExtendFree": "This shop is on Free: grant a plan instead.",
+    "ownShop": "You can't change your own shop's plan."
   }
 }

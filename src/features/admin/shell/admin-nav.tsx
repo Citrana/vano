@@ -1,9 +1,11 @@
 "use client"
 
 import {
+  CreditCardIcon,
   HistoryIcon,
   LayoutDashboardIcon,
   PackageIcon,
+  ReceiptIcon,
   SettingsIcon,
   ShieldCheckIcon,
   StoreIcon,
@@ -22,6 +24,8 @@ const ICONS: Record<AdminNavKey, LucideIcon> = {
   users: UsersIcon,
   shops: StoreIcon,
   products: PackageIcon,
+  subscriptions: CreditCardIcon,
+  payments: ReceiptIcon,
   roles: ShieldCheckIcon,
   activity: HistoryIcon,
   settings: SettingsIcon,

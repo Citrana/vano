@@ -10,6 +10,7 @@ import { PageTitle } from "@/components/shell/page-title"
 import { EmptyState, LoadingState } from "@/components/states/states"
 import { Card, CardTitle } from "@/components/ui/card"
 import { countryName } from "@/features/shop/countries"
+import { ShopPlanPanel } from "../billing/shop-plan-panel"
 import { useAdminViewer } from "../shell/use-admin-viewer"
 import { DeleteShopDialog } from "./delete-shop-dialog"
 import { ShopProducts } from "./shop-products"
@@ -82,6 +83,16 @@ export function ShopDetails({ shopId }: { shopId: string }) {
           {item(t("created"), format.dateTime(new Date(shop.createdAt), { dateStyle: "long" }))}
         </dl>
       </Card>
+
+      {can("billing.view") ? (
+        <ShopPlanPanel
+          shopId={shop._id}
+          shopName={shop.name}
+          canManage={can("billing.manage")}
+          // A hint only: the server refuses it anyway (CANNOT_MODIFY_SELF).
+          isOwnShop={viewer.email !== null && shop.owner.email === viewer.email}
+        />
+      ) : null}
 
       {can("shops.suspend") || can("shops.delete") ? (
         <Card>

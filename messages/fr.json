@@ -86,7 +86,9 @@
     "passwordShort": "Utilisez au moins {min} caractères.",
     "tagsInvalid": "Jusqu'à 20 éléments, de 20 caractères chacun.",
     "uploadsPending": "Attendez la fin de l'envoi des photos.",
-    "announcementBothRequired": "Écrivez l'annonce dans les deux langues, ou laissez les deux vides."
+    "announcementBothRequired": "Écrivez l'annonce dans les deux langues, ou laissez les deux vides.",
+    "reasonLength": "Indiquez une raison de {min} à {max} caractères.",
+    "daysRange": "Indiquez un nombre entier de jours entre {min} et {max}."
   },
   "Categories": {
     "clothes": "Vêtements",
@@ -318,7 +320,9 @@
       "products": "Produits",
       "roles": "Rôles et autorisations",
       "activity": "Historique d'activité",
-      "settings": "Paramètres"
+      "settings": "Paramètres",
+      "subscriptions": "Abonnements",
+      "payments": "Paiements"
     }
   },
   "Roles": {
@@ -1165,5 +1169,58 @@
     "unavailableTitle": "Les paiements de test sont désactivés",
     "unavailableBody": "Le paiement de test est désactivé sur ce serveur.",
     "backToBilling": "Retour à mon forfait"
+  },
+  "AdminBilling": {
+    "subscriptionsTitle": "Abonnements",
+    "paymentsTitle": "Paiements",
+    "search": "Rechercher par nom de boutique",
+    "searchPlaceholder": "Rechercher par nom de boutique",
+    "plan": "Forfait",
+    "allPlans": "Tous les forfaits",
+    "status": "Statut",
+    "allStatuses": "Tous les statuts",
+    "endsFrom": "Fin à partir du",
+    "endsTo": "Fin jusqu'au",
+    "from": "Du",
+    "to": "Au",
+    "clear": "Effacer les filtres",
+    "utcNote": "Les jours sont en UTC.",
+    "shop": "Boutique",
+    "ends": "Fin",
+    "noEnd": "—",
+    "source": "Origine",
+    "sources": {
+      "trial": "Essai",
+      "payment": "Paiement",
+      "admin": "Admin",
+      "system": "Automatique"
+    },
+    "date": "Date",
+    "amount": "Montant",
+    "provider": "Prestataire",
+    "reference": "Référence",
+    "emptySubscriptionsTitle": "Aucun abonnement trouvé",
+    "emptySubscriptionsBody": "Les forfaits des boutiques s'afficheront ici.",
+    "emptyPaymentsTitle": "Aucun paiement trouvé",
+    "emptyPaymentsBody": "Les paiements de forfaits s'afficheront ici.",
+    "emptyFilteredBody": "Rien ne correspond à ces filtres.",
+    "loadMore": "Voir plus",
+    "panelTitle": "Forfait",
+    "panelUntil": "Jusqu'au {date}",
+    "recentPayments": "Paiements récents",
+    "noPayments": "Aucun paiement pour l'instant.",
+    "grant": "Offrir un forfait",
+    "extend": "Prolonger",
+    "grantTitle": "Offrir un forfait à {shop}",
+    "grantBody": "Le forfait commence maintenant et dure le nombre de jours choisi. Il remplace le forfait actuel.",
+    "extendTitle": "Prolonger le forfait de {shop}",
+    "extendBody": "Ajoute des jours au forfait ou à l'essai en cours.",
+    "days": "Jours",
+    "reason": "Raison",
+    "reasonHelp": "Enregistrée dans l'historique d'activité.",
+    "granted": "Forfait offert",
+    "extended": "Forfait prolongé",
+    "cantExtendFree": "Cette boutique est au forfait Gratuit : offrez plutôt un forfait.",
+    "ownShop": "Vous ne pouvez pas changer le forfait de votre propre boutique."
   }
 }
