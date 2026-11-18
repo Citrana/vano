@@ -733,6 +733,12 @@
     "highlightsEyebrow": "Why Vano",
     "highlightsTitle": "Everything you need to sell online",
     "seeAllFeatures": "See all features",
+    "whyWhatsappBody": "Customers tap Order and land in your WhatsApp with the product, size, and price already written.",
+    "chatCustomer": "Customer",
+    "chatOnline": "online",
+    "chatTime": "10:24",
+    "linkCardLabel": "Your shop link",
+    "copyLink": "Copy link",
     "pricingTitle": "Start free for {months, plural, one {# month} other {# months}}, then from {price}/month",
     "pricingBody": "No payment method needed to start. Cancel anytime.",
     "pricingLink": "See pricing"

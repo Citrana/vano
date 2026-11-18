@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { getTranslations } from "next-intl/server"
 import { Hero } from "@/features/marketing/home/hero"
-import { Highlights } from "@/features/marketing/home/highlights"
+import { WhyVano } from "@/features/marketing/home/why-vano"
 import { LegacyAnchorRedirect } from "@/features/marketing/home/legacy-anchor-redirect"
 import { PricingTeaser } from "@/features/marketing/home/pricing-teaser"
 import { StepsTeaser } from "@/features/marketing/home/steps-teaser"
@@ -26,7 +26,7 @@ export default function HomePage() {
       <LegacyAnchorRedirect />
       <Hero />
       <StepsTeaser />
-      <Highlights />
+      <WhyVano />
       <PricingTeaser />
       <CtaBand />
     </>
