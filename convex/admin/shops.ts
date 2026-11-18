@@ -13,6 +13,7 @@ import { categoryValidator, languageValidator, LIMITS, type Category } from "../
 import { urlOf } from "../lib/images";
 import { currencyValidator, type Currency } from "../lib/money";
 import { shopStatusValidator } from "../lib/permissions";
+import { subscriptionDoc } from "../lib/subscriptions";
 
 /**
  * Admin shops section (CLAUDE.md "Roles & permissions"). Reads need
@@ -246,6 +247,10 @@ export const remove = adminMutation({
       .take(LIMITS.maxProducts);
     await deleteFilesNotIn(ctx, shop.logoId ? [shop.logoId] : [], []);
     await onShopDeleted(ctx, shop);
+    // The subscription goes with the shop; payments are kept as financial
+    // history (they carry a snapshot of the shop name).
+    const subscription = await subscriptionDoc(ctx, shopId);
+    if (subscription) await ctx.db.delete("subscriptions", subscription._id);
     await ctx.db.delete("shops", shopId);
     await logAdminAction(ctx, {
       actor: ctx.user,

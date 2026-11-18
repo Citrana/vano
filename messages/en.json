@@ -568,7 +568,6 @@
       "seed": "Created a super admin (terminal)"
     },
     "subscription": {
-      "trialStarted": "Started a free trial",
       "activated": "Activated a plan",
       "trialEnded": "Trial ended (moved to Free)",
       "expired": "Plan expired (moved to Free)",

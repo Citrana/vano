@@ -5,6 +5,16 @@ import { auditActionValidator, auditDetailsValidator, auditTargetTypeValidator }
 import { categoryValidator, languageValidator } from "./lib/catalog";
 import { currencyValidator } from "./lib/money";
 import {
+  paymentOutcomeValidator,
+  paymentStatusValidator,
+  providerIdValidator,
+} from "./payments/types";
+import {
+  planIdValidator,
+  subscriptionSourceValidator,
+  subscriptionStatusValidator,
+} from "./lib/plans";
+import {
   permissionValidator,
   roleKeyValidator,
   shopStatusValidator,
@@ -103,6 +113,11 @@ export default defineSchema({
     updatedAt: v.number(),
     /** Hidden by an admin. Optional until `migrations:rbacV1`; missing = visible. */
     hidden: v.optional(v.boolean()),
+    /**
+     * Set when the seller chose to keep this product visible while the shop
+     * is over its plan's product limit (CLAUDE.md "Billing").
+     */
+    pinnedAt: v.optional(v.number()),
   })
     .index("by_shopId", ["shopId"])
     .index("by_shopId_and_category", ["shopId", "category"])
@@ -142,6 +157,69 @@ export default defineSchema({
     startedAt: v.number(),
     doneAt: v.optional(v.number()),
   }).index("by_name", ["name"]),
+
+  /**
+   * One per shop (CLAUDE.md "Billing"). Written only through
+   * convex/lib/subscriptions.ts. `periodEnd` is absent on Free.
+   * `shopName` is a copy for admin search, kept in sync by `shops.update`.
+   */
+  subscriptions: defineTable({
+    shopId: v.id("shops"),
+    shopName: v.string(),
+    plan: planIdValidator,
+    status: subscriptionStatusValidator,
+    periodStart: v.number(),
+    periodEnd: v.optional(v.number()),
+    source: subscriptionSourceValidator,
+    updatedAt: v.number(),
+  })
+    .index("by_shopId", ["shopId"])
+    .index("by_status_and_periodEnd", ["status", "periodEnd"])
+    .index("by_plan_and_status_and_periodEnd", ["plan", "status", "periodEnd"])
+    .index("by_plan_and_periodEnd", ["plan", "periodEnd"])
+    .index("by_periodEnd", ["periodEnd"])
+    .searchIndex("search_shopName", { searchField: "shopName", filterFields: ["plan", "status"] }),
+
+  /**
+   * Plan payments. The amount comes from convex/lib/plans.ts, never from
+   * the client. Results from the provider are applied only by
+   * `payments/core.applyResult`; `appliedAt` is set in the same transaction
+   * that extends the plan, so a payment can never extend it twice.
+   * `shopName` is a snapshot taken when the payment started.
+   */
+  payments: defineTable({
+    shopId: v.id("shops"),
+    shopName: v.string(),
+    userId: v.id("users"),
+    plan: planIdValidator,
+    amountMinor: v.number(),
+    currency: currencyValidator,
+    provider: providerIdValidator,
+    providerRef: v.optional(v.string()),
+    status: paymentStatusValidator,
+    failureCode: v.optional(v.string()),
+    completedAt: v.optional(v.number()),
+    appliedAt: v.optional(v.number()),
+    periodEndAfter: v.optional(v.number()),
+  })
+    .index("by_shopId", ["shopId"])
+    .index("by_shopId_and_status", ["shopId", "status"])
+    .index("by_provider_and_providerRef", ["provider", "providerRef"])
+    .index("by_status", ["status"])
+    .index("by_plan", ["plan"])
+    .index("by_plan_and_status", ["plan", "status"])
+    .searchIndex("search_shopName", { searchField: "shopName", filterFields: ["plan", "status"] }),
+
+  /** Every result received from a payment provider, deduplicated by event id. */
+  paymentEvents: defineTable({
+    provider: providerIdValidator,
+    eventId: v.string(),
+    paymentId: v.id("payments"),
+    outcome: paymentOutcomeValidator,
+    receivedAt: v.number(),
+  })
+    .index("by_provider_and_eventId", ["provider", "eventId"])
+    .index("by_paymentId", ["paymentId"]),
 
   /** Per shop per UTC day. No personal data. */
   shopDailyStats: defineTable({

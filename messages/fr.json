@@ -568,7 +568,6 @@
       "seed": "A créé un super admin (terminal)"
     },
     "subscription": {
-      "trialStarted": "Essai gratuit commencé",
       "activated": "Forfait activé",
       "trialEnded": "Essai terminé (passage au forfait Gratuit)",
       "expired": "Forfait expiré (passage au forfait Gratuit)",
