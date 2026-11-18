@@ -136,3 +136,57 @@ export async function insertUserWithRole(
 ): Promise<Id<"users">> {
   return await t.run((ctx) => ctx.db.insert("users", { email, roleId, status }));
 }
+
+/** Puts the shop on a plan directly (e.g. Free after the trial). */
+export async function setSubscription(
+  t: T,
+  shopId: Id<"shops">,
+  state: {
+    plan: "free" | "pro" | "business" | "enterprise";
+    status: "trialing" | "active" | "expired" | "free";
+    periodEnd?: number;
+  },
+): Promise<void> {
+  await t.run(async (ctx) => {
+    const sub = await ctx.db
+      .query("subscriptions")
+      .withIndex("by_shopId", (q) => q.eq("shopId", shopId))
+      .unique();
+    if (!sub) throw new Error("shop has no subscription");
+    await ctx.db.patch("subscriptions", sub._id, {
+      plan: state.plan,
+      status: state.status,
+      periodEnd: state.periodEnd,
+    });
+  });
+}
+
+/** Inserts `count` products straight into the database (oldest first). */
+export async function insertProducts(
+  t: T,
+  shopId: Id<"shops">,
+  count: number,
+  photos = 1,
+): Promise<Id<"products">[]> {
+  const ids: Id<"products">[] = [];
+  for (let i = 0; i < count; i++) {
+    const imageIds: Id<"_storage">[] = [];
+    for (let j = 0; j < photos; j++) imageIds.push(await storeFile(t));
+    ids.push(
+      await t.run((ctx) =>
+        ctx.db.insert("products", {
+          shopId,
+          name: `Product ${i}`,
+          price: 1000,
+          category: "clothes",
+          sizes: [],
+          colors: [],
+          imageIds,
+          soldOut: false,
+          updatedAt: 0,
+        }),
+      ),
+    );
+  }
+  return ids;
+}

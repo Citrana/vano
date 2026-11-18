@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import { query, type QueryCtx } from "./_generated/server";
-import { LIMITS } from "./lib/catalog";
+import { getEntitlements, shopProducts, visibleProductIds } from "./lib/entitlements";
 import { urlOf, urlsOf } from "./lib/images";
 import { readSettings } from "./lib/settings";
 
@@ -13,7 +13,9 @@ import { readSettings } from "./lib/settings";
  * A suspended shop returns only `{ suspended: true, name, language }` so
  * the page can say "temporarily unavailable" in the shop's language —
  * no WhatsApp number, products or logo. Products hidden by an admin are
- * left out (and their page is a 404).
+ * left out (and their page is a 404), and so are products over the shop's
+ * plan limit (CLAUDE.md "Billing"); only the plan's number of photos per
+ * product is shown.
  */
 
 function suspendedMarker(shop: Doc<"shops">) {
@@ -63,17 +65,15 @@ export const shopBySlug = query({
     const shop = await shopFromSlug(ctx, slug);
     if (!shop) return null;
     if (isSuspended(shop)) return suspendedMarker(shop);
-    const products = await ctx.db
-      .query("products")
-      .withIndex("by_shopId", (q) => q.eq("shopId", shop._id))
-      .order("desc")
-      .take(LIMITS.maxProducts);
+    const products = await shopProducts(ctx, shop._id);
+    const { limits } = await getEntitlements(ctx, shop);
+    // Hidden by an admin or over the plan limit: never shown.
+    const visible = visibleProductIds(products, limits);
     return {
       suspended: false as const,
       shop: await publicShop(ctx, shop),
-      // Products hidden by an admin are never shown.
       products: await Promise.all(
-        products.filter((p) => !p.hidden).map(async (p) => ({
+        products.filter((p) => visible.has(p._id)).map(async (p) => ({
           _id: p._id,
           name: p.name,
           price: p.price,
@@ -100,6 +100,8 @@ export const productForPage = query({
     const id = ctx.db.normalizeId("products", productId);
     const product = id ? await ctx.db.get("products", id) : null;
     if (!product || product.shopId !== shop._id || product.hidden) return null;
+    const { limits } = await getEntitlements(ctx, shop);
+    if (!visibleProductIds(await shopProducts(ctx, shop._id), limits).has(product._id)) return null;
     return {
       suspended: false as const,
       shop: await publicShop(ctx, shop),
@@ -112,7 +114,7 @@ export const productForPage = query({
         sizes: product.sizes,
         colors: product.colors,
         soldOut: product.soldOut,
-        imageUrls: await urlsOf(ctx, product.imageIds),
+        imageUrls: await urlsOf(ctx, product.imageIds.slice(0, limits.photosPerProduct)),
       },
     };
   },

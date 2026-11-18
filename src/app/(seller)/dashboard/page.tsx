@@ -19,7 +19,8 @@ export default function DashboardPage() {
   const products = useQuery(api.products.listMine, {})
   // Queries can't read the clock, so the client passes "today" (UTC).
   const [today] = useState(() => utcDay(Date.now()))
-  const summary = useQuery(api.stats.summary, { today })
+  const result = useQuery(api.stats.summary, { today })
+  const summary = result && !result.locked ? result : undefined
   const perProduct = useMemo(
     () => new Map(summary?.products.map((p) => [p.productId, p]) ?? []),
     [summary],

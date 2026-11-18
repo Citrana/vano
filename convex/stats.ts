@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { mutation, type MutationCtx } from "./_generated/server";
+import { hasFeature } from "./lib/entitlements";
 import { addDays, isDay, utcDay } from "./lib/days";
 import { LIMITS } from "./lib/catalog";
 import { onShopDayStatsWritten } from "./lib/platformStats";
@@ -116,20 +117,30 @@ const totals = v.object({
  * Dashboard numbers for the caller's shop: today / last 7 / last 30 days,
  * plus per-product totals over 30 days. `today` ("YYYY-MM-DD", UTC) comes
  * from the client because queries must not read the clock.
+ *
+ * Shop stats are a plan feature (`shopStats`): on a plan without it the
+ * result is `{ locked: true }` and the dashboard shows an upgrade card.
+ * Views and clicks are still recorded, so the history is there after an
+ * upgrade.
  */
 export const summary = sellerQuery({
   permission: "ownStats.view",
   args: { today: v.string() },
-  returns: v.object({
-    today: totals,
-    last7: totals,
-    last30: totals,
-    products: v.array(
-      v.object({ productId: v.id("products"), views: v.number(), whatsappClicks: v.number() }),
-    ),
-  }),
+  returns: v.union(
+    v.object({ locked: v.literal(true) }),
+    v.object({
+      locked: v.literal(false),
+      today: totals,
+      last7: totals,
+      last30: totals,
+      products: v.array(
+        v.object({ productId: v.id("products"), views: v.number(), whatsappClicks: v.number() }),
+      ),
+    }),
+  ),
   handler: async (ctx, { today }) => {
     const shop = await requireOwnShop(ctx);
+    if (!(await hasFeature(ctx, shop, "shopStats"))) return { locked: true as const };
     const end = isDay(today) ? today : "9999-12-31";
     const from30 = isDay(today) ? addDays(today, -29) : "0000-01-01";
     const from7 = isDay(today) ? addDays(today, -6) : "0000-01-01";
@@ -167,6 +178,7 @@ export const summary = sellerQuery({
       perProduct.set(row.productId, acc);
     }
     return {
+      locked: false as const,
       ...sum,
       products: [...perProduct].map(([productId, acc]) => ({ productId, ...acc })),
     };

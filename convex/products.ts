@@ -6,6 +6,7 @@ import { urlOf } from "./lib/images";
 import { priceProblem } from "./lib/money";
 import { onProductCreated } from "./lib/platformStats";
 import { deleteProduct } from "./lib/productWrites";
+import { getEntitlements, requireCan, shopProducts, visibleProductIds } from "./lib/entitlements";
 import {
   claimImages,
   deleteFilesNotIn,
@@ -60,17 +61,19 @@ function cleanProductInput(shop: Doc<"shops">, input: ProductInput): ProductInpu
   };
 }
 
-/** The caller's products, newest first, with cover image. */
+/**
+ * The caller's products, newest first, with cover image. `overLimit`
+ * marks products the public shop doesn't show because the shop has more
+ * than its plan allows; `pinned` ones are kept visible by the seller.
+ */
 export const listMine = sellerQuery({
   permission: "ownProducts.manage",
   args: {},
   handler: async (ctx) => {
     const shop = await requireOwnShop(ctx);
-    const products = await ctx.db
-      .query("products")
-      .withIndex("by_shopId", (q) => q.eq("shopId", shop._id))
-      .order("desc")
-      .take(LIMITS.maxProducts);
+    const products = await shopProducts(ctx, shop._id);
+    const { limits } = await getEntitlements(ctx, shop);
+    const visible = visibleProductIds(products, limits);
     return await Promise.all(
       products.map(async (p) => ({
         _id: p._id,
@@ -79,6 +82,8 @@ export const listMine = sellerQuery({
         category: p.category,
         soldOut: p.soldOut,
         hidden: p.hidden ?? false,
+        overLimit: !p.hidden && !visible.has(p._id),
+        pinned: p.pinnedAt !== undefined,
         imageCount: p.imageIds.length,
         coverUrl: await urlOf(ctx, p.imageIds[0]),
       })),
@@ -117,6 +122,8 @@ export const create = sellerMutation({
       .withIndex("by_shopId", (q) => q.eq("shopId", shop._id))
       .take(LIMITS.maxProducts);
     if (existing.length >= LIMITS.maxProducts) fail("TOO_MANY_PRODUCTS");
+    await requireCan(ctx, shop, { kind: "addProduct", products: existing.length });
+    await requireCan(ctx, shop, { kind: "setPhotos", count: input.imageIds.length });
     await claimImages(ctx, input.imageIds);
     const productId = await ctx.db.insert("products", {
       ...input,
@@ -136,17 +143,24 @@ export const update = sellerMutation({
   handler: async (ctx, { productId, ...args }) => {
     const { shop, product } = await requireOwnProduct(ctx, productId);
     const input = cleanProductInput(shop, args);
+    await requireCan(ctx, shop, {
+      kind: "setPhotos",
+      count: input.imageIds.length,
+      previousCount: product.imageIds.length,
+    });
     const known = new Set<string>(product.imageIds);
     await claimImages(
       ctx,
       input.imageIds.filter((id) => !known.has(id)),
     );
     await deleteFilesNotIn(ctx, product.imageIds, input.imageIds);
-    // `hidden` is admin-controlled; carry it over or `replace` would drop it.
+    // `hidden` (admin) and `pinnedAt` (own action) aren't form fields;
+    // carry them over or `replace` would drop them.
     await ctx.db.replace("products", productId, {
       ...input,
       shopId: shop._id,
       hidden: product.hidden,
+      pinnedAt: product.pinnedAt,
       updatedAt: Date.now(),
     });
     return null;
@@ -160,6 +174,28 @@ export const setSoldOut = sellerMutation({
   handler: async (ctx, { productId, soldOut }) => {
     await requireOwnProduct(ctx, productId);
     await ctx.db.patch("products", productId, { soldOut, updatedAt: Date.now() });
+    return null;
+  },
+});
+
+/**
+ * Keeps a product visible in the public shop while the shop is over its
+ * plan's product limit (or stops doing so). Pinning more products than
+ * the plan allows is refused: the seller unpins one first.
+ */
+export const setPinned = sellerMutation({
+  permission: "ownProducts.manage",
+  args: { productId: v.id("products"), pinned: v.boolean() },
+  returns: v.null(),
+  handler: async (ctx, { productId, pinned }) => {
+    const { shop, product } = await requireOwnProduct(ctx, productId);
+    if (pinned === (product.pinnedAt !== undefined)) return null;
+    if (pinned) {
+      const products = await shopProducts(ctx, shop._id);
+      const pinnedCount = products.filter((p) => p.pinnedAt !== undefined && !p.hidden).length;
+      await requireCan(ctx, shop, { kind: "pinProduct", pinned: pinnedCount });
+    }
+    await ctx.db.patch("products", productId, { pinnedAt: pinned ? Date.now() : undefined });
     return null;
   },
 });
