@@ -36,6 +36,13 @@ export const AUDIT_ACTIONS = [
   "payment.pending",
   "payment.cancelled",
   "payment.expired",
+  "changeRequest.created",
+  "changeRequest.cancelled",
+  "changeRequest.approved",
+  "changeRequest.rejected",
+  "shop.nameChanged",
+  "shop.slugChanged",
+  "shop.whatsappChanged",
 ] as const;
 
 export const auditActionValidator = v.union(
@@ -64,6 +71,13 @@ export const auditActionValidator = v.union(
   v.literal("payment.pending"),
   v.literal("payment.cancelled"),
   v.literal("payment.expired"),
+  v.literal("changeRequest.created"),
+  v.literal("changeRequest.cancelled"),
+  v.literal("changeRequest.approved"),
+  v.literal("changeRequest.rejected"),
+  v.literal("shop.nameChanged"),
+  v.literal("shop.slugChanged"),
+  v.literal("shop.whatsappChanged"),
 );
 export type AuditAction = Infer<typeof auditActionValidator>;
 

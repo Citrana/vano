@@ -7,6 +7,7 @@ import {
   insertUserWithRole,
   productArgs,
   sellerWithShop,
+  settingsArgs,
   shopArgs,
   newTest,
 } from "./lib/test.utils";
@@ -76,7 +77,7 @@ describe("seller permissions", () => {
     const me = as(t, userId);
     await expect(me.query(api.shops.myShop, {})).rejects.toThrow(/ACCOUNT_SUSPENDED/);
     await expect(me.query(api.products.listMine, {})).rejects.toThrow(/ACCOUNT_SUSPENDED/);
-    await expect(me.mutation(api.shops.update, shopArgs())).rejects.toThrow(/ACCOUNT_SUSPENDED/);
+    await expect(me.mutation(api.shops.update, settingsArgs())).rejects.toThrow(/ACCOUNT_SUSPENDED/);
     await expect(me.mutation(api.files.generateUploadUrl, {})).rejects.toThrow(/ACCOUNT_SUSPENDED/);
   });
 });
@@ -95,7 +96,7 @@ describe("suspended shop", () => {
     await me.query(api.stats.summary, { today: "2026-11-17" });
 
     // Every write is refused.
-    await expect(me.mutation(api.shops.update, shopArgs())).rejects.toThrow(/SHOP_SUSPENDED/);
+    await expect(me.mutation(api.shops.update, settingsArgs())).rejects.toThrow(/SHOP_SUSPENDED/);
     await expect(me.mutation(api.products.create, await productArgs(t))).rejects.toThrow(
       /SHOP_SUSPENDED/,
     );

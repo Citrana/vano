@@ -1,5 +1,4 @@
 import { describe, expect, test } from "vitest";
-import { api } from "../_generated/api";
 import { addMonths } from "./days";
 import { LIMITS } from "./catalog";
 import {
@@ -19,7 +18,7 @@ import {
   trialState,
   type SubscriptionState,
 } from "./subscriptions";
-import { as, newTest, sellerWithShop } from "./test.utils";
+import { newTest, sellerWithShop } from "./test.utils";
 
 const NOW = Date.UTC(2026, 10, 18, 12);
 const days = (n: number) => n * DAY_MS;
@@ -131,9 +130,9 @@ describe("shops.create starts the trial", () => {
 
   test("renaming the shop keeps the subscription's shop name in sync", async () => {
     const t = newTest();
-    const { shopId, userId } = await sellerWithShop(t);
-    const { shopArgs } = await import("./test.utils");
-    await as(t, userId).mutation(api.shops.update, shopArgs({ name: "Maison Amani" }));
+    const { shopId } = await sellerWithShop(t);
+    const { syncShopName } = await import("./shopChanges");
+    await t.run((ctx) => syncShopName(ctx, shopId, "Maison Amani"));
     const sub = await t.run((ctx) =>
       ctx.db.query("subscriptions").withIndex("by_shopId", (q) => q.eq("shopId", shopId)).unique(),
     );

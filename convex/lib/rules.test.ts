@@ -184,3 +184,43 @@ describe("onboarding", () => {
     expect(allStepsDone(steps)).toBe(true);
   });
 });
+
+describe("change requests", () => {
+  test("cleanNewValue normalizes and spots invalid, reserved and same values", async () => {
+    const { cleanNewValue } = await import("./changeRequests");
+    expect(cleanNewValue("name", "  Maison   Amani ", "Chez Amani")).toEqual({ value: "Maison Amani" });
+    expect(cleanNewValue("name", "A", "Chez Amani")).toEqual({ problem: "invalid" });
+    expect(cleanNewValue("name", "Chez Amani ", "Chez Amani")).toEqual({ problem: "same" });
+    expect(cleanNewValue("slug", "maison-amani", "chez-amani")).toEqual({ value: "maison-amani" });
+    expect(cleanNewValue("slug", "admin", "chez-amani")).toEqual({ problem: "reserved" });
+    expect(cleanNewValue("slug", "Maison Amani", "chez-amani")).toEqual({ problem: "invalid" });
+    expect(cleanNewValue("whatsapp", "+243 899 000 111", "+243812345678")).toEqual({ value: "+243899000111" });
+    expect(cleanNewValue("whatsapp", "+243 812 345 678", "+243812345678")).toEqual({ problem: "same" });
+    expect(cleanNewValue("whatsapp", "0899", "+243812345678")).toEqual({ problem: "invalid" });
+  });
+
+  test("cooldown, reasons and masked phones", async () => {
+    const { inCooldown, reasonProblem, maskPhone, CHANGE_COOLDOWN_DAYS } = await import("./changeRequests");
+    const day = 86_400_000;
+    expect(inCooldown(null, 0)).toBe(false);
+    expect(inCooldown(0, (CHANGE_COOLDOWN_DAYS - 1) * day)).toBe(true);
+    expect(inCooldown(0, CHANGE_COOLDOWN_DAYS * day)).toBe(false);
+    expect(reasonProblem("too short")).toBe("length");
+    expect(reasonProblem("x".repeat(20))).toBeNull();
+    expect(reasonProblem("x".repeat(501))).toBe("length");
+    expect(maskPhone("+243812345678")).toBe("+243 ••• ••• 678");
+  });
+
+  test("riskyValueMatch flags brands, ignores look-alike words", async () => {
+    const { riskyValueMatch } = await import("./protectedNames");
+    expect(riskyValueMatch("Gucci Goma")).toBe("gucci");
+    expect(riskyValueMatch("louis-vuitton-kinshasa")).toBe("louis vuitton");
+    expect(riskyValueMatch("guccishop")).toBe("gucci");
+    expect(riskyValueMatch("Nike Store")).toBe("nike");
+    expect(riskyValueMatch("WhatsApp Deals")).toBe("whatsapp");
+    expect(riskyValueMatch("M-Pesa Mode")).toBe("mpesa");
+    expect(riskyValueMatch("canvas-bags")).toBeNull();
+    expect(riskyValueMatch("Metallic Style")).toBeNull();
+    expect(riskyValueMatch("Chez Amani")).toBeNull();
+  });
+});

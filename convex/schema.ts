@@ -3,6 +3,12 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { auditActionValidator, auditDetailsValidator, auditTargetTypeValidator } from "./lib/audit";
 import { categoryValidator, languageValidator } from "./lib/catalog";
+import {
+  changeFlagValidator,
+  changeStatusValidator,
+  protectedFieldValidator,
+} from "./lib/changeRequests";
+import { notificationKindValidator } from "./notifications/kinds";
 import { currencyValidator } from "./lib/money";
 import { shopThemeValidator } from "./lib/themes";
 import {
@@ -255,4 +261,74 @@ export default defineSchema({
   })
     .index("by_productId_and_day", ["productId", "day"])
     .index("by_shopId_and_day", ["shopId", "day"]),
+
+  /**
+   * Requests to change a protected shop field (name, link, WhatsApp).
+   * The live value only changes when an admin approves (CLAUDE.md
+   * "Protected shop changes"). `shopName` / `searchText` are copies for
+   * the admin list's search, taken when the request is made.
+   */
+  shopChangeRequests: defineTable({
+    shopId: v.id("shops"),
+    requesterId: v.id("users"),
+    field: protectedFieldValidator,
+    oldValue: v.string(),
+    newValue: v.string(),
+    reason: v.string(),
+    status: changeStatusValidator,
+    flags: v.array(changeFlagValidator),
+    /** The brand the new value matched, when flagged "brand". */
+    matchedBrand: v.optional(v.string()),
+    decidedById: v.optional(v.id("users")),
+    decidedAt: v.optional(v.number()),
+    /** Required for a rejection; shown to the seller. */
+    decisionReason: v.optional(v.string()),
+    cooldownOverridden: v.optional(v.boolean()),
+    shopName: v.string(),
+    searchText: v.string(),
+  })
+    .index("by_shopId", ["shopId"])
+    .index("by_shopId_and_field_and_status", ["shopId", "field", "status"])
+    .index("by_status", ["status"])
+    .index("by_field_and_status", ["field", "status"])
+    .index("by_field", ["field"])
+    .searchIndex("search_text", { searchField: "searchText", filterFields: ["status", "field"] }),
+
+  /**
+   * Old shop links after an approved change: `/<fromSlug>` redirects to the
+   * shop's current link until `expiresAt`, and nobody else can take it
+   * meanwhile. Deleted by `changeRequestJobs.cleanup` once expired.
+   */
+  slugRedirects: defineTable({
+    fromSlug: v.string(),
+    shopId: v.id("shops"),
+    expiresAt: v.number(),
+  })
+    .index("by_fromSlug", ["fromSlug"])
+    .index("by_shopId", ["shopId"])
+    .index("by_expiresAt", ["expiresAt"]),
+
+  /** One-time codes proving the seller owns a new WhatsApp number. Only a hash is stored. */
+  phoneVerifications: defineTable({
+    shopId: v.id("shops"),
+    phone: v.string(),
+    codeHash: v.string(),
+    salt: v.string(),
+    expiresAt: v.number(),
+    attempts: v.number(),
+    verifiedAt: v.optional(v.number()),
+    usedAt: v.optional(v.number()),
+  })
+    .index("by_shopId", ["shopId"])
+    .index("by_expiresAt", ["expiresAt"]),
+
+  /** Messages for a seller (in the dashboard; other channels later, see convex/notifications). */
+  sellerNotifications: defineTable({
+    userId: v.id("users"),
+    shopId: v.id("shops"),
+    kind: notificationKindValidator,
+    requestId: v.id("shopChangeRequests"),
+    readAt: v.optional(v.number()),
+  }).index("by_userId_and_readAt", ["userId", "readAt"]),
+
 });

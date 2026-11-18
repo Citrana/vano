@@ -68,7 +68,19 @@
     "PAYMENT_NOT_OPEN": "This payment is already finished.",
     "REASON_INVALID": "Enter a reason (5 to 500 characters).",
     "DAYS_INVALID": "Enter a number of days between 1 and 366.",
-    "ONBOARDING_INCOMPLETE": "Finish every step before hiding this card."
+    "ONBOARDING_INCOMPLETE": "Finish every step before hiding this card.",
+    "CHANGE_PENDING": "You already have a pending request for this. Cancel it or wait for the decision.",
+    "CHANGE_COOLDOWN": "This was changed less than 30 days ago. Tick “Override cooldown” to approve anyway.",
+    "CHANGE_SAME_VALUE": "That's already the current value.",
+    "CHANGE_REASON_INVALID": "Explain why in 20 to 500 characters.",
+    "REQUEST_NOT_PENDING": "This request has already been decided or cancelled.",
+    "CURRENCY_LOCKED": "The currency can't change once your shop has products.",
+    "PHONE_NOT_VERIFIED": "Verify the new number with the code we sent before submitting.",
+    "CODE_INVALID": "That code isn't right. Check it and try again.",
+    "CODE_EXPIRED": "This code has expired. Send a new one.",
+    "CODE_TOO_MANY_ATTEMPTS": "Too many wrong codes. Send a new one.",
+    "CODE_RATE_LIMITED": "Please wait a minute before asking for another code.",
+    "VERIFICATION_UNAVAILABLE": "Number verification isn't available yet. Contact us to change your number."
   },
   "Validation": {
     "required": "This field is required.",
@@ -180,7 +192,8 @@
     "saved": "Shop settings saved",
     "charCount": "{count}/{max}",
     "whatsappCode": "Country code",
-    "lookHelp": "The style of your public shop. You can change it any time."
+    "lookHelp": "The style of your public shop. You can change it any time.",
+    "currencyLocked": "Locked because your shop has products: their prices are in this currency."
   },
   "Dashboard": {
     "title": "My shop",
@@ -357,7 +370,8 @@
       "activity": "Activity history",
       "settings": "Settings",
       "subscriptions": "Subscriptions",
-      "payments": "Payments"
+      "payments": "Payments",
+      "changeRequests": "Change requests"
     }
   },
   "Roles": {
@@ -478,6 +492,11 @@
     "ownBilling": {
       "title": "Own billing",
       "manage": "Manage their shop's plan and payments"
+    },
+    "changeRequests": {
+      "title": "Shop change requests",
+      "view": "View name, link and WhatsApp change requests",
+      "decide": "Approve or reject change requests"
     }
   },
   "AdminRoles": {
@@ -598,7 +617,10 @@
     "shop": {
       "suspend": "Suspended a shop",
       "reactivate": "Reactivated a shop",
-      "delete": "Deleted a shop"
+      "delete": "Deleted a shop",
+      "nameChanged": "Shop name changed",
+      "slugChanged": "Shop link changed",
+      "whatsappChanged": "Shop WhatsApp number changed"
     },
     "product": {
       "hide": "Hid a product",
@@ -630,6 +652,12 @@
       "pending": "Payment pending",
       "cancelled": "Payment cancelled",
       "expired": "Payment expired"
+    },
+    "changeRequest": {
+      "created": "Requested a shop change",
+      "cancelled": "Cancelled a shop change request",
+      "approved": "Approved a shop change",
+      "rejected": "Rejected a shop change"
     }
   },
   "AuditDetails": {
@@ -651,7 +679,12 @@
     "amount": "Amount",
     "provider": "Provider",
     "reference": "Reference",
-    "shop": "Shop"
+    "shop": "Shop",
+    "requestId": "Request",
+    "field": "Field",
+    "newValue": "New value",
+    "flags": "Flags",
+    "cooldownOverridden": "Cooldown overridden"
   },
   "AdminActivity": {
     "title": "Activity history",
@@ -1259,5 +1292,133 @@
     "extended": "Plan extended",
     "cantExtendFree": "This shop is on Free: grant a plan instead.",
     "ownShop": "You can't change your own shop's plan."
+  },
+  "ChangeRequests": {
+    "request": "Request a change",
+    "pending": "Change pending:",
+    "pendingBody": "{value}, asked on {date}. The current value stays live until an admin approves.",
+    "cancelRequest": "Cancel request",
+    "cancelled": "Request cancelled",
+    "help": {
+      "name": "To protect buyers, a new name is checked by our team.",
+      "slug": "To protect buyers, a new link is checked by our team. The old link keeps working for 90 days.",
+      "whatsapp": "To protect buyers, a new number is verified and checked by our team."
+    },
+    "title": {
+      "name": "Change your shop name",
+      "slug": "Change your shop link",
+      "whatsapp": "Change your WhatsApp number"
+    },
+    "dialogBody": "Our team reviews every change to keep buyers safe from fake shops. You'll see the decision on your dashboard.",
+    "cooldownWarning": "You changed this less than 30 days ago. You can still ask, but it will only be approved in special cases.",
+    "newName": "New shop name",
+    "newSlug": "New shop link",
+    "newWhatsapp": "New WhatsApp number",
+    "codeHelp": "We'll send a code to this number on WhatsApp to check it's yours.",
+    "codeSent": "We sent a 6-digit code to this number. Enter it below.",
+    "testModeCode": "Test mode, your code is {code}",
+    "code": "Code",
+    "sendCode": "Send code",
+    "resend": "Send a new code",
+    "verify": "Verify",
+    "verified": "Number verified",
+    "reason": "Why do you want this change?",
+    "reasonHelp": "{count}/{max}",
+    "reasonPlaceholder": "e.g. We renamed our brand and moved to Kinshasa.",
+    "submit": "Send request",
+    "sending": "Sending…",
+    "sent": "Request sent. We'll let you know the decision.",
+    "historyTitle": "Change requests",
+    "historyBody": "Your requests to change the shop name, link or WhatsApp number.",
+    "historyEmptyTitle": "No requests yet",
+    "historyEmptyBody": "Requests you make will appear here with the decision.",
+    "fieldName": {
+      "name": "Shop name",
+      "slug": "Shop link",
+      "whatsapp": "WhatsApp number"
+    },
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled"
+    },
+    "askedOn": "Asked on {date}",
+    "decidedOn": "decided on {date}",
+    "adminReason": "Reason:"
+  },
+  "Notifications": {
+    "title": "Updates on your requests",
+    "approved": "Your new {field} was approved: {value}.",
+    "rejected": "Your new {field} was not approved: {value}.",
+    "reason": "Reason: {reason}",
+    "dismiss": "Dismiss",
+    "view": "See details",
+    "badge": "{count, plural, one {# update} other {# updates}}",
+    "field": {
+      "name": "shop name",
+      "slug": "shop link",
+      "whatsapp": "WhatsApp number"
+    }
+  },
+  "AdminChangeRequests": {
+    "title": "Change requests",
+    "search": "Search",
+    "searchPlaceholder": "Search shop name, link or new value",
+    "status": "Status",
+    "allStatuses": "All statuses",
+    "field": "Field",
+    "allFields": "All fields",
+    "from": "Asked from",
+    "to": "Asked until",
+    "utcNote": "Dates are in UTC.",
+    "clear": "Clear filters",
+    "emptyTitle": "No requests",
+    "emptyBody": "No change requests match these filters.",
+    "loadMore": "Load more",
+    "flag": {
+      "brand": "Brand: {brand}",
+      "cooldown": "Within 30 days"
+    },
+    "detailsTitle": "Change request",
+    "back": "Back to change requests",
+    "notFoundTitle": "Request not found",
+    "notFoundBody": "It may have been removed, or the link is wrong.",
+    "oldValue": "Old value",
+    "newValue": "Requested value",
+    "currentValue": "Current value now",
+    "asked": "Asked",
+    "sellerReason": "Seller's reason",
+    "warnSlugTaken": "This link has been taken since the request. It can't be approved: reject it so the seller can ask for another.",
+    "warnCompeting": "{count, plural, one {Another shop is} other {# other shops are}} asking for the same link. Only one can get it.",
+    "warnCooldown": "This field was last changed on {date}, less than 30 days ago. Approving needs a cooldown override.",
+    "warnBrand": "The new value looks like the brand “{brand}”. Check the seller really owns it before approving.",
+    "decided": "Decided",
+    "decidedBy": "Decided by",
+    "rejectReason": "Reason for rejecting",
+    "cooldownOverridden": "Cooldown overridden",
+    "yes": "Yes",
+    "ownShop": "This is your own shop: another admin has to decide.",
+    "shopLink": "Shop link",
+    "owner": "Owner",
+    "shopAge": "Shop age",
+    "shopAgeValue": "{days, plural, one {# day} other {# days}} (since {date})",
+    "products": "Products",
+    "openShop": "Open the shop in admin",
+    "pastRequests": "This seller's other requests",
+    "noPastRequests": "No other requests.",
+    "approve": "Approve",
+    "approving": "Approving…",
+    "approved": "Change approved and applied",
+    "approveTitle": "Approve this change?",
+    "approveBody": "The change goes live now. For a new link, the old one redirects for 90 days and stays reserved.",
+    "overrideCooldown": "Override cooldown",
+    "overrideHelp": "This field changed less than 30 days ago. Only approve if you've checked why.",
+    "reject": "Reject",
+    "rejecting": "Rejecting…",
+    "rejected": "Request rejected",
+    "rejectTitle": "Reject this change?",
+    "rejectBody": "The seller sees your reason. The shop stays as it is.",
+    "rejectPlaceholder": "e.g. Brand names can't be used without proof you own them."
   }
 }
