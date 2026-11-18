@@ -14,16 +14,22 @@ export function ProductImagesField({
   onRemove,
   onMakeCover,
   error,
+  maxImages = LIMITS.maxImages,
+  planHint = false,
 }: {
   items: ImageItem[]
   onAdd: (files: File[]) => void
   onRemove: (key: string) => void
   onMakeCover: (key: string) => void
   error?: string
+  /** The plan's photo limit (CLAUDE.md "Billing"); the platform maximum by default. */
+  maxImages?: number
+  /** Says the limit comes from the plan. */
+  planHint?: boolean
 }) {
   const t = useTranslations("ProductForm")
   const input = useRef<HTMLInputElement>(null)
-  const canAdd = items.length < LIMITS.maxImages
+  const canAdd = items.length < maxImages
 
   return (
     <div className="flex flex-col gap-2">
@@ -109,7 +115,10 @@ export function ProductImagesField({
           {error}
         </p>
       ) : (
-        <p className="text-xs text-muted-foreground">{t("imagesHelp", { max: LIMITS.maxImages })}</p>
+        <p className="text-xs text-muted-foreground">
+          {t("imagesHelp", { max: maxImages })}
+          {planHint ? ` ${t("photosPlanHint", { max: maxImages })}` : null}
+        </p>
       )}
     </div>
   )

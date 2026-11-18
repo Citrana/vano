@@ -106,9 +106,10 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   Demo, Help, Terms, Privacy). The group layout adds the announcement
   banner, `MarketingNav` and `MarketingFooter`; code is organised by page in
   `src/features/marketing/{shared,home,features,pricing,demo,help}`.
-- Plans, prices, limits and feature lists live **only** in
-  `src/features/marketing/pricing/plans.ts` (labels in `Pricing.*`
-  messages). Display only: no billing yet.
+- Plan ids, prices, limits and the trial live **only** in
+  `convex/lib/plans.ts`; marketing cards and the comparison table in
+  `src/features/marketing/pricing/plans.ts` import them (labels in
+  `Pricing.*` messages).
 - Contact values come from `shared/site-config.ts`
   (`NEXT_PUBLIC_CONTACT_WHATSAPP`, `NEXT_PUBLIC_CONTACT_EMAIL`).
 - Sign-up buttons always use `OpenShopCta` (sign-up closed note, signed-in
@@ -120,6 +121,39 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   `src/features/shop-themes/themes.ts`.
 - Server components must not import values from `"use client"` modules
   (they arrive as client references); shared constants go in plain `.ts`.
+
+## Billing
+
+- **`docs/payments.md` is the reference for payments and billing.** Any
+  change to how payments, plans, trials, limits, providers, checkout, the
+  expiry / reconcile jobs or billing admin work must update that doc **in
+  the same commit**: add a dated entry (`YYYY-MM-DD HH:MM` with timezone,
+  e.g. `2026-11-18 19:29 CAT (UTC+02:00)`) at the top of its change log
+  and refresh its "Last updated" line. Never ship a payment change without it.
+- One `subscriptions` row per shop (`trialing | active | expired | free`),
+  written only through `convex/lib/subscriptions.ts` (`writeSubscription`,
+  which also logs the change). New shops start a `TRIAL_MONTHS` Pro trial
+  in `shops.create`. Nothing renews automatically; the hourly cron
+  `billingJobs.expireDue` moves ended periods to Free.
+- **Every plan limit goes through `convex/lib/entitlements.ts`**:
+  `requireCan(ctx, shop, action)` in mutations, `hasFeature` in queries,
+  the pure `canShopDo` in the UI. Never compare a plan name or hard-code a
+  limit. A new paid feature = a `PlanFeatureFlag` in `plans.ts` + a
+  `requireCan({ kind: "feature" })` call.
+- Downgrades never delete or change data: public visibility is computed
+  (`visibleProductIds`: pinned first, then newest, up to the limit).
+  Over-limit products stay editable; photos are capped publicly.
+- Payments go through the `PaymentProvider` interface
+  (`convex/payments/provider.ts`), registered in `payments/registry.ts`
+  and chosen by the `PAYMENTS_PROVIDER` env var. Amounts come from
+  `PLAN_PRICE_MINOR`, never the client. Provider results (webhook
+  `POST /payments/callback/<provider>`, status polls, the mock) are applied
+  **only** by `applyEvent` in `payments/core.ts`, which dedupes event ids,
+  never changes a final payment and extends a plan once (`appliedAt`).
+- The mock provider runs only with `PAYMENTS_PROVIDER=mock` **and**
+  `PAYMENTS_MOCK_ENABLED=true` on the deployment. Never set them on prod.
+- Admins grant / extend plans with `billing.manage`, a reason, never on
+  their own shop (`assertNotOwnShop`).
 
 ## Stats
 
@@ -169,7 +203,7 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   forms with several fields show `<RequiredFieldsHint />`.
 - Components are small and grouped by feature in `src/features/<feature>/`
   (`auth`, `shop`, `product`, `public`, `stats`, `i18n`, `marketing/*`,
-  `shop-themes`, `admin/*`).
+  `shop-themes`, `billing`, `admin/*`).
   Generic primitives live in `src/components/ui/`.
 - Admin pages live under `src/app/admin/` and wrap their content in
   `<RequirePermission permission="…">`. Sidebar sections are defined only
@@ -196,6 +230,8 @@ convex/
   schema.ts         # all tables
   auth.ts auth.config.ts http.ts   # Convex Auth (Password, sign-up enabled)
   users.ts shops.ts products.ts files.ts public.ts stats.ts
+  billing.ts billingJobs.ts crons.ts   # seller billing, expiry job
+  payments/         # provider interface, mock, result handling
   lib/              # seller wrappers, shared rules, test setup
   *.test.ts
 messages/en.json fr.json

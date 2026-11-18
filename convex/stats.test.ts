@@ -1,6 +1,13 @@
+import type { FunctionReturnType } from "convex/server";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { api } from "./_generated/api";
 import { as, insertUser, productArgs, sellerWithShop, newTest } from "./lib/test.utils";
+
+type Summary = FunctionReturnType<typeof api.stats.summary>;
+function unlocked(summary: Summary): Extract<Summary, { locked: false }> {
+  if (summary.locked) throw new Error("expected unlocked stats");
+  return summary;
+}
 
 const setup = newTest;
 
@@ -41,7 +48,7 @@ describe("stats.record*", () => {
     vi.setSystemTime(new Date("2026-09-01T10:00:00Z")); // > 30 days ago
     await t.mutation(api.stats.recordShopView, { shopId });
 
-    const summary = await me.query(api.stats.summary, { today: "2026-11-17" });
+    const summary = unlocked(await me.query(api.stats.summary, { today: "2026-11-17" }));
     expect(summary.today).toEqual({ shopViews: 2, productViews: 1, whatsappClicks: 1 });
     expect(summary.last7).toEqual({ shopViews: 3, productViews: 2, whatsappClicks: 1 });
     expect(summary.last30).toEqual({ shopViews: 4, productViews: 2, whatsappClicks: 1 });
@@ -52,7 +59,7 @@ describe("stats.record*", () => {
     const { t, shopId } = await shopWithProduct();
     await t.mutation(api.stats.recordShopView, { shopId });
     const other = await sellerWithShop(t, "b@x.com", { slug: "other-shop" });
-    const summary = await as(t, other.userId).query(api.stats.summary, { today: "2026-11-17" });
+    const summary = unlocked(await as(t, other.userId).query(api.stats.summary, { today: "2026-11-17" }));
     expect(summary.last30.shopViews).toBe(0);
     const noShop = as(t, await insertUser(t, "c@x.com"));
     await expect(noShop.query(api.stats.summary, { today: "2026-11-17" })).rejects.toThrow(/NO_SHOP/);

@@ -14,7 +14,13 @@ import { findRoleByKey, permissionsOf } from "./roles";
  * 3. Only a super admin can touch a super admin or grant that role.
  * 4. No escalation: you can only hand out permissions you hold yourself.
  * 5. Built-in roles can't be edited or deleted; a role in use can't be deleted.
+ * 6. Nobody grants or extends a plan for their own shop.
  */
+
+/** Rule 6: an admin can't change their own shop's plan. */
+export function assertNotOwnShop(access: Access, shop: Doc<"shops">): void {
+  if (shop.ownerId === access.user._id) fail("CANNOT_MODIFY_SELF");
+}
 
 /** True if every permission in `wanted` is one the caller holds. */
 export function canGrant(access: Access, wanted: readonly Permission[]): boolean {

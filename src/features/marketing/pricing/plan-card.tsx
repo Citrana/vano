@@ -4,13 +4,8 @@ import { cn } from "cn"
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import { OpenShopCta } from "@/features/marketing/shared/open-shop-cta"
-import { contactEmail, whatsappHref } from "@/features/marketing/shared/site-config"
+import { talkHref } from "@/features/marketing/shared/site-config"
 import { YEARLY, formatPlanPrice, type Plan } from "./plans"
-
-/** Where "Talk to us" goes: WhatsApp (prefilled), else email, else Help contact. */
-function talkHref(message: string): string {
-  return whatsappHref(message) ?? (contactEmail ? `mailto:${contactEmail}` : "/help#contact")
-}
 
 export async function PlanCard({ plan, locale }: { plan: Plan; locale: string }) {
   const t = await getTranslations("Pricing")

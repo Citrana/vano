@@ -59,7 +59,15 @@
     "PERMISSION_ESCALATION": "Vous ne pouvez donner que les autorisations que vous avez vous-même.",
     "SUPER_ADMIN_EXISTS": "Un super admin existe déjà.",
     "ANNOUNCEMENT_INVALID": "Écrivez l'annonce en anglais et en français (280 caractères maximum chacune), ou laissez les deux vides.",
-    "UNKNOWN": "Un problème est survenu. Réessayez."
+    "UNKNOWN": "Un problème est survenu. Réessayez.",
+    "PLAN_INVALID": "Ce forfait ne peut pas être choisi ici.",
+    "PLAN_LIMIT_PRODUCTS": "Vous avez atteint la limite de produits de votre forfait. Passez à un forfait supérieur pour en ajouter.",
+    "PLAN_LIMIT_PHOTOS": "Votre forfait permet moins de photos par produit. Retirez-en ou changez de forfait.",
+    "PLAN_FEATURE_LOCKED": "Cette fonctionnalité n'est pas incluse dans votre forfait.",
+    "PAYMENTS_UNAVAILABLE": "Les paiements ne sont pas encore disponibles. Contactez-nous pour changer de forfait.",
+    "PAYMENT_NOT_OPEN": "Ce paiement est déjà terminé.",
+    "REASON_INVALID": "Indiquez une raison (5 à 500 caractères).",
+    "DAYS_INVALID": "Indiquez un nombre de jours entre 1 et 366."
   },
   "Validation": {
     "required": "Ce champ est obligatoire.",
@@ -78,7 +86,9 @@
     "passwordShort": "Utilisez au moins {min} caractères.",
     "tagsInvalid": "Jusqu'à 20 éléments, de 20 caractères chacun.",
     "uploadsPending": "Attendez la fin de l'envoi des photos.",
-    "announcementBothRequired": "Écrivez l'annonce dans les deux langues, ou laissez les deux vides."
+    "announcementBothRequired": "Écrivez l'annonce dans les deux langues, ou laissez les deux vides.",
+    "reasonLength": "Indiquez une raison de {min} à {max} caractères.",
+    "daysRange": "Indiquez un nombre entier de jours entre {min} et {max}."
   },
   "Categories": {
     "clothes": "Vêtements",
@@ -124,7 +134,8 @@
     "settings": "Paramètres de la boutique",
     "viewShop": "Voir ma boutique",
     "menu": "Menu",
-    "admin": "Admin"
+    "admin": "Admin",
+    "billing": "Forfait"
   },
   "Onboarding": {
     "title": "Créez votre boutique",
@@ -181,7 +192,15 @@
     "deleted": "Produit supprimé",
     "views": "{count, plural, one {# vue} other {# vues}}",
     "clicks": "{count, plural, one {# clic commande} other {# clics commande}}",
-    "hiddenByAdmin": "Masqué par l'admin"
+    "hiddenByAdmin": "Masqué par l'admin",
+    "overLimit": "Au-delà de la limite",
+    "pinned": "Toujours affiché",
+    "showInShop": "Afficher dans la boutique",
+    "stopShowing": "Ne plus forcer l'affichage",
+    "overLimitNotice": "{count, plural, one {# produit est masqué} other {# produits sont masqués}} dans votre boutique à cause de la limite de votre forfait. Choisissez ceux qui s'affichent, ou changez de forfait.",
+    "limitReached": "Vous avez atteint la limite de {count} produits de votre forfait.",
+    "upgrade": "Changer de forfait",
+    "pinLimit": "Toutes les places visibles sont déjà réservées à d'autres produits. Retirez-en une d'abord."
   },
   "Share": {
     "title": "Le lien de votre boutique",
@@ -235,7 +254,8 @@
     "notFoundTitle": "Produit introuvable",
     "notFoundBody": "Il a peut-être été supprimé.",
     "backToDashboard": "Retour au tableau de bord",
-    "hiddenNotice": "Un admin a masqué ce produit : les clients ne peuvent pas le voir. Contactez le support Vano si vous pensez qu'il s'agit d'une erreur."
+    "hiddenNotice": "Un admin a masqué ce produit : les clients ne peuvent pas le voir. Contactez le support Vano si vous pensez qu'il s'agit d'une erreur.",
+    "photosPlanHint": "Votre forfait permet {max} photos par produit."
   },
   "TagInput": {
     "add": "Ajouter",
@@ -300,7 +320,9 @@
       "products": "Produits",
       "roles": "Rôles et autorisations",
       "activity": "Historique d'activité",
-      "settings": "Paramètres"
+      "settings": "Paramètres",
+      "subscriptions": "Abonnements",
+      "payments": "Paiements"
     }
   },
   "Roles": {
@@ -412,6 +434,15 @@
     "ownStats": {
       "title": "Ses statistiques",
       "view": "Voir les statistiques de sa boutique"
+    },
+    "billing": {
+      "title": "Abonnements et paiements",
+      "view": "Voir les abonnements et paiements",
+      "manage": "Offrir et prolonger des forfaits"
+    },
+    "ownBilling": {
+      "title": "Facturation de sa boutique",
+      "manage": "Gérer le forfait et les paiements de sa boutique"
     }
   },
   "AdminRoles": {
@@ -549,6 +580,21 @@
     },
     "superAdmin": {
       "seed": "A créé un super admin (terminal)"
+    },
+    "subscription": {
+      "activated": "Forfait activé",
+      "trialEnded": "Essai terminé (passage au forfait Gratuit)",
+      "expired": "Forfait expiré (passage au forfait Gratuit)",
+      "grant": "Forfait offert",
+      "extend": "Forfait prolongé"
+    },
+    "payment": {
+      "started": "Paiement commencé",
+      "succeeded": "Paiement réussi",
+      "failed": "Paiement échoué",
+      "pending": "Paiement en attente",
+      "cancelled": "Paiement annulé",
+      "expired": "Paiement expiré"
     }
   },
   "AuditDetails": {
@@ -560,13 +606,23 @@
     "to": "À",
     "owner": "Propriétaire",
     "products": "Produits",
-    "force": "Forcé"
+    "force": "Forcé",
+    "plan": "Forfait",
+    "previousPlan": "Forfait précédent",
+    "days": "Jours",
+    "reason": "Raison",
+    "periodEnd": "Fin",
+    "previousEnd": "Fin précédente",
+    "amount": "Montant",
+    "provider": "Prestataire",
+    "reference": "Référence",
+    "shop": "Boutique"
   },
   "AdminActivity": {
     "title": "Historique d'activité",
     "person": "Personne",
     "allPeople": "Tout le monde",
-    "system": "Système (terminal)",
+    "system": "Système",
     "action": "Action",
     "allActions": "Toutes les actions",
     "from": "Du",
@@ -1012,5 +1068,159 @@
         "a3": "Contactez-nous avec les coordonnées ci-dessous et nous supprimerons votre compte et votre boutique."
       }
     }
+  },
+  "Billing": {
+    "title": "Forfait et paiements",
+    "currentPlan": "Forfait actuel",
+    "status": {
+      "trialing": "Essai gratuit",
+      "active": "Actif",
+      "expired": "Expiré",
+      "free": "Gratuit"
+    },
+    "trialEnds": "L'essai se termine le {date}",
+    "activeUntil": "Actif jusqu'au {date}",
+    "expiredNote": "Votre forfait payant est terminé : votre boutique est au forfait Gratuit.",
+    "freeNote": "Votre boutique est au forfait Gratuit.",
+    "daysLeft": "{count, plural, =0 {Se termine aujourd'hui} one {# jour restant} other {# jours restants}}",
+    "noAutoRenew": "Rien ne se renouvelle tout seul : payez à nouveau pour ajouter 30 jours.",
+    "usageProducts": "Produits",
+    "usageOf": "{used} sur {limit}",
+    "usageUnlimited": "{used} (sans limite)",
+    "photosPerProduct": "Photos par produit",
+    "overLimit": "{count, plural, one {# produit est masqué} other {# produits sont masqués}} dans votre boutique à cause de la limite de votre forfait. Ils sont conservés et reviennent si vous changez de forfait.",
+    "manageProducts": "Choisir ceux qui s'affichent",
+    "plansTitle": "Forfaits",
+    "perMonth": "/mois",
+    "customPrice": "Prix sur mesure",
+    "currentBadge": "Forfait actuel",
+    "upgrade": "Passer à {plan}",
+    "switchTo": "Passer à {plan}",
+    "renew": "Ajouter 30 jours",
+    "talk": "Nous contacter",
+    "talkMessage": "Bonjour Vano ! J'aimerais parler du forfait {plan} pour ma boutique {shop}.",
+    "paymentsOff": "Les paiements en ligne ne sont pas encore disponibles. Contactez-nous pour changer de forfait.",
+    "openPayment": "Vous avez un paiement en cours.",
+    "openPaymentLink": "Continuer",
+    "confirmTitle": "{plan} pour 30 jours",
+    "confirmAmount": "Montant : {amount}",
+    "confirmNewEnd": "Votre forfait sera actif jusqu'au {date}.",
+    "confirmTrialKept": "Vous gardez le reste de votre essai gratuit : les 30 jours commencent après.",
+    "confirmCredit": "Les jours non utilisés de votre forfait actuel sont convertis en jours {plan}.",
+    "confirmRenew": "30 jours sont ajoutés à votre forfait actuel.",
+    "continue": "Continuer vers le paiement",
+    "starting": "Démarrage…",
+    "freeTitle": "Passer au forfait Gratuit",
+    "freeBody": "Les forfaits ne se renouvellent jamais tout seuls. Votre forfait {plan} reste actif jusqu'au {date}, puis votre boutique passe au forfait Gratuit. Les produits au-delà de la limite sont masqués, jamais supprimés.",
+    "freeOk": "Compris",
+    "historyTitle": "Historique des paiements",
+    "historyEmptyTitle": "Aucun paiement",
+    "historyEmptyBody": "Les paiements de votre forfait s'afficheront ici.",
+    "loadMore": "Voir plus",
+    "paymentStatus": {
+      "created": "Démarrage",
+      "pending": "En attente",
+      "succeeded": "Payé",
+      "failed": "Échoué",
+      "cancelled": "Annulé",
+      "expired": "Expiré"
+    },
+    "testComplete": "Valider (test)",
+    "testFail": "Faire échouer (test)",
+    "bannerTrialEnding": "{count, plural, =0 {Votre essai gratuit se termine aujourd'hui.} one {Votre essai gratuit se termine dans # jour.} other {Votre essai gratuit se termine dans # jours.}} Choisissez un forfait pour garder les fonctionnalités {plan}.",
+    "bannerPlanEnding": "{count, plural, =0 {Votre forfait {plan} se termine aujourd'hui.} one {Votre forfait {plan} se termine dans # jour.} other {Votre forfait {plan} se termine dans # jours.}} Payez à nouveau pour le garder.",
+    "bannerFree": "Votre boutique est maintenant au forfait Gratuit. Les produits au-delà de la limite sont masqués, pas supprimés.",
+    "bannerAction": "Voir les forfaits",
+    "dismiss": "Fermer",
+    "lockedStatsTitle": "Statistiques",
+    "lockedStatsBody": "Voyez les visites de votre boutique et les clics de commande WhatsApp avec le forfait Pro.",
+    "lockedStatsAction": "Voir les forfaits",
+    "keep": "Garder {plan}"
+  },
+  "Checkout": {
+    "title": "Paiement",
+    "testMode": "Mode test",
+    "testModeBody": "Aucun argent réel n'est utilisé. Choisissez ce que répond le prestataire de paiement.",
+    "summary": "{plan} · 30 jours",
+    "amount": "Montant",
+    "preparing": "Préparation du paiement…",
+    "simulateSuccess": "Simuler une réussite",
+    "simulateFailure": "Simuler un échec",
+    "simulatePending": "Simuler une attente",
+    "cancel": "Annuler",
+    "successTitle": "Paiement reçu",
+    "successBody": "Votre forfait {plan} est actif jusqu'au {date}.",
+    "failedTitle": "Paiement échoué",
+    "failedBody": "Rien n'a été débité et votre forfait n'a pas changé.",
+    "tryAgain": "Réessayer",
+    "pendingTitle": "Paiement en cours",
+    "pendingBody": "Nous attendons la réponse du prestataire de paiement. Cette page se met à jour toute seule.",
+    "testControls": "Contrôles de test",
+    "cancelledTitle": "Paiement annulé",
+    "cancelledBody": "Votre forfait n'a pas changé.",
+    "expiredTitle": "Paiement expiré",
+    "expiredBody": "Ce paiement a pris trop de temps et a été fermé. Votre forfait n'a pas changé.",
+    "phoneTitle": "Confirmez sur votre téléphone",
+    "phoneBody": "Entrez votre code PIN dans la demande envoyée sur votre téléphone. Cette page se met à jour toute seule.",
+    "redirectTitle": "Continuer vers le paiement",
+    "redirectAction": "Ouvrir la page de paiement",
+    "notFoundTitle": "Paiement introuvable",
+    "notFoundBody": "Ce paiement n'existe pas ou ne vous appartient pas.",
+    "unavailableTitle": "Les paiements de test sont désactivés",
+    "unavailableBody": "Le paiement de test est désactivé sur ce serveur.",
+    "backToBilling": "Retour à mon forfait"
+  },
+  "AdminBilling": {
+    "subscriptionsTitle": "Abonnements",
+    "paymentsTitle": "Paiements",
+    "search": "Rechercher par nom de boutique",
+    "searchPlaceholder": "Rechercher par nom de boutique",
+    "plan": "Forfait",
+    "allPlans": "Tous les forfaits",
+    "status": "Statut",
+    "allStatuses": "Tous les statuts",
+    "endsFrom": "Fin à partir du",
+    "endsTo": "Fin jusqu'au",
+    "from": "Du",
+    "to": "Au",
+    "clear": "Effacer les filtres",
+    "utcNote": "Les jours sont en UTC.",
+    "shop": "Boutique",
+    "ends": "Fin",
+    "noEnd": "—",
+    "source": "Origine",
+    "sources": {
+      "trial": "Essai",
+      "payment": "Paiement",
+      "admin": "Admin",
+      "system": "Automatique"
+    },
+    "date": "Date",
+    "amount": "Montant",
+    "provider": "Prestataire",
+    "reference": "Référence",
+    "emptySubscriptionsTitle": "Aucun abonnement trouvé",
+    "emptySubscriptionsBody": "Les forfaits des boutiques s'afficheront ici.",
+    "emptyPaymentsTitle": "Aucun paiement trouvé",
+    "emptyPaymentsBody": "Les paiements de forfaits s'afficheront ici.",
+    "emptyFilteredBody": "Rien ne correspond à ces filtres.",
+    "loadMore": "Voir plus",
+    "panelTitle": "Forfait",
+    "panelUntil": "Jusqu'au {date}",
+    "recentPayments": "Paiements récents",
+    "noPayments": "Aucun paiement pour l'instant.",
+    "grant": "Offrir un forfait",
+    "extend": "Prolonger",
+    "grantTitle": "Offrir un forfait à {shop}",
+    "grantBody": "Le forfait commence maintenant et dure le nombre de jours choisi. Il remplace le forfait actuel.",
+    "extendTitle": "Prolonger le forfait de {shop}",
+    "extendBody": "Ajoute des jours au forfait ou à l'essai en cours.",
+    "days": "Jours",
+    "reason": "Raison",
+    "reasonHelp": "Enregistrée dans l'historique d'activité.",
+    "granted": "Forfait offert",
+    "extended": "Forfait prolongé",
+    "cantExtendFree": "Cette boutique est au forfait Gratuit : offrez plutôt un forfait.",
+    "ownShop": "Vous ne pouvez pas changer le forfait de votre propre boutique."
   }
 }

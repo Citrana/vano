@@ -26,3 +26,8 @@ export const contactEmail: string | null = parseEmail(process.env.NEXT_PUBLIC_CO
 export function whatsappHref(message = ""): string | null {
   return contactWhatsapp ? waChatLink(contactWhatsapp, message) : null
 }
+
+/** Where "Talk to us" goes: WhatsApp (prefilled), else email, else Help contact. */
+export function talkHref(message: string): string {
+  return whatsappHref(message) ?? (contactEmail ? `mailto:${contactEmail}` : "/help#contact")
+}

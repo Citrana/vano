@@ -8,7 +8,16 @@ import type { Permission } from "../../../../convex/lib/permissions"
  *
  * Hiding is not security: every admin function checks on the server.
  */
-export type AdminNavKey = "dashboard" | "users" | "shops" | "products" | "roles" | "activity" | "settings"
+export type AdminNavKey =
+  | "dashboard"
+  | "users"
+  | "shops"
+  | "products"
+  | "subscriptions"
+  | "payments"
+  | "roles"
+  | "activity"
+  | "settings"
 
 export type AdminNavItem = {
   key: AdminNavKey
@@ -22,6 +31,8 @@ export const ADMIN_NAV: readonly AdminNavItem[] = [
   { key: "users", href: "/admin/users", permission: "users.view", ready: true },
   { key: "shops", href: "/admin/shops", permission: "shops.view", ready: true },
   { key: "products", href: "/admin/products", permission: "products.view", ready: true },
+  { key: "subscriptions", href: "/admin/subscriptions", permission: "billing.view", ready: true },
+  { key: "payments", href: "/admin/payments", permission: "billing.view", ready: true },
   { key: "roles", href: "/admin/roles", permission: "roles.view", ready: true },
   { key: "activity", href: "/admin/activity", permission: "audit.view", ready: true },
   { key: "settings", href: "/admin/settings", permission: "settings.view", ready: true },

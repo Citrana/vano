@@ -18,7 +18,7 @@ describe("permissions", () => {
   });
 
   test("seller and admin sets split the list", () => {
-    expect(SELLER_PERMISSIONS).toEqual(["ownShop.manage", "ownProducts.manage", "ownStats.view"]);
+    expect(SELLER_PERMISSIONS).toEqual(["ownShop.manage", "ownProducts.manage", "ownStats.view", "ownBilling.manage"]);
     expect([...ADMIN_PERMISSIONS, ...SELLER_PERMISSIONS].sort()).toEqual([...ALL_PERMISSIONS].sort());
     expect(ADMIN_PERMISSIONS.some((p) => p.startsWith("own"))).toBe(false);
   });

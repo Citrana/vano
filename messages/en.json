@@ -59,7 +59,15 @@
     "PERMISSION_ESCALATION": "You can only give permissions you have yourself.",
     "SUPER_ADMIN_EXISTS": "A super admin already exists.",
     "ANNOUNCEMENT_INVALID": "Write the announcement in both English and French (at most 280 characters each), or leave both empty.",
-    "UNKNOWN": "Something went wrong. Try again."
+    "UNKNOWN": "Something went wrong. Try again.",
+    "PLAN_INVALID": "This plan can't be chosen here.",
+    "PLAN_LIMIT_PRODUCTS": "You reached your plan's product limit. Upgrade to add more.",
+    "PLAN_LIMIT_PHOTOS": "Your plan allows fewer photos per product. Remove some or upgrade.",
+    "PLAN_FEATURE_LOCKED": "This feature isn't included in your plan.",
+    "PAYMENTS_UNAVAILABLE": "Payments aren't available yet. Talk to us to upgrade.",
+    "PAYMENT_NOT_OPEN": "This payment is already finished.",
+    "REASON_INVALID": "Enter a reason (5 to 500 characters).",
+    "DAYS_INVALID": "Enter a number of days between 1 and 366."
   },
   "Validation": {
     "required": "This field is required.",
@@ -78,7 +86,9 @@
     "passwordShort": "Use at least {min} characters.",
     "tagsInvalid": "Up to 20 entries, 20 characters each.",
     "uploadsPending": "Wait for the photos to finish uploading.",
-    "announcementBothRequired": "Write the announcement in both languages, or leave both empty."
+    "announcementBothRequired": "Write the announcement in both languages, or leave both empty.",
+    "reasonLength": "Write a reason of {min} to {max} characters.",
+    "daysRange": "Enter a whole number of days from {min} to {max}."
   },
   "Categories": {
     "clothes": "Clothes",
@@ -124,7 +134,8 @@
     "settings": "Shop settings",
     "viewShop": "View my shop",
     "menu": "Menu",
-    "admin": "Admin"
+    "admin": "Admin",
+    "billing": "Plan"
   },
   "Onboarding": {
     "title": "Create your shop",
@@ -181,7 +192,15 @@
     "deleted": "Product deleted",
     "views": "{count, plural, one {# view} other {# views}}",
     "clicks": "{count, plural, one {# order click} other {# order clicks}}",
-    "hiddenByAdmin": "Hidden by admin"
+    "hiddenByAdmin": "Hidden by admin",
+    "overLimit": "Over plan limit",
+    "pinned": "Kept visible",
+    "showInShop": "Show in shop",
+    "stopShowing": "Stop keeping visible",
+    "overLimitNotice": "{count, plural, one {# product is} other {# products are}} hidden from your shop because of your plan's limit. Pick which ones show, or upgrade.",
+    "limitReached": "You've reached your plan's limit of {count} products.",
+    "upgrade": "Upgrade",
+    "pinLimit": "Every visible spot is already kept for another product. Stop keeping one visible first."
   },
   "Share": {
     "title": "Your shop link",
@@ -235,7 +254,8 @@
     "notFoundTitle": "Product not found",
     "notFoundBody": "It may have been deleted.",
     "backToDashboard": "Back to dashboard",
-    "hiddenNotice": "An admin hid this product, so customers can't see it. Contact Vano support if you think this is a mistake."
+    "hiddenNotice": "An admin hid this product, so customers can't see it. Contact Vano support if you think this is a mistake.",
+    "photosPlanHint": "Your plan allows {max} photos per product."
   },
   "TagInput": {
     "add": "Add",
@@ -300,7 +320,9 @@
       "products": "Products",
       "roles": "Roles & permissions",
       "activity": "Activity history",
-      "settings": "Settings"
+      "settings": "Settings",
+      "subscriptions": "Subscriptions",
+      "payments": "Payments"
     }
   },
   "Roles": {
@@ -412,6 +434,15 @@
     "ownStats": {
       "title": "Own statistics",
       "view": "View their shop's statistics"
+    },
+    "billing": {
+      "title": "Subscriptions & payments",
+      "view": "View subscriptions and payments",
+      "manage": "Grant and extend plans"
+    },
+    "ownBilling": {
+      "title": "Own billing",
+      "manage": "Manage their shop's plan and payments"
     }
   },
   "AdminRoles": {
@@ -549,6 +580,21 @@
     },
     "superAdmin": {
       "seed": "Created a super admin (terminal)"
+    },
+    "subscription": {
+      "activated": "Activated a plan",
+      "trialEnded": "Trial ended (moved to Free)",
+      "expired": "Plan expired (moved to Free)",
+      "grant": "Granted a plan",
+      "extend": "Extended a plan"
+    },
+    "payment": {
+      "started": "Started a payment",
+      "succeeded": "Payment succeeded",
+      "failed": "Payment failed",
+      "pending": "Payment pending",
+      "cancelled": "Payment cancelled",
+      "expired": "Payment expired"
     }
   },
   "AuditDetails": {
@@ -560,13 +606,23 @@
     "to": "To",
     "owner": "Owner",
     "products": "Products",
-    "force": "Forced"
+    "force": "Forced",
+    "plan": "Plan",
+    "previousPlan": "Previous plan",
+    "days": "Days",
+    "reason": "Reason",
+    "periodEnd": "Ends",
+    "previousEnd": "Previous end",
+    "amount": "Amount",
+    "provider": "Provider",
+    "reference": "Reference",
+    "shop": "Shop"
   },
   "AdminActivity": {
     "title": "Activity history",
     "person": "Person",
     "allPeople": "Everyone",
-    "system": "System (terminal)",
+    "system": "System",
     "action": "Action",
     "allActions": "All actions",
     "from": "From",
@@ -1012,5 +1068,159 @@
         "a3": "Contact us using the details below and we'll delete your account and your shop."
       }
     }
+  },
+  "Billing": {
+    "title": "Plan & billing",
+    "currentPlan": "Current plan",
+    "status": {
+      "trialing": "Free trial",
+      "active": "Active",
+      "expired": "Expired",
+      "free": "Free"
+    },
+    "trialEnds": "Trial ends on {date}",
+    "activeUntil": "Active until {date}",
+    "expiredNote": "Your paid plan ended, so your shop is on Free.",
+    "freeNote": "Your shop is on the Free plan.",
+    "daysLeft": "{count, plural, =0 {Ends today} one {# day left} other {# days left}}",
+    "noAutoRenew": "Nothing renews automatically: pay again to add 30 days.",
+    "usageProducts": "Products",
+    "usageOf": "{used} of {limit}",
+    "usageUnlimited": "{used} (no limit)",
+    "photosPerProduct": "Photos per product",
+    "overLimit": "{count, plural, one {# product is} other {# products are}} hidden from your shop because of your plan's limit. They're safe and come back when you upgrade.",
+    "manageProducts": "Choose which ones show",
+    "plansTitle": "Plans",
+    "perMonth": "/month",
+    "customPrice": "Custom price",
+    "currentBadge": "Current plan",
+    "upgrade": "Upgrade to {plan}",
+    "switchTo": "Switch to {plan}",
+    "renew": "Add 30 days",
+    "talk": "Talk to us",
+    "talkMessage": "Hello Vano! I'd like to talk about the {plan} plan for my shop {shop}.",
+    "paymentsOff": "Online payments aren't available yet. Talk to us to change your plan.",
+    "openPayment": "You have a payment in progress.",
+    "openPaymentLink": "Continue",
+    "confirmTitle": "{plan} for 30 days",
+    "confirmAmount": "Amount: {amount}",
+    "confirmNewEnd": "Your plan will run until {date}.",
+    "confirmTrialKept": "You keep the rest of your free trial: the 30 days start after it.",
+    "confirmCredit": "Unused days on your current plan are converted into {plan} days.",
+    "confirmRenew": "30 days are added to your current plan.",
+    "continue": "Continue to payment",
+    "starting": "Starting…",
+    "freeTitle": "Switch to Free",
+    "freeBody": "Plans never renew by themselves. Your {plan} plan stays until {date}, then your shop moves to Free. Products over the Free limit are hidden, never deleted.",
+    "freeOk": "Got it",
+    "historyTitle": "Payment history",
+    "historyEmptyTitle": "No payments yet",
+    "historyEmptyBody": "Your plan payments will show here.",
+    "loadMore": "Load more",
+    "paymentStatus": {
+      "created": "Starting",
+      "pending": "Pending",
+      "succeeded": "Paid",
+      "failed": "Failed",
+      "cancelled": "Cancelled",
+      "expired": "Expired"
+    },
+    "testComplete": "Complete (test)",
+    "testFail": "Fail (test)",
+    "bannerTrialEnding": "{count, plural, =0 {Your free trial ends today.} one {Your free trial ends in # day.} other {Your free trial ends in # days.}} Choose a plan to keep your {plan} features.",
+    "bannerPlanEnding": "{count, plural, =0 {Your {plan} plan ends today.} one {Your {plan} plan ends in # day.} other {Your {plan} plan ends in # days.}} Pay again to keep it.",
+    "bannerFree": "Your shop is now on the Free plan. Products over the limit are hidden, not deleted.",
+    "bannerAction": "See plans",
+    "dismiss": "Dismiss",
+    "lockedStatsTitle": "Shop stats",
+    "lockedStatsBody": "See your shop views and WhatsApp order clicks with the Pro plan.",
+    "lockedStatsAction": "See plans",
+    "keep": "Keep {plan}"
+  },
+  "Checkout": {
+    "title": "Checkout",
+    "testMode": "Test mode",
+    "testModeBody": "No real money moves. Choose what the payment provider answers.",
+    "summary": "{plan} · 30 days",
+    "amount": "Amount",
+    "preparing": "Preparing your payment…",
+    "simulateSuccess": "Simulate success",
+    "simulateFailure": "Simulate failure",
+    "simulatePending": "Simulate pending",
+    "cancel": "Cancel",
+    "successTitle": "Payment received",
+    "successBody": "Your {plan} plan is active until {date}.",
+    "failedTitle": "Payment failed",
+    "failedBody": "Nothing was charged and your plan didn't change.",
+    "tryAgain": "Try again",
+    "pendingTitle": "Payment processing",
+    "pendingBody": "We're waiting for the payment provider. This page updates by itself.",
+    "testControls": "Test controls",
+    "cancelledTitle": "Payment cancelled",
+    "cancelledBody": "Your plan didn't change.",
+    "expiredTitle": "Payment expired",
+    "expiredBody": "This payment took too long and was closed. Your plan didn't change.",
+    "phoneTitle": "Confirm on your phone",
+    "phoneBody": "Enter your PIN in the prompt sent to your phone. This page updates by itself.",
+    "redirectTitle": "Continue to payment",
+    "redirectAction": "Open the payment page",
+    "notFoundTitle": "Payment not found",
+    "notFoundBody": "This payment doesn't exist or isn't yours.",
+    "unavailableTitle": "Test payments are off",
+    "unavailableBody": "The test checkout is turned off on this server.",
+    "backToBilling": "Back to my plan"
+  },
+  "AdminBilling": {
+    "subscriptionsTitle": "Subscriptions",
+    "paymentsTitle": "Payments",
+    "search": "Search by shop name",
+    "searchPlaceholder": "Search by shop name",
+    "plan": "Plan",
+    "allPlans": "All plans",
+    "status": "Status",
+    "allStatuses": "All statuses",
+    "endsFrom": "Ends from",
+    "endsTo": "Ends until",
+    "from": "From",
+    "to": "To",
+    "clear": "Clear filters",
+    "utcNote": "Days are in UTC.",
+    "shop": "Shop",
+    "ends": "Ends",
+    "noEnd": "—",
+    "source": "Source",
+    "sources": {
+      "trial": "Trial",
+      "payment": "Payment",
+      "admin": "Admin",
+      "system": "Automatic"
+    },
+    "date": "Date",
+    "amount": "Amount",
+    "provider": "Provider",
+    "reference": "Reference",
+    "emptySubscriptionsTitle": "No subscriptions found",
+    "emptySubscriptionsBody": "Shops' plans will show here.",
+    "emptyPaymentsTitle": "No payments found",
+    "emptyPaymentsBody": "Plan payments will show here.",
+    "emptyFilteredBody": "Nothing matches these filters.",
+    "loadMore": "Load more",
+    "panelTitle": "Plan",
+    "panelUntil": "Until {date}",
+    "recentPayments": "Recent payments",
+    "noPayments": "No payments yet.",
+    "grant": "Grant a plan",
+    "extend": "Extend",
+    "grantTitle": "Grant a plan to {shop}",
+    "grantBody": "The plan starts now and lasts the number of days you choose. It replaces the current plan.",
+    "extendTitle": "Extend {shop}'s plan",
+    "extendBody": "Adds days to the current plan or trial.",
+    "days": "Days",
+    "reason": "Reason",
+    "reasonHelp": "Saved in the activity history.",
+    "granted": "Plan granted",
+    "extended": "Plan extended",
+    "cantExtendFree": "This shop is on Free: grant a plan instead.",
+    "ownShop": "You can't change your own shop's plan."
   }
 }

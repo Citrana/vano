@@ -3,9 +3,11 @@ import type { Doc } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 
 /**
- * History of admin actions (who did what, to whom, when). Every admin
- * mutation calls `logAdminAction` in the same transaction as its write, so
- * the log can never miss a change or record one that rolled back.
+ * History of admin actions (who did what, to whom, when), plus every plan
+ * change and payment event (seller checkout, the scheduled expiry job as
+ * "system"). Every such mutation calls `logAdminAction` in the same
+ * transaction as its write, so the log can never miss a change or record
+ * one that rolled back.
  * Labels: `AuditActions.<action>` in `messages/*.json`.
  */
 export const AUDIT_ACTIONS = [
@@ -23,6 +25,17 @@ export const AUDIT_ACTIONS = [
   "role.delete",
   "settings.update",
   "superAdmin.seed",
+  "subscription.activated",
+  "subscription.trialEnded",
+  "subscription.expired",
+  "subscription.grant",
+  "subscription.extend",
+  "payment.started",
+  "payment.succeeded",
+  "payment.failed",
+  "payment.pending",
+  "payment.cancelled",
+  "payment.expired",
 ] as const;
 
 export const auditActionValidator = v.union(
@@ -40,6 +53,17 @@ export const auditActionValidator = v.union(
   v.literal("role.delete"),
   v.literal("settings.update"),
   v.literal("superAdmin.seed"),
+  v.literal("subscription.activated"),
+  v.literal("subscription.trialEnded"),
+  v.literal("subscription.expired"),
+  v.literal("subscription.grant"),
+  v.literal("subscription.extend"),
+  v.literal("payment.started"),
+  v.literal("payment.succeeded"),
+  v.literal("payment.failed"),
+  v.literal("payment.pending"),
+  v.literal("payment.cancelled"),
+  v.literal("payment.expired"),
 );
 export type AuditAction = Infer<typeof auditActionValidator>;
 
@@ -49,6 +73,8 @@ export const auditTargetTypeValidator = v.union(
   v.literal("product"),
   v.literal("role"),
   v.literal("settings"),
+  v.literal("subscription"),
+  v.literal("payment"),
 );
 export type AuditTargetType = Infer<typeof auditTargetTypeValidator>;
 
@@ -61,7 +87,7 @@ export type AuditDetails = Infer<typeof auditDetailsValidator>;
 export async function logAdminAction(
   ctx: MutationCtx,
   entry: {
-    /** Null for the terminal seed command. */
+    /** Null for the terminal seed command and scheduled jobs ("system"). */
     actor: Doc<"users"> | null;
     action: AuditAction;
     targetType: AuditTargetType;

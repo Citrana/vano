@@ -24,3 +24,17 @@ export function addDays(day: string, delta: number): string {
 export function dayStartMs(day: string): number {
   return Date.parse(`${day}T00:00:00Z`);
 }
+
+/**
+ * `ms` plus whole calendar months (UTC), clamped to the month's last day:
+ * addMonths(Jan 31) + 1 → Feb 28/29. Used for the trial length.
+ */
+export function addMonths(ms: number, months: number): number {
+  const d = new Date(ms);
+  const day = d.getUTCDate();
+  d.setUTCDate(1);
+  d.setUTCMonth(d.getUTCMonth() + months);
+  const lastDay = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
+  d.setUTCDate(Math.min(day, lastDay));
+  return d.getTime();
+}

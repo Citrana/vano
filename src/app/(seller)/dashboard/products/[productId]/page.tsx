@@ -7,9 +7,11 @@ import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { api } from "../../../../../../convex/_generated/api"
+import { PLAN_LIMITS, photoCap } from "../../../../../../convex/lib/plans"
 import { PageTitle } from "@/components/shell/page-title"
 import { EmptyState, LoadingState } from "@/components/states/states"
 import { buttonVariants } from "@/components/ui/button"
+import { useMyBilling } from "@/features/billing/use-billing"
 import { ProductForm } from "@/features/product/product-form"
 
 export default function EditProductPage() {
@@ -18,10 +20,11 @@ export default function EditProductPage() {
   const { productId } = useParams<{ productId: string }>()
   const shop = useQuery(api.shops.myShop, {})
   const product = useQuery(api.products.getMine, { productId })
+  const billing = useMyBilling()
   const update = useMutation(api.products.update)
   const router = useRouter()
 
-  if (shop === undefined || product === undefined) return <LoadingState />
+  if (shop === undefined || product === undefined || billing === undefined) return <LoadingState />
   if (shop === null) return null
   if (product === null) {
     return (
@@ -52,6 +55,8 @@ export default function EditProductPage() {
         key={product._id}
         shop={shop}
         initial={product}
+        // A product with more photos than the plan allows keeps them (never gains more).
+        maxImages={billing ? photoCap(PLAN_LIMITS[billing.effectivePlan], product.imageIds.length) : undefined}
         onSubmit={async (values) => {
           await update({ productId: product._id, ...values })
           toast.success(t("saved"))

@@ -1,18 +1,24 @@
-import { formatMoney, type Currency } from "../../../../convex/lib/money"
+import { formatMoney } from "../../../../convex/lib/money"
+import {
+  PLAN_CURRENCY,
+  PLAN_IDS,
+  PLAN_LIMITS,
+  PLAN_PRICE_MINOR,
+  TRIAL_MONTHS,
+  type PlanId,
+} from "../../../../convex/lib/plans"
 
 /**
- * Vano plans: the ONE place for plan names (ids), prices, limits and
- * feature lists. Display only for now: no billing, limits aren't enforced.
- * Labels live in messages under `Pricing.plans.<id>` and
+ * Marketing display data for the plans: cards, feature lists and the
+ * comparison table. Plan ids, prices, limits and the trial come from
+ * `convex/lib/plans.ts` (the one source, also used by billing and limit
+ * checks). Labels live in messages under `Pricing.plans.<id>` and
  * `Pricing.features.<key>`; numbers here are interpolated into them.
  */
-export const TRIAL_MONTHS = 2
-export const PLAN_CURRENCY: Currency = "KES"
+export { PLAN_CURRENCY, TRIAL_MONTHS, type PlanId }
 
 /** Yearly billing: Pro yearly = 2 months free. Not available yet. Shown on that plan's card. */
 export const YEARLY = { comingSoon: true, freeMonths: 2, plan: "pro" } as const
-
-export type PlanId = "free" | "pro" | "business" | "enterprise"
 
 /** Card lines. Labels: `Pricing.features.<key>`; `values` fill its {placeholders}. */
 export type FeatureKey =
@@ -54,15 +60,17 @@ export type Plan = {
   features: PlanFeature[]
 }
 
+const perPlanValue = <V,>(fn: (id: PlanId) => V) =>
+  Object.fromEntries(PLAN_IDS.map((id) => [id, fn(id)])) as Record<PlanId, V>
 /** Product limits per plan (null = unlimited). Used by cards and the table. */
-export const PRODUCT_LIMITS: Record<PlanId, number | null> = { free: 10, pro: 50, business: null, enterprise: null }
+export const PRODUCT_LIMITS: Record<PlanId, number | null> = perPlanValue((id) => PLAN_LIMITS[id].products)
 /** Photos per product. Used by cards and the table. */
-export const PHOTO_LIMITS: Record<PlanId, number> = { free: 3, pro: 6, business: 6, enterprise: 6 }
+export const PHOTO_LIMITS: Record<PlanId, number> = perPlanValue((id) => PLAN_LIMITS[id].photosPerProduct)
 
 export const PLANS: Plan[] = [
   {
     id: "free",
-    priceMinor: 0,
+    priceMinor: PLAN_PRICE_MINOR.free,
     cta: "free",
     features: [
       { key: "products", values: { count: PRODUCT_LIMITS.free! } },
@@ -74,7 +82,7 @@ export const PLANS: Plan[] = [
   },
   {
     id: "pro",
-    priceMinor: 29900,
+    priceMinor: PLAN_PRICE_MINOR.pro,
     highlight: true,
     cta: "trial",
     features: [
@@ -88,7 +96,7 @@ export const PLANS: Plan[] = [
   },
   {
     id: "business",
-    priceMinor: 100000,
+    priceMinor: PLAN_PRICE_MINOR.business,
     cta: "trial",
     features: [
       { key: "everythingPro" },
@@ -101,7 +109,7 @@ export const PLANS: Plan[] = [
   },
   {
     id: "enterprise",
-    priceMinor: null,
+    priceMinor: PLAN_PRICE_MINOR.enterprise,
     cta: "talk",
     features: [
       { key: "everythingBusiness" },
@@ -149,9 +157,7 @@ export type CompareRowKey =
 export type CompareRow = { key: CompareRowKey; hint?: true; cells: Record<PlanId, CompareCell> }
 export type CompareGroup = { key: CompareGroupKey; rows: CompareRow[] }
 
-const PLAN_IDS: PlanId[] = ["free", "pro", "business", "enterprise"]
-const perPlan = (fn: (id: PlanId) => CompareCell) =>
-  Object.fromEntries(PLAN_IDS.map((id) => [id, fn(id)])) as Record<PlanId, CompareCell>
+const perPlan = (fn: (id: PlanId) => CompareCell) => perPlanValue(fn)
 /** Included from `from` upwards (free < pro < business < enterprise). */
 const from = (first: PlanId) => perPlan((id) => PLAN_IDS.indexOf(id) >= PLAN_IDS.indexOf(first))
 

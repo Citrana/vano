@@ -18,6 +18,7 @@ import {
   sellerQuery,
 } from "./lib/seller";
 import { slugProblem } from "./lib/slug";
+import { startTrial, subscriptionDoc } from "./lib/subscriptions";
 
 const shopInput = v.object({
   name: v.string(),
@@ -132,7 +133,10 @@ export const create = sellerMutation({
     if ((await slugOwner(ctx, input.slug)) !== null) fail("SLUG_TAKEN");
     if (input.logoId) await claimImages(ctx, [input.logoId]);
     const shopId = await ctx.db.insert("shops", { ...input, ownerId: ctx.user._id });
-    await onShopCreated(ctx, (await ctx.db.get("shops", shopId))!);
+    const shop = (await ctx.db.get("shops", shopId))!;
+    await onShopCreated(ctx, shop);
+    // Every new shop starts the free trial (CLAUDE.md "Billing").
+    await startTrial(ctx, shop);
     return shopId;
   },
 });
@@ -180,6 +184,11 @@ export const update = sellerMutation({
       ownerId: shop.ownerId,
       status: shop.status,
     });
+    // Keep the copy used by the admin subscription search in sync.
+    if (input.name !== shop.name) {
+      const subscription = await subscriptionDoc(ctx, shop._id);
+      if (subscription) await ctx.db.patch("subscriptions", subscription._id, { shopName: input.name });
+    }
     return null;
   },
 });
