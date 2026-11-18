@@ -9,8 +9,8 @@ import { formatMoney, type Currency } from "../../../../convex/lib/money"
 export const TRIAL_MONTHS = 2
 export const PLAN_CURRENCY: Currency = "KES"
 
-/** Yearly billing: Pro yearly = 2 months free. Not available yet. */
-export const YEARLY = { comingSoon: true, freeMonths: 2 } as const
+/** Yearly billing: Pro yearly = 2 months free. Not available yet. Shown on that plan's card. */
+export const YEARLY = { comingSoon: true, freeMonths: 2, plan: "pro" } as const
 
 export type PlanId = "free" | "pro" | "business" | "enterprise"
 
@@ -40,7 +40,8 @@ export type FeatureKey =
   | "customIntegrations"
   | "serviceGuarantees"
 
-export type PlanFeature = { key: FeatureKey; values?: Record<string, number> }
+/** `hint` adds a small muted line under the label: `Pricing.featureHints.<key>`. */
+export type PlanFeature = { key: FeatureKey; values?: Record<string, number>; hint?: true }
 
 export type Plan = {
   id: PlanId
@@ -77,7 +78,7 @@ export const PLANS: Plan[] = [
     highlight: true,
     cta: "trial",
     features: [
-      { key: "salesPromotions" },
+      { key: "salesPromotions", hint: true },
       { key: "productsAndPhotos", values: { products: PRODUCT_LIMITS.pro!, photos: PHOTO_LIMITS.pro } },
       { key: "allLooks" },
       { key: "categoriesSizesColors" },
@@ -145,7 +146,7 @@ export type CompareRowKey =
   | "support"
   | "personalizedSetup"
   | "serviceGuarantees"
-export type CompareRow = { key: CompareRowKey; cells: Record<PlanId, CompareCell> }
+export type CompareRow = { key: CompareRowKey; hint?: true; cells: Record<PlanId, CompareCell> }
 export type CompareGroup = { key: CompareGroupKey; rows: CompareRow[] }
 
 const PLAN_IDS: PlanId[] = ["free", "pro", "business", "enterprise"]
@@ -175,7 +176,7 @@ export const COMPARISON: CompareGroup[] = [
     key: "selling",
     rows: [
       { key: "whatsappOrders", cells: from("free") },
-      { key: "salesPromotions", cells: from("pro") },
+      { key: "salesPromotions", hint: true, cells: from("pro") },
       { key: "qrShareImages", cells: from("pro") },
       { key: "stockLabels", cells: from("pro") },
       { key: "discountCodes", cells: from("business") },

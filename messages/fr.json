@@ -856,7 +856,7 @@
       "multiShop": "Plusieurs boutiques ou succursales",
       "customBranding": "Image de marque sur mesure",
       "whatsappOrders": "Commandes sur WhatsApp",
-      "salesPromotions": "Soldes, réductions et promotions",
+      "salesPromotions": "Lancez des promotions et offres spéciales sur votre boutique",
       "qrShareImages": "QR code de la boutique et images à partager en statut WhatsApp et sur Instagram",
       "stockLabels": "Étiquettes Stock faible et Épuisé",
       "discountCodes": "Codes de réduction pour vos clients",
@@ -907,7 +907,7 @@
       "vanoLink": "Votre lien Vano",
       "whatsappOrders": "Commandes sur WhatsApp",
       "oneBasicLook": "1 style de boutique de base",
-      "salesPromotions": "Soldes, réductions et promotions",
+      "salesPromotions": "Lancez des promotions et offres spéciales sur votre boutique",
       "productsAndPhotos": "Jusqu'à {products} produits, {photos} photos chacun",
       "allLooks": "Tous les styles, couleurs, logo et bannière",
       "categoriesSizesColors": "Catégories, tailles et couleurs",
@@ -925,6 +925,9 @@
       "dedicatedContact": "Un interlocuteur dédié",
       "customIntegrations": "Intégrations sur mesure (paiement, livraison)",
       "serviceGuarantees": "Garanties de service"
+    },
+    "featureHints": {
+      "salesPromotions": "Réductions en %, baisses de prix et badges Promo"
     },
     "faqEyebrow": "Questions",
     "faqTitle": "Questions sur les tarifs",
