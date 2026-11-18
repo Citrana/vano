@@ -161,7 +161,7 @@
     "description": "Short description",
     "descriptionPlaceholder": "e.g. Women's fashion, new arrivals every week",
     "whatsapp": "WhatsApp number",
-    "whatsappHelp": "Orders are sent to this number. Include the country code.",
+    "whatsappHelp": "Choose the country code, then type the number. Orders are sent to this number.",
     "whatsappPlaceholder": "812 345 678",
     "dialCode": "Country code",
     "city": "City",
@@ -175,7 +175,8 @@
     "logoRemove": "Remove",
     "logoUploading": "Uploading…",
     "saved": "Shop settings saved",
-    "charCount": "{count}/{max}"
+    "charCount": "{count}/{max}",
+    "whatsappCode": "Country code"
   },
   "Dashboard": {
     "title": "My shop",

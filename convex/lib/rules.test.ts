@@ -5,7 +5,7 @@ import { announcementProblem } from "./settings";
 import { addDays, isDay, utcDay } from "./days";
 import { imageProblem, MAX_IMAGE_BYTES } from "./images";
 import { formatMoney, minorToInput, parseMoneyToMinor, priceProblem } from "./money";
-import { normalizeWhatsapp, waDigits } from "./phone";
+import { normalizeWhatsapp, splitWhatsapp, waDigits } from "./phone";
 import { slugify, slugProblem } from "./slug";
 
 describe("slug", () => {
@@ -49,6 +49,17 @@ describe("phone", () => {
     expect(normalizeWhatsapp("12345")).toBeNull();
     expect(normalizeWhatsapp("0812345678")).toBeNull(); // no country code
     expect(normalizeWhatsapp("+243 1")).toBeNull();
+  });
+  test("a number from another country than the shop's", () => {
+    // Shop in Congo, Kenyan WhatsApp picked with the dial-code select.
+    expect(normalizeWhatsapp("712 345 678", "KE")).toBe("+254712345678");
+    expect(normalizeWhatsapp("+254712345678", "CD")).toBe("+254712345678");
+  });
+  test("splitWhatsapp gives the dial country and the national part", () => {
+    expect(splitWhatsapp("+254712345678", "CD")).toEqual({ country: "KE", national: "0712 345678" });
+    expect(splitWhatsapp("+243812345678", "CD").country).toBe("CD");
+    expect(splitWhatsapp("+33612345678", "CD").country).toBe("FR");
+    expect(splitWhatsapp("", "CD")).toEqual({ country: "CD", national: "" });
   });
   test("waDigits", () => {
     expect(waDigits("+243812345678")).toBe("243812345678");
