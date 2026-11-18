@@ -54,7 +54,7 @@ export function ProductRow({
   const switchLabelId = `sold-out-${product._id}`
 
   return (
-    <li className="flex gap-3 rounded-xl bg-card p-3 ring-1 ring-foreground/10">
+    <li className="flex gap-3 rounded-xl bg-card p-3 border">
       <div className="size-20 shrink-0 overflow-hidden rounded-lg bg-muted sm:size-24">
         {product.coverUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- Convex storage URL

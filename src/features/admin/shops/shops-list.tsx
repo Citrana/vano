@@ -34,7 +34,7 @@ export function ShopsList({ rows }: { rows: ShopRow[] }) {
           <li key={row._id}>
             <Link
               href={`/admin/shops/${row._id}`}
-              className="flex min-h-11 items-center gap-3 rounded-xl bg-card p-3 ring-1 ring-foreground/10 hover:bg-muted"
+              className="flex min-h-11 items-center gap-3 rounded-xl bg-card p-3 border hover:bg-muted"
             >
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <span className="flex flex-wrap items-center gap-2">
@@ -52,7 +52,7 @@ export function ShopsList({ rows }: { rows: ShopRow[] }) {
         ))}
       </ul>
 
-      <div className="hidden overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 md:block">
+      <div className="hidden overflow-hidden rounded-xl bg-card border md:block">
         <table className="w-full text-sm">
           <thead className="bg-muted/60 text-left text-xs text-muted-foreground">
             <tr>

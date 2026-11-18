@@ -31,7 +31,7 @@ export function UsersList({ rows }: { rows: UserRow[] }) {
           <li key={row._id}>
             <Link
               href={`/admin/users/${row._id}`}
-              className="flex min-h-11 items-center gap-3 rounded-xl bg-card p-3 ring-1 ring-foreground/10 hover:bg-muted"
+              className="flex min-h-11 items-center gap-3 rounded-xl bg-card p-3 border hover:bg-muted"
             >
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <span className="truncate font-medium">{row.email}</span>
@@ -49,7 +49,7 @@ export function UsersList({ rows }: { rows: UserRow[] }) {
         ))}
       </ul>
 
-      <div className="hidden overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 md:block">
+      <div className="hidden overflow-hidden rounded-xl bg-card border md:block">
         <table className="w-full text-sm">
           <thead className="bg-muted/60 text-left text-xs text-muted-foreground">
             <tr>

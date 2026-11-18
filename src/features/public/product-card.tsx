@@ -24,7 +24,7 @@ export function ProductCard({
   const t = useTranslations("Public")
   const locale = useLocale()
   return (
-    <Link href={href} className="group flex flex-col gap-2 rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
+    <Link href={href} className="group flex flex-col gap-2 rounded-xl focus-ring">
       <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-muted">
         {coverUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- Convex storage URL

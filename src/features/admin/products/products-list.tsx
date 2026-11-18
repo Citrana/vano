@@ -30,7 +30,7 @@ export function ProductsList({ rows }: { rows: AdminProductRow[] }) {
   const canOpenShop = viewer?.permissions.includes("shops.view") ?? false
 
   return (
-    <ul className="flex flex-col divide-y overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
+    <ul className="flex flex-col divide-y overflow-hidden rounded-xl bg-card border">
       {rows.map((p) => (
         <li key={p._id} className="flex items-center gap-3 p-3">
           <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted">

@@ -39,7 +39,7 @@ export function RolesSection() {
           <li key={role._id}>
             <Link
               href={`/admin/roles/${role._id}`}
-              className="flex min-h-11 items-center gap-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10 hover:bg-muted"
+              className="flex min-h-11 items-center gap-3 rounded-xl bg-card p-4 border hover:bg-muted"
             >
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <span className="flex flex-wrap items-center gap-2 font-medium">
