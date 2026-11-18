@@ -1,13 +1,14 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { ChevronDownIcon } from "lucide-react"
+import { LockIcon } from "lucide-react"
 import { useLocale, useTranslations } from "next-intl"
-import { useMemo, useRef, useState } from "react"
+import { useMemo, useRef, useState, type ReactNode } from "react"
 import { Controller, useForm, useWatch } from "react-hook-form"
 import { toast } from "sonner"
 import type { CountryCode } from "libphonenumber-js"
 import type { Id } from "../../../convex/_generated/dataModel"
+import type { ProtectedField } from "../../../convex/lib/changeRequests"
 import { LANGUAGES, LIMITS } from "../../../convex/lib/catalog"
 import { errorCodeOf, type ErrorCode } from "../../../convex/lib/errors"
 import { CURRENCIES } from "../../../convex/lib/money"
@@ -23,7 +24,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { ThemeDots } from "@/features/shop-themes/theme-dots"
 import { shopUrl } from "@/lib/site"
 import { CategoryPicker } from "./category-picker"
-import { countryOptions, dialCode, flagEmoji } from "./countries"
+import { countryOptions } from "./countries"
+import { DialCodeSelect } from "./dial-code-select"
 import { LogoField } from "./logo-field"
 import { shopSchema, type ShopFormValues } from "./schemas"
 import { SlugStatus } from "./slug-status"
@@ -48,17 +50,28 @@ const FIELD_OF: Partial<Record<ErrorCode, keyof ShopFormValues>> = {
   CATEGORY_IN_USE: "categories",
 }
 
-/** Onboarding (`mode="create"`) and Shop settings (`mode="edit"`). */
+/**
+ * Onboarding (`mode="create"`) and Shop settings (`mode="edit"`). In edit
+ * mode the name, link and WhatsApp number are shown by `protectedField`
+ * (read-only + change request) instead of inputs; they stay in the form
+ * values unchanged, and the settings page doesn't send them.
+ */
 export function ShopForm({
   mode,
   initial,
   initialLogoUrl,
+  protectedField,
+  currencyLocked = false,
   onSubmit,
 }: {
   mode: "create" | "edit"
   /** The stored shop; `whatsappNumber` is E.164 and is split for the form. */
   initial?: Omit<ShopFormValues, "whatsappCountry">
   initialLogoUrl?: string | null
+  /** Edit mode: renders a protected field (name, link, WhatsApp). */
+  protectedField?: (field: ProtectedField) => ReactNode
+  /** Edit mode: the shop has products, so the currency can't change. */
+  currencyLocked?: boolean
   onSubmit: (values: ShopSubmit) => Promise<void>
 }) {
   const t = useTranslations("ShopForm")
@@ -96,10 +109,11 @@ export function ShopForm({
   // The dial code follows the shop's country until the seller picks one (create only).
   const dialTouched = useRef(mode === "edit")
 
-  const [slug, description, whatsappCountry] = useWatch({
+  const [slug, description, whatsappCountry, currency] = useWatch({
     control,
-    name: ["slug", "description", "whatsappCountry"],
+    name: ["slug", "description", "whatsappCountry", "currency"],
   })
+  const locked = mode === "edit" && protectedField !== undefined
   const countries = useMemo(() => countryOptions(locale), [locale])
 
   /** A pasted "+254 712…" switches the dial code and keeps the national part. */
@@ -134,60 +148,80 @@ export function ShopForm({
       <Card className="gap-5">
         <CardTitle>{t("sectionShop")}</CardTitle>
         <RequiredFieldsHint />
-        <Field id="name" label={t("name")} required error={errors.name?.message}>
-          {(p) => (
-            <Input
-              {...p}
-              placeholder={t("namePlaceholder")}
-              maxLength={LIMITS.shopNameMax}
-              {...register("name", {
-                onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-                  if (!slugTouched.current) setValue("slug", slugify(e.target.value))
-                },
-              })}
-            />
-          )}
-        </Field>
+        {locked ? (
+          <>
+            {protectedField("name")}
+            {protectedField("slug")}
+          </>
+        ) : (
+          <>
+            <Field id="name" label={t("name")} required error={errors.name?.message}>
+              {(p) => (
+                <Input
+                  {...p}
+                  placeholder={t("namePlaceholder")}
+                  maxLength={LIMITS.shopNameMax}
+                  {...register("name", {
+                    onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                      if (!slugTouched.current) setValue("slug", slugify(e.target.value))
+                    },
+                  })}
+                />
+              )}
+            </Field>
 
-        <Field
-          id="slug"
-          label={t("slug")}
-          required
-          help={<span className="break-all">{t("slugHelp", { url: shopUrl(slug || "…") })}</span>}
-          error={errors.slug?.message}
-        >
-          {(p) => (
-            <div className="flex flex-col gap-1.5">
-              <Input
-                {...p}
-                autoCapitalize="none"
-                autoCorrect="off"
-                spellCheck={false}
-                maxLength={30}
-                {...register("slug", {
-                  onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-                    slugTouched.current = true
-                    setValue("slug", e.target.value.toLowerCase().replace(/\s+/g, "-"))
-                  },
-                })}
-              />
-              <SlugStatus slug={slug} />
-            </div>
-          )}
-        </Field>
+            <Field
+              id="slug"
+              label={t("slug")}
+              required
+              help={<span className="break-all">{t("slugHelp", { url: shopUrl(slug || "…") })}</span>}
+              error={errors.slug?.message}
+            >
+              {(p) => (
+                <div className="flex flex-col gap-1.5">
+                  <Input
+                    {...p}
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    maxLength={30}
+                    {...register("slug", {
+                      onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                        slugTouched.current = true
+                        setValue("slug", e.target.value.toLowerCase().replace(/\s+/g, "-"))
+                      },
+                    })}
+                  />
+                  <SlugStatus slug={slug} />
+                </div>
+              )}
+            </Field>
+          </>
+        )}
 
         <div className="grid gap-5 sm:grid-cols-2">
-          <Field id="currency" label={t("currency")} required help={t("currencyHelp")}>
-            {(p) => (
-              <NativeSelect {...p} {...register("currency")}>
-                {CURRENCIES.map((c) => (
-                  <option key={c} value={c}>
-                    {tCur(c)}
-                  </option>
-                ))}
-              </NativeSelect>
-            )}
-          </Field>
+          {currencyLocked ? (
+            <div className="flex flex-col gap-2">
+              <span className="text-sm font-medium">{t("currency")}</span>
+              <p className="flex min-h-11 items-center gap-2 rounded-md border bg-muted px-3 text-sm md:min-h-9">
+                <LockIcon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
+                {tCur(currency)}
+              </p>
+              <p className="text-xs text-muted-foreground">{t("currencyLocked")}</p>
+            </div>
+          ) : (
+            <Field id="currency" label={t("currency")} required help={t("currencyHelp")}>
+              {(p) => (
+                <NativeSelect {...p} {...register("currency")}>
+                  {CURRENCIES.map((c) => (
+                    <option key={c} value={c}>
+                      {tCur(c)}
+                    </option>
+                  ))}
+                </NativeSelect>
+              )}
+            </Field>
+          )}
           <Field id="language" label={t("language")} required help={t("languageHelp")}>
             {(p) => (
               <NativeSelect {...p} {...register("language")}>
@@ -311,55 +345,38 @@ export function ShopForm({
             )}
           </Field>
         </div>
-        <Field
-          id="whatsappNumber"
-          label={t("whatsapp")}
-          required
-          help={t("whatsappHelp")}
-          error={errors.whatsappNumber?.message}
-        >
-          {(p) => (
-            <div className="flex items-stretch">
-              {/* Dial code: shows the flag and code; the full list opens natively. */}
-              <label className="relative inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-l-md border border-r-0 bg-muted px-3 text-sm tabular-nums focus-within:outline-2 focus-within:outline-solid focus-within:outline-ring md:min-h-9">
-                <span aria-hidden>{flagEmoji(whatsappCountry)}</span>
-                <span aria-hidden>{dialCode(whatsappCountry) ?? "+"}</span>
-                <ChevronDownIcon className="size-3.5 text-muted-foreground" aria-hidden />
-                <select
-                  aria-label={t("whatsappCode")}
-                  className="absolute inset-0 cursor-pointer opacity-0"
-                  {...register("whatsappCountry", { onChange: () => (dialTouched.current = true) })}
-                >
-                  <optgroup label="—">
-                    {countries.priority.map((c) => (
-                      <option key={c.code} value={c.code}>
-                        {`${flagEmoji(c.code)} ${c.dial} ${c.name}`}
-                      </option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="A–Z">
-                    {countries.rest.map((c) => (
-                      <option key={c.code} value={c.code}>
-                        {`${flagEmoji(c.code)} ${c.dial} ${c.name}`}
-                      </option>
-                    ))}
-                  </optgroup>
-                </select>
-              </label>
-              <Input
-                {...p}
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel-national"
-                className="rounded-l-none"
-                placeholder={t("whatsappPlaceholder")}
-                {...register("whatsappNumber", {
-                  onBlur: (e: React.FocusEvent<HTMLInputElement>) => splitInternational(e.target.value),
-                })}
-              />
-            </div>
-          )}
-        </Field>
+        {locked ? (
+          protectedField("whatsapp")
+        ) : (
+          <Field
+            id="whatsappNumber"
+            label={t("whatsapp")}
+            required
+            help={t("whatsappHelp")}
+            error={errors.whatsappNumber?.message}
+          >
+            {(p) => (
+              <div className="flex items-stretch">
+                <DialCodeSelect
+                  country={whatsappCountry}
+                  label={t("whatsappCode")}
+                  registration={register("whatsappCountry", { onChange: () => (dialTouched.current = true) })}
+                />
+                <Input
+                  {...p}
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel-national"
+                  className="rounded-l-none"
+                  placeholder={t("whatsappPlaceholder")}
+                  {...register("whatsappNumber", {
+                    onBlur: (e: React.FocusEvent<HTMLInputElement>) => splitInternational(e.target.value),
+                  })}
+                />
+              </div>
+            )}
+          </Field>
+        )}
       </Card>
 
       <div className="sticky bottom-0 -mx-4 border-t bg-background/95 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0">

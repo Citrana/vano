@@ -17,11 +17,15 @@ import { ProfileMenu } from "./profile-menu"
  */
 export function SellerHeader() {
   const t = useTranslations("Seller")
+  const tn = useTranslations("Notifications")
   const pathname = usePathname()
   const viewer = useQuery(api.users.viewer, {})
+  // Decisions on change requests the seller hasn't seen (badge on Shop settings).
+  const unread = useQuery(api.notifications.seller.unread, viewer?.hasShop ? {} : "skip")
+  const updates = unread?.length ?? 0
   const links = [
     { href: "/dashboard", label: t("dashboard"), icon: LayoutGridIcon, active: pathname === "/dashboard" || pathname.startsWith("/dashboard/products") },
-    { href: "/dashboard/settings", label: t("settings"), icon: SettingsIcon, active: pathname === "/dashboard/settings" },
+    { href: "/dashboard/settings", label: t("settings"), icon: SettingsIcon, active: pathname === "/dashboard/settings", badge: updates },
     { href: "/dashboard/billing", label: t("billing"), icon: CreditCardIcon, active: pathname.startsWith("/dashboard/billing") },
     // Admins who also sell can switch to the admin (the server checks access).
     ...(viewer?.isAdmin ? [{ href: "/admin", label: t("admin"), icon: ShieldIcon, active: false }] : []),
@@ -31,7 +35,7 @@ export function SellerHeader() {
   // Active link: a light fill only. The focus ring shows for keyboard users only.
   const nav = (mobile: boolean) => (
     <nav aria-label={t("menu")} className="flex gap-1">
-      {links.map(({ href, label, icon: Icon, active }) => (
+      {links.map(({ href, label, icon: Icon, active, badge = 0 }) => (
         <Link
           key={href}
           href={href}
@@ -42,7 +46,15 @@ export function SellerHeader() {
             mobile && "h-auto min-h-11 min-w-0 flex-1 flex-col gap-0.5 px-1 py-1 text-[0.7rem] leading-tight",
           )}
         >
-          <Icon />
+          <span className="relative">
+            <Icon />
+            {badge > 0 ? (
+              <span className="absolute -top-1.5 -right-2 flex size-4 items-center justify-center rounded-full bg-plum text-[0.6rem] font-bold text-white">
+                {badge > 9 ? "9+" : badge}
+              </span>
+            ) : null}
+          </span>
+          {badge > 0 ? <span className="sr-only">{tn("badge", { count: badge })}</span> : null}
           {/* 640–768px: icons only (labels stay for screen readers). */}
           <span className={cn(mobile ? "w-full truncate text-center" : "sr-only md:not-sr-only")}>{label}</span>
         </Link>
