@@ -14,7 +14,7 @@ export async function CtaBand() {
           <h2 id="final-title" className="max-w-3xl font-heading text-3xl leading-tight font-extrabold tracking-tight text-balance md:text-5xl">
             {t.rich("ctaBandTitle", highlight)}
           </h2>
-          <p className="max-w-xl text-cream/80 md:text-lg">{t("ctaBandSubtitle")}</p>
+          <p className="max-w-xl text-base text-cream/90 md:text-xl">{t("ctaBandSubtitle")}</p>
           <OpenShopCta className="w-full sm:w-auto [&_[role=status]_p]:text-foreground" />
         </div>
       </Reveal>

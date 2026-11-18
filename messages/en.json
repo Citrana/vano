@@ -740,7 +740,7 @@
     "linkCardLabel": "Your shop link",
     "copyLink": "Copy link",
     "pricingTitle": "Start free for {months, plural, one {# month} other {# months}}, then from {price}/month",
-    "pricingBody": "No payment method needed to start. Cancel anytime.",
+    "cancelAnytime": "Cancel anytime",
     "pricingLink": "See pricing"
   },
   "Features": {

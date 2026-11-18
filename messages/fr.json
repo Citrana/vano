@@ -740,7 +740,7 @@
     "linkCardLabel": "Le lien de votre boutique",
     "copyLink": "Copier le lien",
     "pricingTitle": "Gratuit pendant {months, plural, one {# mois} other {# mois}}, puis à partir de {price}/mois",
-    "pricingBody": "Aucun moyen de paiement pour commencer. Résiliable à tout moment.",
+    "cancelAnytime": "Résiliable à tout moment",
     "pricingLink": "Voir les tarifs"
   },
   "Features": {
