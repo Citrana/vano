@@ -28,6 +28,8 @@ export function shopSchema(tv: TV) {
       categories: z.array(z.enum(CATEGORY_KEYS)).min(1, tv("categoriesRequired")),
       description: z.string().trim().max(LIMITS.shopDescriptionMax, tv("tooLong", { max: LIMITS.shopDescriptionMax })),
       whatsappNumber: z.string().trim().min(1, tv("required")),
+      /** Dial-code country for the WhatsApp number (form only; may differ from `country`). */
+      whatsappCountry: z.string().min(2, tv("required")),
       city: z.string().trim().min(1, tv("required")).max(LIMITS.cityMax, tv("tooLong", { max: LIMITS.cityMax })),
       country: z.string().min(2, tv("required")),
       logoId: z.string().optional(),
@@ -35,8 +37,8 @@ export function shopSchema(tv: TV) {
     .superRefine((values, ctx) => {
       if (
         values.whatsappNumber &&
-        values.country &&
-        normalizeWhatsapp(values.whatsappNumber, values.country as CountryCode) === null
+        values.whatsappCountry &&
+        normalizeWhatsapp(values.whatsappNumber, values.whatsappCountry as CountryCode) === null
       ) {
         ctx.addIssue({ code: "custom", path: ["whatsappNumber"], message: tv("phoneInvalid") })
       }

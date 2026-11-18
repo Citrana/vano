@@ -126,6 +126,13 @@ describe("shops.create", () => {
     });
   });
 
+  test("accepts a WhatsApp number from another country than the shop's", async () => {
+    const t = setup();
+    const userId = await insertUser(t);
+    await as(t, userId).mutation(api.shops.create, shopArgs({ country: "CD", whatsappNumber: "+254712345678" }));
+    expect(await as(t, userId).query(api.shops.myShop, {})).toMatchObject({ country: "CD", whatsappNumber: "+254712345678" });
+  });
+
   test("one shop per user", async () => {
     const t = setup();
     const { userId } = await sellerWithShop(t);

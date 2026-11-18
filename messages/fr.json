@@ -161,7 +161,7 @@
     "description": "Courte description",
     "descriptionPlaceholder": "ex. Mode femme, nouveautés chaque semaine",
     "whatsapp": "Numéro WhatsApp",
-    "whatsappHelp": "Les commandes arrivent sur ce numéro. Indiquez l'indicatif du pays.",
+    "whatsappHelp": "Choisissez l'indicatif du pays, puis saisissez le numéro. Les commandes sont envoyées à ce numéro.",
     "whatsappPlaceholder": "812 345 678",
     "dialCode": "Indicatif",
     "city": "Ville",
@@ -175,7 +175,8 @@
     "logoRemove": "Retirer",
     "logoUploading": "Envoi…",
     "saved": "Paramètres enregistrés",
-    "charCount": "{count}/{max}"
+    "charCount": "{count}/{max}",
+    "whatsappCode": "Indicatif du pays"
   },
   "Dashboard": {
     "title": "Ma boutique",

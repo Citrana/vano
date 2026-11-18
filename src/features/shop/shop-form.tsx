@@ -1,14 +1,17 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
+import { ChevronDownIcon } from "lucide-react"
 import { useLocale, useTranslations } from "next-intl"
 import { useMemo, useRef, useState } from "react"
 import { Controller, useForm, useWatch } from "react-hook-form"
 import { toast } from "sonner"
+import type { CountryCode } from "libphonenumber-js"
 import type { Id } from "../../../convex/_generated/dataModel"
 import { LANGUAGES, LIMITS } from "../../../convex/lib/catalog"
 import { errorCodeOf, type ErrorCode } from "../../../convex/lib/errors"
 import { CURRENCIES } from "../../../convex/lib/money"
+import { normalizeWhatsapp, splitWhatsapp } from "../../../convex/lib/phone"
 import { slugify } from "../../../convex/lib/slug"
 import { Button } from "@/components/ui/button"
 import { Card, CardTitle } from "@/components/ui/card"
@@ -19,12 +22,13 @@ import { RequiredFieldsHint } from "@/components/ui/required-fields-hint"
 import { Textarea } from "@/components/ui/textarea"
 import { shopUrl } from "@/lib/site"
 import { CategoryPicker } from "./category-picker"
-import { countryOptions, dialCode } from "./countries"
+import { countryOptions, dialCode, flagEmoji } from "./countries"
 import { LogoField } from "./logo-field"
 import { shopSchema, type ShopFormValues } from "./schemas"
 import { SlugStatus } from "./slug-status"
 
-export type ShopSubmit = Omit<ShopFormValues, "logoId" | "description"> & {
+/** What the form sends: `whatsappNumber` is full E.164 (dial code included). */
+export type ShopSubmit = Omit<ShopFormValues, "logoId" | "description" | "whatsappCountry"> & {
   description?: string
   logoId?: Id<"_storage">
 }
@@ -51,7 +55,8 @@ export function ShopForm({
   onSubmit,
 }: {
   mode: "create" | "edit"
-  initial?: ShopFormValues
+  /** The stored shop; `whatsappNumber` is E.164 and is split for the form. */
+  initial?: Omit<ShopFormValues, "whatsappCountry">
   initialLogoUrl?: string | null
   onSubmit: (values: ShopSubmit) => Promise<void>
 }) {
@@ -66,7 +71,7 @@ export function ShopForm({
 
   const form = useForm<ShopFormValues>({
     resolver: zodResolver(shopSchema(tv)),
-    defaultValues: initial ?? {
+    defaultValues: initial ? withSplitWhatsapp(initial) : {
       name: "",
       slug: "",
       currency: "USD",
@@ -74,6 +79,7 @@ export function ShopForm({
       categories: [],
       description: "",
       whatsappNumber: "",
+      whatsappCountry: "CD",
       city: "",
       country: "CD",
       logoId: undefined,
@@ -85,14 +91,31 @@ export function ShopForm({
   const [logoBusy, setLogoBusy] = useState(false)
   // The slug follows the name until the seller edits it (create only).
   const slugTouched = useRef(mode === "edit")
+  // The dial code follows the shop's country until the seller picks one (create only).
+  const dialTouched = useRef(mode === "edit")
 
-  const [slug, country, description] = useWatch({ control, name: ["slug", "country", "description"] })
+  const [slug, description, whatsappCountry] = useWatch({
+    control,
+    name: ["slug", "description", "whatsappCountry"],
+  })
   const countries = useMemo(() => countryOptions(locale), [locale])
 
-  async function submit(values: ShopFormValues) {
+  /** A pasted "+254 712…" switches the dial code and keeps the national part. */
+  function splitInternational(value: string) {
+    if (!value.trim().startsWith("+")) return
+    if (normalizeWhatsapp(value) === null) return
+    const { country: dial, national } = splitWhatsapp(value, whatsappCountry as CountryCode)
+    dialTouched.current = true
+    setValue("whatsappCountry", dial, { shouldValidate: true })
+    setValue("whatsappNumber", national, { shouldValidate: true })
+  }
+
+  async function submit({ whatsappCountry: dial, ...values }: ShopFormValues) {
     try {
       await onSubmit({
         ...values,
+        // Full E.164 so the server never guesses the country (schema checked it parses).
+        whatsappNumber: normalizeWhatsapp(values.whatsappNumber, dial as CountryCode) ?? values.whatsappNumber,
         description: values.description || undefined,
         logoId: values.logoId as Id<"_storage"> | undefined,
       })
@@ -235,7 +258,14 @@ export function ShopForm({
         <div className="grid gap-5 sm:grid-cols-2">
           <Field id="country" label={t("country")} required error={errors.country?.message}>
             {(p) => (
-              <NativeSelect {...p} {...register("country")}>
+              <NativeSelect
+                {...p}
+                {...register("country", {
+                  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => {
+                    if (!dialTouched.current) setValue("whatsappCountry", e.target.value)
+                  },
+                })}
+              >
                 <option value="" disabled>
                   {t("chooseCountry")}
                 </option>
@@ -271,17 +301,42 @@ export function ShopForm({
         >
           {(p) => (
             <div className="flex items-stretch">
-              <span className="inline-flex items-center rounded-l-lg border border-r-0 bg-muted px-3 text-sm text-muted-foreground tabular-nums">
-                {dialCode(country) ?? "+"}
-              </span>
+              {/* Dial code: shows the flag and code; the full list opens natively. */}
+              <label className="relative inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-l-md border border-r-0 bg-muted px-3 text-sm tabular-nums focus-within:outline-2 focus-within:outline-solid focus-within:outline-ring md:min-h-9">
+                <span aria-hidden>{flagEmoji(whatsappCountry)}</span>
+                <span aria-hidden>{dialCode(whatsappCountry) ?? "+"}</span>
+                <ChevronDownIcon className="size-3.5 text-muted-foreground" aria-hidden />
+                <select
+                  aria-label={t("whatsappCode")}
+                  className="absolute inset-0 cursor-pointer opacity-0"
+                  {...register("whatsappCountry", { onChange: () => (dialTouched.current = true) })}
+                >
+                  <optgroup label="—">
+                    {countries.priority.map((c) => (
+                      <option key={c.code} value={c.code}>
+                        {`${flagEmoji(c.code)} ${c.dial} ${c.name}`}
+                      </option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="A–Z">
+                    {countries.rest.map((c) => (
+                      <option key={c.code} value={c.code}>
+                        {`${flagEmoji(c.code)} ${c.dial} ${c.name}`}
+                      </option>
+                    ))}
+                  </optgroup>
+                </select>
+              </label>
               <Input
                 {...p}
                 type="tel"
                 inputMode="tel"
-                autoComplete="tel"
+                autoComplete="tel-national"
                 className="rounded-l-none"
                 placeholder={t("whatsappPlaceholder")}
-                {...register("whatsappNumber")}
+                {...register("whatsappNumber", {
+                  onBlur: (e: React.FocusEvent<HTMLInputElement>) => splitInternational(e.target.value),
+                })}
               />
             </div>
           )}
@@ -301,4 +356,10 @@ export function ShopForm({
       </div>
     </form>
   )
+}
+
+/** The stored E.164 number as a dial-code country + national number for the form. */
+function withSplitWhatsapp(initial: Omit<ShopFormValues, "whatsappCountry">): ShopFormValues {
+  const { country, national } = splitWhatsapp(initial.whatsappNumber, initial.country as CountryCode)
+  return { ...initial, whatsappNumber: national, whatsappCountry: country }
 }

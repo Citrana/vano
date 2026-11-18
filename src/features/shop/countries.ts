@@ -37,3 +37,10 @@ export function dialCode(country: string): string | null {
     return null
   }
 }
+
+/** "KE" → 🇰🇪 (regional indicator letters). */
+export function flagEmoji(code: string): string {
+  return /^[A-Z]{2}$/.test(code)
+    ? String.fromCodePoint(...[...code].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65))
+    : ""
+}
