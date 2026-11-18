@@ -86,6 +86,25 @@ port (3001…). Then make `SITE_URL` match it:
 Open the app → **Open my shop** → sign up → create your shop → add
 products → open your shop link.
 
+### 7. Optional: test payments (development only)
+
+Plans and billing work without real money through a **mock** payment
+provider. Turn it on for your dev deployment:
+
+```bash
+npx convex env set PAYMENTS_PROVIDER mock
+npx convex env set PAYMENTS_MOCK_ENABLED true
+```
+
+Then **Plan** in the dashboard → pick a plan → the checkout says "Test
+mode" with Simulate success / failure / pending and Cancel. **Never set
+these on production.** Without them, checkout is off and sellers see
+"Talk to us".
+
+To test an ending trial or plan, set a subscription's `periodEnd` to the
+past in the Convex dashboard, then run `npx convex run billingJobs:expireDue`
+(it also runs every hour).
+
 ## Migrating existing data (once per deployment)
 
 A deployment that has users or shops from before roles and permissions needs
@@ -101,6 +120,14 @@ npx convex run migrations:rbacV1Status    # status: "done" + totals
 Add `--prod` after `run` for production. It runs in the background in
 batches; running it again is harmless. A brand-new deployment doesn't need
 it.
+
+Billing: shops created before plans existed get a fresh 2-month trial
+(shops that already have a plan are left alone):
+
+```bash
+npx convex run migrations:billingV1          # "started" (or "already_done")
+npx convex run migrations:billingV1Status    # status: "done"
+```
 
 ## First super admin
 
@@ -196,6 +223,8 @@ throwaway local backend instead (then run step 4 against it too).
 | `.env.local` | `NEXT_PUBLIC_SITE_URL` | Public origin for share links and OG tags, e.g. `https://vano.app` (defaults to the browser origin / `http://localhost:3000`) |
 | Convex | `SITE_URL` | Same origin, used by Convex Auth |
 | Convex | `JWT_PRIVATE_KEY`, `JWKS` | Convex Auth signing keys (`npx @convex-dev/auth`) |
+| Convex | `PAYMENTS_PROVIDER` | Payment provider id (`mock` for now). Unset = online payments off |
+| Convex | `PAYMENTS_MOCK_ENABLED` | `true` lets the mock provider run. **Development only — never on prod** |
 
 ## Scripts
 
