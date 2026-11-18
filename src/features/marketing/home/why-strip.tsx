@@ -21,15 +21,15 @@ export async function WhyStrip() {
         {items.map(({ icon: Icon, title, line, href }, i) => (
           <li key={href}>
             <Reveal delay={i * 100} className="h-full">
-              <div className="flex h-full flex-col gap-3 rounded-2xl bg-card p-6 shadow-soft ring-1 ring-foreground/5">
-                <span className="flex size-11 items-center justify-center rounded-xl bg-blush text-plum">
+              <div className="flex h-full flex-col gap-3 rounded-xl border bg-card p-6">
+                <span className="flex size-11 items-center justify-center rounded-md bg-blush text-plum">
                   <Icon className="size-5" aria-hidden />
                 </span>
                 <h3 className="text-lg font-bold">{title}</h3>
                 <p className="flex-1 text-base text-foreground/80">{line}</p>
                 <Link
                   href={href}
-                  className="inline-flex min-h-11 w-fit items-center gap-1.5 rounded-md text-sm font-semibold text-plum underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="inline-flex min-h-11 w-fit items-center gap-1.5 rounded-md text-sm font-semibold text-plum underline-offset-4 hover:underline focus-ring"
                 >
                   {t("learnMore")}
                   <span className="sr-only">: {title}</span>
@@ -42,7 +42,7 @@ export async function WhyStrip() {
       </ul>
       <Link
         href="/features#how"
-        className="inline-flex min-h-11 items-center gap-1.5 self-center rounded-md text-base font-semibold underline underline-offset-4 outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="inline-flex min-h-11 items-center gap-1.5 self-center rounded-md text-base font-semibold underline underline-offset-4 focus-ring"
       >
         {t("readyIn3Steps")}
         <ArrowRightIcon className="size-4" aria-hidden />

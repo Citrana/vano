@@ -25,7 +25,7 @@ export async function DemoTeaser() {
               <Reveal delay={i * 80} className="h-full">
                 <Link
                   href={`/${DEMO_SLUG}/${p.id}`}
-                  className="group block h-full overflow-hidden rounded-2xl bg-card shadow-soft ring-1 ring-foreground/5 outline-none transition-shadow hover:shadow-lift focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="group block h-full overflow-hidden rounded-xl border bg-card transition-colors hover:border-foreground/20 focus-ring"
                 >
                   <div className="relative aspect-[4/5] bg-muted">
                     <Image

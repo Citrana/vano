@@ -25,7 +25,7 @@ export async function OrderChat({ reply, typing = !reply }: { reply?: { text: st
   })
 
   return (
-    <div aria-hidden className="mx-auto w-full max-w-sm overflow-hidden rounded-3xl bg-card shadow-lift ring-1 ring-foreground/5 select-none">
+    <div aria-hidden className="mx-auto w-full max-w-sm overflow-hidden rounded-xl bg-card border shadow-float select-none">
       <div className="flex items-center gap-3 bg-whatsapp px-4 py-3 text-white">
         <span className="flex size-9 items-center justify-center rounded-full bg-white/20 text-sm font-bold">{t("chatCustomer").charAt(0)}</span>
         <div className="leading-tight">
@@ -35,13 +35,13 @@ export async function OrderChat({ reply, typing = !reply }: { reply?: { text: st
       </div>
       <div className="flex flex-col items-start gap-2 bg-muted p-4">
         {/* Received order (the seller's view). */}
-        <div className="max-w-[88%] rounded-2xl rounded-tl-sm bg-card px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-line text-foreground shadow-soft">
+        <div className="max-w-[88%] rounded-xl rounded-tl-sm bg-card px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-line text-foreground">
           {message}
           <span className="mt-1 block text-right text-xs text-muted-foreground">{t("chatTime")}</span>
         </div>
         {reply ? (
           /* The seller's answer (sent, so it gets read ticks). */
-          <div className="ml-auto max-w-[80%] rounded-2xl rounded-tr-sm bg-success/15 px-3.5 py-2.5 text-sm leading-relaxed text-foreground shadow-soft">
+          <div className="ml-auto max-w-[80%] rounded-xl rounded-tr-sm bg-success/15 px-3.5 py-2.5 text-sm leading-relaxed text-foreground">
             {reply.text}
             <span className="mt-1 flex items-center justify-end gap-1 text-xs text-muted-foreground">
               {reply.time}
@@ -51,7 +51,7 @@ export async function OrderChat({ reply, typing = !reply }: { reply?: { text: st
         ) : null}
         {typing ? (
           /* The customer is typing another message. */
-          <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm bg-card px-3.5 py-3 shadow-soft">
+          <div className="flex items-center gap-1 rounded-xl rounded-tl-sm bg-card px-3.5 py-3">
             {[0, 150, 300].map((delay) => (
               <span
                 key={delay}

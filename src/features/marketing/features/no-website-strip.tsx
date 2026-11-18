@@ -13,7 +13,7 @@ export async function NoWebsiteStrip() {
   ]
   return (
     <Reveal>
-      <div className="flex flex-col items-center gap-4 rounded-3xl bg-card px-6 py-6 text-center shadow-soft ring-1 ring-foreground/5 md:flex-row md:justify-between md:text-left">
+      <div className="flex flex-col items-center gap-4 rounded-xl bg-card px-6 py-6 text-center border md:flex-row md:justify-between md:text-left">
         <h3 className="text-xl font-extrabold md:text-2xl">{t("noSiteTitle")}</h3>
         <ul className="flex flex-wrap justify-center gap-2">
           {items.map(({ icon: Icon, label }) => (

@@ -28,14 +28,14 @@ export function ThemePreviews() {
             role="radio"
             aria-checked={active}
             onClick={() => setSelected(theme)}
-            className="group flex flex-col items-center gap-2 rounded-2xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="group flex flex-col items-center gap-2 rounded-xl focus-ring"
           >
             <div
               data-shop-theme={theme}
               aria-hidden
               className={cn(
-                "flex w-full flex-col gap-2 overflow-hidden rounded-[calc(var(--radius)*1.4)] p-2 ring-1 ring-foreground/10 transition-[translate,box-shadow] duration-300 motion-reduce:transition-none sm:gap-2.5 sm:p-3",
-                active ? "-translate-y-1 shadow-lift ring-2 ring-plum" : "shadow-soft group-hover:-translate-y-0.5",
+                "flex w-full flex-col gap-2 overflow-hidden rounded-[calc(var(--radius)*1.4)] p-2 border transition-[translate,box-shadow] duration-300 motion-reduce:transition-none sm:gap-2.5 sm:p-3",
+                active ? "-translate-y-1 ring-2 ring-plum" : "group-hover:-translate-y-0.5",
               )}
             >
               <div className="flex items-center gap-1.5">

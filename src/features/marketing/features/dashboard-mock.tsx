@@ -20,13 +20,13 @@ export async function DashboardMock() {
   const td = await getTranslations("Demo")
   const locale = await getLocale()
   return (
-    <div aria-hidden className="mx-auto w-full max-w-md overflow-hidden rounded-3xl bg-card shadow-lift ring-1 ring-foreground/5 select-none">
+    <div aria-hidden className="mx-auto w-full max-w-md overflow-hidden rounded-xl bg-card border shadow-float select-none">
       <div className="grid grid-cols-2 gap-3 border-b bg-background p-4">
         {[
           { icon: EyeIcon, label: t("mockViews"), value: "128" },
           { icon: MessageCircleIcon, label: t("mockClicks"), value: "24" },
         ].map(({ icon: Icon, label, value }) => (
-          <div key={label} className="flex flex-col gap-1 rounded-2xl bg-card p-3 ring-1 ring-foreground/5">
+          <div key={label} className="flex flex-col gap-1 rounded-lg border bg-card p-3">
             <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
               <Icon className="size-3.5" />
               {label}

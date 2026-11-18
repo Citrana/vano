@@ -35,11 +35,11 @@ export function FeatureRow({
         className={cn(
           "scroll-mt-24",
           "grid items-center gap-8 md:grid-cols-2 md:gap-14",
-          tint ? "rounded-3xl bg-blush p-6 md:grid-cols-[1fr_1.25fr] md:p-10" : "md:px-6",
+          tint ? "rounded-xl bg-blush p-6 md:grid-cols-[1fr_1.25fr] md:p-10" : "md:px-6",
         )}
       >
         <div className={cn("flex min-w-0 flex-col gap-4", reverse && "md:order-2")}>
-          <span className="flex size-12 items-center justify-center rounded-2xl bg-card text-plum shadow-soft">{icon}</span>
+          <span className="flex size-12 items-center justify-center rounded-lg bg-card text-plum">{icon}</span>
           <h3 className="font-heading text-2xl leading-tight font-extrabold tracking-tight md:text-3xl">{title}</h3>
           <p className="max-w-lg text-base text-foreground/80 md:text-lg">{body}</p>
           <ul className="flex flex-col gap-2">

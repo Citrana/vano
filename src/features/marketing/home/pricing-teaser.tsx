@@ -11,8 +11,8 @@ export async function PricingTeaser() {
   const locale = await getLocale()
   return (
     <section aria-labelledby="pricing-teaser-title" className="px-4 pb-24 md:pb-32">
-      <Reveal className="mx-auto flex w-full max-w-4xl flex-col items-center gap-4 rounded-3xl bg-blush px-6 py-10 text-center md:px-12">
-        <span className="flex size-12 items-center justify-center rounded-2xl bg-card text-plum shadow-soft">
+      <Reveal className="mx-auto flex w-full max-w-4xl flex-col items-center gap-4 rounded-xl bg-blush px-6 py-10 text-center md:px-12">
+        <span className="flex size-12 items-center justify-center rounded-lg bg-card text-plum">
           <GiftIcon className="size-6" aria-hidden />
         </span>
         <h2 id="pricing-teaser-title" className="font-heading text-2xl leading-tight font-extrabold tracking-tight text-balance md:text-4xl">

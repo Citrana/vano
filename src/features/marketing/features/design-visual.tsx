@@ -11,7 +11,7 @@ export async function DesignVisual() {
   return (
     <div className="flex flex-col gap-5">
       <ThemePreviews />
-      <div className="rounded-2xl bg-card p-4 shadow-soft ring-1 ring-foreground/5">
+      <div className="rounded-xl border bg-card p-4">
         <p className="mb-2 text-sm font-semibold text-muted-foreground">{t("designCanChange")}</p>
         <ul className="flex flex-wrap gap-x-4 gap-y-2 text-sm font-medium">
           {available.map((item) => (

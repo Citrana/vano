@@ -18,9 +18,9 @@ export async function ComingSoon() {
         {items.map(({ icon: Icon, title, body }, i) => (
           <li key={title}>
             <Reveal delay={i * 120} className="h-full">
-              <div className="flex h-full flex-col gap-4 rounded-2xl border border-plum/40 bg-card p-6 shadow-soft md:p-8">
+              <div className="flex h-full flex-col gap-4 rounded-xl border border-plum/40 bg-card p-6 md:p-8">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="flex size-12 items-center justify-center rounded-2xl bg-blush text-plum">
+                  <span className="flex size-12 items-center justify-center rounded-lg bg-blush text-plum">
                     <Icon className="size-6" aria-hidden />
                   </span>
                   <Badge className="h-7 px-3 text-sm">{tm("comingSoon")}</Badge>

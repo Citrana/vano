@@ -31,7 +31,7 @@ export function PhoneSpeed({ note }: { note: string }) {
 
   return (
     <div ref={ref} aria-hidden className="mx-auto flex w-full max-w-xs flex-col items-center gap-4 select-none">
-      <div className="w-48 rounded-[2rem] bg-ink p-2 shadow-lift">
+      <div className="w-48 rounded-[2rem] bg-ink p-2 shadow-float">
         <div className="flex flex-col gap-2 rounded-[1.6rem] bg-background p-3">
           {/* status bar: signal + loading bar */}
           <div className="flex items-center gap-2">
@@ -52,7 +52,7 @@ export function PhoneSpeed({ note }: { note: string }) {
           <span className="h-3 w-20 rounded-full bg-foreground/80" />
           <div className="grid grid-cols-2 gap-2">
             {[0, 1, 2, 3].map((i) => (
-              <span key={i} className="flex flex-col gap-1 rounded-lg bg-card p-1 ring-1 ring-foreground/5">
+              <span key={i} className="flex flex-col gap-1 rounded-lg bg-card p-1 border">
                 <span className="aspect-[4/5] rounded-md bg-blush" />
                 <span className="h-1.5 w-3/4 rounded-full bg-foreground/60" />
               </span>
@@ -60,7 +60,7 @@ export function PhoneSpeed({ note }: { note: string }) {
           </div>
         </div>
       </div>
-      <p className="inline-flex items-center gap-2 rounded-full bg-card px-4 py-2 text-sm font-semibold shadow-soft ring-1 ring-foreground/5">
+      <p className="inline-flex items-center gap-2 rounded-full bg-card px-4 py-2 text-sm font-semibold border">
         <ZapIcon className="size-4 text-success" />
         {note}
       </p>

@@ -18,7 +18,7 @@ export async function LinkVisual() {
         <p className="mb-2 text-center text-sm font-semibold text-muted-foreground">{t("shareOn")}</p>
         <ul className="grid grid-cols-3 gap-2">
           {places.map(({ icon: Icon, label }) => (
-            <li key={label} className="flex flex-col items-center gap-1.5 rounded-2xl bg-card px-2 py-3 text-center text-xs font-medium shadow-soft ring-1 ring-foreground/5">
+            <li key={label} className="flex flex-col items-center gap-1.5 rounded-lg border bg-card px-2 py-3 text-center text-xs font-medium">
               <span className="flex size-8 items-center justify-center rounded-full bg-blush text-plum">
                 <Icon className="size-4" />
               </span>

@@ -38,11 +38,11 @@ export function LinkCopyCard({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-sm flex-col gap-3 rounded-3xl bg-card p-5 shadow-lift ring-1 ring-foreground/5">
+    <div className="mx-auto flex w-full max-w-sm flex-col gap-3 rounded-xl bg-card p-5 border shadow-float">
       <p className="text-sm font-semibold text-muted-foreground">{label}</p>
       <div
         className={cn(
-          "flex items-center gap-3 rounded-2xl border bg-background px-3 py-2 ring-0 ring-success/30 transition-[box-shadow] duration-300 motion-reduce:transition-none",
+          "flex items-center gap-3 rounded-lg border bg-background px-3 py-2 ring-0 ring-success/30 transition-[box-shadow] duration-300 motion-reduce:transition-none",
           copied && "ring-2",
         )}
       >
@@ -54,7 +54,7 @@ export function LinkCopyCard({
           {copied ? (
             <span
               aria-hidden
-              className="absolute -top-10 left-1/2 -translate-x-1/2 animate-in rounded-full bg-ink px-3 py-1 text-xs font-semibold whitespace-nowrap text-cream shadow-soft duration-300 fade-in slide-in-from-bottom-1 motion-reduce:animate-none"
+              className="absolute -top-10 left-1/2 -translate-x-1/2 animate-in rounded-full bg-ink px-3 py-1 text-xs font-semibold whitespace-nowrap text-cream duration-300 fade-in slide-in-from-bottom-1 motion-reduce:animate-none"
             >
               {copiedLabel}
             </span>
@@ -64,7 +64,7 @@ export function LinkCopyCard({
             onClick={copy}
             aria-label={copyLabel}
             className={cn(
-              "flex size-11 items-center justify-center rounded-xl border bg-card text-muted-foreground transition-colors duration-300 outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 motion-reduce:transition-none",
+              "flex size-11 items-center justify-center rounded-md border bg-card text-muted-foreground transition-colors duration-300 hover:text-foreground focus-ring motion-reduce:transition-none",
               copied && "border-success/40 bg-success/15 text-whatsapp hover:text-whatsapp",
             )}
           >

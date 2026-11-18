@@ -7,7 +7,7 @@ export async function CtaBand() {
   const t = await getTranslations("Marketing")
   return (
     <section aria-labelledby="final-title" className="px-4 pb-16 md:pb-24">
-      <Reveal className="relative mx-auto w-full max-w-6xl overflow-hidden rounded-3xl bg-ink px-6 py-14 text-center text-cream md:px-16 md:py-20">
+      <Reveal className="relative mx-auto w-full max-w-6xl overflow-hidden rounded-xl bg-ink px-6 py-14 text-center text-cream md:px-16 md:py-20">
         <div aria-hidden className="pointer-events-none absolute -top-24 -right-24 size-80 rounded-full bg-coral/30 blur-3xl" />
         <div aria-hidden className="pointer-events-none absolute -bottom-32 -left-20 size-80 rounded-full bg-plum/60 blur-3xl" />
         <div className="relative flex flex-col items-center gap-5">

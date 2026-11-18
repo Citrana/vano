@@ -33,7 +33,7 @@ export async function LivePhone() {
     <figure
       role="img"
       aria-label={t("mockupLabel")}
-      className="relative w-[240px] rounded-[2.5rem] bg-ink p-2 text-left shadow-lift sm:w-[260px] md:w-[280px] lg:w-[300px]"
+      className="relative w-[240px] rounded-[2.5rem] bg-ink p-2 text-left shadow-float sm:w-[260px] md:w-[280px] lg:w-[300px]"
     >
       <div className="relative aspect-[9/19] overflow-hidden rounded-[2rem]">
         <PhoneThemeScreen>
