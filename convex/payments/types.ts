@@ -49,3 +49,14 @@ export const providerEventValidator = v.object({
   failureCode: v.optional(v.string()),
 });
 export type ProviderEvent = Infer<typeof providerEventValidator>;
+
+/** What the buyer does next, from the provider's `start`. */
+export const nextActionValidator = v.union(
+  /** The development-only test checkout (mock provider). */
+  v.object({ kind: v.literal("mockCheckout") }),
+  /** E.g. an M-Pesa STK push: confirm on the phone, then wait. */
+  v.object({ kind: v.literal("awaitPhoneConfirmation") }),
+  /** A hosted payment page. */
+  v.object({ kind: v.literal("redirect"), url: v.string() }),
+);
+export type NextAction = Infer<typeof nextActionValidator>;

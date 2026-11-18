@@ -5,6 +5,7 @@ import { auditActionValidator, auditDetailsValidator, auditTargetTypeValidator }
 import { categoryValidator, languageValidator } from "./lib/catalog";
 import { currencyValidator } from "./lib/money";
 import {
+  nextActionValidator,
   paymentOutcomeValidator,
   paymentStatusValidator,
   providerIdValidator,
@@ -196,7 +197,11 @@ export default defineSchema({
     currency: currencyValidator,
     provider: providerIdValidator,
     providerRef: v.optional(v.string()),
+    /** Set once the provider accepted it (status → pending). */
+    next: v.optional(nextActionValidator),
     status: paymentStatusValidator,
+    /** The provider said "still processing" (e.g. waiting for the bank). */
+    pendingReportedAt: v.optional(v.number()),
     failureCode: v.optional(v.string()),
     completedAt: v.optional(v.number()),
     appliedAt: v.optional(v.number()),
