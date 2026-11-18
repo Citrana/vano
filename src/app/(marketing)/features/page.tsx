@@ -1,9 +1,9 @@
 import type { Metadata } from "next"
 import { getTranslations } from "next-intl/server"
 import { ComingSoon } from "@/features/marketing/features/coming-soon"
-import { FeatureGrid } from "@/features/marketing/features/feature-grid"
+import { FeatureRows } from "@/features/marketing/features/feature-rows"
 import { HowItWorks } from "@/features/marketing/features/how-it-works"
-import { CtaBand } from "@/features/marketing/shared/cta-band"
+import { NextLinks } from "@/features/marketing/features/next-links"
 import { PageIntro } from "@/features/marketing/shared/page-intro"
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -23,11 +23,11 @@ export default async function FeaturesPage() {
   const t = await getTranslations("Features")
   return (
     <>
-      <PageIntro eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
-      <FeatureGrid />
+      <PageIntro spacious eyebrow={t("eyebrow")} title={t("title")} subtitle={t("subtitle")} />
+      <FeatureRows />
       <HowItWorks />
       <ComingSoon />
-      <CtaBand />
+      <NextLinks />
     </>
   )
 }
