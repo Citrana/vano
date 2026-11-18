@@ -31,12 +31,13 @@ function Row({
   return (
     <Reveal>
       <div className={cn("grid items-center gap-8 md:grid-cols-2 md:gap-12", className)}>
-        <div className={cn("flex flex-col gap-3", reverse && "md:order-2")}>
+        <div className={cn("flex min-w-0 flex-col gap-3", reverse && "md:order-2")}>
           <span className="flex size-12 items-center justify-center rounded-2xl bg-card text-plum shadow-soft">{icon}</span>
           <h3 className="font-heading text-2xl leading-tight font-extrabold tracking-tight md:text-3xl">{title}</h3>
           <p className="max-w-md text-base text-foreground/80 md:text-lg">{body}</p>
         </div>
-        <div className={cn(reverse && "md:order-1")}>{visual}</div>
+        {/* min-w-0: long URLs (e.g. French) truncate instead of widening the grid. */}
+        <div className={cn("min-w-0", reverse && "md:order-1")}>{visual}</div>
       </div>
     </Reveal>
   )
@@ -92,7 +93,7 @@ export async function WhyVano() {
   )
 
   return (
-    <Section eyebrow={t("highlightsEyebrow")} title={t("highlightsTitle")} className="bg-card/60">
+    <Section eyebrow={t("highlightsEyebrow")} title={t("highlightsTitle")} className="bg-card/60 pb-10 md:pb-14">
       <div className="flex flex-col gap-16 md:gap-20">
         <Row
           className="rounded-3xl bg-blush p-6 md:grid-cols-[1fr_1.4fr] md:p-10"

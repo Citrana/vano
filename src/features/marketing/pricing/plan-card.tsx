@@ -72,7 +72,8 @@ export async function PlanCard({ plan, locale }: { plan: Plan; locale: string })
           {t("ctaTalk")}
         </a>
       ) : (
-        <OpenShopCta variant={highlight ? "default" : "outline"} className="w-full" />
+        // Long labels (e.g. French) wrap instead of widening the card on phones.
+        <OpenShopCta variant={highlight ? "default" : "outline"} className="h-auto min-h-12 w-full py-2.5 text-center whitespace-normal" />
       )}
     </article>
   )
