@@ -9,6 +9,9 @@ import { api } from "../../../convex/_generated/api"
  */
 export const getShopBasics = cache((slug: string) => fetchQuery(api.public.shopBasics, { slug }))
 
+/** An old shop link that still redirects (after an approved link change), or null. */
+export const getSlugRedirect = cache((slug: string) => fetchQuery(api.public.slugRedirect, { slug }))
+
 export const getShopPage = cache((slug: string) => fetchQuery(api.public.shopBySlug, { slug }))
 
 export const getProductPage = cache((slug: string, productId: string) =>
