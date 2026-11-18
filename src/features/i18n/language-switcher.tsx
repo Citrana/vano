@@ -11,10 +11,9 @@ function saveLocaleCookie(locale: Language) {
   document.cookie = `${LOCALE_COOKIE}=${locale}; path=/; max-age=31536000; samesite=lax`
 }
 
-/** EN / FR toggle for seller pages. Saves the NEXT_LOCALE cookie (1 year). */
-export function LanguageSwitcher({ className }: { className?: string }) {
-  const locale = useLocale()
-  const t = useTranslations("Common")
+/** The current UI language and a setter that saves the cookie and re-renders. */
+export function useChangeLocale() {
+  const locale = useLocale() as Language
   const router = useRouter()
   const [pending, startTransition] = useTransition()
 
@@ -23,6 +22,14 @@ export function LanguageSwitcher({ className }: { className?: string }) {
     saveLocaleCookie(next)
     startTransition(() => router.refresh())
   }
+
+  return { locale, choose, pending }
+}
+
+/** EN / FR toggle for seller pages. Saves the NEXT_LOCALE cookie (1 year). */
+export function LanguageSwitcher({ className }: { className?: string }) {
+  const t = useTranslations("Common")
+  const { locale, choose, pending } = useChangeLocale()
 
   return (
     <div

@@ -67,7 +67,8 @@
     "PAYMENTS_UNAVAILABLE": "Les paiements ne sont pas encore disponibles. Contactez-nous pour changer de forfait.",
     "PAYMENT_NOT_OPEN": "Ce paiement est déjà terminé.",
     "REASON_INVALID": "Indiquez une raison (5 à 500 caractères).",
-    "DAYS_INVALID": "Indiquez un nombre de jours entre 1 et 366."
+    "DAYS_INVALID": "Indiquez un nombre de jours entre 1 et 366.",
+    "ONBOARDING_INCOMPLETE": "Terminez toutes les étapes avant de masquer cette carte."
   },
   "Validation": {
     "required": "Ce champ est obligatoire.",
@@ -135,7 +136,9 @@
     "viewShop": "Voir ma boutique",
     "menu": "Menu",
     "admin": "Admin",
-    "billing": "Forfait"
+    "billing": "Forfait",
+    "profileMenu": "Menu du compte",
+    "account": "Connecté en tant que"
   },
   "Onboarding": {
     "title": "Créez votre boutique",
@@ -176,7 +179,8 @@
     "logoUploading": "Envoi…",
     "saved": "Paramètres enregistrés",
     "charCount": "{count}/{max}",
-    "whatsappCode": "Indicatif du pays"
+    "whatsappCode": "Indicatif du pays",
+    "lookHelp": "Le style de votre boutique publique. Vous pouvez le changer à tout moment."
   },
   "Dashboard": {
     "title": "Ma boutique",
@@ -192,7 +196,7 @@
     "deleteBody": "« {name} » et ses photos seront supprimés. Cette action est définitive.",
     "deleted": "Produit supprimé",
     "views": "{count, plural, one {# vue} other {# vues}}",
-    "clicks": "{count, plural, one {# clic commande} other {# clics commande}}",
+    "clicks": "{count, plural, one {# clic WhatsApp} other {# clics WhatsApp}}",
     "hiddenByAdmin": "Masqué par l'admin",
     "overLimit": "Au-delà de la limite",
     "pinned": "Toujours affiché",
@@ -201,7 +205,37 @@
     "overLimitNotice": "{count, plural, one {# produit est masqué} other {# produits sont masqués}} dans votre boutique à cause de la limite de votre forfait. Choisissez ceux qui s'affichent, ou changez de forfait.",
     "limitReached": "Vous avez atteint la limite de {count} produits de votre forfait.",
     "upgrade": "Changer de forfait",
-    "pinLimit": "Toutes les places visibles sont déjà réservées à d'autres produits. Retirez-en une d'abord."
+    "pinLimit": "Toutes les places visibles sont déjà réservées à d'autres produits. Retirez-en une d'abord.",
+    "checklist": {
+      "title": "Préparez votre boutique",
+      "doneTitle": "Votre boutique est prête",
+      "doneBody": "Tout est prêt. Vous pouvez masquer cette carte.",
+      "progress": "{done} sur {total} terminées",
+      "hide": "Masquer",
+      "stepDone": "(terminé)",
+      "stepTodo": "(à faire)",
+      "steps": {
+        "created": {
+          "title": "Boutique créée",
+          "body": "Votre boutique et son lien sont en ligne."
+        },
+        "product": {
+          "title": "Ajoutez votre premier produit",
+          "body": "Ajoutez une photo, un prix et les tailles disponibles.",
+          "action": "Ajouter un produit"
+        },
+        "look": {
+          "title": "Choisissez le style de votre boutique",
+          "body": "Choisissez le style que vos clients verront.",
+          "action": "Choisir un style"
+        },
+        "share": {
+          "title": "Partagez le lien de votre boutique",
+          "body": "Envoyez-le sur WhatsApp ou copiez-le pour vos réseaux sociaux.",
+          "action": "Partager le lien"
+        }
+      }
+    }
   },
   "Share": {
     "title": "Le lien de votre boutique",
@@ -219,7 +253,7 @@
     "last30": "30 jours",
     "shopViews": "Visites boutique",
     "productViews": "Vues produits",
-    "whatsappClicks": "Commandes WhatsApp"
+    "whatsappClicks": "Clics WhatsApp"
   },
   "ProductForm": {
     "newTitle": "Nouveau produit",
@@ -1134,9 +1168,11 @@
     "bannerAction": "Voir les forfaits",
     "dismiss": "Fermer",
     "lockedStatsTitle": "Statistiques",
-    "lockedStatsBody": "Voyez les visites de votre boutique et les clics de commande WhatsApp avec le forfait Pro.",
+    "lockedStatsBody": "Voyez les visites de votre boutique et les clics WhatsApp avec le forfait Pro.",
     "lockedStatsAction": "Voir les forfaits",
-    "keep": "Garder {plan}"
+    "keep": "Garder {plan}",
+    "trialBadge": "Essai gratuit : {count, plural, one {# jour restant} other {# jours restants}}",
+    "planBadge": "Forfait {plan}"
   },
   "Checkout": {
     "title": "Paiement",

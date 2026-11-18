@@ -6,6 +6,16 @@ import { useTranslations } from "next-intl"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 
+/** Signs out, then goes to the login page. */
+export function useSignOut() {
+  const { signOut } = useAuthActions()
+  const router = useRouter()
+  return async () => {
+    await signOut()
+    router.replace("/login")
+  }
+}
+
 /** In top bars the label hides on phones; `showLabel` always shows it. */
 export function SignOutButton({
   variant = "ghost",
@@ -15,16 +25,9 @@ export function SignOutButton({
   showLabel?: boolean
 }) {
   const t = useTranslations("Common")
-  const { signOut } = useAuthActions()
-  const router = useRouter()
+  const signOut = useSignOut()
   return (
-    <Button
-      variant={variant}
-      onClick={async () => {
-        await signOut()
-        router.replace("/login")
-      }}
-    >
+    <Button variant={variant} onClick={signOut}>
       <LogOutIcon />
       {showLabel ? (
         t("signOut")

@@ -117,8 +117,10 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 - The demo shop (`/demo`) is static data in `demo/demo-shop.ts` rendered
   with the public shop components: no Convex, no stats.
 - Shop looks (`bold | soft | dark`) are token overrides under
-  `[data-shop-theme]` in `globals.css`, listed in
-  `src/features/shop-themes/themes.ts`.
+  `[data-shop-theme]` in `globals.css`. The list and validator live in
+  `convex/lib/themes.ts` (re-exported by
+  `src/features/shop-themes/themes.ts`); the seller's pick is stored on
+  `shops.theme` (Shop settings). Public pages don't apply it yet.
 - Server components must not import values from `"use client"` modules
   (they arrive as client references); shared constants go in plain `.ts`.
 
@@ -199,6 +201,10 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 - **Mobile-first**: design for ~360px first, tap targets ≥ 44px, no
   horizontal page scroll.
 - Every page has loading, empty and error states (`src/components/states`).
+- The dashboard's "Get your shop ready" checklist is computed by
+  `convex/lib/onboarding.ts` from real data (products, `shops.theme`,
+  `shops.onboarding.linkSharedAt`). `shops.update` replaces the document,
+  so it must carry over every field the form doesn't own (`onboarding`).
 - Forms: react-hook-form + Zod. Required fields use `<Label required>`;
   forms with several fields show `<RequiredFieldsHint />`.
 - Components are small and grouped by feature in `src/features/<feature>/`

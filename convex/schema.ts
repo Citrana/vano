@@ -4,6 +4,7 @@ import { v } from "convex/values";
 import { auditActionValidator, auditDetailsValidator, auditTargetTypeValidator } from "./lib/audit";
 import { categoryValidator, languageValidator } from "./lib/catalog";
 import { currencyValidator } from "./lib/money";
+import { shopThemeValidator } from "./lib/themes";
 import {
   nextActionValidator,
   paymentOutcomeValidator,
@@ -90,6 +91,15 @@ export default defineSchema({
     /** ISO 3166-1 alpha-2, e.g. "CD". */
     country: v.string(),
     logoId: v.optional(v.id("_storage")),
+    /** The shop look picked in settings; missing = not picked yet. */
+    theme: v.optional(shopThemeValidator),
+    /** Dashboard checklist progress the seller can't derive from data. */
+    onboarding: v.optional(
+      v.object({
+        linkSharedAt: v.optional(v.number()),
+        checklistHiddenAt: v.optional(v.number()),
+      }),
+    ),
     /** Optional until `migrations:rbacV1`; missing = active. */
     status: v.optional(shopStatusValidator),
   })

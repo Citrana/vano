@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input"
 import { NativeSelect } from "@/components/ui/native-select"
 import { RequiredFieldsHint } from "@/components/ui/required-fields-hint"
 import { Textarea } from "@/components/ui/textarea"
+import { ThemeDots } from "@/features/shop-themes/theme-dots"
 import { shopUrl } from "@/lib/site"
 import { CategoryPicker } from "./category-picker"
 import { countryOptions, dialCode, flagEmoji } from "./countries"
@@ -67,6 +68,7 @@ export function ShopForm({
   const tLang = useTranslations("Languages")
   const tCommon = useTranslations("Common")
   const tOnb = useTranslations("Onboarding")
+  const tTheme = useTranslations("ShopThemes")
   const locale = useLocale()
 
   const form = useForm<ShopFormValues>({
@@ -251,6 +253,23 @@ export function ShopForm({
           />
           <p className="text-xs text-muted-foreground">{t("logoHelp")}</p>
         </div>
+
+        {mode === "edit" ? (
+          <div id="look" className="flex scroll-mt-24 flex-col gap-2">
+            <span className="text-sm font-medium">{tTheme("label")}</span>
+            <Controller
+              control={control}
+              name="theme"
+              render={({ field }) => (
+                <div className="flex flex-wrap items-center gap-2">
+                  <ThemeDots value={field.value ?? null} onChange={field.onChange} className="-ml-2.5" />
+                  {field.value ? <span className="text-sm text-muted-foreground">{tTheme(field.value)}</span> : null}
+                </div>
+              )}
+            />
+            <p className="text-xs text-muted-foreground">{t("lookHelp")}</p>
+          </div>
+        ) : null}
       </Card>
 
       <Card className="gap-5">

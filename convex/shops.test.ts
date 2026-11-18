@@ -252,6 +252,92 @@ describe("shops.update", () => {
   });
 });
 
+describe("shops theme", () => {
+  test("create and update save the shop look", async () => {
+    const t = setup();
+    const { userId } = await sellerWithShop(t, "a@x.com", { theme: "soft" });
+    const me = as(t, userId);
+    expect((await me.query(api.shops.myShop, {}))?.theme).toBe("soft");
+    await me.mutation(api.shops.update, shopArgs({ theme: "dark" }));
+    expect((await me.query(api.shops.myShop, {}))?.theme).toBe("dark");
+  });
+
+  test("rejects an unknown look", async () => {
+    const t = setup();
+    const { userId } = await sellerWithShop(t);
+    await expect(
+      as(t, userId).mutation(api.shops.update, {
+        ...shopArgs(),
+        theme: "neon" as "bold",
+      }),
+    ).rejects.toThrow();
+  });
+
+  test("update keeps the onboarding progress", async () => {
+    const t = setup();
+    const { userId, shopId } = await sellerWithShop(t);
+    const me = as(t, userId);
+    await me.mutation(api.shops.markLinkShared, {});
+    await me.mutation(api.shops.update, shopArgs({ name: "Renamed" }));
+    const shop = await t.run((ctx) => ctx.db.get("shops", shopId));
+    expect(shop?.onboarding?.linkSharedAt).toEqual(expect.any(Number));
+  });
+});
+
+describe("shops.markLinkShared", () => {
+  test("records the first share only, on the caller's own shop", async () => {
+    const t = setup();
+    const a = await sellerWithShop(t, "a@x.com", { slug: "shop-a" });
+    const b = await sellerWithShop(t, "b@x.com", { slug: "shop-b" });
+    await as(t, a.userId).mutation(api.shops.markLinkShared, {});
+    const first = (await t.run((ctx) => ctx.db.get("shops", a.shopId)))?.onboarding?.linkSharedAt;
+    expect(first).toEqual(expect.any(Number));
+    await as(t, a.userId).mutation(api.shops.markLinkShared, {});
+    const again = (await t.run((ctx) => ctx.db.get("shops", a.shopId)))?.onboarding?.linkSharedAt;
+    expect(again).toBe(first);
+    // Another seller's shop is untouched.
+    expect((await t.run((ctx) => ctx.db.get("shops", b.shopId)))?.onboarding).toBeUndefined();
+  });
+
+  test("rejects signed-out callers, sellers without a shop and suspended shops", async () => {
+    const t = setup();
+    await expect(t.mutation(api.shops.markLinkShared, {})).rejects.toThrow(/NOT_AUTHENTICATED/);
+    const noShop = as(t, await insertUser(t, "new@x.com"));
+    await expect(noShop.mutation(api.shops.markLinkShared, {})).rejects.toThrow(/NO_SHOP/);
+    const { userId, shopId } = await sellerWithShop(t);
+    await t.run((ctx) => ctx.db.patch("shops", shopId, { status: "suspended" }));
+    await expect(as(t, userId).mutation(api.shops.markLinkShared, {})).rejects.toThrow(/SHOP_SUSPENDED/);
+  });
+});
+
+describe("shops.hideChecklist", () => {
+  test("only once every step is done, then stays hidden", async () => {
+    const t = setup();
+    const { userId, shopId } = await sellerWithShop(t);
+    const me = as(t, userId);
+    const hide = () => me.mutation(api.shops.hideChecklist, {});
+    await expect(hide()).rejects.toThrow(/ONBOARDING_INCOMPLETE/);
+    await me.mutation(api.products.create, await productArgs(t));
+    await expect(hide()).rejects.toThrow(/ONBOARDING_INCOMPLETE/);
+    await me.mutation(api.shops.update, shopArgs({ theme: "bold" }));
+    await expect(hide()).rejects.toThrow(/ONBOARDING_INCOMPLETE/);
+    await me.mutation(api.shops.markLinkShared, {});
+    await hide();
+    const hiddenAt = (await t.run((ctx) => ctx.db.get("shops", shopId)))?.onboarding?.checklistHiddenAt;
+    expect(hiddenAt).toEqual(expect.any(Number));
+    await hide();
+    expect((await t.run((ctx) => ctx.db.get("shops", shopId)))?.onboarding?.checklistHiddenAt).toBe(hiddenAt);
+  });
+
+  test("rejects signed-out callers and suspended shops", async () => {
+    const t = setup();
+    await expect(t.mutation(api.shops.hideChecklist, {})).rejects.toThrow(/NOT_AUTHENTICATED/);
+    const { userId, shopId } = await sellerWithShop(t);
+    await t.run((ctx) => ctx.db.patch("shops", shopId, { status: "suspended" }));
+    await expect(as(t, userId).mutation(api.shops.hideChecklist, {})).rejects.toThrow(/SHOP_SUSPENDED/);
+  });
+});
+
 describe("files.generateUploadUrl", () => {
   test("requires sign-in", async () => {
     const t = setup();

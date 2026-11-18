@@ -72,6 +72,7 @@ export type ShopArgs = {
   city: string;
   country: string;
   logoId?: Id<"_storage">;
+  theme?: "bold" | "soft" | "dark";
 };
 
 /** A user with a shop. */

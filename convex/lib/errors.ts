@@ -49,6 +49,7 @@ export const ERROR_CODES = [
   "PAYMENT_NOT_OPEN",
   "REASON_INVALID",
   "DAYS_INVALID",
+  "ONBOARDING_INCOMPLETE",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

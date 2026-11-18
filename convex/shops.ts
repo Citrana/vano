@@ -7,6 +7,7 @@ import { categoryValidator, languageValidator, LIMITS } from "./lib/catalog";
 import { fail } from "./lib/errors";
 import { urlOf } from "./lib/images";
 import { currencyValidator } from "./lib/money";
+import { allStepsDone, onboardingSteps } from "./lib/onboarding";
 import { normalizeWhatsapp } from "./lib/phone";
 import { onShopCreated } from "./lib/platformStats";
 import {
@@ -19,6 +20,7 @@ import {
 } from "./lib/seller";
 import { slugProblem } from "./lib/slug";
 import { startTrial, subscriptionDoc } from "./lib/subscriptions";
+import { shopThemeValidator } from "./lib/themes";
 
 const shopInput = v.object({
   name: v.string(),
@@ -32,6 +34,7 @@ const shopInput = v.object({
   city: v.string(),
   country: v.string(),
   logoId: v.optional(v.id("_storage")),
+  theme: v.optional(shopThemeValidator),
 });
 type ShopInput = Infer<typeof shopInput>;
 
@@ -73,6 +76,7 @@ function cleanShopInput(input: ShopInput): ShopInput {
     city,
     country,
     logoId: input.logoId,
+    theme: input.theme,
   };
 }
 
@@ -183,12 +187,56 @@ export const update = sellerMutation({
       ...input,
       ownerId: shop.ownerId,
       status: shop.status,
+      onboarding: shop.onboarding,
     });
     // Keep the copy used by the admin subscription search in sync.
     if (input.name !== shop.name) {
       const subscription = await subscriptionDoc(ctx, shop._id);
       if (subscription) await ctx.db.patch("subscriptions", subscription._id, { shopName: input.name });
     }
+    return null;
+  },
+});
+
+/**
+ * Dashboard checklist: the seller shared, copied or opened their link.
+ * Only the first time is recorded.
+ */
+export const markLinkShared = sellerMutation({
+  permission: "ownShop.manage",
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    const shop = await requireOwnShop(ctx);
+    if (shop.onboarding?.linkSharedAt !== undefined) return null;
+    await ctx.db.patch("shops", shop._id, {
+      onboarding: { ...shop.onboarding, linkSharedAt: Date.now() },
+    });
+    return null;
+  },
+});
+
+/** Hides the dashboard checklist for good, once every step is done. */
+export const hideChecklist = sellerMutation({
+  permission: "ownShop.manage",
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    const shop = await requireOwnShop(ctx);
+    const firstProduct = await ctx.db
+      .query("products")
+      .withIndex("by_shopId", (q) => q.eq("shopId", shop._id))
+      .first();
+    const steps = onboardingSteps({
+      productCount: firstProduct ? 1 : 0,
+      theme: shop.theme,
+      linkSharedAt: shop.onboarding?.linkSharedAt,
+    });
+    if (!allStepsDone(steps)) fail("ONBOARDING_INCOMPLETE");
+    if (shop.onboarding?.checklistHiddenAt !== undefined) return null;
+    await ctx.db.patch("shops", shop._id, {
+      onboarding: { ...shop.onboarding, checklistHiddenAt: Date.now() },
+    });
     return null;
   },
 });

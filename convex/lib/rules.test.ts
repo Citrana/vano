@@ -5,6 +5,7 @@ import { announcementProblem } from "./settings";
 import { addDays, isDay, utcDay } from "./days";
 import { imageProblem, MAX_IMAGE_BYTES } from "./images";
 import { formatMoney, minorToInput, parseMoneyToMinor, priceProblem } from "./money";
+import { allStepsDone, onboardingSteps } from "./onboarding";
 import { normalizeWhatsapp, splitWhatsapp, waDigits } from "./phone";
 import { slugify, slugProblem } from "./slug";
 
@@ -163,5 +164,23 @@ describe("announcementProblem", () => {
     [{ en: "x".repeat(280), fr: "y".repeat(280) }, null],
   ])("%j → %s", (announcement, expected) => {
     expect(announcementProblem(announcement)).toBe(expected);
+  });
+});
+
+describe("onboarding", () => {
+  test("new shop: only the first step is done", () => {
+    const steps = onboardingSteps({ productCount: 0, theme: undefined, linkSharedAt: undefined });
+    expect(steps).toEqual([
+      { key: "created", done: true },
+      { key: "product", done: false },
+      { key: "look", done: false },
+      { key: "share", done: false },
+    ]);
+    expect(allStepsDone(steps)).toBe(false);
+  });
+
+  test("all done with a product, a look and a shared link", () => {
+    const steps = onboardingSteps({ productCount: 2, theme: "soft", linkSharedAt: 1 });
+    expect(allStepsDone(steps)).toBe(true);
   });
 });

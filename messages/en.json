@@ -67,7 +67,8 @@
     "PAYMENTS_UNAVAILABLE": "Payments aren't available yet. Talk to us to upgrade.",
     "PAYMENT_NOT_OPEN": "This payment is already finished.",
     "REASON_INVALID": "Enter a reason (5 to 500 characters).",
-    "DAYS_INVALID": "Enter a number of days between 1 and 366."
+    "DAYS_INVALID": "Enter a number of days between 1 and 366.",
+    "ONBOARDING_INCOMPLETE": "Finish every step before hiding this card."
   },
   "Validation": {
     "required": "This field is required.",
@@ -135,7 +136,9 @@
     "viewShop": "View my shop",
     "menu": "Menu",
     "admin": "Admin",
-    "billing": "Plan"
+    "billing": "Plan",
+    "profileMenu": "Account menu",
+    "account": "Signed in as"
   },
   "Onboarding": {
     "title": "Create your shop",
@@ -176,7 +179,8 @@
     "logoUploading": "Uploading…",
     "saved": "Shop settings saved",
     "charCount": "{count}/{max}",
-    "whatsappCode": "Country code"
+    "whatsappCode": "Country code",
+    "lookHelp": "The style of your public shop. You can change it any time."
   },
   "Dashboard": {
     "title": "My shop",
@@ -192,7 +196,7 @@
     "deleteBody": "\"{name}\" and its photos will be deleted. This can't be undone.",
     "deleted": "Product deleted",
     "views": "{count, plural, one {# view} other {# views}}",
-    "clicks": "{count, plural, one {# order click} other {# order clicks}}",
+    "clicks": "{count, plural, one {# WhatsApp click} other {# WhatsApp clicks}}",
     "hiddenByAdmin": "Hidden by admin",
     "overLimit": "Over plan limit",
     "pinned": "Kept visible",
@@ -201,7 +205,37 @@
     "overLimitNotice": "{count, plural, one {# product is} other {# products are}} hidden from your shop because of your plan's limit. Pick which ones show, or upgrade.",
     "limitReached": "You've reached your plan's limit of {count} products.",
     "upgrade": "Upgrade",
-    "pinLimit": "Every visible spot is already kept for another product. Stop keeping one visible first."
+    "pinLimit": "Every visible spot is already kept for another product. Stop keeping one visible first.",
+    "checklist": {
+      "title": "Get your shop ready",
+      "doneTitle": "Your shop is ready",
+      "doneBody": "All set. You can hide this card.",
+      "progress": "{done} of {total} done",
+      "hide": "Hide",
+      "stepDone": "(done)",
+      "stepTodo": "(to do)",
+      "steps": {
+        "created": {
+          "title": "Shop created",
+          "body": "Your shop and its link are live."
+        },
+        "product": {
+          "title": "Add your first product",
+          "body": "Add a photo, a price and the sizes you have.",
+          "action": "Add product"
+        },
+        "look": {
+          "title": "Pick your shop look",
+          "body": "Choose the style customers see in your shop.",
+          "action": "Choose a look"
+        },
+        "share": {
+          "title": "Share your shop link",
+          "body": "Send it on WhatsApp or copy it for your social media.",
+          "action": "Share link"
+        }
+      }
+    }
   },
   "Share": {
     "title": "Your shop link",
@@ -219,7 +253,7 @@
     "last30": "30 days",
     "shopViews": "Shop views",
     "productViews": "Product views",
-    "whatsappClicks": "WhatsApp orders"
+    "whatsappClicks": "WhatsApp clicks"
   },
   "ProductForm": {
     "newTitle": "New product",
@@ -1134,9 +1168,11 @@
     "bannerAction": "See plans",
     "dismiss": "Dismiss",
     "lockedStatsTitle": "Shop stats",
-    "lockedStatsBody": "See your shop views and WhatsApp order clicks with the Pro plan.",
+    "lockedStatsBody": "See your shop views and WhatsApp clicks with the Pro plan.",
     "lockedStatsAction": "See plans",
-    "keep": "Keep {plan}"
+    "keep": "Keep {plan}",
+    "trialBadge": "Free trial: {count, plural, one {# day} other {# days}} left",
+    "planBadge": "{plan} plan"
   },
   "Checkout": {
     "title": "Checkout",

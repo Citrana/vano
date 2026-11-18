@@ -5,6 +5,7 @@ import { CATEGORY_KEYS, LANGUAGES, LIMITS } from "../../../convex/lib/catalog"
 import { CURRENCIES } from "../../../convex/lib/money"
 import { normalizeWhatsapp } from "../../../convex/lib/phone"
 import { slugProblem } from "../../../convex/lib/slug"
+import { SHOP_THEMES } from "../../../convex/lib/themes"
 
 type TV = ReturnType<typeof useTranslations<"Validation">>
 
@@ -33,6 +34,8 @@ export function shopSchema(tv: TV) {
       city: z.string().trim().min(1, tv("required")).max(LIMITS.cityMax, tv("tooLong", { max: LIMITS.cityMax })),
       country: z.string().min(2, tv("required")),
       logoId: z.string().optional(),
+      /** Shop look (settings only); missing = not picked yet. */
+      theme: z.enum(SHOP_THEMES).optional(),
     })
     .superRefine((values, ctx) => {
       if (

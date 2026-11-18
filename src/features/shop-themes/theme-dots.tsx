@@ -10,7 +10,8 @@ export function ThemeDots({
   onChange,
   className,
 }: {
-  value: ShopTheme
+  /** null = nothing picked yet. */
+  value: ShopTheme | null
   onChange: (theme: ShopTheme) => void
   className?: string
 }) {

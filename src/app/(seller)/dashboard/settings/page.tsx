@@ -36,6 +36,7 @@ export default function SettingsPage() {
           city: shop.city,
           country: shop.country,
           logoId: shop.logoId,
+          theme: shop.theme,
         }}
         onSubmit={async (values) => {
           await update(values)
