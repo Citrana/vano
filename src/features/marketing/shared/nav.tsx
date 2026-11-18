@@ -4,7 +4,7 @@ import { MenuIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { cn } from "cn"
 import { Brand } from "@/components/shell/brand"
 import { buttonVariants } from "@/components/ui/button"
@@ -24,6 +24,8 @@ export function MarketingNav() {
   const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
+  // Opening the menu focuses the first page link, not the logo in its title.
+  const firstLink = useRef<HTMLAnchorElement>(null)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
@@ -73,17 +75,18 @@ export function MarketingNav() {
             <SheetTrigger className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "md:hidden")} aria-label={t("menu")}>
               <MenuIcon aria-hidden />
             </SheetTrigger>
-            <SheetContent>
+            <SheetContent initialFocus={firstLink}>
               <SheetTitle>
                 <Brand />
               </SheetTitle>
               <nav aria-label={t("navLabel")}>
                 <ul className="flex flex-col gap-1">
-                  {MARKETING_LINKS.map(({ href, key }) => {
+                  {MARKETING_LINKS.map(({ href, key }, i) => {
                     const current = isCurrent(href, pathname)
                     return (
                       <li key={href}>
                         <Link
+                          ref={i === 0 ? firstLink : undefined}
                           href={href}
                           aria-current={current ? "page" : undefined}
                           onClick={() => setOpen(false)}
