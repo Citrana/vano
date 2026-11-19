@@ -372,6 +372,15 @@
       "subscriptions": "Abonnements",
       "payments": "Paiements",
       "changeRequests": "Demandes de modification"
+    },
+    "attention": {
+      "title": "À traiter",
+      "pendingChangeRequests": "Demandes de modification en attente",
+      "flaggedChangeRequests": "Noms ou liens signalés",
+      "failedPayments": "Paiements échoués (7 jours)",
+      "endingSoon": "Essais et forfaits qui finissent dans 7 jours",
+      "allClear": "Rien à faire",
+      "badge": "{count} à traiter"
     }
   },
   "Roles": {
@@ -1348,17 +1357,50 @@
     "adminReason": "Raison :"
   },
   "Notifications": {
-    "title": "Nouvelles de vos demandes",
-    "approved": "Votre nouveau {field} a été approuvé : {value}.",
-    "rejected": "Votre nouveau {field} n'a pas été approuvé : {value}.",
-    "reason": "Raison : {reason}",
-    "dismiss": "Masquer",
-    "view": "Voir le détail",
-    "badge": "{count, plural, one {# nouvelle} other {# nouvelles}}",
+    "title": "Notifications",
+    "bell": "Notifications",
+    "bellUnread": "Notifications, {count} non lues",
+    "unread": "Non lue",
+    "markAllRead": "Tout marquer comme lu",
+    "seeAll": "Tout voir",
+    "emptyTitle": "Vous êtes à jour",
+    "emptyBody": "Les nouvelles notifications apparaîtront ici.",
+    "emptyUnreadBody": "Aucune notification non lue.",
+    "error": "Impossible de charger les notifications.",
+    "loadMore": "Voir plus",
+    "filterAll": "Toutes",
+    "filterUnread": "Non lues",
+    "filterLabel": "Afficher",
+    "categoryLabel": "Type",
+    "categories": {
+      "all": "Tous les types",
+      "changeRequests": "Demandes de modification",
+      "billing": "Forfaits et paiements"
+    },
     "field": {
       "name": "nom de boutique",
       "slug": "lien de boutique",
       "whatsapp": "numéro WhatsApp"
+    },
+    "types": {
+      "changeRequest": {
+        "submitted": "{shop} demande à changer son {field}",
+        "flagged": "{shop} demande à changer son {field} en « {value} ». À vérifier : cela ressemble à {brand}",
+        "approved": "Votre nouveau {field} a été approuvé : {value}",
+        "rejected": "Votre nouveau {field} n'a pas été approuvé. Motif : {reason}"
+      },
+      "payment": {
+        "failed": "Votre paiement pour le forfait {plan} n'a pas abouti. Vous pouvez réessayer"
+      },
+      "admin": {
+        "paymentFailed": "Échec du paiement pour {shop} ({plan}, {amount})",
+        "endingSoon": "{capped, select, true {99+ essais ou forfaits se terminent} other {{count, plural, one {# essai ou forfait se termine} other {# essais ou forfaits se terminent}}}} dans les 7 prochains jours"
+      },
+      "plan": {
+        "activated": "Votre forfait {plan} est actif jusqu'au {date}",
+        "expired": "{trial, select, true {Votre essai gratuit est terminé} other {Votre forfait {plan} est terminé}}. Votre boutique est passée au forfait Gratuit",
+        "endingSoon": "{trial, select, true {Votre essai gratuit} other {Votre forfait {plan}}} {days, plural, =0 {se termine aujourd'hui} one {se termine dans # jour} other {se termine dans # jours}}"
+      }
     }
   },
   "AdminChangeRequests": {
@@ -1419,6 +1461,7 @@
     "rejected": "Demande refusée",
     "rejectTitle": "Refuser cette modification ?",
     "rejectBody": "Le vendeur voit votre raison. La boutique reste inchangée.",
-    "rejectPlaceholder": "ex. Les noms de marque ne peuvent pas être utilisés sans preuve de propriété."
+    "rejectPlaceholder": "ex. Les noms de marque ne peuvent pas être utilisés sans preuve de propriété.",
+    "flaggedOnly": "Signalées seulement"
   }
 }

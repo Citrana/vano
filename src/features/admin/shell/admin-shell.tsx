@@ -9,6 +9,7 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { SignOutButton } from "@/features/auth/sign-out-button"
 import { LanguageSwitcher } from "@/features/i18n/language-switcher"
+import { NotificationBell } from "@/features/notifications/notification-bell"
 import { AdminNav } from "./admin-nav"
 import { ADMIN_HOME } from "./nav"
 import { useAdminViewer, useRoleLabel } from "./use-admin-viewer"
@@ -67,6 +68,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                   <span className="sr-only sm:hidden">{t("myShop")}</span>
                 </Link>
               ) : null}
+              <NotificationBell allHref="/admin/notifications" />
               <LanguageSwitcher />
               <SignOutButton />
             </div>

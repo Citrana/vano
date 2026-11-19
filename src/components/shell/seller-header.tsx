@@ -8,12 +8,13 @@ import { usePathname } from "next/navigation"
 import { cn } from "cn"
 import { api } from "../../../convex/_generated/api"
 import { buttonVariants } from "@/components/ui/button"
+import { NotificationBell } from "@/features/notifications/notification-bell"
 import { Brand } from "./brand"
 import { ProfileMenu } from "./profile-menu"
 
 /**
- * Seller top bar: section links, then the profile menu (language, sign
- * out). On phones the section links sit in a second row.
+ * Seller top bar: section links, then the notification bell and the
+ * profile menu (language, sign out). On phones the section links sit in a second row.
  */
 export function SellerHeader() {
   const t = useTranslations("Seller")
@@ -57,7 +58,12 @@ export function SellerHeader() {
           <Brand href="/dashboard" />
           <div className="hidden sm:block">{nav(false)}</div>
         </div>
-        {viewer ? <ProfileMenu email={viewer.email} /> : null}
+        {viewer ? (
+          <div className="flex items-center gap-1">
+            <NotificationBell allHref="/dashboard/notifications" />
+            <ProfileMenu email={viewer.email} />
+          </div>
+        ) : null}
       </div>
       <div className="mx-auto max-w-5xl px-4 pb-2 sm:hidden">{nav(true)}</div>
     </header>
