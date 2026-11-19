@@ -148,6 +148,7 @@
   "Seller": {
     "dashboard": "Dashboard",
     "settings": "Shop settings",
+    "settingsShort": "Settings",
     "viewShop": "View my shop",
     "menu": "Menu",
     "admin": "Admin",

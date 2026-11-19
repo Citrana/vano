@@ -148,6 +148,7 @@
   "Seller": {
     "dashboard": "Tableau de bord",
     "settings": "Paramètres de la boutique",
+    "settingsShort": "Réglages",
     "viewShop": "Voir ma boutique",
     "menu": "Menu",
     "admin": "Admin",

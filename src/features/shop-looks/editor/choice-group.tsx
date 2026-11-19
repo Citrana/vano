@@ -53,8 +53,11 @@ export function ChoiceGroup<T extends string>({
         role="radiogroup"
         aria-labelledby={id}
         aria-disabled={disabled || undefined}
-        className="grid gap-1 rounded-md border bg-card p-1"
-        style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
+        // Four or more options wrap to two columns on phones so labels fit.
+        className={cn(
+          "grid gap-1 rounded-md border bg-card p-1",
+          options.length > 3 ? "grid-cols-2 sm:grid-cols-4" : options.length === 3 ? "grid-cols-3" : "grid-cols-2",
+        )}
       >
         {options.map((option, index) => {
           const selected = index === selectedIndex

@@ -23,7 +23,7 @@ export function SellerHeader() {
   const links = [
     { href: "/dashboard", label: t("dashboard"), icon: LayoutGridIcon, active: pathname === "/dashboard" || pathname.startsWith("/dashboard/products") },
     { href: "/dashboard/look", label: t("look"), icon: PaletteIcon, active: pathname === "/dashboard/look" },
-    { href: "/dashboard/settings", label: t("settings"), icon: SettingsIcon, active: pathname === "/dashboard/settings" },
+    { href: "/dashboard/settings", label: t("settings"), short: t("settingsShort"), icon: SettingsIcon, active: pathname === "/dashboard/settings" },
     { href: "/dashboard/billing", label: t("billing"), icon: CreditCardIcon, active: pathname.startsWith("/dashboard/billing") },
     // Admins who also sell can switch to the admin (the server checks access).
     ...(viewer?.isAdmin ? [{ href: "/admin", label: t("admin"), icon: ShieldIcon, active: false }] : []),
@@ -33,7 +33,7 @@ export function SellerHeader() {
   // Active link: a light fill only. The focus ring shows for keyboard users only.
   const nav = (mobile: boolean) => (
     <nav aria-label={t("menu")} className="flex gap-1">
-      {links.map(({ href, label, icon: Icon, active }) => (
+      {links.map(({ href, label, short, icon: Icon, active }) => (
         <Link
           key={href}
           href={href}
@@ -46,7 +46,15 @@ export function SellerHeader() {
         >
           <Icon />
           {/* 640–768px: icons only (labels stay for screen readers). */}
-          <span className={cn(mobile ? "w-full truncate text-center" : "sr-only md:not-sr-only")}>{label}</span>
+          {mobile && short ? (
+            // Phones: a short label so five tabs fit; the full name stays for screen readers.
+            <>
+              <span aria-hidden className="w-full truncate text-center">{short}</span>
+              <span className="sr-only">{label}</span>
+            </>
+          ) : (
+            <span className={cn(mobile ? "w-full truncate text-center" : "sr-only md:not-sr-only")}>{label}</span>
+          )}
         </Link>
       ))}
     </nav>
