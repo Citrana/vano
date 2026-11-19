@@ -185,13 +185,51 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   (`convex/verification/`), chosen by `VERIFICATION_SENDER` (`log` for
   now). **Test mode** (`VERIFICATION_SENDER=log` + `VERIFICATION_TEST_MODE=true`)
   shows the code on screen: never set it on prod.
-- Decisions reach the seller as `sellerNotifications` rows (dashboard
-  notice + badge on Shop settings), written with `notifySeller`
-  (`convex/lib/notify.ts`). Outside channels implement
-  `NotificationChannel` (`convex/notifications/`), enabled by
-  `NOTIFY_CHANNELS`. Admin access: `changeRequests.view` / `.decide`,
+- New requests notify `changeRequests.view` admins (one notification:
+  flagged or plain); decisions notify the seller with the reason (see
+  "Notifications"). Admin access: `changeRequests.view` / `.decide`,
   never on your own shop. Every request, cancel, decision and applied
   change is logged (`logAdminAction`, phone numbers masked).
+
+## Notifications
+
+- In-app notifications are separate from toasts: **toasts are only for
+  instant feedback** on the user's own action; anything someone should see
+  later (or act on) is a notification, a live count or both.
+- **One service**: features call `notify(ctx, { data, to, dedupeKey })`
+  (`convex/lib/notify.ts`) in the same mutation as the change. It's the
+  only writer of the `notifications` table (one row per recipient).
+  Never insert notification rows by hand, never pick channels in a feature.
+- Types live **only** in `convex/notifications/types.ts`: a `data`
+  validator per type (discriminated union, ids + the short values the text
+  needs, WhatsApp numbers masked), its category and audience, and
+  `notificationHref` (links are computed, never stored). A new type also
+  needs both translations (`Notifications.types.*`) and an icon
+  (`notification-item.tsx`). Text is built on the client, so it's always
+  in the **viewer's** language.
+- Recipients: one user (`{ userId }`) or everyone holding a permission
+  (`{ permission }`, resolved through roles; super admins included,
+  suspended users skipped). The permission is stored on the row and
+  **checked again on every read**, so losing it hides old notifications
+  too. Exclude the shop's owner from admin notifications about their shop.
+- Every notification has a `dedupeKey` (e.g. `pay.failed:<paymentId>`);
+  the same key never reaches a user twice, so retries are safe.
+- The inbox (`convex/notifications/inbox.ts`, `accountQuery` /
+  `accountMutation`) only reads or changes the caller's own rows. Someone
+  else's id is `NOT_FOUND`. Marking read works for a suspended shop.
+- **Counts never come from notifications**: sidebar badges and the admin
+  "Needs attention" cards use `admin/attention.counts`, which reads the
+  real tables (pending requests, unresolved failed payments, plans ending
+  soon) and returns null for numbers the viewer may not see. Badge items
+  are set with `attention` in `nav.ts`; cards link to their list with the
+  filters in the URL (`*FiltersFromParams`).
+- Limits and retention live only in `convex/notifications/config.ts`
+  (`NOTIFICATION_RETENTION_DAYS`, `COUNT_CAP`, …). The daily cron
+  `notificationJobs.cleanup` deletes old rows; `notificationJobs.endingSoon`
+  sends the ending-soon warnings.
+- Outside delivery (WhatsApp, email) implements `NotificationChannel`
+  (`convex/notifications/channel.ts`), registered in `registry.ts` and
+  enabled by `NOTIFY_CHANNELS`; `notify` schedules it. Features don't change.
 
 ## Stats
 
@@ -246,7 +284,7 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   forms with several fields show `<RequiredFieldsHint />`.
 - Components are small and grouped by feature in `src/features/<feature>/`
   (`auth`, `shop`, `product`, `public`, `stats`, `i18n`, `marketing/*`,
-  `shop-themes`, `billing`, `change-requests`, `admin/*`).
+  `shop-themes`, `billing`, `change-requests`, `notifications`, `admin/*`).
   Generic primitives live in `src/components/ui/`.
 - Admin pages live under `src/app/admin/` and wrap their content in
   `<RequirePermission permission="…">`. Sidebar sections are defined only
@@ -274,7 +312,9 @@ convex/
   auth.ts auth.config.ts http.ts   # Convex Auth (Password, sign-up enabled)
   users.ts shops.ts products.ts files.ts public.ts stats.ts
   changeRequests.ts changeRequestJobs.ts   # protected shop changes
-  notifications/ verification/            # swappable channels / code senders
+  notifications/    # notification types, inbox, config, outside channels
+  notificationJobs.ts                     # ending-soon warnings, cleanup
+  verification/     # swappable code senders
   billing.ts billingJobs.ts crons.ts   # seller billing, expiry job
   payments/         # provider interface, mock, result handling
   lib/              # seller wrappers, shared rules, test setup

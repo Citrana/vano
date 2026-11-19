@@ -2,50 +2,43 @@ import { v } from "convex/values";
 import { internal } from "../_generated/api";
 import { internalAction, internalQuery } from "../_generated/server";
 import { languageValidator } from "../lib/catalog";
-import { protectedFieldValidator } from "../lib/changeRequests";
-import { notificationKindValidator } from "./kinds";
+import { findShopByOwner } from "../lib/seller";
 import { activeChannels } from "./registry";
+import { notificationDataValidator } from "./types";
 
 const messageValidator = v.object({
-  kind: notificationKindValidator,
-  email: v.union(v.string(), v.null()),
-  whatsappNumber: v.string(),
-  language: languageValidator,
-  shopName: v.string(),
-  field: protectedFieldValidator,
-  newValue: v.string(),
-  reason: v.union(v.string(), v.null()),
+  data: notificationDataValidator,
+  recipient: v.object({
+    email: v.union(v.string(), v.null()),
+    whatsappNumber: v.union(v.string(), v.null()),
+    language: languageValidator,
+  }),
 });
 
-/** Everything a channel needs to word the message. Null if anything is gone. */
+/** Everything a channel needs. Null if the notification or its user is gone. */
 export const message = internalQuery({
-  args: { notificationId: v.id("sellerNotifications") },
+  args: { notificationId: v.id("notifications") },
   returns: v.union(messageValidator, v.null()),
   handler: async (ctx, { notificationId }) => {
-    const notification = await ctx.db.get("sellerNotifications", notificationId);
+    const notification = await ctx.db.get("notifications", notificationId);
     if (!notification) return null;
-    const [request, shop, user] = await Promise.all([
-      ctx.db.get("shopChangeRequests", notification.requestId),
-      ctx.db.get("shops", notification.shopId),
-      ctx.db.get("users", notification.userId),
-    ]);
-    if (!request || !shop || !user) return null;
+    const user = await ctx.db.get("users", notification.userId);
+    if (!user) return null;
+    const shop = await findShopByOwner(ctx, user._id);
     return {
-      kind: notification.kind,
-      email: user.email ?? null,
-      whatsappNumber: shop.whatsappNumber,
-      language: shop.language,
-      shopName: shop.name,
-      field: request.field,
-      newValue: request.newValue,
-      reason: request.decisionReason ?? null,
+      data: notification.data,
+      recipient: {
+        email: user.email ?? null,
+        whatsappNumber: shop?.whatsappNumber ?? null,
+        language: shop?.language ?? "en",
+      },
     };
   },
 });
 
 /** Sends one notification on every outside channel; a failing channel doesn't stop the others. */
 export const send = internalAction({
-  args: { notificationId: v.id("sellerNotifications") },
+  args: { notificationId: v.id("notifications") },
   returns: v.null(),
   handler: async (ctx, { notificationId }) => {
     const msg = await ctx.runQuery(internal.notifications.deliver.message, { notificationId });

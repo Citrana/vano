@@ -2,29 +2,16 @@
 
 import { SearchIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
-import {
-  CHANGE_STATUSES,
-  PROTECTED_FIELDS,
-  type ChangeStatus,
-  type ProtectedField,
-} from "../../../../convex/lib/changeRequests"
+import { CHANGE_STATUSES, PROTECTED_FIELDS } from "../../../../convex/lib/changeRequests"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { NativeSelect } from "@/components/ui/native-select"
+import { cn } from "cn"
+import { DEFAULT_FILTERS, type ChangeRequestsFilterValue } from "./filter-params"
 
-export type ChangeRequestsFilterValue = {
-  search: string
-  status: "" | ChangeStatus
-  field: "" | ProtectedField
-  /** "YYYY-MM-DD" (UTC) or "" */
-  from: string
-  to: string
-}
+export { DEFAULT_FILTERS, type ChangeRequestsFilterValue }
 
-/** Pending first: what the admin usually needs. */
-export const DEFAULT_FILTERS: ChangeRequestsFilterValue = { search: "", status: "pending", field: "", from: "", to: "" }
-
-/** Search + status, field and a date range (days in UTC). */
+/** Search + status, field, a date range (days in UTC) and "flagged only". */
 export function ChangeRequestsFilters({
   value,
   onChange,
@@ -78,7 +65,20 @@ export function ChangeRequestsFilters({
         </label>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs text-muted-foreground">{t("utcNote")}</p>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            aria-pressed={value.flagged}
+            onClick={() => onChange({ ...value, flagged: !value.flagged })}
+            className={cn(
+              "focus-ring min-h-11 rounded-full border px-4 text-sm font-medium transition-colors motion-reduce:transition-none",
+              value.flagged ? "chip-selected" : "bg-card hover:bg-muted",
+            )}
+          >
+            {t("flaggedOnly")}
+          </button>
+          <p className="text-xs text-muted-foreground">{t("utcNote")}</p>
+        </div>
         {dirty ? (
           <Button variant="ghost" size="sm" onClick={() => onChange(DEFAULT_FILTERS)}>
             {t("clear")}

@@ -13,7 +13,6 @@ import { EmptyState, LoadingState } from "@/components/states/states"
 import { buttonVariants } from "@/components/ui/button"
 import { LockedStatsCard } from "@/features/billing/locked-stats-card"
 import { PlanStatusBadge } from "@/features/billing/plan-status-badge"
-import { DecisionNotice } from "@/features/change-requests/decision-notice"
 import { useMyBilling } from "@/features/billing/use-billing"
 import { ProductRow } from "@/features/product/product-row"
 import { OnboardingChecklist } from "@/features/shop/onboarding-checklist"
@@ -95,8 +94,6 @@ export default function DashboardPage() {
           {ts("viewShop")}
         </a>
       </header>
-
-      <DecisionNotice canDismiss={canEdit} />
 
       {/* Phones: share card, checklist, products, stats. Desktop: checklist
           and products on the left, share card and stats on the right. */}

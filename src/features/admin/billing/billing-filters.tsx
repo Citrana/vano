@@ -3,19 +3,13 @@
 import { SearchIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { addDays, dayStartMs, isDay } from "../../../../convex/lib/days"
-import { PLAN_IDS, type PlanId } from "../../../../convex/lib/plans"
+import { PLAN_IDS } from "../../../../convex/lib/plans"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { NativeSelect } from "@/components/ui/native-select"
+import type { BillingFilterValue } from "./filter-params"
 
-export type BillingFilterValue<S extends string> = {
-  search: string
-  plan: "" | PlanId
-  status: "" | S
-  /** "YYYY-MM-DD" (UTC) or "" */
-  from: string
-  to: string
-}
+export type { BillingFilterValue }
 
 export function emptyFilters<S extends string>(): BillingFilterValue<S> {
   return { search: "", plan: "", status: "", from: "", to: "" }

@@ -9,6 +9,7 @@ import {
 } from "../_generated/server";
 import { logAdminAction, type AuditAction } from "../lib/audit";
 import { minorToInput } from "../lib/money";
+import { notify } from "../lib/notify";
 import { DAY_MS, isPaidPlan } from "../lib/plans";
 import { applyPurchase, subscriptionOf, writeSubscription } from "../lib/subscriptions";
 import { activeProvider, providerById } from "./registry";
@@ -70,6 +71,32 @@ export async function logPayment(
   });
 }
 
+/**
+ * A failed payment reaches the seller who paid and billing admins (not the
+ * payer again if they're an admin too). Deduped per payment.
+ */
+export async function notifyPaymentFailed(ctx: MutationCtx, payment: Doc<"payments">): Promise<void> {
+  const dedupeKey = `pay.failed:${payment._id}`;
+  await notify(ctx, {
+    data: { type: "payment.failed", paymentId: payment._id, plan: payment.plan },
+    to: { userId: payment.userId },
+    dedupeKey,
+  });
+  await notify(ctx, {
+    data: {
+      type: "admin.paymentFailed",
+      paymentId: payment._id,
+      shopId: payment.shopId,
+      shopName: payment.shopName,
+      plan: payment.plan,
+      amount: amountLabel(payment),
+    },
+    to: { permission: "billing.view" },
+    dedupeKey,
+    exclude: [payment.userId],
+  });
+}
+
 const FINAL_ACTIONS: Record<Exclude<PaymentOutcome, "pending" | "succeeded">, AuditAction> = {
   failed: "payment.failed",
   cancelled: "payment.cancelled",
@@ -119,6 +146,7 @@ export async function applyEvent(
       completedAt: now,
     });
     await logPayment(ctx, payment, FINAL_ACTIONS[event.outcome]);
+    if (event.outcome === "failed") await notifyPaymentFailed(ctx, payment);
     return "recorded";
   }
 
@@ -228,6 +256,7 @@ export const markStartFailed = internalMutation({
     if (!payment || payment.status !== "created") return null;
     await ctx.db.patch("payments", paymentId, { status: "failed", failureCode, completedAt: Date.now() });
     await logPayment(ctx, payment, "payment.failed");
+    await notifyPaymentFailed(ctx, payment);
     return null;
   },
 });

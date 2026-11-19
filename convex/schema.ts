@@ -9,6 +9,7 @@ import {
   protectedFieldValidator,
 } from "./lib/changeRequests";
 import { notificationKindValidator } from "./notifications/kinds";
+import { notificationCategoryValidator, notificationDataValidator } from "./notifications/types";
 import { currencyValidator } from "./lib/money";
 import { shopThemeValidator } from "./lib/themes";
 import {
@@ -322,7 +323,30 @@ export default defineSchema({
     .index("by_shopId", ["shopId"])
     .index("by_expiresAt", ["expiresAt"]),
 
-  /** Messages for a seller (in the dashboard; other channels later, see convex/notifications). */
+  /**
+   * In-app notifications (CLAUDE.md "Notifications"), one row per
+   * recipient, written only by `notify` (convex/lib/notify.ts). The text is
+   * built in the viewer's language from `data`; the link is computed from
+   * it. `requiredPermission` is checked again on every read.
+   */
+  notifications: defineTable({
+    userId: v.id("users"),
+    category: notificationCategoryValidator,
+    data: notificationDataValidator,
+    requiredPermission: v.optional(permissionValidator),
+    dedupeKey: v.string(),
+    readAt: v.optional(v.number()),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_userId_and_readAt", ["userId", "readAt"])
+    .index("by_userId_and_category_and_readAt", ["userId", "category", "readAt"])
+    .index("by_userId_and_category", ["userId", "category"])
+    .index("by_userId_and_dedupeKey", ["userId", "dedupeKey"]),
+
+  /**
+   * Deprecated: replaced by `notifications`. Emptied by
+   * `migrations:notificationsV1`; remove once it has run everywhere.
+   */
   sellerNotifications: defineTable({
     userId: v.id("users"),
     shopId: v.id("shops"),

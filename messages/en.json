@@ -372,6 +372,15 @@
       "subscriptions": "Subscriptions",
       "payments": "Payments",
       "changeRequests": "Change requests"
+    },
+    "attention": {
+      "title": "Needs attention",
+      "pendingChangeRequests": "Pending change requests",
+      "flaggedChangeRequests": "Flagged names or links",
+      "failedPayments": "Failed payments (7 days)",
+      "endingSoon": "Trials and plans ending in 7 days",
+      "allClear": "Nothing to do",
+      "badge": "{count} need attention"
     }
   },
   "Roles": {
@@ -1348,17 +1357,50 @@
     "adminReason": "Reason:"
   },
   "Notifications": {
-    "title": "Updates on your requests",
-    "approved": "Your new {field} was approved: {value}.",
-    "rejected": "Your new {field} was not approved: {value}.",
-    "reason": "Reason: {reason}",
-    "dismiss": "Dismiss",
-    "view": "See details",
-    "badge": "{count, plural, one {# update} other {# updates}}",
+    "title": "Notifications",
+    "bell": "Notifications",
+    "bellUnread": "Notifications, {count} unread",
+    "unread": "Unread",
+    "markAllRead": "Mark all as read",
+    "seeAll": "See all",
+    "emptyTitle": "You're all caught up",
+    "emptyBody": "New notifications will show up here.",
+    "emptyUnreadBody": "No unread notifications.",
+    "error": "Notifications couldn't load.",
+    "loadMore": "Load more",
+    "filterAll": "All",
+    "filterUnread": "Unread",
+    "filterLabel": "Show",
+    "categoryLabel": "Type",
+    "categories": {
+      "all": "All types",
+      "changeRequests": "Change requests",
+      "billing": "Plans & payments"
+    },
     "field": {
       "name": "shop name",
       "slug": "shop link",
       "whatsapp": "WhatsApp number"
+    },
+    "types": {
+      "changeRequest": {
+        "submitted": "{shop} asked to change its {field}",
+        "flagged": "{shop} asked to change its {field} to \"{value}\". Check it: it looks like {brand}",
+        "approved": "Your new {field} was approved: {value}",
+        "rejected": "Your new {field} was not approved. Reason: {reason}"
+      },
+      "payment": {
+        "failed": "Your payment for the {plan} plan didn't go through. You can try again"
+      },
+      "admin": {
+        "paymentFailed": "Payment failed for {shop} ({plan}, {amount})",
+        "endingSoon": "{capped, select, true {99+ trials or plans end} other {{count, plural, one {# trial or plan ends} other {# trials or plans end}}}} in the next 7 days"
+      },
+      "plan": {
+        "activated": "Your {plan} plan is active until {date}",
+        "expired": "{trial, select, true {Your free trial ended} other {Your {plan} plan ended}}. Your shop is now on Free",
+        "endingSoon": "{trial, select, true {Your free trial} other {Your {plan} plan}} {days, plural, =0 {ends today} one {ends in # day} other {ends in # days}}"
+      }
     }
   },
   "AdminChangeRequests": {
@@ -1419,6 +1461,7 @@
     "rejected": "Request rejected",
     "rejectTitle": "Reject this change?",
     "rejectBody": "The seller sees your reason. The shop stays as it is.",
-    "rejectPlaceholder": "e.g. Brand names can't be used without proof you own them."
+    "rejectPlaceholder": "e.g. Brand names can't be used without proof you own them.",
+    "flaggedOnly": "Flagged only"
   }
 }
