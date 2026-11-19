@@ -116,11 +116,9 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   → dashboard). Coral stays the one main action per screen.
 - The demo shop (`/demo`) is static data in `demo/demo-shop.ts` rendered
   with the public shop components: no Convex, no stats.
-- Shop looks (`bold | soft | dark`) are token overrides under
-  `[data-shop-theme]` in `globals.css`. The list and validator live in
-  `convex/lib/themes.ts` (re-exported by
-  `src/features/shop-themes/themes.ts`); the seller's pick is stored on
-  `shops.theme` (Shop settings). Public pages don't apply it yet.
+- The landing phone, the Features previews and the demo shop use the
+  seller presets (`src/features/shop-looks/presets.ts`), so what visitors
+  see is what sellers get (see "Shop looks").
 - Server components must not import values from `"use client"` modules
   (they arrive as client references); shared constants go in plain `.ts`.
 
@@ -156,6 +154,37 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   `PAYMENTS_MOCK_ENABLED=true` on the deployment. Never set them on prod.
 - Admins grant / extend plans with `billing.manage`, a reason, never on
   their own shop (`assertNotOwnShop`).
+
+## Shop looks
+
+- A look is **a preset plus optional per-facet overrides**
+  (`StoredLook` in `convex/lib/looks/validators.ts`: `colors`, `buttons`,
+  `banner`). A missing facet means "the preset's". Later phases (fonts,
+  backgrounds, patterns, card styles, section order) add an optional facet,
+  a default on every preset, a branch in `resolveLook` and an editor panel
+  in `LOOK_SECTIONS`; never rewrite stored looks.
+- Presets, curated swatches, gradients and artworks live **only** in
+  `convex/lib/looks/` (`presets.ts`, `banners.ts`); names in
+  `ShopLooks.*` / `LookEditor.*`. `classic` is the free look. Every preset
+  must pass the contrast check with zero warnings (tested).
+- `resolveLook` (pure) turns a look into the semantic tokens; text colours
+  are derived, never picked. `ShopLookScope` applies them inline (no
+  flash); shop buttons use `shop-btn`, chips `shop-chip` (rules in
+  `globals.css`). The WhatsApp order button keeps `--whatsapp`.
+- One row per shop in `shopLooks` (`draft`, `published`), written only by
+  `convex/shopLooks.ts` (seller: `saveDraft`, `publish`, `discardDraft`)
+  and `admin/shopLooks.reset`. Values are re-checked with `cleanLook`;
+  banner photos go through `claimImages` / `deleteFilesNotIn`.
+- `publish` refuses a blocking contrast problem (`lookProblems`,
+  `LOOK_CONTRAST`) and needs the `allLooks` plan feature for anything but
+  the free look. Drafts save on every plan. Public pages show the
+  published look only while the plan allows it (`visibleLook`), else the
+  free look; the design is never deleted.
+- Public queries return a resolved `PublicLook` (banner photo as a URL),
+  never the draft or a storage id.
+- Admins with `shops.resetLook` reset the banner (photo + text) or the
+  whole look, with a reason, never on their own shop; it's logged
+  (`shop.lookReset`) and the seller is notified (`look.reset`).
 
 ## Protected shop changes
 
@@ -276,7 +305,7 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   horizontal page scroll.
 - Every page has loading, empty and error states (`src/components/states`).
 - The dashboard's "Get your shop ready" checklist is computed by
-  `convex/lib/onboarding.ts` from real data (products, `shops.theme`,
+  `convex/lib/onboarding.ts` from real data (products, a published look,
   `shops.onboarding.linkSharedAt`). `shops.update` patches only the
   settings it accepts, so other fields (protected ones, status,
   onboarding) are never touched by it.
@@ -284,7 +313,7 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   forms with several fields show `<RequiredFieldsHint />`.
 - Components are small and grouped by feature in `src/features/<feature>/`
   (`auth`, `shop`, `product`, `public`, `stats`, `i18n`, `marketing/*`,
-  `shop-themes`, `billing`, `change-requests`, `notifications`, `admin/*`).
+  `shop-looks`, `billing`, `change-requests`, `notifications`, `admin/*`).
   Generic primitives live in `src/components/ui/`.
 - Admin pages live under `src/app/admin/` and wrap their content in
   `<RequirePermission permission="…">`. Sidebar sections are defined only
@@ -321,6 +350,7 @@ convex/
   schema.ts         # all tables
   auth.ts auth.config.ts http.ts   # Convex Auth (Password, sign-up enabled)
   users.ts shops.ts products.ts files.ts public.ts stats.ts
+  shopLooks.ts      # shop look draft / publish (lib/looks/: model, presets, contrast)
   changeRequests.ts changeRequestJobs.ts   # protected shop changes
   notifications/    # notification types, inbox, config, outside channels
   notificationJobs.ts                     # ending-soon warnings, cleanup
