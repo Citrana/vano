@@ -159,7 +159,7 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 
 - A look is **a preset plus optional per-facet overrides**
   (`StoredLook` in `convex/lib/looks/validators.ts`: `colors`, `buttons`,
-  `banner`, `promo`). A missing facet means "the preset's". Later phases (fonts,
+  `banner`, `promo`, `profile`). A missing facet means "the preset's". Later phases (fonts,
   backgrounds, patterns, card styles, section order) add an optional facet,
   a default on every preset, a branch in `resolveLook` and an editor
   section; never rewrite stored looks.
@@ -183,13 +183,14 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   banner photos go through `claimImages` / `deleteFilesNotIn`.
 - `publish` refuses a blocking contrast problem (`lookProblems`,
   `LOOK_CONTRAST`) and needs the `allLooks` plan feature for anything but
-  the free look. Drafts save on every plan. Public pages show the
-  published look only while the plan allows it (`visibleLook`), else the
-  free look; the design is never deleted.
+  the free look. Drafts save on every plan. What visitors see is one pure
+  rule, `shownLook` (`clean.ts`), used by `visibleLook` and the editor's
+  "Live now": the published look while the plan allows it, else the free
+  look (plus the Free parts of the saved profile); the design is never deleted.
 - Public queries return a resolved `PublicLook` (banner photo as a URL),
   never the draft or a storage id.
-- Admins with `shops.resetLook` reset the banner (photo + text) or the
-  whole look, with a reason, never on their own shop; it's logged
+- Admins with `shops.resetLook` reset the banner (photo + text), the
+  profile photo options or the whole look, with a reason, never on their own shop; it's logged
   (`shop.lookReset`) and the seller is notified (`look.reset`).
 
 - Button designs (`convex/lib/looks/buttonDesigns.ts`: design, decoration
@@ -220,12 +221,42 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   rename or remove a sticker id in use. Original generic motifs only.
 - `EventBanner` draws the shop banner, previews, the admin card and the
   downloads (`modern-screenshot`, browser-side) from the same code.
-- Queries never read the clock: `shopLooks.promoLive` is stored by
-  `publish` and `shopLookJobs.syncPromo` (scheduled at start / end,
-  idempotent); `endPromoNow` ends it at once. Rules (`scheduleProblem`,
+- Queries never read the clock: `shopLooks.promoLive` (and
+  `decorationLive`) are stored by `publish` and `shopLookJobs.syncSchedules`
+  (scheduled at start / end, idempotent; `syncPromo` is its old alias,
+  kept for queued jobs); `endPromoNow` ends the promo at once. Rules (`scheduleProblem`,
   `PROMO_MAX_DAYS`) in `convex/lib/looks/schedule.ts`.
 - Publishing a promo needs `salesPromotions`; public pages show it only
   while live and entitled (`visibleLook`). Admin "banner" reset removes it.
+
+### Profile photo
+
+- The optional `profile` facet (`convex/lib/looks/profile.ts`): shape,
+  border (width, style, colour: a shop colour token or a custom hex),
+  size, position, overlap with the banner, corner decoration and one
+  optional decoration with optional dates. Ids, data, rules and geometry
+  live **only** there; names in `LookEditor.profile.*` and
+  `ProfileDecorations.*`, badge words in `Public.profileBadges.*` (shop
+  language). A missing facet = `DEFAULT_PROFILE` (today's circle).
+- Free publishes `isFreeProfile` only (circle, thin or no solid border in a
+  shop colour, nothing else); the rest needs `allLooks`. A downgrade shows
+  `freeProfileOf(saved)`; the choice is kept.
+- `ProfileAvatar` (`src/features/shop-looks/profile/`) is the one drawing,
+  used by the public header, previews, editor tiles and the product page.
+  Shapes and decorations are original inline SVG; the photo is always
+  cropped around its centre and inset inside the border, so borders never
+  cover it. Decorations are placed by `decorationBox` / `cornerBox`, never
+  in the face zone and inside the drawing area for every shape × size
+  (tested). Adding a decoration = an id + entry in `profile.ts`, its art in
+  `decorations/art.tsx`, EN/FR names. Animations only under
+  `prefers-reduced-motion: no-preference`. The soft glow border is a
+  seller-chosen shop style, like Sticker, an exception to "no shadows".
+- The border colour is covered by the contrast check (`profileBorder`,
+  3:1 against the page, a warning with a one-tap fix).
+- Picking an event banner suggests its decoration (`decorationForTemplate`)
+  with one tap, taking the banner's dates; never applied by itself.
+- The banner, the profile photo, the name and the product grid share one
+  left edge: `SHOP_BANNER_EDGE` (`shop-banner.tsx`), no extra header padding.
 
 ## Protected shop changes
 
