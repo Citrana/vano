@@ -464,7 +464,8 @@
       "title": "Shops",
       "view": "View shops",
       "suspend": "Suspend and reactivate shops",
-      "delete": "Delete shops"
+      "delete": "Delete shops",
+      "resetLook": "Reset a shop's look"
     },
     "products": {
       "title": "Products",
@@ -596,7 +597,31 @@
     "deleteForever": "Delete for good",
     "deleted": "Shop deleted.",
     "notFoundTitle": "Shop not found",
-    "notFoundBody": "This shop doesn't exist or was deleted."
+    "notFoundBody": "This shop doesn't exist or was deleted.",
+    "look": {
+      "title": "Shop look",
+      "preset": "Look",
+      "hiddenByPlan": "hidden by plan (visitors see Classic)",
+      "bannerText": "Banner text",
+      "none": "None",
+      "draft": "Unpublished draft",
+      "draftPhoto": "banner photo",
+      "publishedAt": "Published",
+      "never": "Never",
+      "lastReset": "Last reset by an admin",
+      "resetHint": "Remove an inappropriate banner photo or text, or reset the whole look. The seller is told why.",
+      "reset": "Reset look",
+      "resetTitle": "Reset the look of {name}?",
+      "resetBody": "This applies to the live look and the seller's draft. Removed photos are deleted.",
+      "scope": "What to reset",
+      "scopeBanner": "Banner photo and text",
+      "scopeAll": "Whole look",
+      "scopeBannerHint": "Colors and buttons stay. The banner photo is removed and any banner text is cleared.",
+      "scopeAllHint": "The shop goes back to the Classic look.",
+      "reason": "Reason (sent to the seller)",
+      "reasonHelp": "{min}–{max} characters.",
+      "resetDone": "Look reset. The seller has been notified."
+    }
   },
   "ShopStatus": {
     "active": "Active",
@@ -647,7 +672,8 @@
       "delete": "Deleted a shop",
       "nameChanged": "Shop name changed",
       "slugChanged": "Shop link changed",
-      "whatsappChanged": "Shop WhatsApp number changed"
+      "whatsappChanged": "Shop WhatsApp number changed",
+      "lookReset": "Reset a shop's look"
     },
     "product": {
       "hide": "Hid a product",
@@ -711,7 +737,10 @@
     "field": "Field",
     "newValue": "New value",
     "flags": "Flags",
-    "cooldownOverridden": "Cooldown overridden"
+    "cooldownOverridden": "Cooldown overridden",
+    "scope": "What was reset",
+    "bannerText": "Banner text",
+    "bannerPhoto": "Banner photo"
   },
   "AdminActivity": {
     "title": "Activity history",
@@ -1543,7 +1572,8 @@
     "categories": {
       "all": "All types",
       "changeRequests": "Change requests",
-      "billing": "Plans & payments"
+      "billing": "Plans & payments",
+      "shop": "Your shop"
     },
     "field": {
       "name": "shop name",
@@ -1568,6 +1598,10 @@
         "activated": "Your {plan} plan is active until {date}",
         "expired": "{trial, select, true {Your free trial ended} other {Your {plan} plan ended}}. Your shop is now on Free",
         "endingSoon": "{trial, select, true {Your free trial} other {Your {plan} plan}} {days, plural, =0 {ends today} one {ends in # day} other {ends in # days}}"
+      },
+      "look": {
+        "resetBanner": "An admin removed your shop banner's photo or text. Reason: {reason}",
+        "resetAll": "An admin reset your shop look to Classic. Reason: {reason}"
       }
     }
   },

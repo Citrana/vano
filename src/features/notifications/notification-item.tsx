@@ -6,6 +6,7 @@ import {
   ClockIcon,
   CreditCardIcon,
   FilePenLineIcon,
+  PaletteIcon,
   ShieldAlertIcon,
   SparklesIcon,
   XCircleIcon,
@@ -30,6 +31,7 @@ const ICONS: Record<NotificationType, { icon: LucideIcon; tone: string }> = {
   "plan.expired": { icon: CreditCardIcon, tone: "text-muted-foreground" },
   "plan.endingSoon": { icon: ClockIcon, tone: "text-muted-foreground" },
   "admin.endingSoon": { icon: ClockIcon, tone: "text-muted-foreground" },
+  "look.reset": { icon: PaletteIcon, tone: "text-destructive" },
 }
 
 export type NotificationRow = FunctionReturnType<typeof api.notifications.inbox.latest>[number]

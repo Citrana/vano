@@ -15,9 +15,9 @@ import { EXPIRY_WARNING_DAYS, planIdValidator } from "../lib/plans";
  * texts in both message files, and an icon in the UI.
  */
 
-export const notificationCategoryValidator = v.union(v.literal("changeRequests"), v.literal("billing"));
+export const notificationCategoryValidator = v.union(v.literal("changeRequests"), v.literal("billing"), v.literal("shop"));
 export type NotificationCategory = Infer<typeof notificationCategoryValidator>;
-export const NOTIFICATION_CATEGORIES: readonly NotificationCategory[] = ["changeRequests", "billing"];
+export const NOTIFICATION_CATEGORIES: readonly NotificationCategory[] = ["changeRequests", "billing", "shop"];
 
 /** WhatsApp numbers are stored masked (`maskPhone`); names and links as is. */
 const changeRequestSubmitted = v.object({
@@ -97,6 +97,13 @@ const adminEndingSoon = v.object({
   day: v.string(),
 });
 
+/** To the seller: an admin reset their shop look ("banner": photo / text only). */
+const lookReset = v.object({
+  type: v.literal("look.reset"),
+  scope: v.union(v.literal("banner"), v.literal("all")),
+  reason: v.string(),
+});
+
 export const notificationDataValidator = v.union(
   changeRequestSubmitted,
   changeRequestFlagged,
@@ -108,6 +115,7 @@ export const notificationDataValidator = v.union(
   planExpired,
   planEndingSoon,
   adminEndingSoon,
+  lookReset,
 );
 export type NotificationData = Infer<typeof notificationDataValidator>;
 export type NotificationType = NotificationData["type"];
@@ -132,6 +140,7 @@ export const NOTIFICATION_TYPES: Record<NotificationType, TypeInfo> = {
   "plan.expired": { category: "billing", audience: "user" },
   "plan.endingSoon": { category: "billing", audience: "user" },
   "admin.endingSoon": { category: "billing", audience: "billing.view" },
+  "look.reset": { category: "shop", audience: "user" },
 };
 
 export const NOTIFICATION_TYPE_LIST = Object.keys(NOTIFICATION_TYPES) as NotificationType[];
@@ -155,5 +164,7 @@ export function notificationHref(data: NotificationData): string {
     case "plan.expired":
     case "plan.endingSoon":
       return "/dashboard/billing";
+    case "look.reset":
+      return "/dashboard/look";
   }
 }

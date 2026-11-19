@@ -55,6 +55,8 @@ export function useNotificationText(): (data: NotificationData, now: number) => 
         })
       case "admin.endingSoon":
         return t("types.admin.endingSoon", { count: data.count, capped: String(data.capped) })
+      case "look.reset":
+        return t(data.scope === "banner" ? "types.look.resetBanner" : "types.look.resetAll", { reason: data.reason })
     }
   }
 }

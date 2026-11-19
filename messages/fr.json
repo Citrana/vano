@@ -464,7 +464,8 @@
       "title": "Boutiques",
       "view": "Voir les boutiques",
       "suspend": "Suspendre et réactiver des boutiques",
-      "delete": "Supprimer des boutiques"
+      "delete": "Supprimer des boutiques",
+      "resetLook": "Réinitialiser le style d'une boutique"
     },
     "products": {
       "title": "Produits",
@@ -596,7 +597,31 @@
     "deleteForever": "Supprimer définitivement",
     "deleted": "Boutique supprimée.",
     "notFoundTitle": "Boutique introuvable",
-    "notFoundBody": "Cette boutique n'existe pas ou a été supprimée."
+    "notFoundBody": "Cette boutique n'existe pas ou a été supprimée.",
+    "look": {
+      "title": "Style de la boutique",
+      "preset": "Style",
+      "hiddenByPlan": "masqué par le forfait (les visiteurs voient Classique)",
+      "bannerText": "Texte de la bannière",
+      "none": "Aucun",
+      "draft": "Brouillon non publié",
+      "draftPhoto": "photo de bannière",
+      "publishedAt": "Publié",
+      "never": "Jamais",
+      "lastReset": "Dernière réinitialisation par un administrateur",
+      "resetHint": "Retirez une photo ou un texte de bannière inapproprié, ou réinitialisez tout le style. Le vendeur est informé de la raison.",
+      "reset": "Réinitialiser le style",
+      "resetTitle": "Réinitialiser le style de {name} ?",
+      "resetBody": "Cela s'applique au style en ligne et au brouillon du vendeur. Les photos retirées sont supprimées.",
+      "scope": "Que réinitialiser",
+      "scopeBanner": "Photo et texte de la bannière",
+      "scopeAll": "Tout le style",
+      "scopeBannerHint": "Les couleurs et les boutons restent. La photo de bannière est retirée et le texte effacé.",
+      "scopeAllHint": "La boutique revient au style Classique.",
+      "reason": "Raison (envoyée au vendeur)",
+      "reasonHelp": "{min} à {max} caractères.",
+      "resetDone": "Style réinitialisé. Le vendeur a été informé."
+    }
   },
   "ShopStatus": {
     "active": "Active",
@@ -647,7 +672,8 @@
       "delete": "A supprimé une boutique",
       "nameChanged": "Nom de la boutique modifié",
       "slugChanged": "Lien de la boutique modifié",
-      "whatsappChanged": "Numéro WhatsApp de la boutique modifié"
+      "whatsappChanged": "Numéro WhatsApp de la boutique modifié",
+      "lookReset": "A réinitialisé le style d'une boutique"
     },
     "product": {
       "hide": "A masqué un produit",
@@ -711,7 +737,10 @@
     "field": "Champ",
     "newValue": "Nouvelle valeur",
     "flags": "Alertes",
-    "cooldownOverridden": "Délai ignoré"
+    "cooldownOverridden": "Délai ignoré",
+    "scope": "Élément réinitialisé",
+    "bannerText": "Texte de la bannière",
+    "bannerPhoto": "Photo de bannière"
   },
   "AdminActivity": {
     "title": "Historique d'activité",
@@ -1543,7 +1572,8 @@
     "categories": {
       "all": "Tous les types",
       "changeRequests": "Demandes de modification",
-      "billing": "Forfaits et paiements"
+      "billing": "Forfaits et paiements",
+      "shop": "Votre boutique"
     },
     "field": {
       "name": "nom de boutique",
@@ -1568,6 +1598,10 @@
         "activated": "Votre forfait {plan} est actif jusqu'au {date}",
         "expired": "{trial, select, true {Votre essai gratuit est terminé} other {Votre forfait {plan} est terminé}}. Votre boutique est passée au forfait Gratuit",
         "endingSoon": "{trial, select, true {Votre essai gratuit} other {Votre forfait {plan}}} {days, plural, =0 {se termine aujourd'hui} one {se termine dans # jour} other {se termine dans # jours}}"
+      },
+      "look": {
+        "resetBanner": "Un administrateur a retiré la photo ou le texte de la bannière de votre boutique. Raison : {reason}",
+        "resetAll": "Un administrateur a remis le style de votre boutique sur Classique. Raison : {reason}"
       }
     }
   },
