@@ -8,7 +8,7 @@ import { cleanLook, lookImageIds, sameLook, withoutPromo } from "./lib/looks/cle
 import { hasBlockingProblem, lookProblems } from "./lib/looks/contrast";
 import { FREE_LOOK, isFreeLook } from "./lib/looks/presets";
 import { resolveLook } from "./lib/looks/resolve";
-import { promoBoundaries, promoLiveAt, scheduleProblem } from "./lib/looks/schedule";
+import { liveFlags, promoBoundaries, scheduleProblem } from "./lib/looks/schedule";
 import { bannerUrls, lookRow } from "./lib/looks/store";
 import { storedLookValidator, type StoredLook } from "./lib/looks/validators";
 import { claimImages, deleteFilesNotIn, requireOwnShop, sellerMutation, sellerQuery } from "./lib/seller";
@@ -23,23 +23,27 @@ import { claimImages, deleteFilesNotIn, requireOwnShop, sellerMutation, sellerQu
  *
  * Event & promo banners (`overrides.promo`) need the `salesPromotions`
  * plan feature to publish. Whether the published one is live is stored on
- * the row (`promoLive`) and updated by `shopLookJobs.syncPromo`, scheduled
- * at its start and end (lib/looks/schedule.ts).
+ * the row (`promoLive`); the profile decoration's the same way
+ * (`decorationLive`). Both are updated by `shopLookJobs.syncSchedules`,
+ * scheduled at their start and end (lib/looks/schedule.ts).
  */
 
-/** Stores whether the published promo is live and schedules the next changes. */
-export async function syncPromoSchedule(
+/** Whether the published promo / decoration are live, and schedules the next changes. */
+export async function syncLookSchedules(
   ctx: MutationCtx,
   row: Doc<"shopLooks">,
   published: StoredLook | undefined,
   now: number,
-): Promise<boolean> {
-  const promo = published?.overrides.promo;
-  for (const at of promoBoundaries(promo, now)) {
+): Promise<{ promoLive: boolean; decorationLive: boolean }> {
+  const times = new Set([
+    ...promoBoundaries(published?.overrides.promo, now),
+    ...promoBoundaries(published?.overrides.profile?.decoration, now),
+  ]);
+  for (const at of times) {
     // Jobs from an older publish just recompute the same answer.
-    await ctx.scheduler.runAt(at, internal.shopLookJobs.syncPromo, { shopId: row.shopId });
+    await ctx.scheduler.runAt(at, internal.shopLookJobs.syncSchedules, { shopId: row.shopId });
   }
-  return promoLiveAt(promo, now);
+  return liveFlags(published, now);
 }
 
 export const mine = sellerQuery({
@@ -68,6 +72,8 @@ export const mine = sellerQuery({
       promoHiddenByPlan: !promoEntitled && published?.overrides.promo !== undefined,
       /** Whether the published event banner is live now (its dates). */
       promoLive: row?.promoLive === true,
+      /** Whether the published profile decoration is live now (its dates). */
+      decorationLive: row?.decorationLive === true,
       bannerUrls: await bannerUrls(ctx, [draft, published]),
       publishedAt: row?.publishedAt ?? null,
       draftUpdatedAt: row?.draftUpdatedAt ?? null,
@@ -118,6 +124,9 @@ export const publish = sellerMutation({
       await requireCan(ctx, shop, { kind: "feature", feature: "salesPromotions" });
       if (scheduleProblem(promo, now) !== null) fail("PROMO_SCHEDULE_INVALID");
     }
+    // A decoration is a Pro option (isFreeLook above); its dates follow the promo rules.
+    const decoration = draft.overrides.profile?.decoration;
+    if (decoration && scheduleProblem(decoration, now) !== null) fail("DECORATION_SCHEDULE_INVALID");
 
     await deleteFilesNotIn(ctx, lookImageIds(row.published), lookImageIds(draft));
     await ctx.db.patch("shopLooks", row._id, {
@@ -126,7 +135,7 @@ export const publish = sellerMutation({
       draftUpdatedAt: undefined,
       publishedAt: now,
       resetByAdminAt: undefined,
-      promoLive: await syncPromoSchedule(ctx, row, draft, now),
+      ...(await syncLookSchedules(ctx, row, draft, now)),
     });
     return null;
   },

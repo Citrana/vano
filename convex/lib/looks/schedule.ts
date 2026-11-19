@@ -1,13 +1,15 @@
-import type { PromoFacet } from "./validators";
+import type { PromoFacet, StoredLook } from "./validators";
 
 /**
- * When an event & promo banner shows (CLAUDE.md "Shop looks"). Pure; the
- * editor and `shopLooks.publish` use the same rules. Times are UTC ms;
- * a missing start = from publish, a missing end = until removed.
+ * When an event & promo banner (or a profile decoration) shows (CLAUDE.md
+ * "Shop looks"). Pure; the editor and `shopLooks.publish` use the same
+ * rules for both. Times are UTC ms; a missing start = from publish, a
+ * missing end = until removed.
  *
- * Queries never read the clock: whether the published promo is live is
- * stored on the `shopLooks` row (`promoLive`) and kept current by
- * `shopLookJobs.syncPromo`, scheduled at the start and end.
+ * Queries never read the clock: whether the published promo / decoration
+ * is live is stored on the `shopLooks` row (`promoLive`, `decorationLive`)
+ * and kept current by `shopLookJobs.syncSchedules`, scheduled at the start
+ * and end.
  */
 
 export const PROMO_MAX_DAYS = 92;
@@ -55,7 +57,15 @@ export function scheduleProblem(promo: Schedule, now: number): "order" | "tooFar
   return null;
 }
 
-/** Future start / end times to schedule a `syncPromo` job at. */
+/** Whether a published look's promo and profile decoration are live at `now`. */
+export function liveFlags(published: StoredLook | undefined | null, now: number): { promoLive: boolean; decorationLive: boolean } {
+  return {
+    promoLive: promoLiveAt(published?.overrides.promo, now),
+    decorationLive: promoLiveAt(published?.overrides.profile?.decoration, now),
+  };
+}
+
+/** Future start / end times to schedule a `syncSchedules` job at. */
 export function promoBoundaries(promo: Schedule | undefined | null, now: number): number[] {
   if (!promo) return [];
   return [promo.startsAt, promo.endsAt].filter((t): t is number => t !== undefined && t > now);

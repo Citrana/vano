@@ -6,11 +6,27 @@ providers, checkout, the scheduled jobs or billing admin updates this file
 in the same commit, with a dated entry in the change log below
 (see CLAUDE.md "Billing").
 
-**Last updated: 2026-11-19 16:32 CAT (UTC+02:00)**
+**Last updated: 2026-11-19 19:55 CAT (UTC+02:00)**
 
 ## Change log
 
 Newest first. Format: `YYYY-MM-DD HH:MM TZ — what changed (files)`.
+
+- **2026-11-19 19:55 CAT (UTC+02:00)**: the `allLooks` feature now also
+  covers the profile photo (`overrides.profile` on a look). Free can
+  publish a circle with a thin (or no) solid border in a shop colour
+  (`isFreeProfile`, part of `isFreeLook`); other shapes, borders, sizes,
+  positions, corner decorations and decorations (crowns, events, everyday,
+  with optional dates) need `allLooks` at publish, like any custom look.
+  Drafts save on every plan. A shop without the feature shows the free
+  look with the Free parts of its saved profile (`freeProfileOf`, in the
+  shared `shownLook` rule); the saved choice is kept. A scheduled
+  decoration is live only between its dates (`shopLooks.decorationLive`,
+  set by `shopLookJobs.syncSchedules`, which replaces `syncPromo`; the old
+  name stays as an alias). Pricing label updated. No plan, price or limit
+  changed. (`convex/lib/looks/profile.ts`, `convex/lib/looks/presets.ts`,
+  `convex/lib/looks/clean.ts`, `convex/shopLooks.ts`,
+  `convex/shopLookJobs.ts`, `convex/lib/looks/store.ts`, `messages/*.json`)
 
 - **2026-11-19 16:32 CAT (UTC+02:00)**: the `salesPromotions` feature is
   now enforced for event & promo banners (`overrides.promo` on a look).

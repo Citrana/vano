@@ -3,6 +3,19 @@ import { gradientCss, GRADIENTS, type ArtworkId, type BannerAlign, type BannerHe
 import { DESIGN_DECORATION, type ButtonDecoration, type ButtonDesign, type OrderLabel } from "./buttonDesigns";
 import { EVENT_PALETTES, type EventFontId, type EventPalette, type EventPaletteId, type EventTemplateId } from "./events";
 import { PRESETS } from "./presets";
+import {
+  BORDER_UNITS,
+  DEFAULT_PROFILE,
+  type ProfileBorderStyle,
+  type ProfileColorToken,
+  type ProfileCorner,
+  type ProfileDecorationId,
+  type ProfileFacet,
+  type ProfileOverlap,
+  type ProfilePosition,
+  type ProfileShape,
+  type ProfileSize,
+} from "./profile";
 import type { ButtonShape, ButtonsFacet, PresetId, StoredLook } from "./validators";
 
 /**
@@ -101,6 +114,27 @@ export function glowStops(color: Hex, label: Hex): [Hex, Hex] {
   return [color, deeper];
 }
 
+/** The profile photo, ready to draw (profile.ts; drawn by `ProfileAvatar`). */
+export type ResolvedProfile = {
+  shape: ProfileShape;
+  size: ProfileSize;
+  position: ProfilePosition;
+  overlap: ProfileOverlap;
+  corner: ProfileCorner;
+  /**
+   * Null = no border. `units` = band width in photo-box units (0–100).
+   * `token` = a shop colour (drawn with its CSS variable, so it follows the
+   * look scope); `color` is its value here, for the contrast check.
+   */
+  border: { units: number; style: ProfileBorderStyle; color: Hex; token: ProfileColorToken | null } | null;
+  decoration: ProfileDecorationId | null;
+  /** The ring between the photo and the banner (the page background). */
+  halo: Hex;
+  /** No photo: the shop's first letter on the chip colour (contrast-safe pair). */
+  initialBg: Hex;
+  initialFg: Hex;
+};
+
 export type ResolvedLook<Img> = {
   preset: PresetId;
   dark: boolean;
@@ -108,7 +142,41 @@ export type ResolvedLook<Img> = {
   buttons: ResolvedButtons;
   radius: string;
   banner: ResolvedBanner<Img>;
+  profile: ResolvedProfile;
 };
+
+/** A profile facet with the look's colours applied. Theme border colours follow the look. */
+export function resolveProfile(profile: ProfileFacet | undefined, colors: ResolvedColors): ResolvedProfile {
+  const p = profile ?? DEFAULT_PROFILE;
+  const color: Hex =
+    p.borderColor.kind === "custom"
+      ? (p.borderColor.hex as Hex)
+      : p.borderColor.token === "accent"
+        ? colors.primary
+        : p.borderColor.token === "chip"
+          ? colors.chip
+          : colors.foreground;
+  return {
+    shape: p.shape,
+    size: p.size,
+    position: p.position,
+    overlap: p.overlap,
+    corner: p.corner,
+    border:
+      p.borderWidth === "none"
+        ? null
+        : {
+            units: BORDER_UNITS[p.borderWidth],
+            style: p.borderStyle,
+            color,
+            token: p.borderColor.kind === "theme" ? p.borderColor.token : null,
+          },
+    decoration: p.decoration?.id ?? null,
+    halo: colors.background,
+    initialBg: colors.chip,
+    initialFg: colors.chipForeground,
+  };
+}
 
 /** Mixes `from` toward `to` until it reaches `target` contrast on every surface. */
 function readableOn(from: Hex, to: Hex, surfaces: readonly Hex[], target: number): Hex {
@@ -215,6 +283,7 @@ export function resolveLook(look: StoredLook): ResolvedLook<string> {
     buttons: resolveButtons(look.overrides.buttons ?? preset.buttons),
     radius: preset.radius,
     banner: resolvedBanner,
+    profile: resolveProfile(look.overrides.profile, colors),
   };
 }
 

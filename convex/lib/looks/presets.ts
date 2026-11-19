@@ -1,4 +1,5 @@
 import type { Hex } from "./color";
+import { isFreeProfile } from "./profile";
 import type { BannerFacet, ButtonsFacet, PresetId, StoredLook } from "./validators";
 
 /**
@@ -114,10 +115,10 @@ export function presetLook(preset: PresetId): StoredLook {
 /** What a shop shows when it has no published look, or isn't entitled to its own. */
 export const FREE_LOOK: StoredLook = presetLook(FREE_PRESET);
 
-/** The free look exactly: the free preset with nothing changed. */
+/** The free look: the free preset with nothing changed but a Free profile (`isFreeProfile`). */
 export function isFreeLook(look: StoredLook): boolean {
-  const { colors, buttons, banner } = look.overrides;
-  return look.preset === FREE_PRESET && !colors && !buttons && !banner;
+  const { colors, buttons, banner, profile } = look.overrides;
+  return look.preset === FREE_PRESET && !colors && !buttons && !banner && (!profile || isFreeProfile(profile));
 }
 
 /** Curated accent swatches: each has >= 4.5:1 with white or ink (tested). */

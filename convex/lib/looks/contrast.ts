@@ -1,6 +1,6 @@
 import { contrast, nudgeToContrast, type Hex } from "./color";
 import type { EventPalette } from "./events";
-import { glowStops, type ResolvedBanner, type ResolvedLook } from "./resolve";
+import { glowStops, type ResolvedBanner, type ResolvedLook, type ResolvedProfile } from "./resolve";
 
 /**
  * Automatic contrast check (CLAUDE.md "Shop looks"). Runs in the editor
@@ -15,16 +15,20 @@ export const LARGE_MIN = 3;
 /**
  * text: body text; badge: label on the chip colour; chip: selected chip vs
  * background; eventText: an event banner's headline / second line on its
- * palette; buttonDesign: a button design's label on its own fill (Glow).
+ * palette; buttonDesign: a button design's label on its own fill (Glow);
+ * profileBorder: the profile photo's border against the page background.
  */
-export type LookProblemTarget = "text" | "badge" | "chip" | "eventText" | "buttonDesign";
+export type LookProblemTarget = "text" | "badge" | "chip" | "eventText" | "buttonDesign" | "profileBorder";
+
+/** What a one-tap fix changes: the accent, the background, or the profile border colour. */
+export type LookFixField = "accent" | "background" | "profileBorder";
 
 export type LookProblem = {
   target: LookProblemTarget;
   ratio: number;
   level: "warn" | "block";
-  /** A colour that fixes it, applied to the seller's accent or background. */
-  fix: { field: "accent" | "background"; value: Hex } | null;
+  /** A colour that fixes it, applied to the seller's accent, background or profile border. */
+  fix: { field: LookFixField; value: Hex } | null;
 };
 
 function check(
@@ -40,7 +44,7 @@ function check(
   problems.push({ target, ratio, level, fix: fix() });
 }
 
-const fixWith = (field: "accent" | "background", value: Hex | null): LookProblem["fix"] =>
+const fixWith = (field: LookFixField, value: Hex | null): LookProblem["fix"] =>
   value === null ? null : { field, value };
 
 /** Lowest contrast of an event palette's headline and second line on its background stops. */
@@ -49,7 +53,7 @@ export function eventTextContrast(palette: EventPalette): number {
 }
 
 export function lookProblems(
-  look: Pick<ResolvedLook<unknown>, "colors" | "buttons"> & { banner?: ResolvedBanner<unknown> },
+  look: Pick<ResolvedLook<unknown>, "colors" | "buttons"> & { banner?: ResolvedBanner<unknown>; profile?: ResolvedProfile },
 ): LookProblem[] {
   const c = look.colors;
   const problems: LookProblem[] = [];
@@ -97,6 +101,14 @@ export function lookProblems(
   // Event banner palettes are curated (and tested); this guards the data.
   if (look.banner?.kind === "event") {
     check(problems, "eventText", eventTextContrast(look.banner.palette), TEXT_MIN, LARGE_MIN, () => null);
+  }
+
+  // The profile border is a graphic, not text: 3:1 against the page (WCAG 1.4.11). A warning only.
+  const border = look.profile?.border;
+  if (border) {
+    check(problems, "profileBorder", contrast(border.color, c.background), LARGE_MIN, null, () =>
+      fixWith("profileBorder", nudgeToContrast(border.color, c.background, LARGE_MIN + 0.5)),
+    );
   }
 
   return problems;

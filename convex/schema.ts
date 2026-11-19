@@ -136,10 +136,15 @@ export default defineSchema({
     resetByAdminAt: v.optional(v.number()),
     /**
      * Whether the published event & promo banner is live right now (queries
-     * can't read the clock). Kept current by `shopLookJobs.syncPromo`,
+     * can't read the clock). Kept current by `shopLookJobs.syncSchedules`,
      * scheduled at its start and end.
      */
     promoLive: v.optional(v.boolean()),
+    /**
+     * Whether the published profile decoration is live right now (its
+     * dates). Kept current by `shopLookJobs.syncSchedules`, like `promoLive`.
+     */
+    decorationLive: v.optional(v.boolean()),
   }).index("by_shopId", ["shopId"]),
 
   products: defineTable({

@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { FREE_LOOK, presetLook } from "./lib/looks/presets";
+import { DEFAULT_PROFILE, type ProfileFacet } from "./lib/looks/profile";
 import type { StoredLook } from "./lib/looks/validators";
 import { as, newTest, sellerWithShop, setSubscription, storeFile, type T } from "./lib/test.utils";
 
@@ -380,5 +381,155 @@ describe("button designs", () => {
       look: { ...designed, overrides: { buttons: { ...designed.overrides.buttons!, design: "glow" } } },
     });
     await expect(seller.mutation(api.shopLooks.publish, {})).rejects.toThrow(/PLAN_FEATURE_LOCKED/);
+  });
+});
+
+describe("profile photo", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(Date.UTC(2026, 10, 19, 12));
+  });
+  afterEach(() => vi.useRealTimers());
+
+  const proProfile: ProfileFacet = {
+    shape: "flower",
+    borderWidth: "medium",
+    borderStyle: "double",
+    borderColor: { kind: "custom", hex: "#9f1d4a" },
+    size: "lg",
+    position: "center",
+    overlap: "below",
+    corner: "sparkle",
+  };
+  const withProfile = (profile: ProfileFacet): StoredLook => ({ v: 1, preset: "classic", overrides: { profile } });
+  const shownProfile = async (t: T) => {
+    const page = await t.query(api.public.shopBySlug, { slug: "chez-amani" });
+    return page && !page.suspended ? page.shop.look.profile : null;
+  };
+
+  test("saved, published and shown on the public page", async () => {
+    const t = newTest();
+    const { userId } = await sellerWithShop(t);
+    const seller = as(t, userId);
+    await seller.mutation(api.shopLooks.saveDraft, { look: withProfile({ ...proProfile, decoration: { id: "goldCrown" } }) });
+    expect((await shownProfile(t))?.shape).toBe("circle"); // a draft is never public
+    await seller.mutation(api.shopLooks.publish, {});
+    expect(await shownProfile(t)).toMatchObject({ shape: "flower", size: "lg", position: "center", overlap: "below", corner: "sparkle", decoration: "goldCrown" });
+    expect((await seller.query(api.shopLooks.mine, {})).decorationLive).toBe(true);
+  });
+
+  test("bad values are refused", async () => {
+    const t = newTest();
+    const { userId } = await sellerWithShop(t);
+    const seller = as(t, userId);
+    await expect(
+      seller.mutation(api.shopLooks.saveDraft, { look: withProfile({ ...proProfile, borderColor: { kind: "custom", hex: "red" } }) }),
+    ).rejects.toThrow(/LOOK_INVALID/);
+    await expect(
+      seller.mutation(api.shopLooks.saveDraft, { look: withProfile({ ...proProfile, decoration: { id: "bow", startsAt: 10, endsAt: 5 } }) }),
+    ).rejects.toThrow(/LOOK_INVALID/);
+  });
+
+  test("Free: a circle with a thin border in a shop colour; everything else is refused (server-enforced)", async () => {
+    const t = newTest();
+    const { userId, shopId } = await sellerWithShop(t);
+    await setSubscription(t, shopId, { plan: "free", status: "free" });
+    const seller = as(t, userId);
+
+    const free: ProfileFacet = { ...DEFAULT_PROFILE, borderColor: { kind: "theme", token: "foreground" } };
+    await seller.mutation(api.shopLooks.saveDraft, { look: withProfile(free) });
+    await seller.mutation(api.shopLooks.publish, {});
+    expect(await shownProfile(t)).toMatchObject({ shape: "circle", border: { token: "foreground" } });
+
+    for (const profile of [
+      { ...free, shape: "arch" as const },
+      { ...free, borderColor: { kind: "custom" as const, hex: "#123456" } },
+      { ...free, decoration: { id: "bow" as const } },
+    ]) {
+      await seller.mutation(api.shopLooks.saveDraft, { look: withProfile(profile) });
+      await expect(seller.mutation(api.shopLooks.publish, {})).rejects.toThrow(/PLAN_FEATURE_LOCKED/);
+    }
+    // The draft is kept to try again after upgrading.
+    expect((await seller.query(api.shopLooks.mine, {})).editing.overrides.profile?.decoration?.id).toBe("bow");
+  });
+
+  test("a downgrade shows the Free profile and keeps the saved choice; upgrading brings it back", async () => {
+    const t = newTest();
+    const { userId, shopId } = await sellerWithShop(t);
+    const seller = as(t, userId);
+    const chosen = { ...proProfile, borderColor: { kind: "theme" as const, token: "chip" as const }, decoration: { id: "tiara" as const } };
+    await seller.mutation(api.shopLooks.saveDraft, { look: { ...withProfile(chosen), preset: "blush" } });
+    await seller.mutation(api.shopLooks.publish, {});
+
+    await setSubscription(t, shopId, { plan: "free", status: "free" });
+    const page = await t.query(api.public.shopBySlug, { slug: "chez-amani" });
+    expect(page && !page.suspended && page.shop.look.preset).toBe("classic");
+    expect(await shownProfile(t)).toMatchObject({ shape: "circle", size: "md", decoration: null, corner: "none", border: { token: "chip" } });
+    const mine = await seller.query(api.shopLooks.mine, {});
+    expect(mine.published?.overrides.profile).toEqual(chosen);
+    expect(mine.hiddenByPlan).toBe(true);
+
+    await setSubscription(t, shopId, { plan: "pro", status: "active", periodEnd: Date.now() + 24 * HOUR });
+    expect(await shownProfile(t)).toMatchObject({ shape: "flower", decoration: "tiara" });
+  });
+
+  test("a scheduled decoration turns on and off by itself; the photo options stay", async () => {
+    const t = newTest();
+    const { userId, shopId } = await sellerWithShop(t);
+    const seller = as(t, userId);
+    const now = Date.now();
+    await seller.mutation(api.shopLooks.saveDraft, {
+      look: withProfile({ ...proProfile, decoration: { id: "santaHat", startsAt: now + HOUR, endsAt: now + 3 * HOUR } }),
+    });
+    await seller.mutation(api.shopLooks.publish, {});
+    expect((await rowOf(t, shopId))?.decorationLive).toBe(false);
+    expect((await shownProfile(t))?.decoration).toBeNull();
+    expect((await shownProfile(t))?.shape).toBe("flower");
+
+    vi.advanceTimersByTime(HOUR);
+    await t.finishInProgressScheduledFunctions();
+    expect((await shownProfile(t))?.decoration).toBe("santaHat");
+
+    vi.advanceTimersByTime(2 * HOUR);
+    await t.finishInProgressScheduledFunctions();
+    expect((await shownProfile(t))?.decoration).toBeNull();
+    expect((await seller.query(api.shopLooks.mine, {})).published?.overrides.profile?.decoration?.id).toBe("santaHat");
+  });
+
+  test("decoration dates follow the event banner rules", async () => {
+    const t = newTest();
+    const { userId } = await sellerWithShop(t);
+    const seller = as(t, userId);
+    const now = Date.now();
+    await seller.mutation(api.shopLooks.saveDraft, {
+      look: withProfile({ ...proProfile, decoration: { id: "hearts", startsAt: now + 400 * 24 * HOUR } }),
+    });
+    await expect(seller.mutation(api.shopLooks.publish, {})).rejects.toThrow(/DECORATION_SCHEDULE_INVALID/);
+    await seller.mutation(api.shopLooks.saveDraft, {
+      look: withProfile({ ...proProfile, decoration: { id: "hearts", endsAt: now + 100 * 24 * HOUR } }),
+    });
+    await expect(seller.mutation(api.shopLooks.publish, {})).rejects.toThrow(/DECORATION_SCHEDULE_INVALID/);
+  });
+
+  test("the old syncPromo job name still updates both flags", async () => {
+    const t = newTest();
+    const { userId, shopId } = await sellerWithShop(t);
+    await as(t, userId).mutation(api.shopLooks.saveDraft, { look: withProfile({ ...proProfile, decoration: { id: "bow" } }) });
+    await as(t, userId).mutation(api.shopLooks.publish, {});
+    const row = await rowOf(t, shopId);
+    await t.run((ctx) => ctx.db.patch("shopLooks", row!._id, { decorationLive: false }));
+    await t.mutation(internal.shopLookJobs.syncPromo, { shopId });
+    expect((await rowOf(t, shopId))?.decorationLive).toBe(true);
+  });
+
+  test("each seller only touches their own profile", async () => {
+    const t = newTest();
+    const a = await sellerWithShop(t, "a@example.com", { slug: "shop-a" });
+    const b = await sellerWithShop(t, "b@example.com", { slug: "shop-b" });
+    await as(t, a.userId).mutation(api.shopLooks.saveDraft, { look: withProfile(proProfile) });
+    expect((await as(t, b.userId).query(api.shopLooks.mine, {})).editing.overrides.profile).toBeUndefined();
+    await as(t, b.userId).mutation(api.shopLooks.publish, {}).catch(() => null);
+    expect((await rowOf(t, a.shopId))?.published).toBeUndefined();
+    await expect(t.mutation(api.shopLooks.saveDraft, { look: withProfile(proProfile) })).rejects.toThrow(/NOT_AUTHENTICATED/);
   });
 });

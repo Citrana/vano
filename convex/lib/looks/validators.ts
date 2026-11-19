@@ -1,6 +1,7 @@
 import { v, type Infer } from "convex/values";
 import { buttonDecorationValidator, buttonDesignValidator, orderLabelValidator } from "./buttonDesigns";
 import { eventFontIdValidator, eventPaletteIdValidator, eventTemplateIdValidator } from "./events";
+import { profileFacetValidator } from "./profile";
 
 /**
  * How a shop look is stored (CLAUDE.md "Shop looks"): a preset plus
@@ -140,6 +141,8 @@ export const lookOverridesValidator = v.object({
   buttons: v.optional(buttonsFacetValidator),
   banner: v.optional(bannerFacetValidator),
   promo: v.optional(promoFacetValidator),
+  /** The profile photo's shape, border, layout and decoration (profile.ts). */
+  profile: v.optional(profileFacetValidator),
 });
 export type LookOverrides = Infer<typeof lookOverridesValidator>;
 
