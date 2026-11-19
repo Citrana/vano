@@ -1,5 +1,6 @@
 import { contrast, nudgeToContrast, type Hex } from "./color";
-import type { ResolvedLook } from "./resolve";
+import type { EventPalette } from "./events";
+import { glowStops, type ResolvedBanner, type ResolvedLook } from "./resolve";
 
 /**
  * Automatic contrast check (CLAUDE.md "Shop looks"). Runs in the editor
@@ -11,8 +12,12 @@ import type { ResolvedLook } from "./resolve";
 export const TEXT_MIN = 4.5;
 export const LARGE_MIN = 3;
 
-/** text: body text; badge: label on the chip colour; chip: selected chip vs background. */
-export type LookProblemTarget = "text" | "badge" | "chip";
+/**
+ * text: body text; badge: label on the chip colour; chip: selected chip vs
+ * background; eventText: an event banner's headline / second line on its
+ * palette; buttonDesign: a button design's label on its own fill (Glow).
+ */
+export type LookProblemTarget = "text" | "badge" | "chip" | "eventText" | "buttonDesign";
 
 export type LookProblem = {
   target: LookProblemTarget;
@@ -38,7 +43,14 @@ function check(
 const fixWith = (field: "accent" | "background", value: Hex | null): LookProblem["fix"] =>
   value === null ? null : { field, value };
 
-export function lookProblems(look: Pick<ResolvedLook<unknown>, "colors" | "buttons">): LookProblem[] {
+/** Lowest contrast of an event palette's headline and second line on its background stops. */
+export function eventTextContrast(palette: EventPalette): number {
+  return Math.min(...palette.stops.flatMap((stop) => [contrast(palette.text, stop), contrast(palette.subText, stop)]));
+}
+
+export function lookProblems(
+  look: Pick<ResolvedLook<unknown>, "colors" | "buttons"> & { banner?: ResolvedBanner<unknown> },
+): LookProblem[] {
   const c = look.colors;
   const problems: LookProblem[] = [];
 
@@ -69,6 +81,22 @@ export function lookProblems(look: Pick<ResolvedLook<unknown>, "colors" | "butto
     check(problems, "chip", contrast(c.chip, c.background), LARGE_MIN, null, () =>
       fixWith("accent", nudgeToContrast(c.chip, c.background, LARGE_MIN)),
     );
+  }
+
+  // Glow: the label on both gradient stops, for solid buttons and selected chips.
+  if (look.buttons.design === "glow" && look.buttons.fill === "solid") {
+    const ratio = Math.min(
+      ...glowStops(c.primary, c.primaryForeground).map((stop) => contrast(c.primaryForeground, stop)),
+      ...glowStops(c.chip, c.chipForeground).map((stop) => contrast(c.chipForeground, stop)),
+    );
+    check(problems, "buttonDesign", ratio, TEXT_MIN, LARGE_MIN, () =>
+      fixWith("accent", nudgeToContrast(c.primary, c.primaryForeground, TEXT_MIN + 0.6)),
+    );
+  }
+
+  // Event banner palettes are curated (and tested); this guards the data.
+  if (look.banner?.kind === "event") {
+    check(problems, "eventText", eventTextContrast(look.banner.palette), TEXT_MIN, LARGE_MIN, () => null);
   }
 
   return problems;

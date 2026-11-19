@@ -33,6 +33,8 @@ type PhotoBanner = Extract<BannerFacet, { kind: "photo" }>
 
 /** Banner photos are compressed a little wider than product photos. */
 const BANNER_MAX_DIMENSION = 1600
+/** Bigger originals are refused before compressing (it would freeze older phones). */
+const MAX_SOURCE_MB = 25
 
 const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n))
 
@@ -152,6 +154,11 @@ export function BannerSection({ editor, disabled }: { editor: LookEditorState; d
 
   async function pick(file: File | undefined) {
     if (!file) return
+    if (file.size > MAX_SOURCE_MB * 1024 * 1024) {
+      toast.error(t("tooBig", { mb: MAX_SOURCE_MB }))
+      if (input.current) input.current.value = ""
+      return
+    }
     setBusy(true)
     try {
       const imageId: Id<"_storage"> = await upload(file)

@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { api } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { FREE_LOOK, presetLook } from "./lib/looks/presets";
@@ -199,5 +199,186 @@ describe("banner photos", () => {
     expect(await fileExists(t, draftOnly)).toBe(false);
     expect(await fileExists(t, published)).toBe(true);
     expect((await seller.query(api.shopLooks.mine, {})).editing.overrides.banner).toMatchObject({ imageId: published });
+  });
+});
+
+const HOUR = 3_600_000;
+
+const promoLook = (patch: Partial<NonNullable<StoredLook["overrides"]["promo"]>> = {}): StoredLook => ({
+  v: 1,
+  preset: "blush",
+  overrides: {
+    banner: { kind: "gradient", gradientId: "roseDusk", height: "sm" },
+    promo: {
+      design: { template: "sale", palette: "hotPink", font: "bold", headline: "Big sale", stickers: ["percentBurst"] },
+      height: "md",
+      ...patch,
+    },
+  },
+});
+
+const shownBanner = async (t: T) => {
+  const page = await t.query(api.public.shopBySlug, { slug: "chez-amani" });
+  return page && !page.suspended ? page.shop.look.banner.kind : null;
+};
+
+describe("event & promo banners", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(Date.UTC(2026, 10, 19, 12));
+  });
+  afterEach(() => vi.useRealTimers());
+
+  test("no dates: live from publish until removed", async () => {
+    const t = newTest();
+    const { userId, shopId } = await sellerWithShop(t);
+    const seller = as(t, userId);
+    await seller.mutation(api.shopLooks.saveDraft, { look: promoLook() });
+    expect(await shownBanner(t)).toBe("gradient"); // a draft is never public
+    await seller.mutation(api.shopLooks.publish, {});
+    expect((await rowOf(t, shopId))?.promoLive).toBe(true);
+    expect(await shownBanner(t)).toBe("event");
+    const mine = await seller.query(api.shopLooks.mine, {});
+    expect(mine).toMatchObject({ promoLive: true, promoEntitled: true, promoHiddenByPlan: false, language: "fr" });
+  });
+
+  test("scheduled: the normal banner until the start, the promo until the end, then back", async () => {
+    const t = newTest();
+    const { userId, shopId } = await sellerWithShop(t);
+    const seller = as(t, userId);
+    const now = Date.now();
+    await seller.mutation(api.shopLooks.saveDraft, { look: promoLook({ startsAt: now + HOUR, endsAt: now + 3 * HOUR }) });
+    await seller.mutation(api.shopLooks.publish, {});
+    expect((await rowOf(t, shopId))?.promoLive).toBe(false);
+    expect(await shownBanner(t)).toBe("gradient");
+
+    vi.advanceTimersByTime(HOUR);
+    await t.finishInProgressScheduledFunctions();
+    expect(await shownBanner(t)).toBe("event");
+
+    vi.advanceTimersByTime(2 * HOUR);
+    await t.finishInProgressScheduledFunctions();
+    expect(await shownBanner(t)).toBe("gradient");
+    // Still saved.
+    expect((await seller.query(api.shopLooks.mine, {})).published?.overrides.promo?.design.headline).toBe("Big sale");
+  });
+
+  test("jobs from an older publish are harmless", async () => {
+    const t = newTest();
+    const { userId } = await sellerWithShop(t);
+    const seller = as(t, userId);
+    const now = Date.now();
+    await seller.mutation(api.shopLooks.saveDraft, { look: promoLook({ endsAt: now + HOUR }) });
+    await seller.mutation(api.shopLooks.publish, {});
+    // Republished without an end: the old end job must not hide it.
+    await seller.mutation(api.shopLooks.saveDraft, { look: promoLook() });
+    await seller.mutation(api.shopLooks.publish, {});
+    vi.advanceTimersByTime(2 * HOUR);
+    await t.finishInProgressScheduledFunctions();
+    expect(await shownBanner(t)).toBe("event");
+  });
+
+  test("end now: back to the normal banner, kept saved, a later publish doesn't restart it", async () => {
+    const t = newTest();
+    const { userId, shopId } = await sellerWithShop(t);
+    const seller = as(t, userId);
+    await seller.mutation(api.shopLooks.saveDraft, { look: promoLook() });
+    await seller.mutation(api.shopLooks.publish, {});
+    await seller.mutation(api.shopLooks.saveDraft, { look: { ...promoLook(), preset: "lavender" } });
+    await seller.mutation(api.shopLooks.endPromoNow, {});
+    expect(await shownBanner(t)).toBe("gradient");
+    const row = await rowOf(t, shopId);
+    expect(row?.published?.overrides.promo?.endsAt).toBe(Date.now());
+    expect(row?.draft?.overrides.promo?.endsAt).toBe(Date.now());
+    await seller.mutation(api.shopLooks.publish, {});
+    expect(await shownBanner(t)).toBe("gradient");
+  });
+
+  test("publish checks the plan and the dates", async () => {
+    const t = newTest();
+    const { userId, shopId } = await sellerWithShop(t);
+    const seller = as(t, userId);
+    const now = Date.now();
+    await seller.mutation(api.shopLooks.saveDraft, { look: promoLook({ startsAt: now + 400 * 24 * HOUR }) });
+    await expect(seller.mutation(api.shopLooks.publish, {})).rejects.toThrow(/PROMO_SCHEDULE_INVALID/);
+    await expect(
+      seller.mutation(api.shopLooks.saveDraft, { look: promoLook({ startsAt: now + HOUR, endsAt: now }) }),
+    ).rejects.toThrow(/LOOK_INVALID/);
+    await expect(
+      seller.mutation(api.shopLooks.saveDraft, { look: promoLook({}) }).then(() =>
+        seller.mutation(api.shopLooks.saveDraft, {
+          look: { ...promoLook(), overrides: { promo: { ...promoLook().overrides.promo!, design: { ...promoLook().overrides.promo!.design, stickers: ["mystery"] } } } },
+        }),
+      ),
+    ).rejects.toThrow(/LOOK_INVALID/);
+
+    // Free: the classic look with a promo is refused, the draft is kept.
+    await setSubscription(t, shopId, { plan: "free", status: "free" });
+    await seller.mutation(api.shopLooks.saveDraft, { look: { ...FREE_LOOK, overrides: { promo: promoLook().overrides.promo } } });
+    await expect(seller.mutation(api.shopLooks.publish, {})).rejects.toThrow(/PLAN_FEATURE_LOCKED/);
+    expect((await seller.query(api.shopLooks.mine, {})).editing.overrides.promo).toBeDefined();
+  });
+
+  test("a downgrade hides a live promo without deleting it; upgrading brings it back", async () => {
+    const t = newTest();
+    const { userId, shopId } = await sellerWithShop(t);
+    const seller = as(t, userId);
+    await seller.mutation(api.shopLooks.saveDraft, { look: promoLook() });
+    await seller.mutation(api.shopLooks.publish, {});
+    await setSubscription(t, shopId, { plan: "free", status: "free" });
+    const page = await t.query(api.public.shopBySlug, { slug: "chez-amani" });
+    expect(page && !page.suspended && page.shop.look.preset).toBe("classic");
+    expect(await seller.query(api.shopLooks.mine, {})).toMatchObject({ promoHiddenByPlan: true, promoLive: true });
+    await setSubscription(t, shopId, { plan: "pro", status: "active", periodEnd: Date.now() + 24 * HOUR });
+    expect(await shownBanner(t)).toBe("event");
+  });
+
+  test("end now needs the owner and a published promo; suspended shops can't", async () => {
+    const t = newTest();
+    const a = await sellerWithShop(t);
+    const b = await sellerWithShop(t, "b@shop.cd", { slug: "other-shop" });
+    await as(t, a.userId).mutation(api.shopLooks.saveDraft, { look: promoLook() });
+    await as(t, a.userId).mutation(api.shopLooks.publish, {});
+    // B has nothing published: a no-op that never touches A.
+    await as(t, b.userId).mutation(api.shopLooks.endPromoNow, {});
+    expect(await shownBanner(t)).toBe("event");
+    await expect(t.mutation(api.shopLooks.endPromoNow, {})).rejects.toThrow(/NOT_AUTHENTICATED/);
+    await t.run((ctx) => ctx.db.patch("shops", a.shopId, { status: "suspended" }));
+    await expect(as(t, a.userId).mutation(api.shopLooks.endPromoNow, {})).rejects.toThrow(/SHOP_SUSPENDED/);
+  });
+});
+
+describe("button designs", () => {
+  const designed: StoredLook = {
+    v: 1,
+    preset: "classic",
+    overrides: { buttons: { shape: "rounded", fill: "solid", weight: "bold", design: "floral", decoration: "heart", label: "want" } },
+  };
+
+  test("saved, published and shown on the public page", async () => {
+    const t = newTest();
+    const { userId } = await sellerWithShop(t);
+    const seller = as(t, userId);
+    await seller.mutation(api.shopLooks.saveDraft, { look: designed });
+    await seller.mutation(api.shopLooks.publish, {});
+    const page = await t.query(api.public.shopBySlug, { slug: "chez-amani" });
+    expect(page && !page.suspended && page.shop.look.buttons).toMatchObject({ design: "floral", decoration: "heart", label: "want" });
+  });
+
+  test("Free: Classic only (server-enforced); a downgrade shows Classic and keeps the choice", async () => {
+    const t = newTest();
+    const { userId, shopId } = await sellerWithShop(t);
+    const seller = as(t, userId);
+    await seller.mutation(api.shopLooks.saveDraft, { look: designed });
+    await seller.mutation(api.shopLooks.publish, {});
+    await setSubscription(t, shopId, { plan: "free", status: "free" });
+    const page = await t.query(api.public.shopBySlug, { slug: "chez-amani" });
+    expect(page && !page.suspended && page.shop.look.buttons).toMatchObject({ design: "classic", decoration: "none", label: "order" });
+    expect((await seller.query(api.shopLooks.mine, {})).published?.overrides.buttons?.design).toBe("floral");
+
+    await seller.mutation(api.shopLooks.saveDraft, {
+      look: { ...designed, overrides: { buttons: { ...designed.overrides.buttons!, design: "glow" } } },
+    });
+    await expect(seller.mutation(api.shopLooks.publish, {})).rejects.toThrow(/PLAN_FEATURE_LOCKED/);
   });
 });

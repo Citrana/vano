@@ -33,6 +33,8 @@ export function ChoiceGroup<T extends string>({
   options,
   onChange,
   disabled = false,
+  size = "default",
+  wrap = false,
   className,
 }: {
   label: string
@@ -40,13 +42,17 @@ export function ChoiceGroup<T extends string>({
   options: readonly Choice<T>[]
   onChange: (value: T) => void
   disabled?: boolean
+  /** "compact": smaller label and 36px options, for desktop toolbars only. */
+  size?: "default" | "compact"
+  /** Long labels: options wrap to fit their text instead of equal columns. */
+  wrap?: boolean
   className?: string
 }) {
   const id = useId()
   const selectedIndex = Math.max(0, options.findIndex((o) => o.value === value))
   return (
-    <div className={cn("flex flex-col gap-2", className)}>
-      <span className="text-sm font-medium" id={id}>
+    <div className={cn("flex flex-col", size === "compact" ? "gap-1" : "gap-2", className)}>
+      <span className={cn("font-medium", size === "compact" ? "text-xs text-muted-foreground" : "text-sm")} id={id}>
         {label}
       </span>
       <div
@@ -55,8 +61,10 @@ export function ChoiceGroup<T extends string>({
         aria-disabled={disabled || undefined}
         // Four or more options wrap to two columns on phones so labels fit.
         className={cn(
-          "grid gap-1 rounded-md border bg-card p-1",
-          options.length > 3 ? "grid-cols-2 sm:grid-cols-4" : options.length === 3 ? "grid-cols-3" : "grid-cols-2",
+          "gap-1 rounded-md border bg-card p-1",
+          wrap
+            ? "flex flex-wrap [&>*]:flex-auto"
+            : cn("grid", options.length > 3 ? "grid-cols-2 sm:grid-cols-4" : options.length === 3 ? "grid-cols-3" : "grid-cols-2"),
         )}
       >
         {options.map((option, index) => {
@@ -72,7 +80,8 @@ export function ChoiceGroup<T extends string>({
               onClick={() => onChange(option.value)}
               onKeyDown={(e) => radioKeyDown(e, index, options.length, (i) => onChange(options[i].value))}
               className={cn(
-                "flex min-h-11 items-center justify-center gap-1.5 rounded-sm border border-transparent px-2 text-sm font-medium transition-colors focus-ring disabled:opacity-50 md:min-h-9 [&_svg]:size-4",
+                "flex items-center justify-center gap-1.5 rounded-sm border border-transparent px-2 font-medium transition-colors focus-ring disabled:opacity-50 [&_svg]:size-4",
+                size === "compact" ? "min-h-8 text-xs" : "min-h-11 text-sm md:min-h-9",
                 selected ? "chip-selected" : "hover:bg-muted",
               )}
             >

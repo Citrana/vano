@@ -172,3 +172,66 @@ describe("admin.shopLooks.reset", () => {
     expect(await as(t, other.userId).query(api.notifications.inbox.latest, {})).toEqual([]);
   });
 });
+
+describe("event & promo banners (admin)", () => {
+  const promoLook: StoredLook = {
+    v: 1,
+    preset: "blush",
+    overrides: {
+      banner: { kind: "gradient", gradientId: "roseDusk", height: "sm", text: { value: "Hello", align: "start" } },
+      promo: {
+        design: { template: "sale", palette: "hotPink", font: "bold", headline: "Rude promo", subline: "Bad line", stickers: ["heart"] },
+        height: "md",
+      },
+    },
+  };
+
+  test("get shows the live event banner and its texts", async () => {
+    const t = newTest();
+    const w = await world(t);
+    const me = as(t, w.seller.userId);
+    await me.mutation(api.shopLooks.saveDraft, { look: promoLook });
+    await me.mutation(api.shopLooks.publish, {});
+    const view = await as(t, w.viewer).query(api.admin.shopLooks.get, { shopId: w.seller.shopId });
+    expect(view?.visible.banner.kind).toBe("event");
+    expect(view?.hiddenByPlan).toBe(false);
+    expect(view?.promo).toMatchObject({ template: "sale", headline: "Rude promo", subline: "Bad line", live: true });
+    expect(view?.draftPromo).toBeNull();
+  });
+
+  test("banner reset removes the event banner everywhere; logged with its headline", async () => {
+    const t = newTest();
+    const w = await world(t);
+    const me = as(t, w.seller.userId);
+    await me.mutation(api.shopLooks.saveDraft, { look: promoLook });
+    await me.mutation(api.shopLooks.publish, {});
+    await me.mutation(api.shopLooks.saveDraft, { look: { ...promoLook, preset: "lavender" } });
+    await as(t, w.admin).mutation(api.admin.shopLooks.reset, { shopId: w.seller.shopId, scope: "banner", reason: "Rude promo text" });
+
+    const mine = await me.query(api.shopLooks.mine, {});
+    expect(mine.published?.overrides.promo).toBeUndefined();
+    expect(mine.editing.overrides.promo).toBeUndefined();
+    expect(mine.published?.overrides.banner).toEqual({ kind: "gradient", gradientId: "roseDusk", height: "sm" });
+    expect(mine.promoLive).toBe(false);
+    const page = await t.query(api.public.shopBySlug, { slug: "chez-amani" });
+    expect(page && !page.suspended && page.shop.look.banner.kind).toBe("gradient");
+    const [audit] = await t.run((ctx) => ctx.db.query("auditLogs").order("desc").take(1));
+    expect(audit.details).toMatchObject({ scope: "banner", promoHeadline: "Rude promo" });
+  });
+});
+
+describe("button designs (admin)", () => {
+  test("the whole-look reset also resets the button design and label", async () => {
+    const t = newTest();
+    const w = await world(t);
+    const me = as(t, w.seller.userId);
+    await me.mutation(api.shopLooks.saveDraft, {
+      look: { v: 1, preset: "blush", overrides: { buttons: { shape: "pill", fill: "solid", weight: "bold", design: "sticker", label: "orderNow" } } },
+    });
+    await me.mutation(api.shopLooks.publish, {});
+    await as(t, w.admin).mutation(api.admin.shopLooks.reset, { shopId: w.seller.shopId, scope: "all", reason: "Reset requested" });
+    const page = await t.query(api.public.shopBySlug, { slug: "chez-amani" });
+    expect(page && !page.suspended && page.shop.look.buttons).toMatchObject({ design: "classic", label: "order" });
+    expect((await me.query(api.shopLooks.mine, {})).published?.overrides.buttons).toBeUndefined();
+  });
+});

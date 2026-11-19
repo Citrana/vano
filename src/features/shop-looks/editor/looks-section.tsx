@@ -28,7 +28,8 @@ export function LooksSection({
   const tl = useTranslations("ShopLooks")
   const current = editor.draft.preset
   const index = PRESET_IDS.indexOf(current)
-  const customized = Object.values(editor.draft.overrides).some((v) => v !== undefined)
+  // The event banner is its own section; "reset" leaves it alone.
+  const customized = Object.entries(editor.draft.overrides).some(([key, v]) => key !== "promo" && v !== undefined)
 
   return (
     <div className="flex flex-col gap-4">

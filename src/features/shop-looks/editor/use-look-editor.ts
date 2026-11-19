@@ -4,7 +4,7 @@ import { useMutation } from "convex/react"
 import type { FunctionReturnType } from "convex/server"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { api } from "../../../../convex/_generated/api"
-import { sameLook } from "../../../../convex/lib/looks/clean"
+import { sameLook, withoutPromo } from "../../../../convex/lib/looks/clean"
 import { lookProblems } from "../../../../convex/lib/looks/contrast"
 import { FREE_LOOK, presetLook } from "../../../../convex/lib/looks/presets"
 import { mapBannerImage, resolveLook, type ResolvedLook } from "../../../../convex/lib/looks/resolve"
@@ -100,17 +100,28 @@ export function useLookEditor(mine: MineLook) {
     [update],
   )
 
-  /** One tap: the preset's colours, buttons and banner. A seller's own photo is kept. */
+  /**
+   * One tap: the preset's colours, buttons and banner. A seller's own photo
+   * and their event & promo banner are kept.
+   */
   const applyPreset = useCallback(
     (preset: PresetId) =>
       update((current) => {
-        const banner = current.overrides.banner
-        return { v: 1, preset, overrides: banner?.kind === "photo" ? { banner } : {} }
+        const { banner, promo } = current.overrides
+        return { v: 1, preset, overrides: { ...(banner?.kind === "photo" ? { banner } : {}), ...(promo ? { promo } : {}) } }
       }),
     [update],
   )
 
-  const resetToPreset = useCallback(() => update((current) => presetLook(current.preset)), [update])
+  /** Back to the preset's look; the event & promo banner is its own thing and stays. */
+  const resetToPreset = useCallback(
+    () =>
+      update((current) => {
+        const { promo } = current.overrides
+        return promo ? { ...presetLook(current.preset), overrides: { promo } } : presetLook(current.preset)
+      }),
+    [update],
+  )
 
   const publish = useCallback(async () => {
     if (!(await flush())) return false
@@ -136,14 +147,21 @@ export function useLookEditor(mine: MineLook) {
     (look: StoredLook): ResolvedLook<string> => mapBannerImage(resolveLook(look), (id) => urls[id] ?? null),
     [urls],
   )
-  const resolved = useMemo(() => withUrls(draft), [withUrls, draft])
-  const problems = useMemo(() => lookProblems(resolved), [resolved])
-  const live = mine.entitled && mine.published ? mine.published : FREE_LOOK
+  /** The draft with its normal banner (what shows when no promo is live). */
+  const resolved = useMemo(() => withUrls(withoutPromo(draft)), [withUrls, draft])
+  /** The draft with its event & promo banner, if any. */
+  const full = useMemo(() => withUrls(draft), [withUrls, draft])
+  const problems = useMemo(() => lookProblems(full), [full])
+  const live = useMemo(() => {
+    if (!mine.entitled || !mine.published) return FREE_LOOK
+    return mine.promoLive && mine.promoEntitled ? mine.published : withoutPromo(mine.published)
+  }, [mine.entitled, mine.published, mine.promoLive, mine.promoEntitled])
   const unpublished = !sameLook(draft, mine.published ?? FREE_LOOK)
 
   return {
     draft,
     resolved,
+    full,
     problems,
     /** What visitors see right now. */
     liveResolved: useMemo(() => withUrls(live), [withUrls, live]),

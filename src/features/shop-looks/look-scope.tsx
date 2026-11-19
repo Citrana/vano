@@ -27,6 +27,8 @@ export function ShopLookScope({
       data-shop-look=""
       data-btn-fill={look.buttons.fill}
       data-btn-weight={look.buttons.weight}
+      data-btn-design={look.buttons.design}
+      data-btn-deco={look.buttons.decoration}
       data-look-dark={look.dark ? "" : undefined}
       style={{ ...(lookCssVars(look) as CSSProperties), ...style }}
       className={cn(look.dark && "[color-scheme:dark]", className)}

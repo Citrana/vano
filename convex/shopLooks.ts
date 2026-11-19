@@ -1,12 +1,16 @@
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
+import type { Doc } from "./_generated/dataModel";
+import type { MutationCtx } from "./_generated/server";
 import { hasFeature, requireCan } from "./lib/entitlements";
 import { fail } from "./lib/errors";
-import { cleanLook, lookImageIds, sameLook } from "./lib/looks/clean";
+import { cleanLook, lookImageIds, sameLook, withoutPromo } from "./lib/looks/clean";
 import { hasBlockingProblem, lookProblems } from "./lib/looks/contrast";
 import { FREE_LOOK, isFreeLook } from "./lib/looks/presets";
 import { resolveLook } from "./lib/looks/resolve";
+import { promoBoundaries, promoLiveAt, scheduleProblem } from "./lib/looks/schedule";
 import { bannerUrls, lookRow } from "./lib/looks/store";
-import { storedLookValidator } from "./lib/looks/validators";
+import { storedLookValidator, type StoredLook } from "./lib/looks/validators";
 import { claimImages, deleteFilesNotIn, requireOwnShop, sellerMutation, sellerQuery } from "./lib/seller";
 
 /**
@@ -16,7 +20,27 @@ import { claimImages, deleteFilesNotIn, requireOwnShop, sellerMutation, sellerQu
  * feature, and a look with a blocking contrast problem is refused.
  * A banner photo is claimed when a draft first uses it, and deleted once
  * neither the draft nor the published look uses it.
+ *
+ * Event & promo banners (`overrides.promo`) need the `salesPromotions`
+ * plan feature to publish. Whether the published one is live is stored on
+ * the row (`promoLive`) and updated by `shopLookJobs.syncPromo`, scheduled
+ * at its start and end (lib/looks/schedule.ts).
  */
+
+/** Stores whether the published promo is live and schedules the next changes. */
+export async function syncPromoSchedule(
+  ctx: MutationCtx,
+  row: Doc<"shopLooks">,
+  published: StoredLook | undefined,
+  now: number,
+): Promise<boolean> {
+  const promo = published?.overrides.promo;
+  for (const at of promoBoundaries(promo, now)) {
+    // Jobs from an older publish just recompute the same answer.
+    await ctx.scheduler.runAt(at, internal.shopLookJobs.syncPromo, { shopId: row.shopId });
+  }
+  return promoLiveAt(promo, now);
+}
 
 export const mine = sellerQuery({
   permission: "ownShop.manage",
@@ -25,17 +49,25 @@ export const mine = sellerQuery({
     const shop = await requireOwnShop(ctx);
     const row = await lookRow(ctx, shop._id);
     const entitled = await hasFeature(ctx, shop, "allLooks");
+    const promoEntitled = await hasFeature(ctx, shop, "salesPromotions");
     const published = row?.published ?? null;
     const draft = row?.draft ?? null;
     return {
       slug: shop.slug,
+      /** Default event banner texts are written in the shop's language. */
+      language: shop.language,
       /** What the editor starts from. */
       editing: draft ?? published ?? FREE_LOOK,
       published,
       hasUnpublishedChanges: draft !== null && !sameLook(draft, published ?? FREE_LOOK),
       entitled,
       /** The seller's design is saved but the plan shows the free look instead. */
-      hiddenByPlan: !entitled && published !== null && !isFreeLook(published),
+      hiddenByPlan: !entitled && published !== null && !isFreeLook(withoutPromo(published)),
+      promoEntitled,
+      /** The published event banner is saved but the plan doesn't show it. */
+      promoHiddenByPlan: !promoEntitled && published?.overrides.promo !== undefined,
+      /** Whether the published event banner is live now (its dates). */
+      promoLive: row?.promoLive === true,
       bannerUrls: await bannerUrls(ctx, [draft, published]),
       publishedAt: row?.publishedAt ?? null,
       draftUpdatedAt: row?.draftUpdatedAt ?? null,
@@ -77,16 +109,24 @@ export const publish = sellerMutation({
     const row = await lookRow(ctx, shop._id);
     if (!row?.draft) fail("LOOK_NO_DRAFT");
     const draft = row.draft;
+    const now = Date.now();
+    // Checks the normal banner and, if any, the event banner's text.
     if (hasBlockingProblem(lookProblems(resolveLook(draft)))) fail("LOOK_CONTRAST");
-    if (!isFreeLook(draft)) await requireCan(ctx, shop, { kind: "feature", feature: "allLooks" });
+    if (!isFreeLook(withoutPromo(draft))) await requireCan(ctx, shop, { kind: "feature", feature: "allLooks" });
+    const promo = draft.overrides.promo;
+    if (promo) {
+      await requireCan(ctx, shop, { kind: "feature", feature: "salesPromotions" });
+      if (scheduleProblem(promo, now) !== null) fail("PROMO_SCHEDULE_INVALID");
+    }
 
     await deleteFilesNotIn(ctx, lookImageIds(row.published), lookImageIds(draft));
     await ctx.db.patch("shopLooks", row._id, {
       published: draft,
       draft: undefined,
       draftUpdatedAt: undefined,
-      publishedAt: Date.now(),
+      publishedAt: now,
       resetByAdminAt: undefined,
+      promoLive: await syncPromoSchedule(ctx, row, draft, now),
     });
     return null;
   },
@@ -102,6 +142,37 @@ export const discardDraft = sellerMutation({
     if (!row?.draft) return null;
     await deleteFilesNotIn(ctx, lookImageIds(row.draft), lookImageIds(row.published));
     await ctx.db.patch("shopLooks", row._id, { draft: undefined, draftUpdatedAt: undefined });
+    return null;
+  },
+});
+
+/** Ends `promo` now (keeps it saved, "ended"). A start still in the future is dropped. */
+function endedAt(look: StoredLook | undefined, now: number): StoredLook | undefined {
+  const promo = look?.overrides.promo;
+  if (!look || !promo) return look;
+  const startsAt = promo.startsAt !== undefined && promo.startsAt < now ? promo.startsAt : undefined;
+  return { ...look, overrides: { ...look.overrides, promo: { ...promo, startsAt, endsAt: now } } };
+}
+
+/**
+ * "The sale is over": ends the published event banner at once, without a
+ * publish. The draft's copy ends too, so a later publish doesn't restart it.
+ * Stays saved; the seller can pick new dates and publish again.
+ */
+export const endPromoNow = sellerMutation({
+  permission: "ownShop.manage",
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    const shop = await requireOwnShop(ctx);
+    const row = await lookRow(ctx, shop._id);
+    if (!row?.published?.overrides.promo) return null;
+    const now = Date.now();
+    await ctx.db.patch("shopLooks", row._id, {
+      published: endedAt(row.published, now),
+      draft: endedAt(row.draft, now),
+      promoLive: false,
+    });
     return null;
   },
 });

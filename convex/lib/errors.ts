@@ -65,6 +65,7 @@ export const ERROR_CODES = [
   "LOOK_INVALID",
   "LOOK_CONTRAST",
   "LOOK_NO_DRAFT",
+  "PROMO_SCHEDULE_INVALID",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

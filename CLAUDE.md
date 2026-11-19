@@ -159,10 +159,16 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 
 - A look is **a preset plus optional per-facet overrides**
   (`StoredLook` in `convex/lib/looks/validators.ts`: `colors`, `buttons`,
-  `banner`). A missing facet means "the preset's". Later phases (fonts,
+  `banner`, `promo`). A missing facet means "the preset's". Later phases (fonts,
   backgrounds, patterns, card styles, section order) add an optional facet,
-  a default on every preset, a branch in `resolveLook` and an editor panel
-  in `LOOK_SECTIONS`; never rewrite stored looks.
+  a default on every preset, a branch in `resolveLook` and an editor
+  section; never rewrite stored looks.
+- The "Shop look" page is a sectioned editor: sections are registered
+  **only** in `LOOK_SECTIONS` (`src/features/shop-looks/editor/sections.tsx`:
+  key, icon, panel, `changed`, `locked`, optional `resets` /
+  `previewBanner`) with labels in `LookEditor.sections.<key>` / `<key>Hint`.
+  Tabs, `?section=` address, unsaved dots, Pro locks, the phone bottom
+  sheet and the preview all read it; never add a section by hand.
 - Presets, curated swatches, gradients and artworks live **only** in
   `convex/lib/looks/` (`presets.ts`, `banners.ts`); names in
   `ShopLooks.*` / `LookEditor.*`. `classic` is the free look. Every preset
@@ -185,6 +191,41 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 - Admins with `shops.resetLook` reset the banner (photo + text) or the
   whole look, with a reason, never on their own shop; it's logged
   (`shop.lookReset`) and the seller is notified (`look.reset`).
+
+- Button designs (`convex/lib/looks/buttonDesigns.ts`: design, decoration
+  icon, order label) are optional fields of the `buttons` facet, gated by
+  `allLooks` like any override. They're drawn **only in CSS** (`globals.css`,
+  `data-btn-design` / `data-btn-deco`) on `shop-action` buttons and
+  `shop-chip` chips; decorations are corner pseudo-elements reusing the
+  sticker SVGs, animations only under `prefers-reduced-motion:
+  no-preference`. The WhatsApp button keeps `--whatsapp` and its icon; its
+  label comes from `Public.orderLabels`. The Sticker offset shadow is a
+  seller-chosen shop style, the one exception to "no shadows" (shop pages only).
+
+### Event & promo banners
+
+- An optional `promo` facet (`PromoFacet`: template design + height +
+  optional `startsAt` / `endsAt`) shows **instead of** the normal banner
+  while live; the normal `banner` is never replaced. One promo per look.
+- Templates are data + code, never image files: ids, palettes, fonts and
+  text limits in `convex/lib/looks/events.ts`; how each is drawn
+  (decor shapes, sticker slots) in
+  `src/features/shop-looks/events/templates/`; names and default texts in
+  `EventBanners.*`. Adding one = an entry, a layers file, EN/FR texts.
+  Palettes are curated only; every template × palette passes 4.5:1
+  (tested). Decor and stickers stay in their zones, never over the text
+  (`u + size / 2 <= 0.95`, tested). Default texts use the shop's language.
+- Stickers live in `src/assets/images/stickers/` (`manifest.ts` is the
+  one list, also used by the server to check ids; see its README). Never
+  rename or remove a sticker id in use. Original generic motifs only.
+- `EventBanner` draws the shop banner, previews, the admin card and the
+  downloads (`modern-screenshot`, browser-side) from the same code.
+- Queries never read the clock: `shopLooks.promoLive` is stored by
+  `publish` and `shopLookJobs.syncPromo` (scheduled at start / end,
+  idempotent); `endPromoNow` ends it at once. Rules (`scheduleProblem`,
+  `PROMO_MAX_DAYS`) in `convex/lib/looks/schedule.ts`.
+- Publishing a promo needs `salesPromotions`; public pages show it only
+  while live and entitled (`visibleLook`). Admin "banner" reset removes it.
 
 ## Protected shop changes
 

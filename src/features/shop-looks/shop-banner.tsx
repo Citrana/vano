@@ -1,19 +1,17 @@
 import Image from "next/image"
 import { cn } from "cn"
-import { ARTWORK_BASE, type BannerHeight } from "../../../convex/lib/looks/banners"
+import { ARTWORK_BASE } from "../../../convex/lib/looks/banners"
 import type { ResolvedBanner } from "../../../convex/lib/looks/resolve"
 import { ARTWORK_IMAGES } from "./artworks"
+import { BANNER_HEIGHT_CLASS, type BannerSizing } from "./banner-heights"
+import { EventBanner } from "./events/event-banner"
 
-/** Fixed heights per size, so nothing moves while the image loads. */
-export const BANNER_HEIGHT_CLASS: Record<BannerHeight, { responsive: string; phone: string }> = {
-  sm: { responsive: "h-28 md:h-40", phone: "h-28" },
-  md: { responsive: "h-40 md:h-56", phone: "h-40" },
-  lg: { responsive: "h-52 md:h-72", phone: "h-52" },
-}
+export { BANNER_HEIGHT_CLASS }
 
 /**
  * The shop banner (CLAUDE.md "Shop looks"): a photo (focal point + zoom),
- * a curated gradient or a ready-made artwork, with optional short text.
+ * a curated gradient or a ready-made artwork, with optional short text,
+ * or an event & promo banner (drawn by `EventBanner`).
  * Gradient text uses the gradient's tested colour; text over a photo or
  * artwork sits on a panel in the shop's own colours, so it's always
  * readable. `sizing="phone"` keeps mobile heights inside a phone mockup.
@@ -25,11 +23,12 @@ export function ShopBanner({
   className,
 }: {
   banner: ResolvedBanner<string>
-  sizing?: "responsive" | "phone"
+  sizing?: BannerSizing
   priority?: boolean
   className?: string
 }) {
   if (banner.kind === "none") return null
+  if (banner.kind === "event") return <EventBanner banner={banner} sizing={sizing} className={className} />
   const height = BANNER_HEIGHT_CLASS[banner.height][sizing]
   const text = banner.text
 

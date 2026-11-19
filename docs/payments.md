@@ -6,11 +6,22 @@ providers, checkout, the scheduled jobs or billing admin updates this file
 in the same commit, with a dated entry in the change log below
 (see CLAUDE.md "Billing").
 
-**Last updated: 2026-11-19 12:39 CAT (UTC+02:00)**
+**Last updated: 2026-11-19 16:32 CAT (UTC+02:00)**
 
 ## Change log
 
 Newest first. Format: `YYYY-MM-DD HH:MM TZ — what changed (files)`.
+
+- **2026-11-19 16:32 CAT (UTC+02:00)**: the `salesPromotions` feature is
+  now enforced for event & promo banners (`overrides.promo` on a look).
+  `shopLooks.publish` calls `requireCan({ kind: "feature", feature:
+  "salesPromotions" })` when the draft has one; drafts save on every plan.
+  Public pages show it only while it's live (`shopLooks.promoLive`, set by
+  `shopLookJobs.syncPromo` at its start / end) and the plan has the
+  feature; otherwise the normal banner (or the free look) shows and the
+  banner is kept. Downloads are gated in the editor only (made in the
+  browser, nothing stored). Pricing hint updated. (`convex/shopLooks.ts`,
+  `convex/shopLookJobs.ts`, `convex/lib/looks/store.ts`, `messages/*.json`)
 
 - **2026-11-19 12:39 CAT (UTC+02:00)**: the `allLooks` feature is now
   enforced. `shopLooks.publish` calls `requireCan({ kind: "feature",
@@ -317,6 +328,10 @@ All checks go through `convex/lib/entitlements.ts`:
   `convex/lib/looks/store.ts`). The "Shop look" page explains this, and
   upgrading brings the design back at once. Publishing a non-free look is
   `PLAN_FEATURE_LOCKED` on Free; drafts still save.
+- Event & promo banners: kept (published and draft) after a downgrade, but
+  not shown while the plan lacks `salesPromotions`; the editor says so,
+  Publish (with a promo) and downloads are disabled. Upgrading shows it
+  again at once if its dates are still on.
 - Stats are still recorded on Free; `stats.summary` returns
   `{ locked: true }` and the dashboard shows an upgrade card.
 - A new paid feature = a `PlanFeatureFlag` in `plans.ts` + a

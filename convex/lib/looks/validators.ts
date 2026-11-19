@@ -1,4 +1,6 @@
 import { v, type Infer } from "convex/values";
+import { buttonDecorationValidator, buttonDesignValidator, orderLabelValidator } from "./buttonDesigns";
+import { eventFontIdValidator, eventPaletteIdValidator, eventTemplateIdValidator } from "./events";
 
 /**
  * How a shop look is stored (CLAUDE.md "Shop looks"): a preset plus
@@ -39,6 +41,12 @@ export const buttonsFacetValidator = v.object({
   shape: buttonShapeValidator,
   fill: buttonFillValidator,
   weight: buttonWeightValidator,
+  /** Decorative design (buttonDesigns.ts); missing = classic. */
+  design: v.optional(buttonDesignValidator),
+  /** Decoration icon; missing = the design's own. */
+  decoration: v.optional(buttonDecorationValidator),
+  /** Order button wording; missing = "Order on WhatsApp". */
+  label: v.optional(orderLabelValidator),
 });
 export type ButtonsFacet = Infer<typeof buttonsFacetValidator>;
 export type ButtonShape = ButtonsFacet["shape"];
@@ -100,10 +108,38 @@ export const bannerFacetValidator = v.union(
 );
 export type BannerFacet = Infer<typeof bannerFacetValidator>;
 
+/** An event & promo banner design (events.ts: templates, palettes, limits). */
+export const eventDesignValidator = v.object({
+  template: eventTemplateIdValidator,
+  /** One of the template's palettes. */
+  palette: eventPaletteIdValidator,
+  font: eventFontIdValidator,
+  /** 1 – PROMO_HEADLINE_MAX chars. */
+  headline: v.string(),
+  /** Up to PROMO_SUBLINE_MAX chars. */
+  subline: v.optional(v.string()),
+  /** Sticker ids from src/assets/images/stickers/manifest.ts, unique, up to PROMO_STICKERS_MAX. */
+  stickers: v.array(v.string()),
+});
+export type EventDesign = Infer<typeof eventDesignValidator>;
+
+/**
+ * Shown instead of the normal `banner` while live (schedule.ts). Missing
+ * start = from publish; missing end = until the seller removes it.
+ */
+export const promoFacetValidator = v.object({
+  design: eventDesignValidator,
+  height: bannerHeightValidator,
+  startsAt: v.optional(v.number()),
+  endsAt: v.optional(v.number()),
+});
+export type PromoFacet = Infer<typeof promoFacetValidator>;
+
 export const lookOverridesValidator = v.object({
   colors: v.optional(colorsFacetValidator),
   buttons: v.optional(buttonsFacetValidator),
   banner: v.optional(bannerFacetValidator),
+  promo: v.optional(promoFacetValidator),
 });
 export type LookOverrides = Infer<typeof lookOverridesValidator>;
 

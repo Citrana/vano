@@ -7,6 +7,7 @@ import { useState } from "react"
 import { cn } from "cn"
 import { api } from "../../../convex/_generated/api"
 import type { Id } from "../../../convex/_generated/dataModel"
+import type { OrderLabel } from "../../../convex/lib/looks/buttonDesigns"
 import { formatMoney, type Currency } from "../../../convex/lib/money"
 import { buttonVariants } from "@/components/ui/button"
 import { productUrl } from "@/lib/site"
@@ -58,11 +59,14 @@ export function OrderPanel({
   whatsappNumber,
   currency,
   product,
+  label = "order",
   demo = false,
 }: {
   slug: string
   whatsappNumber?: string
   demo?: boolean
+  /** The order button's wording, from the shop look (`Public.orderLabels.*`). */
+  label?: OrderLabel
   currency: Currency
   product: { _id: string; name: string; price: number; sizes: string[]; colors: string[]; soldOut: boolean }
 }) {
@@ -83,7 +87,7 @@ export function OrderPanel({
       <OptionChips label={t("colors")} options={product.colors} value={color} onChange={setColor} />
       <div className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur md:static md:border-0 md:bg-transparent md:p-0">
         {product.soldOut ? (
-          <span className={buttonVariants({ size: "lg", variant: "secondary", className: "shop-btn w-full cursor-not-allowed opacity-70" })} aria-disabled>
+          <span className={buttonVariants({ size: "lg", variant: "secondary", className: "shop-btn shop-action w-full cursor-not-allowed opacity-70" })} aria-disabled>
             {t("orderSoldOut")}
           </span>
         ) : (
@@ -94,10 +98,10 @@ export function OrderPanel({
             onClick={() => {
               if (!demo) recordClick({ productId: product._id as Id<"products"> }).catch(() => {})
             }}
-            className={buttonVariants({ size: "lg", variant: "whatsapp", className: "shop-btn w-full" })}
+            className={buttonVariants({ size: "lg", variant: "whatsapp", className: "shop-btn shop-action w-full" })}
           >
             <MessageCircleIcon />
-            {t("order")}
+            {t(`orderLabels.${label}`)}
           </a>
         )}
       </div>

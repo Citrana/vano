@@ -3,8 +3,8 @@ import type { StoredLook } from "./validators";
 
 /**
  * Admin look reset (CLAUDE.md "Shop looks"): "banner" removes the banner
- * photo and any banner text (colours and buttons stay); "all" goes back
- * to the free look. Pure; `admin/shopLooks.reset` applies it to both the
+ * photo, any banner text and the event & promo banner (colours and
+ * buttons stay); "all" goes back to the free look. Pure; `admin/shopLooks.reset` applies it to both the
  * published look and the draft.
  */
 export type ResetScope = "banner" | "all";
@@ -19,10 +19,18 @@ export function resetReasonProblem(reason: string): "length" | null {
 
 export function resetLook(look: StoredLook, scope: ResetScope): StoredLook {
   if (scope === "all") return FREE_LOOK;
-  const banner = look.overrides.banner;
-  if (!banner || banner.kind === "none") return look;
-  const safe = banner.kind === "photo" ? ({ kind: "none" } as const) : { ...banner, text: undefined };
-  return { ...look, overrides: { ...look.overrides, banner: safe } };
+  const overrides = { ...look.overrides };
+  delete overrides.promo;
+  const banner = overrides.banner;
+  if (banner && banner.kind !== "none") {
+    overrides.banner = banner.kind === "photo" ? { kind: "none" } : { ...banner, text: undefined };
+  }
+  return { ...look, overrides };
+}
+
+/** The event & promo banner's headline (admin view, audit log), or null. */
+export function promoHeadlineOf(look: StoredLook | null | undefined): string | null {
+  return look?.overrides.promo?.design.headline ?? null;
 }
 
 /** The banner text a look shows (for the admin view and the audit log), or null. */

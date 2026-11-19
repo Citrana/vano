@@ -47,7 +47,7 @@ export function ProductGrid({
         <div
           role="toolbar"
           aria-label={t("filter")}
-          className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1"
+          className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 py-1"
         >
           {(["all", ...categories] as const).map((key) => (
             <button

@@ -2,7 +2,7 @@ import type { Doc, Id } from "../../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../../_generated/server";
 import { hasFeature } from "../entitlements";
 import { deleteFilesNotIn } from "../seller";
-import { lookImageIds } from "./clean";
+import { lookImageIds, withoutPromo } from "./clean";
 import { FREE_LOOK } from "./presets";
 import { mapBannerImage, resolveLook, type ResolvedLook } from "./resolve";
 import type { StoredLook } from "./validators";
@@ -34,12 +34,16 @@ export async function resolveWithUrl(ctx: QueryCtx, look: StoredLook): Promise<P
 /**
  * What visitors see: the published look when the plan includes
  * `allLooks`, else the free look (CLAUDE.md "Billing": a downgrade never
- * deletes the design, it only stops showing it).
+ * deletes the design, it only stops showing it). Its event & promo banner
+ * shows only while live (`promoLive`) and while the plan includes
+ * `salesPromotions`; otherwise the normal banner shows.
  */
 export async function visibleLook(ctx: QueryCtx, shop: Doc<"shops">): Promise<StoredLook> {
   const row = await lookRow(ctx, shop._id);
   if (!row?.published) return FREE_LOOK;
-  return (await hasFeature(ctx, shop, "allLooks")) ? row.published : FREE_LOOK;
+  if (!(await hasFeature(ctx, shop, "allLooks"))) return FREE_LOOK;
+  const showPromo = row.promoLive === true && (await hasFeature(ctx, shop, "salesPromotions"));
+  return showPromo ? row.published : withoutPromo(row.published);
 }
 
 export async function publicLookFor(ctx: QueryCtx, shop: Doc<"shops">): Promise<PublicLook> {

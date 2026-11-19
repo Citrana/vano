@@ -77,7 +77,13 @@ export default async function ProductPage({ params }: PageProps<"/[slug]/[produc
                 </span>
               ) : null}
             </div>
-            <OrderPanel slug={shop.slug} whatsappNumber={shop.whatsappNumber} currency={shop.currency} product={product} />
+            <OrderPanel
+                slug={shop.slug}
+                whatsappNumber={shop.whatsappNumber}
+                currency={shop.currency}
+                product={product}
+                label={shop.look.buttons.label}
+              />
             {product.description ? (
               <section className="flex flex-col gap-2 border-t pt-5">
                 <h2 className="text-sm font-medium">{t("description")}</h2>

@@ -134,6 +134,12 @@ export default defineSchema({
     publishedAt: v.optional(v.number()),
     /** Set when an admin reset the look; the editor tells the seller. */
     resetByAdminAt: v.optional(v.number()),
+    /**
+     * Whether the published event & promo banner is live right now (queries
+     * can't read the clock). Kept current by `shopLookJobs.syncPromo`,
+     * scheduled at its start and end.
+     */
+    promoLive: v.optional(v.boolean()),
   }).index("by_shopId", ["shopId"]),
 
   products: defineTable({

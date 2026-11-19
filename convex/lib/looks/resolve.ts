@@ -1,5 +1,7 @@
 import { bestOn, contrast, isDark, mix, type Hex } from "./color";
 import { gradientCss, GRADIENTS, type ArtworkId, type BannerAlign, type BannerHeight } from "./banners";
+import { DESIGN_DECORATION, type ButtonDecoration, type ButtonDesign, type OrderLabel } from "./buttonDesigns";
+import { EVENT_PALETTES, type EventFontId, type EventPalette, type EventPaletteId, type EventTemplateId } from "./events";
 import { PRESETS } from "./presets";
 import type { ButtonShape, ButtonsFacet, PresetId, StoredLook } from "./validators";
 
@@ -51,13 +53,59 @@ export type ResolvedBanner<Img> =
   | { kind: "none" }
   | { kind: "photo"; image: Img; focusX: number; focusY: number; zoom: number; height: BannerHeight; text: ResolvedBannerText | null }
   | { kind: "gradient"; css: string; textColor: Hex; height: BannerHeight; text: ResolvedBannerText | null }
-  | { kind: "artwork"; artworkId: ArtworkId; height: BannerHeight; text: ResolvedBannerText | null };
+  | { kind: "artwork"; artworkId: ArtworkId; height: BannerHeight; text: ResolvedBannerText | null }
+  | ResolvedEventBanner;
+
+/** An event & promo banner, ready to draw (palette colours included). */
+export type ResolvedEventBanner = {
+  kind: "event";
+  template: EventTemplateId;
+  paletteId: EventPaletteId;
+  palette: EventPalette;
+  font: EventFontId;
+  headline: string;
+  subline: string | null;
+  stickers: readonly string[];
+  height: BannerHeight;
+};
+
+/** The buttons facet with every default filled in. */
+export type ResolvedButtons = Pick<ButtonsFacet, "shape" | "fill" | "weight"> & {
+  design: ButtonDesign;
+  /** The icon shown (the seller's pick, else the design's own). */
+  decoration: ButtonDecoration;
+  label: OrderLabel;
+};
+
+export function resolveButtons(buttons: ButtonsFacet): ResolvedButtons {
+  const design = buttons.design ?? "classic";
+  return {
+    shape: buttons.shape,
+    fill: buttons.fill,
+    weight: buttons.weight,
+    design,
+    decoration: buttons.decoration ?? DESIGN_DECORATION[design],
+    label: buttons.label ?? "order",
+  };
+}
+
+/**
+ * The Glow design's gradient for a colour and its label: the colour on
+ * top, then a tone that moves away from the label (darker under white
+ * text, lighter under ink), so the label only gains contrast. The shine is
+ * a thin highlight at the top edge (CSS), never behind the text.
+ * `contrast.ts` checks the label on both stops.
+ */
+export function glowStops(color: Hex, label: Hex): [Hex, Hex] {
+  const deeper = label === WHITE ? mix(color, "#000000", 0.16) : mix(color, WHITE, 0.22);
+  return [color, deeper];
+}
 
 export type ResolvedLook<Img> = {
   preset: PresetId;
   dark: boolean;
   colors: ResolvedColors;
-  buttons: ButtonsFacet;
+  buttons: ResolvedButtons;
   radius: string;
   banner: ResolvedBanner<Img>;
 };
@@ -109,12 +157,30 @@ function cleanText(text: { value: string; align: BannerAlign } | undefined): Res
   return text && text.value.length > 0 ? { value: text.value, align: text.align } : null;
 }
 
+/**
+ * A look's event & promo banner (`overrides.promo`) wins over its normal
+ * banner. Callers strip the promo (`withoutPromo`) when it isn't live or
+ * the plan doesn't show it (store.ts `visibleLook`).
+ */
 export function resolveLook(look: StoredLook): ResolvedLook<string> {
   const preset = PRESETS[look.preset];
   const colors = resolveColors(look);
   const banner = look.overrides.banner ?? preset.banner;
+  const promo = look.overrides.promo;
   let resolvedBanner: ResolvedBanner<string>;
-  switch (banner.kind) {
+  if (promo) {
+    resolvedBanner = {
+      kind: "event",
+      template: promo.design.template,
+      paletteId: promo.design.palette,
+      palette: EVENT_PALETTES[promo.design.palette],
+      font: promo.design.font,
+      headline: promo.design.headline,
+      subline: promo.design.subline ?? null,
+      stickers: promo.design.stickers,
+      height: promo.height,
+    };
+  } else switch (banner.kind) {
     case "none":
       resolvedBanner = { kind: "none" };
       break;
@@ -146,7 +212,7 @@ export function resolveLook(look: StoredLook): ResolvedLook<string> {
     preset: look.preset,
     dark: isDark(colors.background),
     colors,
-    buttons: look.overrides.buttons ?? preset.buttons,
+    buttons: resolveButtons(look.overrides.buttons ?? preset.buttons),
     radius: preset.radius,
     banner: resolvedBanner,
   };
@@ -189,5 +255,12 @@ export function lookCssVars(look: Pick<ResolvedLook<unknown>, "colors" | "button
     "--radius": look.radius,
     "--shop-btn-radius": BUTTON_RADIUS[look.buttons.shape],
     "--shop-btn-weight": look.buttons.weight === "bold" ? "650" : "500",
+    ...(look.buttons.design === "glow"
+      ? (() => {
+          const [pFrom, pTo] = glowStops(c.primary, c.primaryForeground);
+          const [cFrom, cTo] = glowStops(c.chip, c.chipForeground);
+          return { "--shop-glow-from": pFrom, "--shop-glow-to": pTo, "--shop-chip-glow-from": cFrom, "--shop-chip-glow-to": cTo };
+        })()
+      : {}),
   };
 }

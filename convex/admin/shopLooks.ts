@@ -3,19 +3,33 @@ import { adminMutation, adminQuery } from "../lib/access";
 import { logAdminAction } from "../lib/audit";
 import { fail } from "../lib/errors";
 import { assertNotOwnShop } from "../lib/guards";
-import { lookImageIds, sameLook } from "../lib/looks/clean";
-import { bannerTextOf, resetLook, resetReasonProblem } from "../lib/looks/reset";
+import { lookImageIds, sameLook, withoutPromo } from "../lib/looks/clean";
+import { bannerTextOf, promoHeadlineOf, resetLook, resetReasonProblem } from "../lib/looks/reset";
 import { lookRow, resolveWithUrl, visibleLook } from "../lib/looks/store";
+import type { StoredLook } from "../lib/looks/validators";
 import { notify } from "../lib/notify";
 import { deleteFilesNotIn } from "../lib/seller";
 
 /**
  * Admin view of a shop's look and the safe reset (CLAUDE.md "Shop looks"):
  * if a banner photo or text is inappropriate, an admin with
- * `shops.resetLook` removes it ("banner") or resets everything to the free
+ * `shops.resetLook` removes it, with the event & promo banner ("banner"), or resets everything to the free
  * look ("all"), with a reason. Applies to the published look and the
  * draft, deletes the photos, is logged and tells the seller.
  */
+
+function promoSummary(look: StoredLook | undefined, live: boolean) {
+  const promo = look?.overrides.promo;
+  if (!promo) return null;
+  return {
+    template: promo.design.template,
+    headline: promo.design.headline,
+    subline: promo.design.subline ?? null,
+    startsAt: promo.startsAt ?? null,
+    endsAt: promo.endsAt ?? null,
+    live,
+  };
+}
 
 export const get = adminQuery({
   permission: "shops.view",
@@ -30,7 +44,10 @@ export const get = adminQuery({
       /** What visitors see now. */
       visible: await resolveWithUrl(ctx, visible),
       /** A published design the plan doesn't show (visitors see the free look). */
-      hiddenByPlan: row?.published !== undefined && !sameLook(row.published, visible),
+      hiddenByPlan: row?.published !== undefined && !sameLook(withoutPromo(row.published), withoutPromo(visible)),
+      /** The event & promo banner (published, then the draft's), for review. */
+      promo: promoSummary(row?.published, row?.promoLive === true),
+      draftPromo: promoSummary(row?.draft, false),
       /** The seller's published design (may be hidden by their plan). */
       published: row?.published ? await resolveWithUrl(ctx, row.published) : null,
       publishedBannerText: bannerTextOf(row?.published),
@@ -72,6 +89,7 @@ export const reset = adminMutation({
       draft,
       draftUpdatedAt: draft ? row.draftUpdatedAt : undefined,
       resetByAdminAt: now,
+      promoLive: false,
     });
 
     await logAdminAction(ctx, {
@@ -86,6 +104,7 @@ export const reset = adminMutation({
         // What was removed, for the record.
         bannerText: bannerTextOf(row.published) ?? bannerTextOf(row.draft) ?? "",
         bannerPhoto: lookImageIds(row.published).length + lookImageIds(row.draft).length > 0,
+        promoHeadline: promoHeadlineOf(row.published) ?? promoHeadlineOf(row.draft) ?? "",
       },
     });
     await notify(ctx, {

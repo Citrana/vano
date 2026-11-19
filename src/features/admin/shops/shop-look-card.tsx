@@ -112,7 +112,20 @@ export function ShopLookCard({
 
   if (look === undefined) return <LoadingState className="py-6" />
   if (look === null) return null
-  const shown = look.published ?? look.visible
+  // What visitors see now (the event banner while it's live), else the saved design.
+  const shown = look.promo?.live ? look.visible : (look.published ?? look.visible)
+  const date = (ms: number) => format.dateTime(new Date(ms), { dateStyle: "medium", timeStyle: "short" })
+  const promoLine = (promo: NonNullable<typeof look.promo>) =>
+    [
+      promo.headline,
+      promo.subline,
+      t("promoDates", {
+        start: promo.startsAt ? date(promo.startsAt) : t("promoNoStart"),
+        end: promo.endsAt ? date(promo.endsAt) : t("promoNoEnd"),
+      }),
+    ]
+      .filter(Boolean)
+      .join(" · ")
 
   return (
     <Card>
@@ -128,6 +141,12 @@ export function ShopLookCard({
           {look.hiddenByPlan ? ` · ${t("hiddenByPlan")}` : ""}
         </DetailItem>
         <DetailItem label={t("bannerText")}>{look.publishedBannerText ?? t("none")}</DetailItem>
+        {look.promo ? (
+          <DetailItem label={t("promo")}>
+            {promoLine(look.promo)} · {look.promo.live ? t("promoLive") : t("promoNotLive")}
+          </DetailItem>
+        ) : null}
+        {look.draftPromo ? <DetailItem label={t("draftPromo")}>{promoLine(look.draftPromo)}</DetailItem> : null}
         {look.draftBannerText || look.draftHasPhoto ? (
           <DetailItem label={t("draft")}>
             {[look.draftBannerText, look.draftHasPhoto ? t("draftPhoto") : null].filter(Boolean).join(" · ")}

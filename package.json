@@ -23,6 +23,7 @@
     "convex-helpers": "^0.1.124",
     "libphonenumber-js": "^1.13.16",
     "lucide-react": "^1.48.0",
+    "modern-screenshot": "^4.7.0",
     "next": "16.3.6",
     "next-intl": "^4.14.7",
     "react": "19.2.8",
