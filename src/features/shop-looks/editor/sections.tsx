@@ -4,6 +4,7 @@ import { CircleUserRoundIcon, ImageIcon, LayoutTemplateIcon, PaletteIcon, Sparkl
 import type { ReactNode } from "react"
 import type { StaticImageData } from "next/image"
 import type { LookOverrides, StoredLook } from "../../../../convex/lib/looks/validators"
+import type { FeatureFlag } from "../../../../convex/lib/planFeatures"
 import { BannerSection } from "./banner-section"
 import { ButtonsSection } from "./buttons-section"
 import { ColorsSection } from "./colors-section"
@@ -32,6 +33,8 @@ export type LookSection = {
   changed: (draft: StoredLook, live: StoredLook) => boolean
   /** The seller's plan doesn't include this section (publishing it is refused). */
   locked: (mine: MineLook) => boolean
+  /** The plan feature that unlocks it (names the plan in "Available on <plan>"). */
+  lockedBy: FeatureFlag
   /** The override "Reset to preset" clears in this section, if any. */
   resets?: keyof LookOverrides
   /** Which banner the preview shows while this section is open. */
@@ -53,6 +56,7 @@ export const LOOK_SECTIONS = [
     ),
     changed: presetChanged,
     locked: (mine) => !mine.entitled,
+    lockedBy: "allLooks",
   },
   {
     key: "colors",
@@ -60,6 +64,7 @@ export const LOOK_SECTIONS = [
     Panel: ({ editor, disabled }) => <ColorsSection editor={editor} disabled={disabled} />,
     changed: facetChanged("colors"),
     locked: (mine) => !mine.entitled,
+    lockedBy: "allLooks",
     resets: "colors",
   },
   {
@@ -68,6 +73,7 @@ export const LOOK_SECTIONS = [
     Panel: ({ editor, mine, disabled }) => <ButtonsSection editor={editor} entitled={mine.entitled} disabled={disabled} />,
     changed: facetChanged("buttons"),
     locked: (mine) => !mine.entitled,
+    lockedBy: "allLooks",
     resets: "buttons",
   },
   {
@@ -76,6 +82,7 @@ export const LOOK_SECTIONS = [
     Panel: ({ editor, disabled }) => <BannerSection editor={editor} disabled={disabled} />,
     changed: facetChanged("banner"),
     locked: (mine) => !mine.entitled,
+    lockedBy: "allLooks",
     resets: "banner",
     previewBanner: "normal",
   },
@@ -85,6 +92,7 @@ export const LOOK_SECTIONS = [
     Panel: ({ editor, mine, shop, disabled }) => <ProfileSection editor={editor} mine={mine} shop={shop} disabled={disabled} />,
     changed: facetChanged("profile"),
     locked: (mine) => !mine.entitled,
+    lockedBy: "allLooks",
     resets: "profile",
   },
   {
@@ -93,6 +101,7 @@ export const LOOK_SECTIONS = [
     Panel: ({ editor, mine, shop, disabled }) => <PromoSection editor={editor} mine={mine} shop={shop} disabled={disabled} />,
     changed: facetChanged("promo"),
     locked: (mine) => !mine.promoEntitled,
+    lockedBy: "salesPromotions",
     previewBanner: "event",
   },
 ] as const satisfies readonly LookSection[]

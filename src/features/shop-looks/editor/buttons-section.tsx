@@ -19,6 +19,7 @@ import { ShopLookScope } from "../look-scope"
 import { ChoiceGroup, radioKeyDown } from "./choice-group"
 import { ProNote } from "./pro-note"
 import type { LookEditorState } from "./use-look-editor"
+import { useUpgradePlanName } from "@/features/billing/use-plan-catalog"
 
 /** Decoration icon → the sticker file it reuses. */
 const DECORATION_FILE: Record<Exclude<ButtonDecoration, "none">, keyof typeof STICKER_FILES> = {
@@ -53,6 +54,7 @@ export function ButtonsSection({
 }) {
   const t = useTranslations("LookEditor.buttons")
   const tl = useTranslations("LookEditor.lock")
+  const availableOn = tl("availableOn", { plan: useUpgradePlanName("allLooks") })
   const tp = useTranslations("Public")
   const resolved = editor.resolved.buttons
   // Edit the stored facet (not the resolved one), so defaults stay defaults.
@@ -78,7 +80,7 @@ export function ButtonsSection({
                 type="button"
                 role="radio"
                 aria-checked={selected}
-                aria-label={locked ? `${t(`designs.${design}`)}, ${tl("availableOnPro")}` : t(`designs.${design}`)}
+                aria-label={locked ? `${t(`designs.${design}`)}, ${availableOn}` : t(`designs.${design}`)}
                 tabIndex={selected ? 0 : -1}
                 disabled={disabled}
                 onClick={() => pickDesign(design)}

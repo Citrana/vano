@@ -6,17 +6,18 @@ import { api } from "../../../../convex/_generated/api"
 import { formatMoney } from "../../../../convex/lib/money"
 import { StatusTag } from "../data-table/status-tag"
 import type { Column } from "../data-table/types"
+import { usePlanName } from "@/features/billing/use-plan-catalog"
 
 export type AdminPaymentRow = FunctionReturnType<typeof api.admin.billing.payments>["page"][number]
 
 /** Payment columns, shared by /admin/payments and a shop's plan panel (`showShop` off there). */
 export function usePaymentColumns({ showShop }: { showShop: boolean }): Column<AdminPaymentRow>[] {
   const t = useTranslations("AdminBilling")
-  const tp = useTranslations("Pricing.plans")
+  const planName = usePlanName()
   const format = useFormatter()
   const locale = useLocale()
   const date = (ms: number) => format.dateTime(new Date(ms), { dateStyle: "medium", timeStyle: "short" })
-  const plan = (row: AdminPaymentRow) => tp(`${row.plan}.name`)
+  const plan = (row: AdminPaymentRow) => planName(row.plan)
 
   const shop: Column<AdminPaymentRow>[] = showShop
     ? [{ id: "shop", header: t("shop"), cell: (r) => r.shopName, className: "max-w-52", mobile: "title" }]

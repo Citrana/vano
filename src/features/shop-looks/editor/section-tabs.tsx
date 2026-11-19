@@ -5,6 +5,7 @@ import { LockIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { cn } from "cn"
 import { LOOK_SECTIONS, type SectionKey } from "./sections"
+import { useUpgradePlanNames } from "@/features/billing/use-plan-catalog"
 
 export type SectionFlags = Record<SectionKey, { changed: boolean; locked: boolean }>
 
@@ -25,6 +26,7 @@ export function SectionTabs({
   onTabClick?: (key: SectionKey) => void
 }) {
   const t = useTranslations("LookEditor")
+  const upgradeName = useUpgradePlanNames()
   const vertical = orientation === "vertical"
   return (
     <Tabs.List
@@ -35,9 +37,10 @@ export function SectionTabs({
         vertical ? "flex-col" : "no-scrollbar -mx-4 overflow-x-auto px-4 pb-1",
       )}
     >
-      {LOOK_SECTIONS.map(({ key, icon: Icon }) => {
+      {LOOK_SECTIONS.map((section) => {
+        const { key, icon: Icon } = section
         const { changed, locked } = flags[key]
-        const state = [changed ? t("tabs.changed") : null, locked ? t("tabs.pro") : null].filter(Boolean).join(", ")
+        const state = [changed ? t("tabs.changed") : null, locked ? t("tabs.locked", { plan: upgradeName(section.lockedBy) }) : null].filter(Boolean).join(", ")
         return (
           <Tabs.Tab
             key={key}

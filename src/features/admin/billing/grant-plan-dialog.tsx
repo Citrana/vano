@@ -18,6 +18,7 @@ import { RequiredFieldsHint } from "@/components/ui/required-fields-hint"
 import { Textarea } from "@/components/ui/textarea"
 import { useErrorMessage } from "@/lib/use-error-message"
 import { grantSchema, type GrantFormValues } from "./schemas"
+import { usePlanName } from "@/features/billing/use-plan-catalog"
 
 /**
  * Grant (any plan from now for N days) or extend (N more days on the
@@ -35,7 +36,7 @@ export function GrantPlanDialog({
 }) {
   const t = useTranslations("AdminBilling")
   const tv = useTranslations("Validation")
-  const tp = useTranslations("Pricing.plans")
+  const planName = usePlanName()
   const tc = useTranslations("Common")
   const grant = useMutation(api.admin.billing.grant)
   const extend = useMutation(api.admin.billing.extend)
@@ -89,7 +90,7 @@ export function GrantPlanDialog({
                 {(p) => (
                   <NativeSelect {...p} {...form.register("plan")}>
                     {(["pro", "business", "enterprise"] as const).map((plan) => (
-                      <option key={plan} value={plan}>{tp(`${plan}.name`)}</option>
+                      <option key={plan} value={plan}>{planName(plan)}</option>
                     ))}
                   </NativeSelect>
                 )}

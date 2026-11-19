@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl"
 import Link from "next/link"
 import { Button, buttonVariants } from "@/components/ui/button"
 import type { LookSection, SectionProps } from "./sections"
+import { useUpgradePlanName } from "@/features/billing/use-plan-catalog"
 
 /**
  * One section's content: its hint, the plan notice when the seller's plan
@@ -15,6 +16,7 @@ export function SectionPanel({ section, props }: { section: LookSection; props: 
   const t = useTranslations("LookEditor")
   const { editor, mine, disabled } = props
   const { Panel, resets } = section
+  const upgradePlan = useUpgradePlanName(section.lockedBy)
   const canReset = resets !== undefined && editor.draft.overrides[resets] !== undefined
 
   return (
@@ -32,7 +34,7 @@ export function SectionPanel({ section, props }: { section: LookSection; props: 
         <div className="flex items-start gap-3 rounded-lg border bg-card p-3 text-sm">
           <LockIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
           <div className="flex flex-col gap-2">
-            <p>{t("lock.notice")}</p>
+            <p>{t("lock.notice", { plan: upgradePlan })}</p>
             <Link href="/dashboard/billing" className={buttonVariants({ variant: "outline", size: "sm", className: "w-fit" })}>
               {t("lock.link")}
             </Link>

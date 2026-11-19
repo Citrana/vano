@@ -5,6 +5,7 @@ import type { ProtectedField } from "../../../convex/lib/changeRequests"
 import { daysLeft } from "../../../convex/lib/plans"
 import type { NotificationData } from "../../../convex/notifications/types"
 import { displayShopUrl } from "@/lib/site"
+import { usePlanName } from "@/features/billing/use-plan-catalog"
 
 /**
  * Words a notification in the viewer's language (`Notifications.types.*`).
@@ -12,7 +13,7 @@ import { displayShopUrl } from "@/lib/site"
  */
 export function useNotificationText(): (data: NotificationData, now: number) => string {
   const t = useTranslations("Notifications")
-  const tp = useTranslations("Pricing.plans")
+  const planName = usePlanName()
   const format = useFormatter()
   const field = (f: ProtectedField) => t(`field.${f}`)
   const value = (f: ProtectedField, v: string) => (f === "slug" ? displayShopUrl(v) : v)
@@ -37,19 +38,19 @@ export function useNotificationText(): (data: NotificationData, now: number) => 
           reason: data.reason,
         })
       case "payment.failed":
-        return t("types.payment.failed", { plan: tp(`${data.plan}.name`) })
+        return t("types.payment.failed", { plan: planName(data.plan) })
       case "admin.paymentFailed":
-        return t("types.admin.paymentFailed", { shop: data.shopName, plan: tp(`${data.plan}.name`), amount: data.amount })
+        return t("types.admin.paymentFailed", { shop: data.shopName, plan: planName(data.plan), amount: data.amount })
       case "plan.activated":
         return t("types.plan.activated", {
-          plan: tp(`${data.plan}.name`),
+          plan: planName(data.plan),
           date: format.dateTime(new Date(data.periodEnd), { dateStyle: "medium" }),
         })
       case "plan.expired":
-        return t("types.plan.expired", { plan: tp(`${data.plan}.name`), trial: String(data.trial) })
+        return t("types.plan.expired", { plan: planName(data.plan), trial: String(data.trial) })
       case "plan.endingSoon":
         return t("types.plan.endingSoon", {
-          plan: tp(`${data.plan}.name`),
+          plan: planName(data.plan),
           trial: String(data.trial),
           days: daysLeft(data.periodEnd, now),
         })

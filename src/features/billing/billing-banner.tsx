@@ -8,6 +8,7 @@ import { useState, type ReactNode } from "react"
 import { EXPIRY_WARNING_DAYS, daysLeft } from "../../../convex/lib/plans"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { useMyBilling, useNow } from "./use-billing"
+import { usePlanName } from "@/features/billing/use-plan-catalog"
 
 const DISMISS_KEY = "vano.billing.freeNoticeDismissed"
 
@@ -26,7 +27,7 @@ function readDismissed(): string | null {
  */
 export function BillingBanner() {
   const t = useTranslations("Billing")
-  const tp = useTranslations("Pricing.plans")
+  const planName = usePlanName()
   const billing = useMyBilling()
   const now = useNow()
   const pathname = usePathname()
@@ -40,7 +41,7 @@ export function BillingBanner() {
   if ((status === "trialing" || status === "active") && periodEnd !== null) {
     const left = daysLeft(periodEnd, now)
     if (left > EXPIRY_WARNING_DAYS) return null
-    const plan = tp(`${billing.plan}.name`)
+    const plan = planName(billing.plan)
     return (
       <Strip
         icon={<ClockIcon className="mt-0.5 size-4 shrink-0" aria-hidden />}

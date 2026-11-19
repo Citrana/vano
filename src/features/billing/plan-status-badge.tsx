@@ -6,6 +6,7 @@ import { cn } from "cn"
 import { daysLeft } from "../../../convex/lib/plans"
 import { badgeVariants } from "@/components/ui/badge"
 import { useMyBilling, useNow } from "./use-billing"
+import { usePlanName } from "@/features/billing/use-plan-catalog"
 
 /**
  * "Free trial: X days left" during the trial, the current plan name after.
@@ -13,14 +14,14 @@ import { useMyBilling, useNow } from "./use-billing"
  */
 export function PlanStatusBadge({ className }: { className?: string }) {
   const t = useTranslations("Billing")
-  const tp = useTranslations("Pricing.plans")
+  const planName = usePlanName()
   const billing = useMyBilling()
   const now = useNow()
   if (!billing) return null
   const trialing = billing.status === "trialing" && billing.periodEnd !== null
   const label = trialing
     ? t("trialBadge", { count: daysLeft(billing.periodEnd!, now) })
-    : t("planBadge", { plan: tp(`${billing.effectivePlan}.name`) })
+    : t("planBadge", { plan: planName(billing.effectivePlan) })
 
   return (
     <Link

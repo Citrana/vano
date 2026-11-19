@@ -7,7 +7,7 @@ import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { api } from "../../../../../../convex/_generated/api"
-import { PLAN_LIMITS, photoCap } from "../../../../../../convex/lib/plans"
+import { photoCap, toPlanLimits } from "../../../../../../convex/lib/planFeatures"
 import { PageTitle } from "@/components/shell/page-title"
 import { EmptyState, LoadingState } from "@/components/states/states"
 import { buttonVariants } from "@/components/ui/button"
@@ -56,7 +56,7 @@ export default function EditProductPage() {
         shop={shop}
         initial={product}
         // A product with more photos than the plan allows keeps them (never gains more).
-        maxImages={billing ? photoCap(PLAN_LIMITS[billing.effectivePlan], product.imageIds.length) : undefined}
+        maxImages={billing ? photoCap(toPlanLimits(billing.limits), product.imageIds.length) : undefined}
         onSubmit={async (values) => {
           await update({ productId: product._id, ...values })
           toast.success(t("saved"))

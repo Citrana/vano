@@ -11,6 +11,7 @@ import { LookMini } from "../look-mini"
 import { PRESET_IDS, PRESET_LOOKS } from "../presets"
 import { radioKeyDown } from "./choice-group"
 import type { LookEditorState } from "./use-look-editor"
+import { useUpgradePlanName } from "@/features/billing/use-plan-catalog"
 
 /** Ready-made looks: one tap applies colours, buttons and banner. */
 export function LooksSection({
@@ -26,6 +27,7 @@ export function LooksSection({
 }) {
   const t = useTranslations("LookEditor")
   const tl = useTranslations("ShopLooks")
+  const upgradePlan = useUpgradePlanName("allLooks")
   const current = editor.draft.preset
   const index = PRESET_IDS.indexOf(current)
   // The event banner is its own section; "reset" leaves it alone.
@@ -73,13 +75,13 @@ export function LooksSection({
                 {locked ? (
                   <Badge className="absolute top-1.5 right-1.5 gap-1">
                     <LockIcon className="size-3" aria-hidden />
-                    {t("looks.pro")}
+                    {upgradePlan}
                   </Badge>
                 ) : null}
               </span>
               <span className={cn("text-sm font-semibold", selected ? "text-foreground" : "text-muted-foreground")}>
                 {tl(`presets.${preset}`)}
-                {locked ? <span className="sr-only"> ({t("looks.lockedHint")})</span> : null}
+                {locked ? <span className="sr-only"> ({t("looks.lockedHint", { plan: upgradePlan })})</span> : null}
               </span>
             </button>
           )
