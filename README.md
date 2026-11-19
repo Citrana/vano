@@ -131,6 +131,14 @@ npx convex run migrations:billingV1          # "started" (or "already_done")
 npx convex run migrations:billingV1Status    # status: "done"
 ```
 
+Notifications: change-request decisions stored in the old
+`sellerNotifications` table move into the new inbox:
+
+```bash
+npx convex run migrations:notificationsV1          # "started" (or "already_done")
+npx convex run migrations:notificationsV1Status    # status: "done", left: 0
+```
+
 ## First super admin
 
 Super admins can't sign up: the first one is created from the terminal.
