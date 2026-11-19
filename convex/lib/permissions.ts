@@ -12,7 +12,8 @@ import { v } from "convex/values";
 export const PERMISSION_GROUPS = {
   dashboard: ["view"],
   users: ["view", "suspend", "assignRole"],
-  shops: ["view", "suspend", "delete"],
+  /** resetLook: reset a shop's look (banner photo / text, or all) to a safe default. */
+  shops: ["view", "suspend", "delete", "resetLook"],
   products: ["view", "hide", "delete"],
   roles: ["view", "manage"],
   audit: ["view"],

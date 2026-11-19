@@ -15,6 +15,7 @@ import { StatusTag } from "../data-table/status-tag"
 import { adminHref } from "../shell/hrefs"
 import { useAdminViewer } from "../shell/use-admin-viewer"
 import { DeleteShopDialog } from "./delete-shop-dialog"
+import { ShopLookCard } from "./shop-look-card"
 import { ShopProducts } from "./shop-products"
 import { SuspendShopDialog } from "./suspend-shop-dialog"
 
@@ -83,6 +84,14 @@ export function ShopDetails({ shopId }: { shopId: string }) {
           isOwnShop={viewer.email !== null && shop.owner.email === viewer.email}
         />
       ) : null}
+
+      <ShopLookCard
+        shopId={shop._id}
+        name={shop.name}
+        canReset={can("shops.resetLook")}
+        // A hint only: the server refuses it anyway (CANNOT_MODIFY_SELF).
+        isOwnShop={viewer.email !== null && shop.owner.email === viewer.email}
+      />
 
       {can("shops.suspend") || can("shops.delete") ? (
         <Card>

@@ -47,7 +47,7 @@ export function ProductGrid({
         <div
           role="toolbar"
           aria-label={t("filter")}
-          className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1"
+          className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 py-1"
         >
           {(["all", ...categories] as const).map((key) => (
             <button
@@ -56,7 +56,7 @@ export function ProductGrid({
               aria-pressed={active === key}
               onClick={() => setActive(key)}
               className={cn(
-                "min-h-10 shrink-0 rounded-full border px-4 text-sm font-medium whitespace-nowrap transition-colors",
+                "shop-chip min-h-10 shrink-0 rounded-full border px-4 text-sm font-medium whitespace-nowrap transition-colors",
                 active === key ? "chip-selected" : "bg-card hover:bg-muted"
               )}
             >

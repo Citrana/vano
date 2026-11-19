@@ -80,7 +80,12 @@
     "CODE_EXPIRED": "This code has expired. Send a new one.",
     "CODE_TOO_MANY_ATTEMPTS": "Too many wrong codes. Send a new one.",
     "CODE_RATE_LIMITED": "Please wait a minute before asking for another code.",
-    "VERIFICATION_UNAVAILABLE": "Number verification isn't available yet. Contact us to change your number."
+    "VERIFICATION_UNAVAILABLE": "Number verification isn't available yet. Contact us to change your number.",
+    "LOOK_INVALID": "Some of these look settings aren't valid. Check the colors and banner text.",
+    "LOOK_CONTRAST": "Some text would be too hard to read with these colors. Use a suggested fix, then publish.",
+    "LOOK_NO_DRAFT": "There are no changes to publish.",
+    "PROMO_SCHEDULE_INVALID": "Check the event banner dates: the end must be after the start, within 92 days, and the start within a year.",
+    "DECORATION_SCHEDULE_INVALID": "Check the profile decoration dates: the end must be after the start, within 92 days, and the start within a year."
   },
   "Validation": {
     "required": "This field is required.",
@@ -145,12 +150,14 @@
   "Seller": {
     "dashboard": "Dashboard",
     "settings": "Shop settings",
+    "settingsShort": "Settings",
     "viewShop": "View my shop",
     "menu": "Menu",
     "admin": "Admin",
     "billing": "Plan",
     "profileMenu": "Account menu",
-    "account": "Signed in as"
+    "account": "Signed in as",
+    "look": "Look"
   },
   "Onboarding": {
     "title": "Create your shop",
@@ -192,7 +199,9 @@
     "saved": "Shop settings saved",
     "charCount": "{count}/{max}",
     "whatsappCode": "Country code",
-    "lookHelp": "The style of your public shop. You can change it any time.",
+    "lookLabel": "Shop look",
+    "lookLink": "Design your shop look",
+    "lookHelp": "Colors, buttons and banner of your public shop. Edit them on the Shop look page.",
     "currencyLocked": "Locked because your shop has products: their prices are in this currency."
   },
   "Dashboard": {
@@ -239,7 +248,7 @@
         },
         "look": {
           "title": "Pick your shop look",
-          "body": "Choose the style customers see in your shop.",
+          "body": "Choose a look, make it yours and publish it.",
           "action": "Choose a look"
         },
         "share": {
@@ -340,7 +349,18 @@
     "unavailableTitle": "{shop} is temporarily unavailable",
     "unavailableBody": "This shop can't take orders right now. Please come back later.",
     "unavailableMetaTitle": "{shop} – temporarily unavailable",
-    "demoOrderNote": "(Demo order from the Vano demo shop.)"
+    "demoOrderNote": "(Demo order from the Vano demo shop.)",
+    "orderLabels": {
+      "order": "Order on WhatsApp",
+      "want": "I want this",
+      "orderNow": "Order now"
+    },
+    "profileBadges": {
+      "queen": "Queen",
+      "bossLady": "Boss lady",
+      "new": "New",
+      "sale": "Sale"
+    }
   },
   "NotFound": {
     "title": "Page not found",
@@ -457,7 +477,8 @@
       "title": "Shops",
       "view": "View shops",
       "suspend": "Suspend and reactivate shops",
-      "delete": "Delete shops"
+      "delete": "Delete shops",
+      "resetLook": "Reset a shop's look"
     },
     "products": {
       "title": "Products",
@@ -589,7 +610,42 @@
     "deleteForever": "Delete for good",
     "deleted": "Shop deleted.",
     "notFoundTitle": "Shop not found",
-    "notFoundBody": "This shop doesn't exist or was deleted."
+    "notFoundBody": "This shop doesn't exist or was deleted.",
+    "look": {
+      "title": "Shop look",
+      "preset": "Look",
+      "hiddenByPlan": "hidden by plan (visitors see Classic)",
+      "bannerText": "Banner text",
+      "none": "None",
+      "draft": "Unpublished draft",
+      "draftPhoto": "banner photo",
+      "publishedAt": "Published",
+      "never": "Never",
+      "lastReset": "Last reset by an admin",
+      "resetHint": "Remove an inappropriate banner photo or text, reset the profile photo, or reset the whole look. The seller is told why.",
+      "reset": "Reset look",
+      "resetTitle": "Reset the look of {name}?",
+      "resetBody": "This applies to the live look and the seller's draft. Removed photos are deleted.",
+      "scope": "What to reset",
+      "scopeBanner": "Banner photo and text",
+      "scopeProfile": "Profile photo",
+      "scopeAll": "Whole look",
+      "scopeBannerHint": "Colors and buttons stay. The banner photo is removed, any banner text is cleared and the event banner is removed.",
+      "scopeProfileHint": "Colors, buttons and banners stay. The profile photo's shape, border and decoration go back to the default.",
+      "scopeAllHint": "The shop goes back to the Classic look, including Classic buttons.",
+      "reason": "Reason (sent to the seller)",
+      "reasonHelp": "{min}–{max} characters.",
+      "resetDone": "Look reset. The seller has been notified.",
+      "promo": "Event banner",
+      "promoLive": "Live",
+      "promoNotLive": "Not showing (outside its dates)",
+      "promoDates": "{start} → {end}",
+      "promoNoStart": "from publish",
+      "promoNoEnd": "until removed",
+      "draftPromo": "Event banner (draft)",
+      "decoration": "Profile decoration",
+      "draftDecoration": "Draft: {name}"
+    }
   },
   "ShopStatus": {
     "active": "Active",
@@ -640,7 +696,8 @@
       "delete": "Deleted a shop",
       "nameChanged": "Shop name changed",
       "slugChanged": "Shop link changed",
-      "whatsappChanged": "Shop WhatsApp number changed"
+      "whatsappChanged": "Shop WhatsApp number changed",
+      "lookReset": "Reset a shop's look"
     },
     "product": {
       "hide": "Hid a product",
@@ -704,7 +761,12 @@
     "field": "Field",
     "newValue": "New value",
     "flags": "Flags",
-    "cooldownOverridden": "Cooldown overridden"
+    "cooldownOverridden": "Cooldown overridden",
+    "scope": "What was reset",
+    "bannerText": "Banner text",
+    "bannerPhoto": "Banner photo",
+    "promoHeadline": "Event banner headline",
+    "decoration": "Profile decoration"
   },
   "AdminActivity": {
     "title": "Activity history",
@@ -792,11 +854,286 @@
     "footerPrivacy": "Privacy",
     "footerRights": "© {year} Vano. All rights reserved."
   },
-  "ShopThemes": {
+  "ShopLooks": {
     "label": "Shop look",
-    "bold": "Bold",
-    "soft": "Soft",
-    "dark": "Dark"
+    "presets": {
+      "classic": "Classic",
+      "blush": "Blush",
+      "lavender": "Lavender",
+      "emeraldGold": "Emerald & Gold",
+      "noir": "Noir",
+      "sunset": "Sunset",
+      "roseGarden": "Rose Garden",
+      "ocean": "Ocean",
+      "kitenge": "Kitenge"
+    }
+  },
+  "LookEditor": {
+    "title": "Shop look",
+    "sections": {
+      "label": "Sections",
+      "looks": "Looks",
+      "colors": "Colors",
+      "buttons": "Buttons",
+      "banner": "Banner",
+      "profile": "Profile",
+      "events": "Event banners",
+      "pick": "Pick a section above to edit it. The preview updates as you go.",
+      "looksHint": "Ready-made looks: one tap sets the colors, buttons and banner.",
+      "colorsHint": "Pick colors that go well together, or choose your own.",
+      "buttonsHint": "The design, decoration and text of your shop's buttons, and their shape and style.",
+      "bannerHint": "The banner at the top of your shop: your photo, a gradient or a ready-made pattern.",
+      "profileHint": "Your profile photo's shape, border and size, and a decoration for your events.",
+      "eventsHint": "Sales, new arrivals, holidays: shown instead of your banner while it's on, and ready to share."
+    },
+    "status": {
+      "saving": "Saving draft…",
+      "error": "Couldn't save your draft.",
+      "draft": "Draft saved · not live yet",
+      "live": "Live on your shop",
+      "default": "Your shop uses the default look"
+    },
+    "actions": {
+      "publish": "Publish",
+      "discard": "Discard changes",
+      "viewShop": "View my shop",
+      "retry": "Try again",
+      "upgrade": "See plans",
+      "preview": "Preview",
+      "reset": "Reset everything to the preset",
+      "resetSection": "Reset to preset"
+    },
+    "notices": {
+      "hiddenByPlan": "Visitors see the Classic look because your plan doesn't include custom looks. Your design is saved: upgrade to bring it back.",
+      "resetByAdmin": "An admin reset your shop look on {date}.",
+      "seeNotifications": "See why in your notifications",
+      "promoHidden": "Your plan doesn't show event banners to visitors. Your banner is saved; upgrade to bring it back."
+    },
+    "hints": {
+      "planLocked": "Your plan can publish the Classic look and a simple profile photo only. Upgrade to publish this one.",
+      "blocking": "Fix the colors marked in red before publishing.",
+      "promoLocked": "Event banners need Pro or Business. Remove it to publish, or upgrade."
+    },
+    "preview": {
+      "show": "Show",
+      "draft": "My draft",
+      "live": "Live now",
+      "label": "Preview of your shop on a phone",
+      "title": "Preview",
+      "sample": "Sample products: add your own to see them here.",
+      "banner": "Banner",
+      "eventBanner": "Event",
+      "normalBanner": "Normal",
+      "width": "Screen",
+      "phone": "Phone",
+      "wide": "Computer",
+      "wideLabel": "Your shop on a computer",
+      "expand": "Full preview",
+      "sampleFill": "Sample products fill the empty spots."
+    },
+    "confirm": {
+      "discardTitle": "Discard your changes?",
+      "discardBody": "Your draft goes back to what's live on your shop. This can't be undone.",
+      "publishTitle": "Publish with readability warnings?",
+      "publishBody": "Some parts may be hard to read for some customers. You can still publish, or use the suggested fixes first.",
+      "cancel": "Cancel",
+      "publishAnyway": "Publish anyway"
+    },
+    "toast": {
+      "published": "Your new look is live.",
+      "saveFailed": "Your draft couldn't be saved. Check your connection and try again.",
+      "discarded": "Changes discarded."
+    },
+    "looks": {
+      "current": "Based on {name}",
+      "customized": "customized",
+      "pro": "Pro",
+      "lockedHint": "needs a Pro or Business plan to publish"
+    },
+    "colors": {
+      "intro": "Pick from colors that go well together, or choose your own.",
+      "accent": "Accent color",
+      "background": "Background",
+      "swatch": "Color {color}",
+      "custom": "Custom",
+      "hexLabel": "{field}, hex code",
+      "customInUse": "Your own color",
+      "usePreset": "Use the look's colors"
+    },
+    "contrast": {
+      "targets": {
+        "text": "Text:",
+        "badge": "Badges and selected chips:",
+        "chip": "Selected chips:",
+        "eventText": "Event banner text:",
+        "buttonDesign": "Glow buttons and chips:",
+        "profileBorder": "Profile photo border:"
+      },
+      "blocking": "too hard to read ({ratio}:1). Publishing is blocked until it's fixed.",
+      "warning": "may be hard to read ({ratio}:1).",
+      "fixAccent": "Use accent {color}",
+      "fixBackground": "Use background {color}",
+      "fixProfileBorder": "Use border {color}"
+    },
+    "buttons": {
+      "shape": "Shape",
+      "rounded": "Rounded",
+      "pill": "Pill",
+      "square": "Square",
+      "fill": "Fill",
+      "solid": "Filled",
+      "outline": "Outline",
+      "weight": "Style",
+      "soft": "Soft",
+      "bold": "Bold",
+      "sample": "Sample",
+      "whatsappNote": "The order button always stays WhatsApp green so customers spot it.",
+      "design": "Design",
+      "tileSample": "Order",
+      "decoration": "Decoration",
+      "label": "Button text",
+      "designs": {
+        "classic": "Classic",
+        "floral": "Floral",
+        "sparkle": "Sparkle",
+        "heart": "Heart",
+        "bow": "Bow",
+        "scalloped": "Scalloped",
+        "sticker": "Sticker",
+        "glow": "Glow"
+      },
+      "decorations": {
+        "none": "No decoration",
+        "flower": "Flower",
+        "heart": "Heart",
+        "star": "Star",
+        "bow": "Bow",
+        "sparkle": "Sparkle"
+      }
+    },
+    "profile": {
+      "shape": "Photo shape",
+      "shapes": {
+        "circle": "Circle",
+        "rounded": "Rounded",
+        "squircle": "Squircle",
+        "flower": "Flower",
+        "arch": "Arch"
+      },
+      "borderColor": "Border color",
+      "colorTokens": {
+        "accent": "Match my shop colors",
+        "chip": "Badge color",
+        "foreground": "Text color"
+      },
+      "customColor": "Custom",
+      "customColorHex": "Border color, hex code",
+      "customInUse": "Your own color",
+      "borderWidth": "Border",
+      "borderWidths": {
+        "none": "None",
+        "thin": "Thin",
+        "medium": "Medium",
+        "thick": "Thick"
+      },
+      "borderStyle": "Border style",
+      "borderStyles": {
+        "solid": "Solid",
+        "double": "Double ring",
+        "dashed": "Dashed",
+        "glow": "Soft glow"
+      },
+      "size": "Size",
+      "sizes": {
+        "sm": "Small",
+        "md": "Medium",
+        "lg": "Large"
+      },
+      "position": "Position",
+      "positions": {
+        "start": "Left",
+        "center": "Centered"
+      },
+      "overlap": "Placement",
+      "overlaps": {
+        "edge": "On the banner edge",
+        "below": "Below the banner"
+      },
+      "corner": "Corner decoration",
+      "corners": {
+        "none": "None",
+        "sparkle": "Sparkle",
+        "flower": "Flower",
+        "heart": "Heart"
+      },
+      "decoration": "Decoration",
+      "decorationHelp": "Pick one, or none. It sits around your photo, never over it.",
+      "removeDecoration": "Remove decoration",
+      "decorationHidden": "Hidden: your plan doesn't include decorations",
+      "suggestTitle": "Add the {name} to your profile photo?",
+      "suggestBody": "It turns on and off with this banner.",
+      "suggestApply": "Add to my photo"
+    },
+    "banner": {
+      "type": "Banner type",
+      "none": "None",
+      "photo": "Photo",
+      "gradient": "Gradient",
+      "artwork": "Ready-made",
+      "cropHelp": "Tap or drag on the photo to choose what stays in view.",
+      "focusX": "Left – right",
+      "focusY": "Top – bottom",
+      "zoom": "Zoom",
+      "uploadPhoto": "Upload a photo",
+      "changePhoto": "Change photo",
+      "uploading": "Uploading…",
+      "photoHelp": "A wide photo works best. It's compressed before upload.",
+      "notAnImage": "That file isn't an image.",
+      "uploadFailed": "The photo couldn't be uploaded. Try again.",
+      "height": "Height",
+      "small": "Small",
+      "medium": "Medium",
+      "large": "Large",
+      "text": "Text on the banner (optional)",
+      "textPlaceholder": "e.g. New arrivals every Friday",
+      "textHelp": "{count} / {max} characters",
+      "align": "Text position",
+      "alignStart": "Bottom left",
+      "alignCenter": "Center",
+      "gradients": {
+        "creamBlush": "Cream and blush",
+        "blushPeach": "Blush and peach",
+        "lilacMist": "Lilac mist",
+        "roseDusk": "Rose dusk",
+        "peachSunset": "Peach sunset",
+        "aquaShore": "Aqua shore",
+        "emeraldGold": "Emerald and gold",
+        "noirGold": "Noir and gold"
+      },
+      "artworks": {
+        "kitengeDiamonds": "Kitenge diamonds",
+        "kitengeWaves": "Kitenge waves",
+        "petals": "Petals",
+        "goldArcs": "Gold arcs",
+        "softDots": "Soft dots"
+      },
+      "tooBig": "This photo is too large (max {mb} MB). Pick a smaller one."
+    },
+    "tabs": {
+      "changed": "changes not published",
+      "pro": "Pro"
+    },
+    "lock": {
+      "notice": "This section comes with Pro and Business. Try it here, then upgrade to publish.",
+      "link": "See plans",
+      "availableOnPro": "Available on Pro"
+    },
+    "sheet": {
+      "expand": "Show more",
+      "collapse": "Show less",
+      "close": "Close"
+    },
+    "leave": "You have changes that aren't saved yet. Leave anyway?"
   },
   "Demo": {
     "shopName": "Vano Demo",
@@ -909,15 +1246,17 @@
     "soon360Body": "Soon your customers will be able to turn a shoe all the way around before they order.",
     "soonTryOn": "Virtual try-on",
     "soonTryOnBody": "Soon customers will be able to see how an outfit could look on them.",
-    "designDetail": "Your shop should feel like your brand. Put your shop name and logo at the top and add a few lines about what you sell. Color themes are being built.",
+    "designDetail": "Your shop should feel like your brand. Pick a ready-made look, then make it yours with your colors, button style and a banner. Visitors only see your changes once you publish them.",
     "designBullet1": "Name and logo shown on every page",
     "designBullet2": "A few lines that introduce your brand",
-    "designBullet3": "Bold, soft or dark themes (coming soon)",
+    "designBullet3": "Nine ready-made looks, your colors, buttons and banner",
     "designCanChange": "What you can change",
     "canShopName": "Shop name",
     "canLogo": "Logo",
     "canDescription": "Description",
     "canColors": "Colors and style",
+    "canBanner": "Banner",
+    "canLooksNote": "Looks, colors and banner are on Pro and Business (and the free trial). Free shops get the Classic look.",
     "whatsappDetail": "Each product page has an order button. The chat opens with the item, the size and the price written for the customer, so you only need to reply.",
     "whatsappBullet1": "Item, size and price written for them",
     "whatsappBullet2": "You agree on delivery and payment in the chat",
@@ -1053,7 +1392,7 @@
       "oneBasicLook": "1 basic shop look",
       "salesPromotions": "Run sales and special offers on your shop",
       "productsAndPhotos": "Up to {products} products, {photos} photos each",
-      "allLooks": "All shop looks, colors, logo, and banner",
+      "allLooks": "All shop looks, colors, profile photo styles, and banner",
       "categoriesSizesColors": "Categories, sizes, and colors",
       "shopStats": "Shop stats (views, WhatsApp clicks, best-viewed products)",
       "prioritySupport": "Priority support",
@@ -1071,7 +1410,7 @@
       "serviceGuarantees": "Service guarantees"
     },
     "featureHints": {
-      "salesPromotions": "% off, price cuts, and Sale badges"
+      "salesPromotions": "Event banners you can schedule and share, % off, and Sale badges"
     },
     "faqEyebrow": "Questions",
     "faqTitle": "Pricing questions",
@@ -1384,7 +1723,8 @@
     "categories": {
       "all": "All types",
       "changeRequests": "Change requests",
-      "billing": "Plans & payments"
+      "billing": "Plans & payments",
+      "shop": "Your shop"
     },
     "field": {
       "name": "shop name",
@@ -1409,6 +1749,11 @@
         "activated": "Your {plan} plan is active until {date}",
         "expired": "{trial, select, true {Your free trial ended} other {Your {plan} plan ended}}. Your shop is now on Free",
         "endingSoon": "{trial, select, true {Your free trial} other {Your {plan} plan}} {days, plural, =0 {ends today} one {ends in # day} other {ends in # days}}"
+      },
+      "look": {
+        "resetBanner": "An admin removed your shop banner's photo or text. Reason: {reason}",
+        "resetAll": "An admin reset your shop look to Classic. Reason: {reason}",
+        "resetProfile": "An admin reset your shop's profile photo (shape, border, decoration). Reason: {reason}"
       }
     }
   },
@@ -1500,5 +1845,228 @@
     "selectedCount": "{count} selected",
     "clearSelection": "Clear selection",
     "bulkActions": "Actions for selected rows"
+  },
+  "EventBanners": {
+    "title": "Event & promo banner",
+    "intro": "Shown instead of your banner while it's on: sales, new arrivals, holidays.",
+    "pro": "Pro",
+    "lockedNote": "Event banners come with Pro and Business. Try them here, then upgrade to publish and download.",
+    "emptyTitle": "Run a sale or celebrate an event",
+    "emptyBody": "Pick a design, then make it yours.",
+    "chooseTemplate": "Choose a design",
+    "changeTemplate": "Change design",
+    "keepTemplate": "Keep this design",
+    "templateLabel": "Design",
+    "headline": "Headline",
+    "subline": "Second line",
+    "textCount": "{count}/{max} characters",
+    "colors": "Colors",
+    "font": "Headline style",
+    "fontSample": "Aa",
+    "stickers": {
+      "percentBurst": "Percent burst",
+      "saleTag": "Price tag",
+      "shoppingBag": "Shopping bag",
+      "star": "Star",
+      "sparkles": "Sparkles",
+      "diamond": "Diamond",
+      "crown": "Crown",
+      "heart": "Heart",
+      "heartOutline": "Heart outline",
+      "bow": "Bow",
+      "flower": "Flower",
+      "tulip": "Tulip",
+      "leaves": "Leaves",
+      "sun": "Sun",
+      "crescent": "Crescent moon",
+      "lantern": "Lantern",
+      "ornament": "Bauble",
+      "snowflake": "Snowflake",
+      "gift": "Gift",
+      "confetti": "Confetti",
+      "balloon": "Balloon",
+      "pencil": "Pencil"
+    },
+    "stickersHelp": "{count} of {max} chosen",
+    "stickersFull": "Remove one to add another.",
+    "height": "Size",
+    "small": "Small",
+    "medium": "Medium",
+    "large": "Large",
+    "remove": "Remove event banner",
+    "removeHint": "Your normal banner shows again once you publish.",
+    "endNow": "End it now",
+    "endNowDone": "Ended. Your normal banner is back.",
+    "templates": {
+      "sale": {
+        "name": "Sale",
+        "headline": "Big sale",
+        "subline": "Up to 50% off this week"
+      },
+      "newArrivals": {
+        "name": "New arrivals",
+        "headline": "New arrivals",
+        "subline": "Fresh styles just landed"
+      },
+      "restocked": {
+        "name": "Back in stock",
+        "headline": "Back in stock",
+        "subline": "Your favorites are here again"
+      },
+      "blackFriday": {
+        "name": "Black Friday",
+        "headline": "Black Friday",
+        "subline": "Our best prices of the year"
+      },
+      "christmas": {
+        "name": "Christmas",
+        "headline": "Merry Christmas",
+        "subline": "Gift ideas for everyone"
+      },
+      "newYear": {
+        "name": "New Year",
+        "headline": "Happy New Year",
+        "subline": "New year, new look"
+      },
+      "valentines": {
+        "name": "Valentine's Day",
+        "headline": "Valentine's Day",
+        "subline": "Gifts to say I love you"
+      },
+      "mothersDay": {
+        "name": "Mother's Day",
+        "headline": "For Mom, with love",
+        "subline": "Mother's Day gifts she'll treasure"
+      },
+      "womensDay": {
+        "name": "Women's Day",
+        "headline": "Happy Women's Day",
+        "subline": "Celebrating every one of you"
+      },
+      "eid": {
+        "name": "Eid",
+        "headline": "Eid Mubarak",
+        "subline": "Celebrate in style"
+      },
+      "backToSchool": {
+        "name": "Back to school",
+        "headline": "Back to school",
+        "subline": "Everything for the new school year"
+      },
+      "announcement": {
+        "name": "Announcement",
+        "headline": "Something new is coming",
+        "subline": "Follow us on WhatsApp for news"
+      },
+      "announcementBold": {
+        "name": "Big news",
+        "headline": "Big news!",
+        "subline": "Ask us on WhatsApp"
+      }
+    },
+    "templateCategories": {
+      "promo": "Promotions",
+      "season": "Seasons",
+      "celebration": "Celebrations",
+      "announcement": "Announcements"
+    },
+    "palettes": {
+      "hotPink": "Hot pink",
+      "blush": "Blush",
+      "lilac": "Lilac",
+      "violetPop": "Violet",
+      "plumNight": "Plum",
+      "coral": "Coral",
+      "peach": "Peach",
+      "sunshine": "Sunshine",
+      "gold": "Gold",
+      "noirGold": "Black and gold",
+      "ink": "Black",
+      "emerald": "Emerald",
+      "mint": "Mint",
+      "sky": "Sky",
+      "festiveRed": "Festive red",
+      "cream": "Cream"
+    },
+    "fonts": {
+      "modern": "Modern",
+      "bold": "Bold",
+      "elegant": "Elegant",
+      "script": "Handwritten",
+      "display": "Classic"
+    },
+    "stickerCategories": {
+      "sale": "Sale",
+      "shapes": "Shapes",
+      "love": "Love",
+      "nature": "Nature",
+      "seasonal": "Celebrations"
+    },
+    "schedule": {
+      "title": "When to show it",
+      "always": "Now, until I remove it",
+      "dates": "Pick dates",
+      "start": "Starts",
+      "startHelp": "Leave empty to start when you publish.",
+      "end": "Ends",
+      "endHelp": "Leave empty to keep it on until you remove it.",
+      "timezone": "Times are in your time zone.",
+      "order": "The end must be after the start.",
+      "tooFar": "The start must be within a year.",
+      "tooLong": "It can run for up to {days} days.",
+      "ended": "These dates have passed, so it won't show. Pick new dates to run it again."
+    },
+    "status": {
+      "notPublished": "Not published yet",
+      "live": "Live on your shop",
+      "liveUntil": "Live until {date}",
+      "scheduled": "Starts {date}",
+      "ended": "Ended {date}",
+      "hidden": "Hidden: your plan doesn't include event banners",
+      "publishToApply": "Publish to put your changes live."
+    },
+    "download": {
+      "title": "Share it on WhatsApp or Instagram",
+      "help": "Download your banner as an image for your status or a post.",
+      "story": "Status · 9:16",
+      "square": "Square post",
+      "wide": "Wide · 1200×630",
+      "making": "Making the image…",
+      "failed": "Couldn't make the image. Try again.",
+      "done": "Image ready",
+      "locked": "Downloads come with Pro and Business."
+    },
+    "headlineRequired": "Add a headline.",
+    "stickersTitle": "Stickers"
+  },
+  "ProfileDecorations": {
+    "none": "No decoration",
+    "categories": {
+      "crown": "Crowns",
+      "event": "Events",
+      "everyday": "Everyday"
+    },
+    "items": {
+      "goldCrown": "Gold crown",
+      "tiara": "Tiara",
+      "flowerCrown": "Flower crown",
+      "queen": "Queen",
+      "bossLady": "Boss lady",
+      "santaHat": "Santa hat",
+      "hearts": "Hearts",
+      "crescentStars": "Crescent and stars",
+      "eventFlowers": "Flowers",
+      "newYearSparkles": "New year sparkles",
+      "saleTag": "Sale tag",
+      "pencil": "Pencil",
+      "backpack": "Backpack",
+      "spookyHat": "Spooky hat",
+      "sparkles": "Sparkles",
+      "bow": "Bow",
+      "butterflies": "Butterflies",
+      "floralWreath": "Floral wreath",
+      "newSticker": "\"New\" sticker",
+      "saleSticker": "\"Sale\" sticker"
+    }
   }
 }

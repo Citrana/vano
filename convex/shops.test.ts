@@ -272,27 +272,7 @@ describe("shops.update", () => {
   });
 });
 
-describe("shops theme", () => {
-  test("create and update save the shop look", async () => {
-    const t = setup();
-    const { userId } = await sellerWithShop(t, "a@x.com", { theme: "soft" });
-    const me = as(t, userId);
-    expect((await me.query(api.shops.myShop, {}))?.theme).toBe("soft");
-    await me.mutation(api.shops.update, settingsArgs({ theme: "dark" }));
-    expect((await me.query(api.shops.myShop, {}))?.theme).toBe("dark");
-  });
-
-  test("rejects an unknown look", async () => {
-    const t = setup();
-    const { userId } = await sellerWithShop(t);
-    await expect(
-      as(t, userId).mutation(api.shops.update, {
-        ...settingsArgs(),
-        theme: "neon" as "bold",
-      }),
-    ).rejects.toThrow();
-  });
-
+describe("shops.update", () => {
   test("update keeps the onboarding progress", async () => {
     const t = setup();
     const { userId, shopId } = await sellerWithShop(t);
@@ -339,7 +319,9 @@ describe("shops.hideChecklist", () => {
     await expect(hide()).rejects.toThrow(/ONBOARDING_INCOMPLETE/);
     await me.mutation(api.products.create, await productArgs(t));
     await expect(hide()).rejects.toThrow(/ONBOARDING_INCOMPLETE/);
-    await me.mutation(api.shops.update, settingsArgs({ theme: "bold" }));
+    await me.mutation(api.shopLooks.saveDraft, { look: { v: 1, preset: "blush", overrides: {} } });
+    await expect(hide()).rejects.toThrow(/ONBOARDING_INCOMPLETE/); // a draft isn't enough
+    await me.mutation(api.shopLooks.publish, {});
     await expect(hide()).rejects.toThrow(/ONBOARDING_INCOMPLETE/);
     await me.mutation(api.shops.markLinkShared, {});
     await hide();

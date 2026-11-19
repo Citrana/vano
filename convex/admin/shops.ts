@@ -8,6 +8,7 @@ import { adminMutation, adminQuery } from "../lib/access";
 import { sortOrderValidator, type SortOrder } from "../lib/listOrder";
 import { logAdminAction } from "../lib/audit";
 import { fail } from "../lib/errors";
+import { deleteShopLook } from "../lib/looks/store";
 import { onProductDeleted, onShopDayStatsDeleted, onShopDeleted } from "../lib/platformStats";
 import { deleteFilesNotIn } from "../lib/seller";
 import { categoryValidator, languageValidator, LIMITS, type Category } from "../lib/catalog";
@@ -249,6 +250,7 @@ export const remove = adminMutation({
       .withIndex("by_shopId", (q) => q.eq("shopId", shopId))
       .take(LIMITS.maxProducts);
     await deleteFilesNotIn(ctx, shop.logoId ? [shop.logoId] : [], []);
+    await deleteShopLook(ctx, shopId);
     await onShopDeleted(ctx, shop);
     // The subscription goes with the shop; payments are kept as financial
     // history (they carry a snapshot of the shop name).

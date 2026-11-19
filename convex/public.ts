@@ -3,6 +3,7 @@ import type { Doc } from "./_generated/dataModel";
 import { query, type QueryCtx } from "./_generated/server";
 import { getEntitlements, shopProducts, visibleProductIds } from "./lib/entitlements";
 import { urlOf, urlsOf } from "./lib/images";
+import { publicLookFor } from "./lib/looks/store";
 import { readSettings } from "./lib/settings";
 
 /**
@@ -15,7 +16,8 @@ import { readSettings } from "./lib/settings";
  * no WhatsApp number, products or logo. Products hidden by an admin are
  * left out (and their page is a 404), and so are products over the shop's
  * plan limit (CLAUDE.md "Billing"); only the plan's number of photos per
- * product is shown.
+ * product is shown. The shop's look is the published one only when the
+ * plan includes `allLooks` (CLAUDE.md "Shop looks"), else the free look.
  */
 
 function suspendedMarker(shop: Doc<"shops">) {
@@ -37,6 +39,8 @@ async function publicShop(ctx: QueryCtx, shop: Doc<"shops">) {
     city: shop.city,
     country: shop.country,
     logoUrl: await urlOf(ctx, shop.logoId),
+    /** The published look, or the free look when the plan doesn't include it. Never the draft. */
+    look: await publicLookFor(ctx, shop),
   };
 }
 

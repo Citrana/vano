@@ -11,7 +11,7 @@ import {
 import { notificationKindValidator } from "./notifications/kinds";
 import { notificationCategoryValidator, notificationDataValidator } from "./notifications/types";
 import { currencyValidator } from "./lib/money";
-import { shopThemeValidator } from "./lib/themes";
+import { storedLookValidator } from "./lib/looks/validators";
 import {
   nextActionValidator,
   paymentOutcomeValidator,
@@ -98,8 +98,11 @@ export default defineSchema({
     /** ISO 3166-1 alpha-2, e.g. "CD". */
     country: v.string(),
     logoId: v.optional(v.id("_storage")),
-    /** The shop look picked in settings; missing = not picked yet. */
-    theme: v.optional(shopThemeValidator),
+    /**
+     * Legacy look picker, replaced by `shopLooks`. Moved there by
+     * `migrations:looksV1`; drop this field once it has run everywhere.
+     */
+    theme: v.optional(v.union(v.literal("bold"), v.literal("soft"), v.literal("dark"))),
     /** Dashboard checklist progress the seller can't derive from data. */
     onboarding: v.optional(
       v.object({
@@ -115,6 +118,34 @@ export default defineSchema({
     .index("by_status_and_currency", ["status", "currency"])
     .index("by_currency", ["currency"])
     .searchIndex("search_name", { searchField: "name", filterFields: ["status", "currency"] }),
+
+  /**
+   * A shop's look (CLAUDE.md "Shop looks"): one row per shop, written only
+   * by `convex/shopLooks.ts` and `admin/shopLooks.ts`. No row or no
+   * `published` = the free look.
+   */
+  shopLooks: defineTable({
+    shopId: v.id("shops"),
+    /** Unpublished edits; only the owner sees them. */
+    draft: v.optional(storedLookValidator),
+    /** What visitors see (when the plan allows it). */
+    published: v.optional(storedLookValidator),
+    draftUpdatedAt: v.optional(v.number()),
+    publishedAt: v.optional(v.number()),
+    /** Set when an admin reset the look; the editor tells the seller. */
+    resetByAdminAt: v.optional(v.number()),
+    /**
+     * Whether the published event & promo banner is live right now (queries
+     * can't read the clock). Kept current by `shopLookJobs.syncSchedules`,
+     * scheduled at its start and end.
+     */
+    promoLive: v.optional(v.boolean()),
+    /**
+     * Whether the published profile decoration is live right now (its
+     * dates). Kept current by `shopLookJobs.syncSchedules`, like `promoLive`.
+     */
+    decorationLive: v.optional(v.boolean()),
+  }).index("by_shopId", ["shopId"]),
 
   products: defineTable({
     shopId: v.id("shops"),

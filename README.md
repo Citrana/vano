@@ -139,6 +139,15 @@ npx convex run migrations:notificationsV1          # "started" (or "already_done
 npx convex run migrations:notificationsV1Status    # status: "done", left: 0
 ```
 
+Shop looks: the old look picker (`shops.theme`: bold / soft / dark) moves to
+the new Shop look store as a published Classic / Blush / Noir look. Shops
+that already designed a look keep it:
+
+```bash
+npx convex run migrations:looksV1          # "started" (or "already_done")
+npx convex run migrations:looksV1Status    # status: "done"
+```
+
 ## First super admin
 
 Super admins can't sign up: the first one is created from the terminal.

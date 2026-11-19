@@ -169,7 +169,7 @@ describe("announcementProblem", () => {
 
 describe("onboarding", () => {
   test("new shop: only the first step is done", () => {
-    const steps = onboardingSteps({ productCount: 0, theme: undefined, linkSharedAt: undefined });
+    const steps = onboardingSteps({ productCount: 0, hasLook: false, linkSharedAt: undefined });
     expect(steps).toEqual([
       { key: "created", done: true },
       { key: "product", done: false },
@@ -180,7 +180,7 @@ describe("onboarding", () => {
   });
 
   test("all done with a product, a look and a shared link", () => {
-    const steps = onboardingSteps({ productCount: 2, theme: "soft", linkSharedAt: 1 });
+    const steps = onboardingSteps({ productCount: 2, hasLook: true, linkSharedAt: 1 });
     expect(allStepsDone(steps)).toBe(true);
   });
 });

@@ -43,6 +43,7 @@ export const AUDIT_ACTIONS = [
   "shop.nameChanged",
   "shop.slugChanged",
   "shop.whatsappChanged",
+  "shop.lookReset",
 ] as const;
 
 export const auditActionValidator = v.union(
@@ -78,6 +79,7 @@ export const auditActionValidator = v.union(
   v.literal("shop.nameChanged"),
   v.literal("shop.slugChanged"),
   v.literal("shop.whatsappChanged"),
+  v.literal("shop.lookReset"),
 );
 export type AuditAction = Infer<typeof auditActionValidator>;
 

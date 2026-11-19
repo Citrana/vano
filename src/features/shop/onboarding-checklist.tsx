@@ -15,7 +15,7 @@ import { useErrorMessage } from "@/lib/use-error-message"
 import { SHARE_CARD_ID } from "./share-shop-card"
 
 type ChecklistShop = {
-  theme?: string
+  hasLook: boolean
   onboarding?: { linkSharedAt?: number; checklistHiddenAt?: number }
 }
 
@@ -23,7 +23,7 @@ type ActionStep = Exclude<OnboardingStepKey, "created">
 
 const STEP_HREF: Partial<Record<ActionStep, string>> = {
   product: "/dashboard/products/new",
-  look: "/dashboard/settings#look",
+  look: "/dashboard/look",
 }
 
 /** Scrolls to the share card and moves focus there (it's above on phones). */
@@ -55,7 +55,7 @@ export function OnboardingChecklist({
   if (shop.onboarding?.checklistHiddenAt !== undefined) return null
   const steps = onboardingSteps({
     productCount,
-    theme: shop.theme,
+    hasLook: shop.hasLook,
     linkSharedAt: shop.onboarding?.linkSharedAt,
   })
   const done = steps.filter((step) => step.done).length

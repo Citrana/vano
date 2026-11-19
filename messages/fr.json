@@ -80,7 +80,12 @@
     "CODE_EXPIRED": "Ce code a expiré. Demandez-en un nouveau.",
     "CODE_TOO_MANY_ATTEMPTS": "Trop de codes incorrects. Demandez-en un nouveau.",
     "CODE_RATE_LIMITED": "Patientez une minute avant de demander un autre code.",
-    "VERIFICATION_UNAVAILABLE": "La vérification du numéro n'est pas encore disponible. Contactez-nous pour changer votre numéro."
+    "VERIFICATION_UNAVAILABLE": "La vérification du numéro n'est pas encore disponible. Contactez-nous pour changer votre numéro.",
+    "LOOK_INVALID": "Certains réglages du style ne sont pas valides. Vérifiez les couleurs et le texte de la bannière.",
+    "LOOK_CONTRAST": "Certains textes seraient trop difficiles à lire avec ces couleurs. Appliquez une correction proposée, puis publiez.",
+    "LOOK_NO_DRAFT": "Il n'y a aucune modification à publier.",
+    "PROMO_SCHEDULE_INVALID": "Vérifiez les dates de la bannière d'événement : la fin doit suivre le début, dans les 92 jours, et le début doit être dans moins d'un an.",
+    "DECORATION_SCHEDULE_INVALID": "Vérifiez les dates de la décoration de la photo : la fin doit suivre le début, dans les 92 jours, et le début doit être dans moins d'un an."
   },
   "Validation": {
     "required": "Ce champ est obligatoire.",
@@ -145,12 +150,14 @@
   "Seller": {
     "dashboard": "Tableau de bord",
     "settings": "Paramètres de la boutique",
+    "settingsShort": "Réglages",
     "viewShop": "Voir ma boutique",
     "menu": "Menu",
     "admin": "Admin",
     "billing": "Forfait",
     "profileMenu": "Menu du compte",
-    "account": "Connecté en tant que"
+    "account": "Connecté en tant que",
+    "look": "Style"
   },
   "Onboarding": {
     "title": "Créez votre boutique",
@@ -192,7 +199,9 @@
     "saved": "Paramètres enregistrés",
     "charCount": "{count}/{max}",
     "whatsappCode": "Indicatif du pays",
-    "lookHelp": "Le style de votre boutique publique. Vous pouvez le changer à tout moment.",
+    "lookLabel": "Style de la boutique",
+    "lookLink": "Personnaliser le style",
+    "lookHelp": "Couleurs, boutons et bannière de votre boutique publique. Modifiez-les sur la page Style de la boutique.",
     "currencyLocked": "Verrouillée car votre boutique a des produits : leurs prix sont dans cette devise."
   },
   "Dashboard": {
@@ -239,7 +248,7 @@
         },
         "look": {
           "title": "Choisissez le style de votre boutique",
-          "body": "Choisissez le style que vos clients verront.",
+          "body": "Choisissez un style, personnalisez-le et publiez-le.",
           "action": "Choisir un style"
         },
         "share": {
@@ -340,7 +349,18 @@
     "unavailableTitle": "{shop} est temporairement indisponible",
     "unavailableBody": "Cette boutique ne peut pas prendre de commandes pour le moment. Revenez plus tard.",
     "unavailableMetaTitle": "{shop} – temporairement indisponible",
-    "demoOrderNote": "(Commande de démonstration depuis la boutique démo Vano.)"
+    "demoOrderNote": "(Commande de démonstration depuis la boutique démo Vano.)",
+    "orderLabels": {
+      "order": "Commander sur WhatsApp",
+      "want": "Je le veux",
+      "orderNow": "Commander maintenant"
+    },
+    "profileBadges": {
+      "queen": "Reine",
+      "bossLady": "Boss lady",
+      "new": "Nouveau",
+      "sale": "Promo"
+    }
   },
   "NotFound": {
     "title": "Page introuvable",
@@ -457,7 +477,8 @@
       "title": "Boutiques",
       "view": "Voir les boutiques",
       "suspend": "Suspendre et réactiver des boutiques",
-      "delete": "Supprimer des boutiques"
+      "delete": "Supprimer des boutiques",
+      "resetLook": "Réinitialiser le style d'une boutique"
     },
     "products": {
       "title": "Produits",
@@ -589,7 +610,42 @@
     "deleteForever": "Supprimer définitivement",
     "deleted": "Boutique supprimée.",
     "notFoundTitle": "Boutique introuvable",
-    "notFoundBody": "Cette boutique n'existe pas ou a été supprimée."
+    "notFoundBody": "Cette boutique n'existe pas ou a été supprimée.",
+    "look": {
+      "title": "Style de la boutique",
+      "preset": "Style",
+      "hiddenByPlan": "masqué par le forfait (les visiteurs voient Classique)",
+      "bannerText": "Texte de la bannière",
+      "none": "Aucun",
+      "draft": "Brouillon non publié",
+      "draftPhoto": "photo de bannière",
+      "publishedAt": "Publié",
+      "never": "Jamais",
+      "lastReset": "Dernière réinitialisation par un administrateur",
+      "resetHint": "Retirez une photo ou un texte de bannière inapproprié, réinitialisez la photo de profil ou tout le style. Le vendeur est informé de la raison.",
+      "reset": "Réinitialiser le style",
+      "resetTitle": "Réinitialiser le style de {name} ?",
+      "resetBody": "Cela s'applique au style en ligne et au brouillon du vendeur. Les photos retirées sont supprimées.",
+      "scope": "Que réinitialiser",
+      "scopeBanner": "Photo et texte de la bannière",
+      "scopeProfile": "Photo de profil",
+      "scopeAll": "Tout le style",
+      "scopeBannerHint": "Les couleurs et les boutons restent. La photo de bannière est retirée, le texte effacé et la bannière d'événement retirée.",
+      "scopeProfileHint": "Les couleurs, boutons et bannières restent. La forme, le contour et la décoration de la photo de profil reviennent par défaut.",
+      "scopeAllHint": "La boutique revient au style Classique, boutons Classiques compris.",
+      "reason": "Raison (envoyée au vendeur)",
+      "reasonHelp": "{min} à {max} caractères.",
+      "resetDone": "Style réinitialisé. Le vendeur a été informé.",
+      "promo": "Bannière d'événement",
+      "promoLive": "En ligne",
+      "promoNotLive": "Non affichée (hors de ses dates)",
+      "promoDates": "{start} → {end}",
+      "promoNoStart": "dès la publication",
+      "promoNoEnd": "jusqu'au retrait",
+      "draftPromo": "Bannière d'événement (brouillon)",
+      "decoration": "Décoration de la photo",
+      "draftDecoration": "Brouillon : {name}"
+    }
   },
   "ShopStatus": {
     "active": "Active",
@@ -640,7 +696,8 @@
       "delete": "A supprimé une boutique",
       "nameChanged": "Nom de la boutique modifié",
       "slugChanged": "Lien de la boutique modifié",
-      "whatsappChanged": "Numéro WhatsApp de la boutique modifié"
+      "whatsappChanged": "Numéro WhatsApp de la boutique modifié",
+      "lookReset": "A réinitialisé le style d'une boutique"
     },
     "product": {
       "hide": "A masqué un produit",
@@ -704,7 +761,12 @@
     "field": "Champ",
     "newValue": "Nouvelle valeur",
     "flags": "Alertes",
-    "cooldownOverridden": "Délai ignoré"
+    "cooldownOverridden": "Délai ignoré",
+    "scope": "Élément réinitialisé",
+    "bannerText": "Texte de la bannière",
+    "bannerPhoto": "Photo de bannière",
+    "promoHeadline": "Titre de la bannière d'événement",
+    "decoration": "Décoration de la photo"
   },
   "AdminActivity": {
     "title": "Historique d'activité",
@@ -792,11 +854,286 @@
     "footerPrivacy": "Confidentialité",
     "footerRights": "© {year} Vano. Tous droits réservés."
   },
-  "ShopThemes": {
+  "ShopLooks": {
     "label": "Style de la boutique",
-    "bold": "Audacieux",
-    "soft": "Doux",
-    "dark": "Sombre"
+    "presets": {
+      "classic": "Classique",
+      "blush": "Rose poudré",
+      "lavender": "Lavande",
+      "emeraldGold": "Émeraude & Or",
+      "noir": "Noir",
+      "sunset": "Coucher de soleil",
+      "roseGarden": "Jardin de roses",
+      "ocean": "Océan",
+      "kitenge": "Kitenge"
+    }
+  },
+  "LookEditor": {
+    "title": "Style de la boutique",
+    "sections": {
+      "label": "Sections",
+      "looks": "Styles",
+      "colors": "Couleurs",
+      "buttons": "Boutons",
+      "banner": "Bannière",
+      "profile": "Photo de profil",
+      "events": "Bannières d'événement",
+      "pick": "Choisissez une section ci-dessus pour la modifier. L'aperçu se met à jour en direct.",
+      "looksHint": "Des styles prêts à l'emploi : un geste règle les couleurs, les boutons et la bannière.",
+      "colorsHint": "Choisissez des couleurs qui vont bien ensemble, ou les vôtres.",
+      "buttonsHint": "Le design, la décoration et le texte des boutons de votre boutique, ainsi que leur forme et leur style.",
+      "bannerHint": "La bannière en haut de votre boutique : votre photo, un dégradé ou un motif prêt à l'emploi.",
+      "profileHint": "La forme, le contour et la taille de votre photo de profil, et une décoration pour vos événements.",
+      "eventsHint": "Soldes, nouveautés, fêtes : s'affiche à la place de votre bannière pendant qu'elle est active, et se partage facilement."
+    },
+    "status": {
+      "saving": "Enregistrement du brouillon…",
+      "error": "Le brouillon n'a pas pu être enregistré.",
+      "draft": "Brouillon enregistré · pas encore en ligne",
+      "live": "En ligne sur votre boutique",
+      "default": "Votre boutique utilise le style par défaut"
+    },
+    "actions": {
+      "publish": "Publier",
+      "discard": "Annuler les modifications",
+      "viewShop": "Voir ma boutique",
+      "retry": "Réessayer",
+      "upgrade": "Voir les forfaits",
+      "preview": "Aperçu",
+      "reset": "Tout remettre au style d'origine",
+      "resetSection": "Revenir au style d'origine"
+    },
+    "notices": {
+      "hiddenByPlan": "Les visiteurs voient le style Classique car votre forfait n'inclut pas les styles personnalisés. Votre création est conservée : passez à un forfait supérieur pour la retrouver.",
+      "resetByAdmin": "Un administrateur a réinitialisé le style de votre boutique le {date}.",
+      "seeNotifications": "Voir la raison dans vos notifications",
+      "promoHidden": "Votre forfait n'affiche pas les bannières d'événement aux visiteurs. Votre bannière est enregistrée : passez à un forfait supérieur pour la retrouver."
+    },
+    "hints": {
+      "planLocked": "Votre forfait permet de publier uniquement le style Classique et une photo de profil simple. Passez à un forfait supérieur pour publier celui-ci.",
+      "blocking": "Corrigez les couleurs signalées en rouge avant de publier.",
+      "promoLocked": "Les bannières d'événement nécessitent Pro ou Business. Retirez-la pour publier, ou changez de forfait."
+    },
+    "preview": {
+      "show": "Afficher",
+      "draft": "Mon brouillon",
+      "live": "En ligne",
+      "label": "Aperçu de votre boutique sur un téléphone",
+      "title": "Aperçu",
+      "sample": "Produits d'exemple : ajoutez les vôtres pour les voir ici.",
+      "banner": "Bannière",
+      "eventBanner": "Événement",
+      "normalBanner": "Habituelle",
+      "width": "Écran",
+      "phone": "Téléphone",
+      "wide": "Ordinateur",
+      "wideLabel": "Votre boutique sur ordinateur",
+      "expand": "Aperçu complet",
+      "sampleFill": "Des produits d'exemple remplissent les places vides."
+    },
+    "confirm": {
+      "discardTitle": "Annuler vos modifications ?",
+      "discardBody": "Votre brouillon revient à ce qui est en ligne sur votre boutique. Cette action est définitive.",
+      "publishTitle": "Publier malgré les alertes de lisibilité ?",
+      "publishBody": "Certains éléments peuvent être difficiles à lire pour certains clients. Vous pouvez publier quand même, ou appliquer d'abord les corrections proposées.",
+      "cancel": "Annuler",
+      "publishAnyway": "Publier quand même"
+    },
+    "toast": {
+      "published": "Votre nouveau style est en ligne.",
+      "saveFailed": "Le brouillon n'a pas pu être enregistré. Vérifiez votre connexion et réessayez.",
+      "discarded": "Modifications annulées."
+    },
+    "looks": {
+      "current": "Basé sur {name}",
+      "customized": "personnalisé",
+      "pro": "Pro",
+      "lockedHint": "nécessite un forfait Pro ou Business pour être publié"
+    },
+    "colors": {
+      "intro": "Choisissez parmi des couleurs qui vont bien ensemble, ou choisissez les vôtres.",
+      "accent": "Couleur d'accent",
+      "background": "Fond",
+      "swatch": "Couleur {color}",
+      "custom": "Personnalisée",
+      "hexLabel": "{field}, code hexadécimal",
+      "customInUse": "Votre propre couleur",
+      "usePreset": "Utiliser les couleurs du style"
+    },
+    "contrast": {
+      "targets": {
+        "text": "Texte :",
+        "badge": "Badges et puces sélectionnées :",
+        "chip": "Puces sélectionnées :",
+        "eventText": "Texte de la bannière d'événement :",
+        "buttonDesign": "Boutons et puces Éclat :",
+        "profileBorder": "Contour de la photo de profil :"
+      },
+      "blocking": "trop difficile à lire ({ratio}:1). La publication est bloquée tant que ce n'est pas corrigé.",
+      "warning": "peut être difficile à lire ({ratio}:1).",
+      "fixAccent": "Utiliser l'accent {color}",
+      "fixBackground": "Utiliser le fond {color}",
+      "fixProfileBorder": "Utiliser le contour {color}"
+    },
+    "buttons": {
+      "shape": "Forme",
+      "rounded": "Arrondie",
+      "pill": "Pilule",
+      "square": "Carrée",
+      "fill": "Remplissage",
+      "solid": "Plein",
+      "outline": "Contour",
+      "weight": "Style",
+      "soft": "Doux",
+      "bold": "Marqué",
+      "sample": "Exemple",
+      "whatsappNote": "Le bouton de commande reste toujours vert WhatsApp pour que les clients le repèrent.",
+      "design": "Design",
+      "tileSample": "Commander",
+      "decoration": "Décoration",
+      "label": "Texte du bouton",
+      "designs": {
+        "classic": "Classique",
+        "floral": "Fleuri",
+        "sparkle": "Étincelle",
+        "heart": "Cœur",
+        "bow": "Nœud",
+        "scalloped": "Festonné",
+        "sticker": "Autocollant",
+        "glow": "Éclat"
+      },
+      "decorations": {
+        "none": "Sans décoration",
+        "flower": "Fleur",
+        "heart": "Cœur",
+        "star": "Étoile",
+        "bow": "Nœud",
+        "sparkle": "Étincelle"
+      }
+    },
+    "profile": {
+      "shape": "Forme de la photo",
+      "shapes": {
+        "circle": "Cercle",
+        "rounded": "Arrondi",
+        "squircle": "Carré doux",
+        "flower": "Fleur",
+        "arch": "Arche"
+      },
+      "borderColor": "Couleur du contour",
+      "colorTokens": {
+        "accent": "Assortie à ma boutique",
+        "chip": "Couleur des badges",
+        "foreground": "Couleur du texte"
+      },
+      "customColor": "Personnalisée",
+      "customColorHex": "Couleur du contour, code hex",
+      "customInUse": "Votre propre couleur",
+      "borderWidth": "Contour",
+      "borderWidths": {
+        "none": "Aucun",
+        "thin": "Fin",
+        "medium": "Moyen",
+        "thick": "Épais"
+      },
+      "borderStyle": "Style du contour",
+      "borderStyles": {
+        "solid": "Plein",
+        "double": "Double anneau",
+        "dashed": "Pointillé",
+        "glow": "Halo doux"
+      },
+      "size": "Taille",
+      "sizes": {
+        "sm": "Petite",
+        "md": "Moyenne",
+        "lg": "Grande"
+      },
+      "position": "Position",
+      "positions": {
+        "start": "À gauche",
+        "center": "Centrée"
+      },
+      "overlap": "Emplacement",
+      "overlaps": {
+        "edge": "Sur le bord de la bannière",
+        "below": "Sous la bannière"
+      },
+      "corner": "Décoration d'angle",
+      "corners": {
+        "none": "Aucune",
+        "sparkle": "Étincelle",
+        "flower": "Fleur",
+        "heart": "Cœur"
+      },
+      "decoration": "Décoration",
+      "decorationHelp": "Choisissez-en une, ou aucune. Elle se place autour de votre photo, jamais dessus.",
+      "removeDecoration": "Retirer la décoration",
+      "decorationHidden": "Masquée : votre forfait n'inclut pas les décorations",
+      "suggestTitle": "Ajouter « {name} » à votre photo de profil ?",
+      "suggestBody": "Elle s'active et s'arrête avec cette bannière.",
+      "suggestApply": "Ajouter à ma photo"
+    },
+    "banner": {
+      "type": "Type de bannière",
+      "none": "Aucune",
+      "photo": "Photo",
+      "gradient": "Dégradé",
+      "artwork": "Prête à l'emploi",
+      "cropHelp": "Touchez ou faites glisser sur la photo pour choisir ce qui reste visible.",
+      "focusX": "Gauche – droite",
+      "focusY": "Haut – bas",
+      "zoom": "Zoom",
+      "uploadPhoto": "Ajouter une photo",
+      "changePhoto": "Changer la photo",
+      "uploading": "Envoi…",
+      "photoHelp": "Une photo large donne le meilleur résultat. Elle est compressée avant l'envoi.",
+      "notAnImage": "Ce fichier n'est pas une image.",
+      "uploadFailed": "La photo n'a pas pu être envoyée. Réessayez.",
+      "height": "Hauteur",
+      "small": "Petite",
+      "medium": "Moyenne",
+      "large": "Grande",
+      "text": "Texte sur la bannière (facultatif)",
+      "textPlaceholder": "ex. Nouveautés chaque vendredi",
+      "textHelp": "{count} / {max} caractères",
+      "align": "Position du texte",
+      "alignStart": "En bas à gauche",
+      "alignCenter": "Au centre",
+      "gradients": {
+        "creamBlush": "Crème et rose",
+        "blushPeach": "Rose et pêche",
+        "lilacMist": "Brume lilas",
+        "roseDusk": "Rose crépuscule",
+        "peachSunset": "Coucher pêche",
+        "aquaShore": "Rivage turquoise",
+        "emeraldGold": "Émeraude et or",
+        "noirGold": "Noir et or"
+      },
+      "artworks": {
+        "kitengeDiamonds": "Losanges kitenge",
+        "kitengeWaves": "Vagues kitenge",
+        "petals": "Pétales",
+        "goldArcs": "Arcs dorés",
+        "softDots": "Pois doux"
+      },
+      "tooBig": "Cette photo est trop lourde (max {mb} Mo). Choisissez-en une plus légère."
+    },
+    "tabs": {
+      "changed": "modifications non publiées",
+      "pro": "Pro"
+    },
+    "lock": {
+      "notice": "Cette section est incluse dans Pro et Business. Essayez-la ici, puis passez à un forfait supérieur pour publier.",
+      "link": "Voir les forfaits",
+      "availableOnPro": "Disponible avec Pro"
+    },
+    "sheet": {
+      "expand": "Agrandir",
+      "collapse": "Réduire",
+      "close": "Fermer"
+    },
+    "leave": "Certaines modifications ne sont pas encore enregistrées. Quitter quand même ?"
   },
   "Demo": {
     "shopName": "Vano Démo",
@@ -909,15 +1246,17 @@
     "soon360Body": "Bientôt, vos clients pourront faire tourner une chaussure sous tous les angles avant de commander.",
     "soonTryOn": "Essayage virtuel",
     "soonTryOnBody": "Bientôt, vos clients pourront voir à quoi une tenue pourrait ressembler sur eux.",
-    "designDetail": "Votre boutique doit ressembler à votre marque. Affichez le nom et le logo en haut et ajoutez quelques lignes sur ce que vous vendez. Les thèmes de couleurs sont en préparation.",
+    "designDetail": "Votre boutique doit ressembler à votre marque. Choisissez un style prêt à l'emploi, puis personnalisez-le avec vos couleurs, le style des boutons et une bannière. Les visiteurs ne voient vos changements qu'une fois publiés.",
     "designBullet1": "Nom et logo affichés sur chaque page",
     "designBullet2": "Quelques lignes pour présenter votre marque",
-    "designBullet3": "Thèmes audacieux, doux ou sombre (bientôt)",
+    "designBullet3": "Neuf styles prêts à l’emploi, vos couleurs, vos boutons et une bannière",
     "designCanChange": "Ce que vous pouvez changer",
     "canShopName": "Nom de la boutique",
     "canLogo": "Logo",
     "canDescription": "Description",
     "canColors": "Couleurs et style",
+    "canBanner": "Bannière",
+    "canLooksNote": "Les styles, couleurs et la bannière sont inclus dans Pro et Business (et l'essai gratuit). Les boutiques gratuites ont le style Classique.",
     "whatsappDetail": "Chaque fiche produit a un bouton de commande. La discussion s'ouvre avec l'article, la taille et le prix déjà écrits pour le client : il ne vous reste qu'à répondre.",
     "whatsappBullet1": "Article, taille et prix écrits pour eux",
     "whatsappBullet2": "Vous convenez de la livraison et du paiement dans la discussion",
@@ -1053,7 +1392,7 @@
       "oneBasicLook": "1 style de boutique de base",
       "salesPromotions": "Lancez des promotions et offres spéciales sur votre boutique",
       "productsAndPhotos": "Jusqu'à {products} produits, {photos} photos chacun",
-      "allLooks": "Tous les styles, couleurs, logo et bannière",
+      "allLooks": "Tous les styles, couleurs, styles de photo de profil et bannière",
       "categoriesSizesColors": "Catégories, tailles et couleurs",
       "shopStats": "Statistiques (vues, clics WhatsApp, produits les plus vus)",
       "prioritySupport": "Assistance prioritaire",
@@ -1071,7 +1410,7 @@
       "serviceGuarantees": "Garanties de service"
     },
     "featureHints": {
-      "salesPromotions": "Réductions en %, baisses de prix et badges Promo"
+      "salesPromotions": "Bannières d'événement à programmer et partager, réductions en % et badges Promo"
     },
     "faqEyebrow": "Questions",
     "faqTitle": "Questions sur les tarifs",
@@ -1384,7 +1723,8 @@
     "categories": {
       "all": "Tous les types",
       "changeRequests": "Demandes de modification",
-      "billing": "Forfaits et paiements"
+      "billing": "Forfaits et paiements",
+      "shop": "Votre boutique"
     },
     "field": {
       "name": "nom de boutique",
@@ -1409,6 +1749,11 @@
         "activated": "Votre forfait {plan} est actif jusqu'au {date}",
         "expired": "{trial, select, true {Votre essai gratuit est terminé} other {Votre forfait {plan} est terminé}}. Votre boutique est passée au forfait Gratuit",
         "endingSoon": "{trial, select, true {Votre essai gratuit} other {Votre forfait {plan}}} {days, plural, =0 {se termine aujourd'hui} one {se termine dans # jour} other {se termine dans # jours}}"
+      },
+      "look": {
+        "resetBanner": "Un administrateur a retiré la photo ou le texte de la bannière de votre boutique. Raison : {reason}",
+        "resetAll": "Un administrateur a remis le style de votre boutique sur Classique. Raison : {reason}",
+        "resetProfile": "Un administrateur a réinitialisé la photo de profil de votre boutique (forme, contour, décoration). Raison : {reason}"
       }
     }
   },
@@ -1500,5 +1845,228 @@
     "selectedCount": "{count, plural, one {# sélectionné} other {# sélectionnés}}",
     "clearSelection": "Annuler la sélection",
     "bulkActions": "Actions sur la sélection"
+  },
+  "EventBanners": {
+    "title": "Bannière d'événement et de promo",
+    "intro": "S'affiche à la place de votre bannière pendant qu'elle est active : soldes, nouveautés, fêtes.",
+    "pro": "Pro",
+    "lockedNote": "Les bannières d'événement sont incluses dans Pro et Business. Essayez-les ici, puis passez à un forfait supérieur pour les publier et les télécharger.",
+    "emptyTitle": "Lancez des soldes ou fêtez un événement",
+    "emptyBody": "Choisissez un modèle, puis personnalisez-le.",
+    "chooseTemplate": "Choisir un modèle",
+    "changeTemplate": "Changer de modèle",
+    "keepTemplate": "Garder ce modèle",
+    "templateLabel": "Modèle",
+    "headline": "Titre",
+    "subline": "Deuxième ligne",
+    "textCount": "{count}/{max} caractères",
+    "colors": "Couleurs",
+    "font": "Style du titre",
+    "fontSample": "Aa",
+    "stickers": {
+      "percentBurst": "Étoile pourcentage",
+      "saleTag": "Étiquette",
+      "shoppingBag": "Sac shopping",
+      "star": "Étoile",
+      "sparkles": "Étincelles",
+      "diamond": "Diamant",
+      "crown": "Couronne",
+      "heart": "Cœur",
+      "heartOutline": "Contour de cœur",
+      "bow": "Nœud",
+      "flower": "Fleur",
+      "tulip": "Tulipe",
+      "leaves": "Feuilles",
+      "sun": "Soleil",
+      "crescent": "Croissant de lune",
+      "lantern": "Lanterne",
+      "ornament": "Boule de Noël",
+      "snowflake": "Flocon",
+      "gift": "Cadeau",
+      "confetti": "Confettis",
+      "balloon": "Ballon",
+      "pencil": "Crayon"
+    },
+    "stickersHelp": "{count} sur {max} choisis",
+    "stickersFull": "Retirez-en un pour en ajouter un autre.",
+    "height": "Taille",
+    "small": "Petite",
+    "medium": "Moyenne",
+    "large": "Grande",
+    "remove": "Retirer la bannière d'événement",
+    "removeHint": "Votre bannière habituelle revient dès que vous publiez.",
+    "endNow": "Arrêter maintenant",
+    "endNowDone": "Terminé. Votre bannière habituelle est de retour.",
+    "templates": {
+      "sale": {
+        "name": "Soldes",
+        "headline": "Grandes soldes",
+        "subline": "Jusqu'à -50 % cette semaine"
+      },
+      "newArrivals": {
+        "name": "Nouveautés",
+        "headline": "Nouveautés",
+        "subline": "Les nouveaux styles sont arrivés"
+      },
+      "restocked": {
+        "name": "De retour",
+        "headline": "De retour en stock",
+        "subline": "Vos coups de cœur sont de retour"
+      },
+      "blackFriday": {
+        "name": "Black Friday",
+        "headline": "Black Friday",
+        "subline": "Nos meilleurs prix de l'année"
+      },
+      "christmas": {
+        "name": "Noël",
+        "headline": "Joyeux Noël",
+        "subline": "Des idées cadeaux pour tous"
+      },
+      "newYear": {
+        "name": "Nouvel An",
+        "headline": "Bonne année",
+        "subline": "Nouvelle année, nouveau style"
+      },
+      "valentines": {
+        "name": "Saint-Valentin",
+        "headline": "Saint-Valentin",
+        "subline": "Des cadeaux pour dire je t'aime"
+      },
+      "mothersDay": {
+        "name": "Fête des mères",
+        "headline": "Pour maman, avec amour",
+        "subline": "Des cadeaux pour la fête des mères"
+      },
+      "womensDay": {
+        "name": "Journée des femmes",
+        "headline": "Bonne fête des femmes",
+        "subline": "Pour célébrer chacune d'entre vous"
+      },
+      "eid": {
+        "name": "Aïd",
+        "headline": "Aïd Moubarak",
+        "subline": "Célébrez avec élégance"
+      },
+      "backToSchool": {
+        "name": "Rentrée",
+        "headline": "C'est la rentrée",
+        "subline": "Tout pour bien commencer l'année"
+      },
+      "announcement": {
+        "name": "Annonce",
+        "headline": "Du nouveau arrive",
+        "subline": "Suivez-nous sur WhatsApp"
+      },
+      "announcementBold": {
+        "name": "Grande nouvelle",
+        "headline": "Grande nouvelle !",
+        "subline": "Écrivez-nous sur WhatsApp"
+      }
+    },
+    "templateCategories": {
+      "promo": "Promotions",
+      "season": "Saisons",
+      "celebration": "Fêtes",
+      "announcement": "Annonces"
+    },
+    "palettes": {
+      "hotPink": "Rose vif",
+      "blush": "Rose poudré",
+      "lilac": "Lilas",
+      "violetPop": "Violet",
+      "plumNight": "Prune",
+      "coral": "Corail",
+      "peach": "Pêche",
+      "sunshine": "Soleil",
+      "gold": "Or",
+      "noirGold": "Noir et or",
+      "ink": "Noir",
+      "emerald": "Émeraude",
+      "mint": "Menthe",
+      "sky": "Ciel",
+      "festiveRed": "Rouge festif",
+      "cream": "Crème"
+    },
+    "fonts": {
+      "modern": "Moderne",
+      "bold": "Percutante",
+      "elegant": "Élégante",
+      "script": "Manuscrite",
+      "display": "Classique"
+    },
+    "stickerCategories": {
+      "sale": "Promo",
+      "shapes": "Formes",
+      "love": "Amour",
+      "nature": "Nature",
+      "seasonal": "Fêtes"
+    },
+    "schedule": {
+      "title": "Quand l'afficher",
+      "always": "Maintenant, jusqu'à ce que je la retire",
+      "dates": "Choisir des dates",
+      "start": "Début",
+      "startHelp": "Laissez vide pour commencer dès la publication.",
+      "end": "Fin",
+      "endHelp": "Laissez vide pour la garder jusqu'à ce que vous la retiriez.",
+      "timezone": "Les heures sont dans votre fuseau horaire.",
+      "order": "La fin doit être après le début.",
+      "tooFar": "Le début doit être dans moins d'un an.",
+      "tooLong": "Elle peut rester active {days} jours au maximum.",
+      "ended": "Ces dates sont passées : elle ne s'affichera pas. Choisissez de nouvelles dates pour la relancer."
+    },
+    "status": {
+      "notPublished": "Pas encore publiée",
+      "live": "En ligne sur votre boutique",
+      "liveUntil": "En ligne jusqu'au {date}",
+      "scheduled": "Commence le {date}",
+      "ended": "Terminée le {date}",
+      "hidden": "Masquée : votre forfait n'inclut pas les bannières d'événement",
+      "publishToApply": "Publiez pour mettre vos changements en ligne."
+    },
+    "download": {
+      "title": "Partagez-la sur WhatsApp ou Instagram",
+      "help": "Téléchargez votre bannière en image pour votre statut ou une publication.",
+      "story": "Statut · 9:16",
+      "square": "Publication carrée",
+      "wide": "Large · 1200×630",
+      "making": "Création de l'image…",
+      "failed": "Impossible de créer l'image. Réessayez.",
+      "done": "Image prête",
+      "locked": "Les téléchargements sont inclus dans Pro et Business."
+    },
+    "headlineRequired": "Ajoutez un titre.",
+    "stickersTitle": "Autocollants"
+  },
+  "ProfileDecorations": {
+    "none": "Aucune décoration",
+    "categories": {
+      "crown": "Couronnes",
+      "event": "Événements",
+      "everyday": "Tous les jours"
+    },
+    "items": {
+      "goldCrown": "Couronne dorée",
+      "tiara": "Diadème",
+      "flowerCrown": "Couronne de fleurs",
+      "queen": "Reine",
+      "bossLady": "Boss lady",
+      "santaHat": "Bonnet de Noël",
+      "hearts": "Cœurs",
+      "crescentStars": "Croissant et étoiles",
+      "eventFlowers": "Fleurs",
+      "newYearSparkles": "Étincelles du Nouvel An",
+      "saleTag": "Étiquette promo",
+      "pencil": "Crayon",
+      "backpack": "Cartable",
+      "spookyHat": "Chapeau d'Halloween",
+      "sparkles": "Étincelles",
+      "bow": "Nœud",
+      "butterflies": "Papillons",
+      "floralWreath": "Couronne florale",
+      "newSticker": "Autocollant « Nouveau »",
+      "saleSticker": "Autocollant « Promo »"
+    }
   }
 }

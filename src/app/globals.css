@@ -197,6 +197,13 @@
 }
 
 /* Selected state of chips / toggles: ink, never coral (coral = main button). */
+/* A selected gallery tile or swatch (looks, colours, banners, designs…): a 2px ink ring with a gap. */
+@utility tile-selected {
+  box-shadow:
+    0 0 0 2px var(--background),
+    0 0 0 4px var(--foreground);
+}
+
 @utility chip-selected {
   border-color: var(--chip, var(--foreground));
   background-color: var(--chip, var(--foreground));
@@ -204,51 +211,220 @@
 }
 
 /*
- * Shop themes (src/features/shop-themes/themes.ts). A theme only re-maps
- * the semantic tokens inside its scope, so every shop component follows.
- * Text contrast >= 4.5:1 on each theme's background and cards.
+ * Shop looks (convex/lib/looks, CLAUDE.md "Shop looks"). ShopLookScope
+ * sets the semantic tokens inline; these rules apply the button style to
+ * shop buttons (`shop-btn`), chips (`shop-chip`) and selected chips.
+ * Unlayered on purpose, so they win over Tailwind utilities.
  */
-[data-shop-theme] {
+[data-shop-look] {
   background-color: var(--background);
   color: var(--foreground);
 }
-[data-shop-theme="bold"] {
-  --background: #fff8f3;
-  --card: #ffffff;
-  --foreground: #1a1412;
-  --muted: #f7ede6;
-  --muted-foreground: #574b45;
-  --border: #e9d9cf;
-  --radius: 0.5rem;
-  --chip: #1a1412;
-  --chip-foreground: #ffffff;
+[data-shop-look] .shop-btn,
+[data-shop-look] .shop-chip {
+  border-radius: var(--shop-btn-radius);
+  font-weight: var(--shop-btn-weight);
 }
-[data-shop-theme="soft"] {
-  --background: #fff0e8;
-  --card: #ffffff;
-  --foreground: #2b1424;
-  --muted: #fbe1d6;
-  --muted-foreground: #5e4456;
-  --border: #f2d3c6;
-  --radius: 1.25rem;
-  --chip: #5b1f4a;
-  --chip-foreground: #ffffff;
+[data-shop-look][data-btn-weight="soft"] .chip-selected {
+  border-color: var(--chip-soft);
+  background-color: var(--chip-soft);
+  color: var(--chip-soft-foreground);
 }
-[data-shop-theme="dark"] {
-  --background: #1a1412;
-  --card: #2a211e;
-  --foreground: #fff8f3;
-  --muted: #3a2f2b;
-  --muted-foreground: #cdbfb7;
-  --border: #3d322d;
-  --input: #4a3d37;
-  --radius: 0.875rem;
-  --chip: #fff8f3;
-  --chip-foreground: #1a1412;
+[data-shop-look][data-btn-fill="outline"] .shop-chip {
+  background-color: transparent;
+}
+[data-shop-look][data-btn-fill="outline"] .chip-selected {
+  border-color: var(--chip);
+  background-color: transparent;
+  color: var(--chip);
+}
+[data-shop-look][data-btn-fill="outline"][data-btn-weight="bold"] .chip-selected {
+  box-shadow: inset 0 0 0 1px var(--chip);
+}
+
+
+/*
+ * Decorative button designs (convex/lib/looks/buttonDesigns.ts). They
+ * style interactive shop buttons (`shop-action`) and chips (`shop-chip`).
+ * Decorations are pseudo-elements in the corners: no tap area, never over
+ * the label. Icons are the original sticker SVGs, tinted with a mask.
+ * The WhatsApp order button (`bg-whatsapp`) keeps its colour and icon.
+ */
+[data-shop-look][data-btn-deco="flower"] { --shop-deco: url("../assets/images/stickers/flower.svg"); }
+[data-shop-look][data-btn-deco="heart"] { --shop-deco: url("../assets/images/stickers/heart.svg"); }
+[data-shop-look][data-btn-deco="star"] { --shop-deco: url("../assets/images/stickers/star.svg"); }
+[data-shop-look][data-btn-deco="bow"] { --shop-deco: url("../assets/images/stickers/bow.svg"); }
+[data-shop-look][data-btn-deco="sparkle"] { --shop-deco: url("../assets/images/stickers/sparkles.svg"); }
+
+[data-shop-look] .shop-action,
+[data-shop-look] .shop-chip {
+  position: relative;
+  isolation: isolate;
+}
+
+/* The decoration icon: half outside the button's top-right corner. */
+[data-shop-look][data-btn-deco]:not([data-btn-deco="none"]) .shop-action::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  right: 12px;
+  width: 17px;
+  height: 17px;
+  background-color: var(--primary);
+  mask: var(--shop-deco) center / contain no-repeat;
+  -webkit-mask: var(--shop-deco) center / contain no-repeat;
+  filter: drop-shadow(0 0 1px var(--background));
+  pointer-events: none;
+}
+/* Selected chips: a tiny icon inside the corner (chip rows scroll, so nothing sticks out). */
+[data-shop-look][data-btn-deco]:not([data-btn-deco="none"]) .shop-chip.chip-selected::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 9px;
+  height: 9px;
+  background-color: currentColor;
+  opacity: 0.85;
+  mask: var(--shop-deco) center / contain no-repeat;
+  -webkit-mask: var(--shop-deco) center / contain no-repeat;
+  pointer-events: none;
+}
+
+/* Floral and Sparkle: a second, smaller icon at the opposite corner. */
+[data-shop-look][data-btn-deco]:not([data-btn-deco="none"]):is([data-btn-design="floral"], [data-btn-design="sparkle"]) .shop-action::before {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 14px;
+  width: 11px;
+  height: 11px;
+  background-color: var(--primary);
+  mask: var(--shop-deco) center / contain no-repeat;
+  -webkit-mask: var(--shop-deco) center / contain no-repeat;
+  filter: drop-shadow(0 0 1px var(--background));
+  pointer-events: none;
+}
+/* Heart: on the right edge, centred. */
+[data-shop-look][data-btn-design="heart"] .shop-action::after {
+  top: 50%;
+  right: -7px;
+  translate: 0 -50%;
+}
+/* Bow: tied at the top-left. */
+[data-shop-look][data-btn-design="bow"] .shop-action::after {
+  top: -9px;
+  right: auto;
+  left: 12px;
+  width: 24px;
+  height: 18px;
+}
+
+/* Scalloped: a lace edge of little dots just outside the shape. */
+[data-shop-look][data-btn-design="scalloped"] .shop-action::before,
+[data-shop-look][data-btn-design="scalloped"] .shop-chip.chip-selected::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  z-index: -1;
+  padding: 4px;
+  border-radius: calc(var(--shop-btn-radius) + 4px);
+  background: radial-gradient(circle, color-mix(in oklab, var(--chip) 60%, transparent) 2.4px, transparent 2.9px) 0 0 / 7px 7px;
+  /* Only the ring outside the shape shows. */
+  mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+  mask-clip: content-box, border-box;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+[data-shop-look][data-btn-design="scalloped"] .shop-chip.chip-selected::before {
+  inset: -3px;
+  padding: 3px;
+  border-radius: calc(var(--shop-btn-radius) + 3px);
+}
+
+/* Sticker: an ink outline with a solid offset shadow. */
+[data-shop-look][data-btn-design="sticker"] .shop-action {
+  border: 2px solid var(--foreground);
+  box-shadow: 3px 3px 0 var(--foreground);
+}
+[data-shop-look][data-btn-design="sticker"] .shop-chip {
+  border-color: var(--foreground);
+  box-shadow: 2px 2px 0 var(--foreground);
+}
+
+/* Glow: selected chips get a soft gradient; buttons a top highlight, a halo and a shine on hover. */
+[data-shop-look][data-btn-design="glow"][data-btn-fill="solid"] .shop-chip.chip-selected {
+  background-image: linear-gradient(180deg, var(--shop-chip-glow-from), var(--shop-chip-glow-to));
+}
+[data-shop-look][data-btn-design="glow"] .shop-action {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    0 4px 14px -6px color-mix(in oklab, currentColor 40%, transparent);
+  background-image: linear-gradient(110deg, transparent 42%, rgb(255 255 255 / 0.28) 50%, transparent 58%);
+  background-size: 250% 100%;
+  background-position: 130% 0;
+  background-repeat: no-repeat;
+}
+[data-shop-look][data-btn-design="glow"] .shop-action.bg-whatsapp {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.35),
+    0 4px 14px -6px color-mix(in oklab, var(--whatsapp) 60%, transparent);
+}
+
+/* Gentle motion, only when the person hasn't asked to reduce it. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-shop-look][data-btn-design="sparkle"] .shop-action:is(:hover, :active)::after,
+  [data-shop-look][data-btn-design="sparkle"] .shop-action:is(:hover, :active)::before {
+    animation: shop-glint 700ms ease-out;
+  }
+  [data-shop-look][data-btn-design="glow"] .shop-action {
+    transition: background-position 900ms ease;
+  }
+  [data-shop-look][data-btn-design="glow"] .shop-action:hover {
+    background-position: -30% 0;
+  }
+  [data-shop-look][data-btn-design="sticker"] :is(.shop-action, .shop-chip) {
+    transition: translate 120ms ease, box-shadow 120ms ease;
+  }
+  [data-shop-look][data-btn-design="sticker"] :is(.shop-action, .shop-chip):active {
+    translate: 2px 2px;
+    box-shadow: 0 0 0 var(--foreground);
+  }
+}
+@keyframes shop-glint {
+  0% { scale: 1; rotate: 0deg; }
+  45% { scale: 1.4; rotate: 25deg; }
+  100% { scale: 1; rotate: 0deg; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
+}
+
+/*
+ * Profile decorations (CLAUDE.md "Shop looks" → "Profile"): a slow,
+ * gentle twinkle or sway, only when the visitor hasn't asked for reduced
+ * motion. Still by default.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .profile-deco[data-motion] {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .profile-deco[data-motion="twinkle"] {
+    animation: profile-twinkle 3.6s ease-in-out infinite;
+  }
+  .profile-deco[data-motion="sway"] {
+    animation: profile-sway 4.8s ease-in-out infinite;
+  }
+}
+@keyframes profile-twinkle {
+  0%, 100% { opacity: 1; scale: 1; }
+  50% { opacity: 0.82; scale: 0.96; }
+}
+@keyframes profile-sway {
+  0%, 100% { rotate: -3deg; }
+  50% { rotate: 3deg; }
 }
