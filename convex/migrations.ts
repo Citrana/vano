@@ -8,6 +8,7 @@ import { ensureBuiltInRoles } from "./lib/roles";
 import { presetLook } from "./lib/looks/presets";
 import type { PresetId } from "./lib/looks/validators";
 import { loggedValue } from "./lib/shopChanges";
+import { seedPlanConfig } from "./lib/planConfig";
 import { startTrial, subscriptionDoc } from "./lib/subscriptions";
 
 /**
@@ -42,6 +43,14 @@ import { startTrial, subscriptionDoc } from "./lib/subscriptions";
  * `shopLooks` as a published preset (bold → Classic, soft → Blush, dark →
  * Noir), then `shops.theme` is cleared. A shop that already has a look
  * keeps it.
+ *
+ *   npx convex run migrations:plansV1
+ *   npx convex run migrations:plansV1Status
+ *
+ * plansV1: stores the plan configuration seed (`planDefaults.ts`, the
+ * plans as they were in code) in `planConfig`, so admins can edit it. An
+ * existing configuration is never overwritten. Optional: until it runs,
+ * the app reads the same seed. Subscriptions, shops and trials are untouched.
  */
 
 const NAME = "rbacV1";
@@ -354,6 +363,37 @@ export const looksV1Status = internalQuery({
   }),
   handler: async (ctx) => {
     const run = await findRun(ctx, LOOKS_V1);
+    return { status: run?.status ?? ("not_started" as const), doneAt: run?.doneAt ?? null };
+  },
+});
+
+// ---------------------------------------------------------------------------
+// plansV1: the plan configuration moves from code to `planConfig`.
+
+const PLANS_V1 = "plansV1";
+
+export const plansV1 = internalMutation({
+  args: {},
+  returns: v.union(v.literal("seeded"), v.literal("already_configured"), v.literal("already_done")),
+  handler: async (ctx) => {
+    const run = await findRun(ctx, PLANS_V1);
+    if (run?.status === "done") return "already_done" as const;
+    const seeded = await seedPlanConfig(ctx);
+    const now = Date.now();
+    if (run) await ctx.db.patch("migrations", run._id, { status: "done", doneAt: now });
+    else await ctx.db.insert("migrations", { name: PLANS_V1, status: "done", startedAt: now, doneAt: now });
+    return seeded ? ("seeded" as const) : ("already_configured" as const);
+  },
+});
+
+export const plansV1Status = internalQuery({
+  args: {},
+  returns: v.object({
+    status: v.union(v.literal("not_started"), v.literal("running"), v.literal("done")),
+    doneAt: v.union(v.number(), v.null()),
+  }),
+  handler: async (ctx) => {
+    const run = await findRun(ctx, PLANS_V1);
     return { status: run?.status ?? ("not_started" as const), doneAt: run?.doneAt ?? null };
   },
 });

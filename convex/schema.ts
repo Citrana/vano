@@ -18,6 +18,7 @@ import {
   paymentStatusValidator,
   providerIdValidator,
 } from "./payments/types";
+import { exceptionEndValidator, featureValueValidator, planConfigFields } from "./lib/planValidators";
 import {
   planIdValidator,
   subscriptionSourceValidator,
@@ -198,6 +199,35 @@ export default defineSchema({
     email: v.string(),
     expiresAt: v.number(),
   }).index("by_email", ["email"]),
+
+  /**
+   * The plan configuration (CLAUDE.md "Billing"): a single document with
+   * every plan's name, prices, trial and visibility, and every feature's
+   * value per plan plus its pricing-page text. Read and written only
+   * through convex/lib/planConfig.ts; seeded from planDefaults.ts.
+   */
+  planConfig: defineTable(planConfigFields),
+
+  /**
+   * A feature or a higher limit given to one shop until `endsAt`, with a
+   * reason (partner, support case). `active` is cleared at `endsAt` by
+   * `planExceptionJobs.expire` (queries never read the clock) or on revoke.
+   * `feature` is a key of convex/lib/planFeatures.ts.
+   */
+  planExceptions: defineTable({
+    shopId: v.id("shops"),
+    feature: v.string(),
+    value: featureValueValidator,
+    endsAt: v.number(),
+    reason: v.string(),
+    createdBy: v.id("users"),
+    active: v.boolean(),
+    endedAt: v.optional(v.number()),
+    endedBy: v.optional(v.id("users")),
+    endedReason: v.optional(exceptionEndValidator),
+  })
+    .index("by_shopId_and_active", ["shopId", "active"])
+    .index("by_active_and_endsAt", ["active", "endsAt"]),
 
   /** One row per one-time data migration (e.g. "rbacV1"). */
   migrations: defineTable({
