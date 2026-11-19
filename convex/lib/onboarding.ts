@@ -8,14 +8,15 @@ export type OnboardingStep = { key: OnboardingStepKey; done: boolean };
 
 export function onboardingSteps(input: {
   productCount: number;
-  theme: string | undefined | null;
+  /** The shop has published a look (convex/shopLooks.ts). */
+  hasLook: boolean;
   linkSharedAt: number | undefined | null;
 }): OnboardingStep[] {
   const done: Record<OnboardingStepKey, boolean> = {
     // The checklist only exists once the shop does.
     created: true,
     product: input.productCount > 0,
-    look: input.theme != null,
+    look: input.hasLook,
     share: input.linkSharedAt != null,
   };
   return ONBOARDING_STEPS.map((key) => ({ key, done: done[key] }));

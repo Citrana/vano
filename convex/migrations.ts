@@ -5,6 +5,8 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { internalMutation, internalQuery, type MutationCtx, type QueryCtx } from "./_generated/server";
 import { backfill, readPlatformTotals } from "./lib/platformStats";
 import { ensureBuiltInRoles } from "./lib/roles";
+import { presetLook } from "./lib/looks/presets";
+import type { PresetId } from "./lib/looks/validators";
 import { loggedValue } from "./lib/shopChanges";
 import { startTrial, subscriptionDoc } from "./lib/subscriptions";
 
@@ -32,6 +34,14 @@ import { startTrial, subscriptionDoc } from "./lib/subscriptions";
  * notificationsV1: moves change-request decisions from the old
  * `sellerNotifications` table into `notifications` (read state kept; the
  * time becomes the migration's), then deletes the old rows.
+ *
+ *   npx convex run migrations:looksV1
+ *   npx convex run migrations:looksV1Status
+ *
+ * looksV1: the old look picker (`shops.theme`: bold / soft / dark) moves to
+ * `shopLooks` as a published preset (bold → Classic, soft → Blush, dark →
+ * Noir), then `shops.theme` is cleared. A shop that already has a look
+ * keeps it.
  */
 
 const NAME = "rbacV1";
@@ -278,5 +288,72 @@ export const notificationsV1Status = internalQuery({
     const run = await findRun(ctx, NOTIFICATIONS_V1);
     const left = (await ctx.db.query("sellerNotifications").take(BATCH)).length;
     return { status: run?.status ?? ("not_started" as const), left };
+  },
+});
+
+// ---------------------------------------------------------------------------
+// looksV1: shops.theme → shopLooks.
+
+const LOOKS_V1 = "looksV1";
+
+const THEME_TO_PRESET: Record<NonNullable<Doc<"shops">["theme"]>, PresetId> = {
+  bold: "classic",
+  soft: "blush",
+  dark: "noir",
+};
+
+export const looksV1 = internalMutation({
+  args: {},
+  returns: v.union(v.literal("started"), v.literal("already_running"), v.literal("already_done")),
+  handler: async (ctx) => {
+    const run = await findRun(ctx, LOOKS_V1);
+    if (run?.status === "done") return "already_done" as const;
+    if (run?.status === "running") return "already_running" as const;
+    await ctx.db.insert("migrations", { name: LOOKS_V1, status: "running", startedAt: Date.now() });
+    await ctx.scheduler.runAfter(0, internal.migrations.looksV1Step, { cursor: null });
+    return "started" as const;
+  },
+});
+
+export const looksV1Step = internalMutation({
+  args: { cursor: v.union(v.string(), v.null()) },
+  returns: v.null(),
+  handler: async (ctx, { cursor }) => {
+    const page = await ctx.db.query("shops").paginate({ numItems: BATCH, cursor });
+    const now = Date.now();
+    for (const shop of page.page) {
+      if (shop.theme === undefined) continue;
+      const existing = await ctx.db
+        .query("shopLooks")
+        .withIndex("by_shopId", (q) => q.eq("shopId", shop._id))
+        .unique();
+      if (!existing) {
+        await ctx.db.insert("shopLooks", {
+          shopId: shop._id,
+          published: presetLook(THEME_TO_PRESET[shop.theme]),
+          publishedAt: now,
+        });
+      }
+      await ctx.db.patch("shops", shop._id, { theme: undefined });
+    }
+    if (!page.isDone) {
+      await ctx.scheduler.runAfter(0, internal.migrations.looksV1Step, { cursor: page.continueCursor });
+      return null;
+    }
+    const run = await findRun(ctx, LOOKS_V1);
+    if (run) await ctx.db.patch("migrations", run._id, { status: "done", doneAt: Date.now() });
+    return null;
+  },
+});
+
+export const looksV1Status = internalQuery({
+  args: {},
+  returns: v.object({
+    status: v.union(v.literal("not_started"), v.literal("running"), v.literal("done")),
+    doneAt: v.union(v.number(), v.null()),
+  }),
+  handler: async (ctx) => {
+    const run = await findRun(ctx, LOOKS_V1);
+    return { status: run?.status ?? ("not_started" as const), doneAt: run?.doneAt ?? null };
   },
 });

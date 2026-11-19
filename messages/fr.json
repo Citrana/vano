@@ -195,7 +195,9 @@
     "saved": "Paramètres enregistrés",
     "charCount": "{count}/{max}",
     "whatsappCode": "Indicatif du pays",
-    "lookHelp": "Le style de votre boutique publique. Vous pouvez le changer à tout moment.",
+    "lookLabel": "Style de la boutique",
+    "lookLink": "Personnaliser le style",
+    "lookHelp": "Couleurs, boutons et bannière de votre boutique publique. Modifiez-les sur la page Style de la boutique.",
     "currencyLocked": "Verrouillée car votre boutique a des produits : leurs prix sont dans cette devise."
   },
   "Dashboard": {
@@ -242,7 +244,7 @@
         },
         "look": {
           "title": "Choisissez le style de votre boutique",
-          "body": "Choisissez le style que vos clients verront.",
+          "body": "Choisissez un style, personnalisez-le et publiez-le.",
           "action": "Choisir un style"
         },
         "share": {
@@ -794,12 +796,6 @@
     "footerTerms": "Conditions",
     "footerPrivacy": "Confidentialité",
     "footerRights": "© {year} Vano. Tous droits réservés."
-  },
-  "ShopThemes": {
-    "label": "Style de la boutique",
-    "bold": "Audacieux",
-    "soft": "Doux",
-    "dark": "Sombre"
   },
   "ShopLooks": {
     "label": "Style de la boutique",

@@ -168,3 +168,36 @@ describe("migrations:rbacV1", () => {
     expect((await as(t, userId).query(api.shops.myShop, {}))?.city).toBe("Kinshasa");
   });
 });
+
+describe("migrations:looksV1", () => {
+  test("moves shops.theme to a published look and clears it; existing looks win", async () => {
+    const t = newTest();
+    const soft = await sellerWithShop(t, "a@x.com", { slug: "shop-a" });
+    const dark = await sellerWithShop(t, "b@x.com", { slug: "shop-b" });
+    const none = await sellerWithShop(t, "c@x.com", { slug: "shop-c" });
+    await t.run(async (ctx) => {
+      await ctx.db.patch("shops", soft.shopId, { theme: "soft" });
+      await ctx.db.patch("shops", dark.shopId, { theme: "dark" });
+    });
+    // shop-b already designed a look: it's kept.
+    await as(t, dark.userId).mutation(api.shopLooks.saveDraft, {
+      look: { v: 1, preset: "ocean", overrides: {} },
+    });
+    await as(t, dark.userId).mutation(api.shopLooks.publish, {});
+
+    expect(await t.mutation(internal.migrations.looksV1, {})).toBe("started");
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
+    expect(await t.query(internal.migrations.looksV1Status, {})).toMatchObject({ status: "done" });
+    expect(await t.mutation(internal.migrations.looksV1, {})).toBe("already_done");
+
+    const lookOf = async (userId: Id<"users">) => (await as(t, userId).query(api.shopLooks.mine, {})).published;
+    expect((await lookOf(soft.userId))?.preset).toBe("blush");
+    expect((await lookOf(dark.userId))?.preset).toBe("ocean");
+    expect(await lookOf(none.userId)).toBeNull();
+    for (const { shopId } of [soft, dark, none]) {
+      expect((await t.run((ctx) => ctx.db.get("shops", shopId)))?.theme).toBeUndefined();
+    }
+    expect((await as(t, soft.userId).query(api.shops.myShop, {}))?.hasLook).toBe(true);
+    expect((await as(t, none.userId).query(api.shops.myShop, {}))?.hasLook).toBe(false);
+  });
+});

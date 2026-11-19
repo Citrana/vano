@@ -11,7 +11,6 @@ import {
 import { notificationKindValidator } from "./notifications/kinds";
 import { notificationCategoryValidator, notificationDataValidator } from "./notifications/types";
 import { currencyValidator } from "./lib/money";
-import { shopThemeValidator } from "./lib/themes";
 import { storedLookValidator } from "./lib/looks/validators";
 import {
   nextActionValidator,
@@ -99,8 +98,11 @@ export default defineSchema({
     /** ISO 3166-1 alpha-2, e.g. "CD". */
     country: v.string(),
     logoId: v.optional(v.id("_storage")),
-    /** The shop look picked in settings; missing = not picked yet. */
-    theme: v.optional(shopThemeValidator),
+    /**
+     * Legacy look picker, replaced by `shopLooks`. Moved there by
+     * `migrations:looksV1`; drop this field once it has run everywhere.
+     */
+    theme: v.optional(v.union(v.literal("bold"), v.literal("soft"), v.literal("dark"))),
     /** Dashboard checklist progress the seller can't derive from data. */
     onboarding: v.optional(
       v.object({

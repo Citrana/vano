@@ -195,7 +195,9 @@
     "saved": "Shop settings saved",
     "charCount": "{count}/{max}",
     "whatsappCode": "Country code",
-    "lookHelp": "The style of your public shop. You can change it any time.",
+    "lookLabel": "Shop look",
+    "lookLink": "Design your shop look",
+    "lookHelp": "Colors, buttons and banner of your public shop. Edit them on the Shop look page.",
     "currencyLocked": "Locked because your shop has products: their prices are in this currency."
   },
   "Dashboard": {
@@ -242,7 +244,7 @@
         },
         "look": {
           "title": "Pick your shop look",
-          "body": "Choose the style customers see in your shop.",
+          "body": "Choose a look, make it yours and publish it.",
           "action": "Choose a look"
         },
         "share": {
@@ -794,12 +796,6 @@
     "footerTerms": "Terms",
     "footerPrivacy": "Privacy",
     "footerRights": "© {year} Vano. All rights reserved."
-  },
-  "ShopThemes": {
-    "label": "Shop look",
-    "bold": "Bold",
-    "soft": "Soft",
-    "dark": "Dark"
   },
   "ShopLooks": {
     "label": "Shop look",

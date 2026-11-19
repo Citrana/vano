@@ -204,50 +204,6 @@
 }
 
 /*
- * Shop themes (src/features/shop-themes/themes.ts). A theme only re-maps
- * the semantic tokens inside its scope, so every shop component follows.
- * Text contrast >= 4.5:1 on each theme's background and cards.
- */
-[data-shop-theme] {
-  background-color: var(--background);
-  color: var(--foreground);
-}
-[data-shop-theme="bold"] {
-  --background: #fff8f3;
-  --card: #ffffff;
-  --foreground: #1a1412;
-  --muted: #f7ede6;
-  --muted-foreground: #574b45;
-  --border: #e9d9cf;
-  --radius: 0.5rem;
-  --chip: #1a1412;
-  --chip-foreground: #ffffff;
-}
-[data-shop-theme="soft"] {
-  --background: #fff0e8;
-  --card: #ffffff;
-  --foreground: #2b1424;
-  --muted: #fbe1d6;
-  --muted-foreground: #5e4456;
-  --border: #f2d3c6;
-  --radius: 1.25rem;
-  --chip: #5b1f4a;
-  --chip-foreground: #ffffff;
-}
-[data-shop-theme="dark"] {
-  --background: #1a1412;
-  --card: #2a211e;
-  --foreground: #fff8f3;
-  --muted: #3a2f2b;
-  --muted-foreground: #cdbfb7;
-  --border: #3d322d;
-  --input: #4a3d37;
-  --radius: 0.875rem;
-  --chip: #fff8f3;
-  --chip-foreground: #1a1412;
-}
-
-/*
  * Shop looks (convex/lib/looks, CLAUDE.md "Shop looks"). ShopLookScope
  * sets the semantic tokens inline; these rules apply the button style to
  * shop buttons (`shop-btn`), chips (`shop-chip`) and selected chips.

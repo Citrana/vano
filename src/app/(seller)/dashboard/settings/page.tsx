@@ -53,7 +53,6 @@ export default function SettingsPage() {
           city: shop.city,
           country: shop.country,
           logoId: shop.logoId,
-          theme: shop.theme,
         }}
         onSubmit={async (values) => {
           // Name, link and WhatsApp number only change through a request: not sent.
@@ -65,7 +64,6 @@ export default function SettingsPage() {
             city: values.city,
             country: values.country,
             logoId: values.logoId,
-            theme: values.theme,
           })
           toast.success(tf("saved"))
         }}

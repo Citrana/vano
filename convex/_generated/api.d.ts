@@ -63,7 +63,6 @@ import type * as lib_settings from "../lib/settings.js";
 import type * as lib_shopChanges from "../lib/shopChanges.js";
 import type * as lib_slug from "../lib/slug.js";
 import type * as lib_subscriptions from "../lib/subscriptions.js";
-import type * as lib_themes from "../lib/themes.js";
 import type * as migrations from "../migrations.js";
 import type * as notificationJobs from "../notificationJobs.js";
 import type * as notifications_channel from "../notifications/channel.js";
@@ -154,7 +153,6 @@ declare const fullApi: ApiFromModules<{
   "lib/shopChanges": typeof lib_shopChanges;
   "lib/slug": typeof lib_slug;
   "lib/subscriptions": typeof lib_subscriptions;
-  "lib/themes": typeof lib_themes;
   migrations: typeof migrations;
   notificationJobs: typeof notificationJobs;
   "notifications/channel": typeof notifications_channel;

@@ -1,7 +1,7 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { LockIcon } from "lucide-react"
+import { LockIcon, PaletteIcon } from "lucide-react"
 import { useLocale, useTranslations } from "next-intl"
 import { useMemo, useRef, useState, type ReactNode } from "react"
 import { Controller, useForm, useWatch } from "react-hook-form"
@@ -14,14 +14,14 @@ import { errorCodeOf, type ErrorCode } from "../../../convex/lib/errors"
 import { CURRENCIES } from "../../../convex/lib/money"
 import { normalizeWhatsapp, splitWhatsapp } from "../../../convex/lib/phone"
 import { slugify } from "../../../convex/lib/slug"
-import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Card, CardTitle } from "@/components/ui/card"
 import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { NativeSelect } from "@/components/ui/native-select"
 import { RequiredFieldsHint } from "@/components/ui/required-fields-hint"
 import { Textarea } from "@/components/ui/textarea"
-import { ThemeDots } from "@/features/shop-themes/theme-dots"
 import { shopUrl } from "@/lib/site"
 import { CategoryPicker } from "./category-picker"
 import { countryOptions } from "./countries"
@@ -81,7 +81,6 @@ export function ShopForm({
   const tLang = useTranslations("Languages")
   const tCommon = useTranslations("Common")
   const tOnb = useTranslations("Onboarding")
-  const tTheme = useTranslations("ShopThemes")
   const locale = useLocale()
 
   const form = useForm<ShopFormValues>({
@@ -290,17 +289,11 @@ export function ShopForm({
 
         {mode === "edit" ? (
           <div id="look" className="flex scroll-mt-24 flex-col gap-2">
-            <span className="text-sm font-medium">{tTheme("label")}</span>
-            <Controller
-              control={control}
-              name="theme"
-              render={({ field }) => (
-                <div className="flex flex-wrap items-center gap-2">
-                  <ThemeDots value={field.value ?? null} onChange={field.onChange} className="-ml-2.5" />
-                  {field.value ? <span className="text-sm text-muted-foreground">{tTheme(field.value)}</span> : null}
-                </div>
-              )}
-            />
+            <span className="text-sm font-medium">{t("lookLabel")}</span>
+            <Link href="/dashboard/look" className={buttonVariants({ variant: "outline", className: "w-fit" })}>
+              <PaletteIcon />
+              {t("lookLink")}
+            </Link>
             <p className="text-xs text-muted-foreground">{t("lookHelp")}</p>
           </div>
         ) : null}

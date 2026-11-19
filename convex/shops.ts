@@ -18,10 +18,10 @@ import {
   sellerMutation,
   sellerQuery,
 } from "./lib/seller";
+import { lookRow } from "./lib/looks/store";
 import { slugHolder } from "./lib/shopChanges";
 import { slugProblem } from "./lib/slug";
 import { startTrial } from "./lib/subscriptions";
-import { shopThemeValidator } from "./lib/themes";
 
 /** Settings the seller edits directly, any time. */
 const settingsInput = v.object({
@@ -32,7 +32,6 @@ const settingsInput = v.object({
   city: v.string(),
   country: v.string(),
   logoId: v.optional(v.id("_storage")),
-  theme: v.optional(shopThemeValidator),
 });
 type SettingsInput = Infer<typeof settingsInput>;
 
@@ -72,7 +71,6 @@ function cleanSettings(input: SettingsInput): SettingsInput {
     city,
     country,
     logoId: input.logoId,
-    theme: input.theme,
   };
 }
 
@@ -133,7 +131,12 @@ export const myShop = sellerQuery({
   handler: async (ctx) => {
     const shop = await findShopByOwner(ctx, ctx.user._id);
     if (!shop) return null;
-    return { ...shop, logoUrl: await urlOf(ctx, shop.logoId) };
+    return {
+      ...shop,
+      logoUrl: await urlOf(ctx, shop.logoId),
+      /** Published a look (the dashboard checklist's "look" step). */
+      hasLook: (await lookRow(ctx, shop._id))?.published !== undefined,
+    };
   },
 });
 
@@ -236,7 +239,7 @@ export const hideChecklist = sellerMutation({
       .first();
     const steps = onboardingSteps({
       productCount: firstProduct ? 1 : 0,
-      theme: shop.theme,
+      hasLook: (await lookRow(ctx, shop._id))?.published !== undefined,
       linkSharedAt: shop.onboarding?.linkSharedAt,
     });
     if (!allStepsDone(steps)) fail("ONBOARDING_INCOMPLETE");
