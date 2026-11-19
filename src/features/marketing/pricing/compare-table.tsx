@@ -1,7 +1,7 @@
 import { CheckIcon, ChevronDownIcon, MinusIcon } from "lucide-react"
 import { getTranslations } from "next-intl/server"
 import { cn } from "cn"
-import { COMPARISON, PLANS, type CompareCell } from "./plans"
+import type { CompareCell, CompareGroup, Plan } from "./plans"
 
 /** Sticky first column: stays visible while the table scrolls sideways on phones. */
 const STICKY = "sticky left-0 z-10 bg-background"
@@ -10,11 +10,12 @@ const STICKY = "sticky left-0 z-10 bg-background"
  * "Compare all features": a native <details> (no JS) holding one grouped
  * table. On phones the table scrolls inside its box with the feature names
  * pinned, so the page itself never scrolls sideways.
- * All values come from COMPARISON in plans.ts.
+ * Rows come from the plan catalogue (`buildComparison` in plans.ts).
  */
-export async function CompareTable() {
+export async function CompareTable({ plans, groups }: { plans: Plan[]; groups: CompareGroup[] }) {
   const t = await getTranslations("Pricing")
-  const lastGroup = COMPARISON.length - 1
+  const ta = await getTranslations("PlanAreas")
+  const lastGroup = groups.length - 1
 
   function Value({ cell }: { cell: CompareCell }) {
     if (cell === true) {
@@ -51,30 +52,30 @@ export async function CompareTable() {
             <caption className="sr-only">{t("compareCaption")}</caption>
             <colgroup>
               <col className="w-40 md:w-[28%]" />
-              {PLANS.map((plan) => (
+              {plans.map((plan) => (
                 <col key={plan.id} />
               ))}
             </colgroup>
             <thead>
               <tr>
                 <td className={STICKY} />
-                {PLANS.map((plan) => (
+                {plans.map((plan) => (
                   <th
                     key={plan.id}
                     scope="col"
                     className={cn("rounded-t-lg px-2 pt-4 pb-3 text-center text-base font-extrabold md:text-lg", plan.highlight && "bg-blush/60")}
                   >
-                    {t(`plans.${plan.id}.name`)}
+                    {plan.name}
                   </th>
                 ))}
               </tr>
             </thead>
-            {COMPARISON.map((group, g) => (
+            {groups.map((group, g) => (
               <tbody key={group.key}>
                 <tr>
-                  <th scope="colgroup" colSpan={PLANS.length + 1} className="p-0 text-left">
+                  <th scope="colgroup" colSpan={plans.length + 1} className="p-0 text-left">
                     <span className={cn(STICKY, "inline-block pt-6 pr-3 pb-2 text-xs font-bold tracking-wider text-plum uppercase")}>
-                      {t(`compareGroups.${group.key}`)}
+                      {ta(group.key)}
                     </span>
                   </th>
                 </tr>
@@ -89,14 +90,10 @@ export async function CompareTable() {
                           "border-t border-border py-3 pr-3 text-left font-medium shadow-[6px_0_8px_-6px_var(--color-border)] md:shadow-none",
                         )}
                       >
-                        {t(`compare.${row.key}`)}
-                        {row.hint ? (
-                          <span className="block text-sm font-normal text-muted-foreground">
-                            {t(`featureHints.${row.key as "salesPromotions"}`)}
-                          </span>
-                        ) : null}
+                        {row.label}
+                        {row.hint ? <span className="block text-sm font-normal text-muted-foreground">{row.hint}</span> : null}
                       </th>
-                      {PLANS.map((plan) => (
+                      {plans.map((plan) => (
                         <td
                           key={plan.id}
                           className={cn(
