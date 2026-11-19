@@ -1,11 +1,8 @@
-import { RequirePermission } from "@/features/admin/shell/admin-gate"
-import { UserDetails } from "@/features/admin/users/user-details"
+import { redirect } from "next/navigation"
+import { adminHref } from "@/features/admin/shell/hrefs"
 
+/** Old link to one user: the list now opens it in a drawer. */
 export default async function AdminUserPage({ params }: PageProps<"/admin/users/[userId]">) {
   const { userId } = await params
-  return (
-    <RequirePermission permission="users.view">
-      <UserDetails userId={userId} />
-    </RequirePermission>
-  )
+  redirect(adminHref.user(userId))
 }

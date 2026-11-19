@@ -404,7 +404,6 @@
   "AdminUsers": {
     "title": "Utilisateurs",
     "detailsTitle": "Utilisateur",
-    "back": "Retour aux utilisateurs",
     "search": "Rechercher des utilisateurs",
     "searchPlaceholder": "Rechercher par e-mail",
     "role": "Rôle",
@@ -418,7 +417,6 @@
     "noRole": "Aucun rôle (vendeur)",
     "emptyTitle": "Aucun utilisateur trouvé",
     "emptyBody": "Aucun utilisateur ne correspond à ces filtres.",
-    "loadMore": "Afficher plus",
     "thisIsYou": "C'est vous.",
     "actions": "Actions",
     "suspend": "Suspendre",
