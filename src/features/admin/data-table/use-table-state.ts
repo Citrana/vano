@@ -45,7 +45,9 @@ export function useTableState(spec: TableSpec): TableState {
       // Read the live URL, not the last render, so quick writes don't undo each other.
       const current = parseTableState(new URLSearchParams(window.location.search), spec)
       const query = serializeTableState(update(current), spec).toString()
-      window.history.replaceState(window.history.state, "", query ? `${pathname}?${query}` : pathname)
+      // `null`, not history.state: Next skips syncing useSearchParams when the
+      // state carries its own markers (it copies them itself).
+      window.history.replaceState(null, "", query ? `${pathname}?${query}` : pathname)
     },
     [pathname, spec],
   )
@@ -71,5 +73,5 @@ export function useTableState(spec: TableSpec): TableState {
 export function closeDetailsDrawer() {
   const url = new URL(window.location.href)
   url.searchParams.delete("open")
-  window.history.replaceState(window.history.state, "", url)
+  window.history.replaceState(null, "", url) // null: see useTableState
 }
