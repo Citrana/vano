@@ -7,6 +7,9 @@ const crons = cronJobs();
 // Trials and paid plans that ended move to Free.
 crons.interval("expire ended plans", { hours: 1 }, internal.billingJobs.expireDue, {});
 
+// Shop plan exceptions past their end date stop (safety net for the scheduled job).
+crons.interval("expire plan exceptions", { hours: 1 }, internal.planExceptionJobs.sweep, {});
+
 // Old open payments expire; stale pending ones are re-checked with the provider.
 crons.interval("reconcile pending payments", { hours: 24 }, internal.payments.core.reconcilePending, {});
 
