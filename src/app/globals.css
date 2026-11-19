@@ -37,6 +37,13 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   --color-success: var(--success);
+  /* Status tags (admin lists): a light tint + dark text, all >= 5.5:1. */
+  --color-tag-success: var(--tag-success);
+  --color-tag-success-foreground: var(--tag-success-foreground);
+  --color-tag-warning: var(--tag-warning);
+  --color-tag-warning-foreground: var(--tag-warning-foreground);
+  --color-tag-danger: var(--tag-danger);
+  --color-tag-danger-foreground: var(--tag-danger-foreground);
   --color-whatsapp: var(--whatsapp);
   /*
    * One radius scale (12px base): sm 6px tags/badges, md 10px buttons and
@@ -142,6 +149,12 @@
   --destructive: oklch(0.577 0.245 27.325);
   --success: #25a55f;
   --whatsapp: #1e874d;
+  --tag-success: #e2f3e8;
+  --tag-success-foreground: #17663a;
+  --tag-warning: #fdefcf;
+  --tag-warning-foreground: #7a4a00;
+  --tag-danger: #fde7e4;
+  --tag-danger-foreground: #b3261e;
   --border: #ede0d8;
   /* Outline (secondary) button border: 3.3:1 on cream, passes non-text AA. */
   --border-strong: #958780;
