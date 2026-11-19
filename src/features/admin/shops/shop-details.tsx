@@ -10,6 +10,7 @@ import { EmptyState, LoadingState } from "@/components/states/states"
 import { Card, CardTitle } from "@/components/ui/card"
 import { countryName } from "@/features/shop/countries"
 import { ShopPlanPanel } from "../billing/shop-plan-panel"
+import { PlanExceptionsCard } from "../plans/plan-exceptions-card"
 import { DetailItem, DetailList } from "../data-table/detail-list"
 import { StatusTag } from "../data-table/status-tag"
 import { adminHref } from "../shell/hrefs"
@@ -80,6 +81,15 @@ export function ShopDetails({ shopId }: { shopId: string }) {
           shopId={shop._id}
           shopName={shop.name}
           canManage={can("billing.manage")}
+          // A hint only: the server refuses it anyway (CANNOT_MODIFY_SELF).
+          isOwnShop={viewer.email !== null && shop.owner.email === viewer.email}
+        />
+      ) : null}
+
+      {can("plans.manage") ? (
+        <PlanExceptionsCard
+          shopId={shop._id}
+          shopName={shop.name}
           // A hint only: the server refuses it anyway (CANNOT_MODIFY_SELF).
           isOwnShop={viewer.email !== null && shop.owner.email === viewer.email}
         />
