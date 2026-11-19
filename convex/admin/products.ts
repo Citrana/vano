@@ -6,6 +6,7 @@ import { adminMutation, adminQuery } from "../lib/access";
 import { logAdminAction } from "../lib/audit";
 import { categoryValidator, type Category } from "../lib/catalog";
 import { fail } from "../lib/errors";
+import { sortOrderValidator, type SortOrder } from "../lib/listOrder";
 import { urlOf } from "../lib/images";
 import { currencyValidator } from "../lib/money";
 import { shopStatusValidator } from "../lib/permissions";
@@ -43,9 +44,10 @@ function pageOfProducts(
     search?: string;
     visibility?: "visible" | "hidden";
     category?: Category;
+    order?: SortOrder;
   },
 ): Promise<PaginationResult<Doc<"products">>> {
-  const { paginationOpts, category } = args;
+  const { paginationOpts, category, order = "desc" } = args;
   const hidden = args.visibility === undefined ? undefined : args.visibility === "hidden";
   const search = args.search?.trim();
   if (search) {
@@ -66,21 +68,22 @@ function pageOfProducts(
       .withIndex("by_hidden_and_category", (q) =>
         category ? q.eq("hidden", hidden).eq("category", category) : q.eq("hidden", hidden),
       )
-      .order("desc")
+      .order(order)
       .paginate(paginationOpts);
   }
   if (category) {
     return ctx.db
       .query("products")
       .withIndex("by_category", (q) => q.eq("category", category))
-      .order("desc")
+      .order(order)
       .paginate(paginationOpts);
   }
-  return ctx.db.query("products").order("desc").paginate(paginationOpts);
+  return ctx.db.query("products").order(order).paginate(paginationOpts);
 }
 
 /**
- * All products, newest first (or by relevance when searching the name).
+ * All products, newest first (`order: "asc"` = oldest first; by relevance
+ * when searching the name).
  * Products of a shop being deleted are skipped, so a page can be short.
  * Products not migrated yet (no `hidden`) only appear under "all".
  */
@@ -91,36 +94,50 @@ export const list = adminQuery({
     search: v.optional(v.string()),
     visibility: v.optional(visibilityValidator),
     category: v.optional(categoryValidator),
+    order: v.optional(sortOrderValidator),
   },
   returns: paginationResultValidator(productRow),
   handler: async (ctx, args) => {
     const result = await pageOfProducts(ctx, args);
-    const rows = await Promise.all(
-      result.page.map(async (p) => {
-        const shop = await ctx.db.get("shops", p.shopId);
-        if (!shop) return null;
-        return {
-          _id: p._id,
-          name: p.name,
-          price: p.price,
-          category: p.category,
-          soldOut: p.soldOut,
-          hidden: p.hidden ?? false,
-          coverUrl: await urlOf(ctx, p.imageIds[0]),
-          createdAt: p._creationTime,
-          shop: {
-            _id: shop._id,
-            name: shop.name,
-            slug: shop.slug,
-            status: shop.status ?? ("active" as const),
-            currency: shop.currency,
-          },
-        };
-      }),
-    );
+    const rows = await Promise.all(result.page.map((p) => toRow(ctx, p)));
     return { ...result, page: rows.filter((row) => row !== null) };
   },
 });
+
+/** One product for the products drawer; null for an unknown id or a shop being deleted. */
+export const get = adminQuery({
+  permission: "products.view",
+  args: { productId: v.string() },
+  returns: v.union(v.null(), productRow),
+  handler: async (ctx, args) => {
+    const productId = ctx.db.normalizeId("products", args.productId);
+    const product = productId ? await ctx.db.get("products", productId) : null;
+    return product ? await toRow(ctx, product) : null;
+  },
+});
+
+/** A list row, or null when its shop is gone (being deleted). */
+async function toRow(ctx: QueryCtx, p: Doc<"products">) {
+  const shop = await ctx.db.get("shops", p.shopId);
+  if (!shop) return null;
+  return {
+    _id: p._id,
+    name: p.name,
+    price: p.price,
+    category: p.category,
+    soldOut: p.soldOut,
+    hidden: p.hidden ?? false,
+    coverUrl: await urlOf(ctx, p.imageIds[0]),
+    createdAt: p._creationTime,
+    shop: {
+      _id: shop._id,
+      name: shop.name,
+      slug: shop.slug,
+      status: shop.status ?? ("active" as const),
+      currency: shop.currency,
+    },
+  };
+}
 
 async function productAndShop(ctx: QueryCtx, productId: Doc<"products">["_id"]) {
   const product = await ctx.db.get("products", productId);

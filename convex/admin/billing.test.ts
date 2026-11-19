@@ -72,6 +72,55 @@ describe("admin.billing lists", () => {
     expect((await list({ search: "amani" })).page.map((p) => p.plan)).toEqual(["pro"]);
   });
 
+  test("both lists sort their date column both ways", async () => {
+    const t = newTest();
+    const w = await world(t);
+    const now = Date.now();
+    await setSubscription(t, w.zawadi.shopId, { plan: "business", status: "active", periodEnd: now + 40 * DAY_MS });
+    await t.run(async (ctx) => {
+      const base = { userId: w.amani.userId, currency: "KES" as const, provider: "mock" as const, plan: "pro" as const, amountMinor: 29900 };
+      await ctx.db.insert("payments", { ...base, shopId: w.amani.shopId, shopName: "Chez Amani", status: "succeeded" });
+      await ctx.db.insert("payments", { ...base, shopId: w.zawadi.shopId, shopName: "Zawadi Shoes", status: "failed" });
+    });
+    const subs = (args: object) =>
+      as(t, w.viewer).query(api.admin.billing.subscriptions, { paginationOpts: page, ...args }).then((r) => r.page.map((s) => s.shopName));
+    const pays = (args: object) =>
+      as(t, w.viewer).query(api.admin.billing.payments, { paginationOpts: page, ...args }).then((r) => r.page.map((p) => p.shopName));
+
+    // Zawadi ends in 40 days, Amani's trial in about 61.
+    expect(await subs({})).toEqual(["Zawadi Shoes", "Chez Amani"]);
+    expect(await subs({ order: "desc" })).toEqual(["Chez Amani", "Zawadi Shoes"]);
+    expect(await subs({ order: "desc", plan: "business", status: "active" })).toEqual(["Zawadi Shoes"]);
+    expect(await pays({})).toEqual(["Zawadi Shoes", "Chez Amani"]);
+    expect(await pays({ order: "asc" })).toEqual(["Chez Amani", "Zawadi Shoes"]);
+    expect(await pays({ order: "asc", status: "failed" })).toEqual(["Zawadi Shoes"]);
+  });
+
+  test("payment: one payment for the drawer; null for an unknown id", async () => {
+    const t = newTest();
+    const w = await world(t);
+    const id = await t.run((ctx) =>
+      ctx.db.insert("payments", {
+        userId: w.amani.userId,
+        shopId: w.amani.shopId,
+        shopName: "Chez Amani",
+        plan: "pro",
+        amountMinor: 29900,
+        currency: "KES",
+        provider: "mock",
+        status: "failed",
+      }),
+    );
+    expect(await as(t, w.viewer).query(api.admin.billing.payment, { paymentId: id })).toMatchObject({
+      _id: id,
+      shopName: "Chez Amani",
+      status: "failed",
+      amountMinor: 29900,
+    });
+    expect(await as(t, w.viewer).query(api.admin.billing.payment, { paymentId: "nope" })).toBeNull();
+    await expect(as(t, w.amani.userId).query(api.admin.billing.payment, { paymentId: id })).rejects.toThrow(/FORBIDDEN/);
+  });
+
   test("forShop shows the plan and recent payments; null for a bad id", async () => {
     const t = newTest();
     const w = await world(t);

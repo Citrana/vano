@@ -17,7 +17,6 @@ import { useTranslations } from "next-intl"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "cn"
-import { buttonVariants } from "@/components/ui/button"
 import { useAttentionCounts } from "@/features/admin/attention/use-attention-counts"
 import { CountBadge, countLabel } from "@/features/notifications/count-badge"
 import { isActive, visibleNav, type AdminNavKey } from "./nav"
@@ -35,7 +34,11 @@ const ICONS: Record<AdminNavKey, LucideIcon> = {
   settings: SettingsIcon,
 }
 
-/** Sidebar links the user is allowed to open (see nav.ts), with live attention counts. */
+/**
+ * Sidebar links the user is allowed to open (see nav.ts), with live
+ * attention counts. The current page gets a light fill, never an outline;
+ * the outline only shows for keyboard focus.
+ */
 export function AdminNav({ permissions, onNavigate }: { permissions: readonly string[]; onNavigate?: () => void }) {
   const t = useTranslations("Admin")
   const pathname = usePathname()
@@ -54,7 +57,10 @@ export function AdminNav({ permissions, onNavigate }: { permissions: readonly st
             href={href}
             onClick={onNavigate}
             aria-current={active ? "page" : undefined}
-            className={cn(buttonVariants({ variant: active ? "secondary" : "ghost" }), "justify-start")}
+            className={cn(
+              "focus-ring flex min-h-11 items-center gap-2.5 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:min-h-9 [&_svg]:size-4 [&_svg]:shrink-0",
+              active && "bg-secondary font-semibold text-foreground hover:bg-secondary",
+            )}
           >
             <Icon />
             <span className="flex-1 truncate text-left">{t(`nav.${key}`)}</span>

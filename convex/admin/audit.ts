@@ -1,8 +1,9 @@
 import { paginationOptsValidator, paginationResultValidator } from "convex/server";
 import { v } from "convex/values";
-import type { Id } from "../_generated/dataModel";
+import type { Doc, Id } from "../_generated/dataModel";
 import { adminQuery } from "../lib/access";
 import { auditActionValidator, auditDetailsValidator, auditTargetTypeValidator } from "../lib/audit";
+import { sortOrderValidator } from "../lib/listOrder";
 
 /**
  * Admin activity history (CLAUDE.md "Roles & permissions"): read-only
@@ -29,7 +30,7 @@ const entry = v.object({
 });
 
 /**
- * Newest first, filtered by person ("system" = terminal seed), action and
+ * Newest first (`order: "asc"` = oldest first), filtered by person ("system" = terminal seed), action and
  * a [from, to) time range. Every filter combination uses an index; the
  * time range is on `_creationTime`, which Convex appends to each index.
  */
@@ -41,9 +42,10 @@ export const list = adminQuery({
     action: v.optional(auditActionValidator),
     from: v.optional(v.number()),
     to: v.optional(v.number()),
+    order: v.optional(sortOrderValidator),
   },
   returns: paginationResultValidator(entry),
-  handler: async (ctx, { paginationOpts, actor, action, from = 0, to = END_OF_TIME }) => {
+  handler: async (ctx, { paginationOpts, actor, action, from = 0, to = END_OF_TIME, order = "desc" }) => {
     const actorId: Id<"users"> | undefined = actor === "system" ? undefined : actor;
     const logs = ctx.db.query("auditLogs");
     const query =
@@ -61,23 +63,36 @@ export const list = adminQuery({
               )
             : logs.withIndex("by_creation_time", (q) => q.gte("_creationTime", from).lt("_creationTime", to));
 
-    const result = await query.order("desc").paginate(paginationOpts);
-    return {
-      ...result,
-      page: result.page.map((log) => ({
-        _id: log._id,
-        at: log._creationTime,
-        actorId: log.actorId ?? null,
-        actorEmail: log.actorEmail,
-        action: log.action,
-        targetType: log.targetType,
-        targetId: log.targetId,
-        targetLabel: log.targetLabel,
-        details: log.details ?? null,
-      })),
-    };
+    const result = await query.order(order).paginate(paginationOpts);
+    return { ...result, page: result.page.map(toEntry) };
   },
 });
+
+/** One entry for the activity drawer; null for an unknown id. */
+export const get = adminQuery({
+  permission: "audit.view",
+  args: { entryId: v.string() },
+  returns: v.union(v.null(), entry),
+  handler: async (ctx, args) => {
+    const entryId = ctx.db.normalizeId("auditLogs", args.entryId);
+    const log = entryId ? await ctx.db.get("auditLogs", entryId) : null;
+    return log ? toEntry(log) : null;
+  },
+});
+
+function toEntry(log: Doc<"auditLogs">) {
+  return {
+    _id: log._id,
+    at: log._creationTime,
+    actorId: log.actorId ?? null,
+    actorEmail: log.actorEmail,
+    action: log.action,
+    targetType: log.targetType,
+    targetId: log.targetId,
+    targetLabel: log.targetLabel,
+    details: log.details ?? null,
+  };
+}
 
 /**
  * People for the "person" filter: everyone with a non-seller role

@@ -7,19 +7,19 @@ import Link from "next/link"
 import { api } from "../../../../convex/_generated/api"
 import { inCooldown } from "../../../../convex/lib/changeRequests"
 import type { Permission } from "../../../../convex/lib/permissions"
-import { PageTitle } from "@/components/shell/page-title"
 import { EmptyState, LoadingState } from "@/components/states/states"
 import { Card, CardTitle } from "@/components/ui/card"
 import { useNow } from "@/features/billing/use-billing"
 import { displayValue } from "@/features/change-requests/display-value"
-import { ShopStatusBadge } from "../shops/shop-status-badge"
+import { StatusTag } from "../data-table/status-tag"
+import { adminHref } from "../shell/hrefs"
 import { useAdminViewer } from "../shell/use-admin-viewer"
-import { ChangeFlags, ChangeStatusBadge } from "./change-request-badges"
+import { ChangeFlags } from "./change-request-badges"
 import { ApproveDialog, RejectDialog } from "./decision-dialogs"
 
 const DAY_MS = 86_400_000
 
-/** /admin/change-requests/[requestId]: everything needed to decide, and the decision. */
+/** The change request drawer: everything needed to decide, and the decision. */
 export function ChangeRequestDetails({ requestId }: { requestId: string }) {
   const t = useTranslations("AdminChangeRequests")
   const tf = useTranslations("ChangeRequests.fieldName")
@@ -28,11 +28,8 @@ export function ChangeRequestDetails({ requestId }: { requestId: string }) {
   const { viewer } = useAdminViewer()
   const data = useQuery(api.admin.changeRequests.get, { requestId })
 
-  const header = <PageTitle title={t("detailsTitle")} backHref="/admin/change-requests" backLabel={t("back")} />
-  if (data === undefined || !viewer) return <>{header}<LoadingState /></>
-  if (data === null) {
-    return <>{header}<EmptyState icon={<FilePenLineIcon />} title={t("notFoundTitle")} body={t("notFoundBody")} /></>
-  }
+  if (data === undefined || !viewer) return <LoadingState />
+  if (data === null) return <EmptyState icon={<FilePenLineIcon />} title={t("notFoundTitle")} body={t("notFoundBody")} />
 
   const { request, shop } = data
   const can = (p: Permission) => viewer.permissions.includes(p)
@@ -48,12 +45,11 @@ export function ChangeRequestDetails({ requestId }: { requestId: string }) {
 
   return (
     <div className="flex flex-col gap-4">
-      {header}
 
       <Card>
         <div className="flex flex-wrap items-center gap-2">
           <CardTitle>{tf(request.field)}</CardTitle>
-          <ChangeStatusBadge status={request.status} />
+          <StatusTag kind="change" status={request.status} />
           <ChangeFlags flags={request.flags} matchedBrand={request.matchedBrand} />
         </div>
         <dl className="grid gap-3 text-sm sm:grid-cols-2">
@@ -102,7 +98,7 @@ export function ChangeRequestDetails({ requestId }: { requestId: string }) {
       <Card>
         <div className="flex flex-wrap items-center gap-2">
           <CardTitle className="truncate">{shop.name}</CardTitle>
-          <ShopStatusBadge status={shop.status} />
+          <StatusTag kind="shop" status={shop.status} />
         </div>
         <dl className="grid gap-3 text-sm sm:grid-cols-2">
           {item(
@@ -123,7 +119,7 @@ export function ChangeRequestDetails({ requestId }: { requestId: string }) {
           {item(t("products"), shop.productCountCapped ? `${shop.productCount}+` : shop.productCount)}
         </dl>
         {can("shops.view") ? (
-          <Link href={`/admin/shops/${shop._id}`} className="self-start text-sm font-medium hover:underline">
+          <Link href={adminHref.shop(shop._id)} className="self-start text-sm font-medium hover:underline">
             {t("openShop")}
           </Link>
         ) : null}
@@ -137,10 +133,10 @@ export function ChangeRequestDetails({ requestId }: { requestId: string }) {
           <ul className="flex flex-col divide-y text-sm">
             {data.history.map((r) => (
               <li key={r._id}>
-                <Link href={`/admin/change-requests/${r._id}`} className="flex flex-col gap-1 py-2.5 hover:underline">
+                <Link href={adminHref.changeRequest(r._id)} scroll={false} className="flex flex-col gap-1 py-2.5 hover:underline">
                   <span className="flex flex-wrap items-center gap-2">
                     <span className="font-medium">{tf(r.field)}</span>
-                    <ChangeStatusBadge status={r.status} />
+                    <StatusTag kind="change" status={r.status} />
                   </span>
                   <span className="break-words text-muted-foreground">
                     {displayValue(r.field, r.oldValue)} → {displayValue(r.field, r.newValue)} · {date(r._creationTime)}

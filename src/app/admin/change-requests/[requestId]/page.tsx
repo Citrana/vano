@@ -1,11 +1,8 @@
-import { ChangeRequestDetails } from "@/features/admin/change-requests/change-request-details"
-import { RequirePermission } from "@/features/admin/shell/admin-gate"
+import { redirect } from "next/navigation"
+import { adminHref } from "@/features/admin/shell/hrefs"
 
+/** Old link to one request: the list now opens it in a drawer. */
 export default async function AdminChangeRequestPage({ params }: PageProps<"/admin/change-requests/[requestId]">) {
   const { requestId } = await params
-  return (
-    <RequirePermission permission="changeRequests.view">
-      <ChangeRequestDetails requestId={requestId} />
-    </RequirePermission>
-  )
+  redirect(adminHref.changeRequest(requestId))
 }

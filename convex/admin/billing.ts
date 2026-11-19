@@ -5,6 +5,7 @@ import type { Doc } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
 import { adminMutation, adminQuery } from "../lib/access";
 import { fail } from "../lib/errors";
+import { sortOrderValidator, type SortOrder } from "../lib/listOrder";
 import { assertNotOwnShop } from "../lib/guards";
 import { currencyValidator } from "../lib/money";
 import {
@@ -96,9 +97,11 @@ function pageOfSubscriptions(
     status?: SubscriptionStatus;
     endsFrom?: number;
     endsTo?: number;
+    order?: SortOrder;
   },
 ): Promise<PaginationResult<Doc<"subscriptions">>> {
   const { paginationOpts, plan, status } = args;
+  const order = args.order ?? "asc";
   const search = args.search?.trim();
   const hasRange = args.endsFrom !== undefined || args.endsTo !== undefined;
   const from = args.endsFrom ?? 0;
@@ -119,13 +122,14 @@ function pageOfSubscriptions(
       : base;
     return query.paginate(paginationOpts);
   }
-  // Soonest ending first. With a date range, Free (no end date) drops out.
+  // Soonest ending first (`order: "desc"` = latest first). With a date range, Free (no end date) drops out.
   if (plan && status) {
     return subs
       .withIndex("by_plan_and_status_and_periodEnd", (q) => {
         const eq = q.eq("plan", plan).eq("status", status);
         return hasRange ? eq.gte("periodEnd", from).lt("periodEnd", to) : eq;
       })
+      .order(order)
       .paginate(paginationOpts);
   }
   if (plan) {
@@ -134,6 +138,7 @@ function pageOfSubscriptions(
         const eq = q.eq("plan", plan);
         return hasRange ? eq.gte("periodEnd", from).lt("periodEnd", to) : eq;
       })
+      .order(order)
       .paginate(paginationOpts);
   }
   if (status) {
@@ -142,10 +147,12 @@ function pageOfSubscriptions(
         const eq = q.eq("status", status);
         return hasRange ? eq.gte("periodEnd", from).lt("periodEnd", to) : eq;
       })
+      .order(order)
       .paginate(paginationOpts);
   }
   return subs
     .withIndex("by_periodEnd", (q) => (hasRange ? q.gte("periodEnd", from).lt("periodEnd", to) : q))
+    .order(order)
     .paginate(paginationOpts);
 }
 
@@ -158,6 +165,7 @@ export const subscriptions = adminQuery({
     status: v.optional(subscriptionStatusValidator),
     endsFrom: v.optional(v.number()),
     endsTo: v.optional(v.number()),
+    order: v.optional(sortOrderValidator),
   },
   returns: paginationResultValidator(subscriptionRow),
   handler: async (ctx, args) => {
@@ -175,9 +183,10 @@ function pageOfPayments(
     status?: PaymentStatus;
     from?: number;
     to?: number;
+    order?: SortOrder;
   },
 ): Promise<PaginationResult<Doc<"payments">>> {
-  const { paginationOpts, plan, status, from = 0, to = END_OF_TIME } = args;
+  const { paginationOpts, plan, status, from = 0, to = END_OF_TIME, order = "desc" } = args;
   const search = args.search?.trim();
   const payments = ctx.db.query("payments");
   if (search) {
@@ -190,7 +199,7 @@ function pageOfPayments(
     });
     return filter(base, (p) => p._creationTime >= from && p._creationTime < to).paginate(paginationOpts);
   }
-  // Newest first; the date range is on `_creationTime`, appended to every index.
+  // Newest first (`order: "asc"` = oldest first); the date range is on `_creationTime`, appended to every index.
   const query =
     plan && status
       ? payments.withIndex("by_plan_and_status", (q) =>
@@ -203,7 +212,7 @@ function pageOfPayments(
               q.eq("status", status).gte("_creationTime", from).lt("_creationTime", to),
             )
           : payments.withIndex("by_creation_time", (q) => q.gte("_creationTime", from).lt("_creationTime", to));
-  return query.order("desc").paginate(paginationOpts);
+  return query.order(order).paginate(paginationOpts);
 }
 
 export const payments = adminQuery({
@@ -215,11 +224,24 @@ export const payments = adminQuery({
     status: v.optional(paymentStatusValidator),
     from: v.optional(v.number()),
     to: v.optional(v.number()),
+    order: v.optional(sortOrderValidator),
   },
   returns: paginationResultValidator(paymentRow),
   handler: async (ctx, args) => {
     const result = await pageOfPayments(ctx, args);
     return { ...result, page: result.page.map(toPaymentRow) };
+  },
+});
+
+/** One payment (the payments drawer, opened from a link). Null for an unknown id. */
+export const payment = adminQuery({
+  permission: "billing.view",
+  args: { paymentId: v.string() },
+  returns: v.union(v.null(), paymentRow),
+  handler: async (ctx, args) => {
+    const paymentId = ctx.db.normalizeId("payments", args.paymentId);
+    const doc = paymentId ? await ctx.db.get("payments", paymentId) : null;
+    return doc ? toPaymentRow(doc) : null;
   },
 });
 

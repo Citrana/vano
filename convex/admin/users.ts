@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { adminMutation, adminQuery } from "../lib/access";
+import { sortOrderValidator, type SortOrder } from "../lib/listOrder";
 import { logAdminAction } from "../lib/audit";
 import { fail } from "../lib/errors";
 import { assertCanChangeUser } from "../lib/guards";
@@ -50,9 +51,10 @@ function pageOfUsers(
     search?: string;
     roleId?: Id<"roles">;
     status?: "active" | "suspended";
+    order?: SortOrder;
   },
 ): Promise<PaginationResult<Doc<"users">>> {
-  const { paginationOpts, roleId, status } = args;
+  const { paginationOpts, roleId, status, order = "desc" } = args;
   const search = args.search?.trim();
   if (search) {
     return ctx.db
@@ -72,21 +74,22 @@ function pageOfUsers(
       .withIndex("by_roleId_and_status", (q) =>
         status ? q.eq("roleId", roleId).eq("status", status) : q.eq("roleId", roleId),
       )
-      .order("desc")
+      .order(order)
       .paginate(paginationOpts);
   }
   if (status) {
     return ctx.db
       .query("users")
       .withIndex("by_status", (q) => q.eq("status", status))
-      .order("desc")
+      .order(order)
       .paginate(paginationOpts);
   }
-  return ctx.db.query("users").order("desc").paginate(paginationOpts);
+  return ctx.db.query("users").order(order).paginate(paginationOpts);
 }
 
 /**
- * Users, newest first (or by relevance when searching the email). Users
+ * Users, newest first (`order: "asc"` = oldest first; by relevance when
+ * searching the email). Users
  * not migrated yet (no status) only appear under "all statuses".
  */
 export const list = adminQuery({
@@ -96,6 +99,7 @@ export const list = adminQuery({
     search: v.optional(v.string()),
     roleId: v.optional(v.id("roles")),
     status: v.optional(userStatusValidator),
+    order: v.optional(sortOrderValidator),
   },
   returns: paginationResultValidator(userRow),
   handler: async (ctx, args) => {

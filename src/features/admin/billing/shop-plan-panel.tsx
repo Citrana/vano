@@ -2,15 +2,18 @@
 
 import { useQuery } from "convex/react"
 import { useFormatter, useTranslations } from "next-intl"
+import { useRouter } from "next/navigation"
 import { api } from "../../../../convex/_generated/api"
 import type { Id } from "../../../../convex/_generated/dataModel"
 import { LoadingState } from "@/components/states/states"
 import { Card, CardTitle } from "@/components/ui/card"
-import { SubscriptionStatusBadge } from "@/features/billing/subscription-status-badge"
+import { DataTable } from "../data-table/data-table"
+import { StatusTag } from "../data-table/status-tag"
+import { adminHref } from "../shell/hrefs"
 import { GrantPlanDialog } from "./grant-plan-dialog"
-import { AdminPaymentsList } from "./payments-section"
+import { usePaymentColumns } from "./payment-columns"
 
-/** The plan card on /admin/shops/[shopId]: status, recent payments, grant / extend. */
+/** The plan card in the shop drawer: status, recent payments, grant / extend. */
 export function ShopPlanPanel({
   shopId,
   shopName,
@@ -26,6 +29,8 @@ export function ShopPlanPanel({
   const tp = useTranslations("Pricing.plans")
   const format = useFormatter()
   const plan = useQuery(api.admin.billing.forShop, { shopId })
+  const paymentColumns = usePaymentColumns({ showShop: false })
+  const router = useRouter()
 
   if (plan === undefined) return <Card><LoadingState className="py-6" /></Card>
   if (plan === null) return null
@@ -35,7 +40,7 @@ export function ShopPlanPanel({
     <Card aria-labelledby="shop-plan-title">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <CardTitle id="shop-plan-title">{t("panelTitle")}</CardTitle>
-        <SubscriptionStatusBadge status={plan.status} />
+        <StatusTag kind="subscription" status={plan.status} />
       </div>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <p className="text-lg font-bold">{tp(`${running ? plan.plan : "free"}.name`)}</p>
@@ -67,7 +72,16 @@ export function ShopPlanPanel({
         {plan.payments.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t("noPayments")}</p>
         ) : (
-          <AdminPaymentsList rows={plan.payments} showShop={false} />
+          <DataTable
+            label={t("recentPayments")}
+            columns={paymentColumns}
+            rows={plan.payments}
+            getRowId={(r) => r._id}
+            loading={false}
+            empty={{ title: t("noPayments") }}
+            onRowOpen={(r) => router.push(adminHref.payment(r._id))}
+            stickyHeader={false}
+          />
         )}
       </div>
     </Card>

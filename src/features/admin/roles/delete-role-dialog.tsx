@@ -3,7 +3,6 @@
 import { useMutation } from "convex/react"
 import { Trash2Icon } from "lucide-react"
 import { useTranslations } from "next-intl"
-import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
 import { api } from "../../../../convex/_generated/api"
@@ -11,6 +10,7 @@ import type { Id } from "../../../../convex/_generated/dataModel"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog"
 import { useErrorMessage } from "@/lib/use-error-message"
+import { closeDetailsDrawer } from "../data-table/use-table-state"
 
 /** Delete with confirmation; a role still assigned is refused by the server. */
 export function DeleteRoleDialog({ roleId, name, inUse }: { roleId: Id<"roles">; name: string; inUse: boolean }) {
@@ -18,7 +18,6 @@ export function DeleteRoleDialog({ roleId, name, inUse }: { roleId: Id<"roles">;
   const tc = useTranslations("Common")
   const remove = useMutation(api.admin.roles.remove)
   const errorMessage = useErrorMessage()
-  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [pending, setPending] = useState(false)
 
@@ -28,7 +27,7 @@ export function DeleteRoleDialog({ roleId, name, inUse }: { roleId: Id<"roles">;
       await remove({ roleId })
       toast.success(t("deleted"))
       setOpen(false)
-      router.replace("/admin/roles")
+      closeDetailsDrawer()
     } catch (error) {
       toast.error(errorMessage(error))
     } finally {

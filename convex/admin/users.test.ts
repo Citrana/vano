@@ -67,6 +67,18 @@ describe("admin.users.list", () => {
     expect(emails((await q({ search: "agent", roleId: w.support })).page)).toEqual(["agent@vano.app"]);
   });
 
+  test("oldest first on request, with or without filters", async () => {
+    const t = newTest();
+    const w = await world(t);
+    // In list order (the `emails` helper sorts).
+    const q = (args: object) =>
+      as(t, w.admin).query(api.admin.users.list, { paginationOpts: page, ...args }).then((r) => r.page.map((u) => u.email));
+    expect(await q({ order: "asc" })).toEqual(["boss@vano.app", "amani@shop.cd", "baraka@shop.cd", "agent@vano.app"]);
+    expect(await q({ order: "asc", roleId: w.ids.seller })).toEqual(["amani@shop.cd", "baraka@shop.cd"]);
+    expect(await q({ order: "desc", roleId: w.ids.seller })).toEqual(["baraka@shop.cd", "amani@shop.cd"]);
+    expect(await q({ order: "asc", status: "active" })).toEqual(["boss@vano.app", "amani@shop.cd", "agent@vano.app"]);
+  });
+
   test("paginates", async () => {
     const t = newTest();
     const w = await world(t);

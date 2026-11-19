@@ -99,6 +99,22 @@ describe("admin.changeRequests.list", () => {
     expect(await list({ search: "Zawadi" })).toEqual(["zawadi-shoes"]);
     expect(await list({ search: "Amani", field: "slug" })).toEqual([]);
   });
+
+  test("oldest first on request; search ignores the order", async () => {
+    const t = newTest();
+    const w = await world(t);
+    await ask(t, w.amani.userId, "name", "Maison Amani");
+    vi.setSystemTime(Date.now() + DAY_MS);
+    await ask(t, w.zawadi.userId, "name", "Zawadi Maison");
+    const me = as(t, w.admin);
+    const list = (args: object) =>
+      me.query(api.admin.changeRequests.list, { paginationOpts: page, ...args }).then((r) => r.page.map((x) => x.newValue));
+
+    expect(await list({ order: "desc" })).toEqual(["Zawadi Maison", "Maison Amani"]);
+    expect(await list({ order: "asc" })).toEqual(["Maison Amani", "Zawadi Maison"]);
+    expect(await list({ order: "asc", status: "pending", field: "name" })).toEqual(["Maison Amani", "Zawadi Maison"]);
+    expect((await list({ order: "asc", search: "Maison" })).sort()).toEqual(["Maison Amani", "Zawadi Maison"]);
+  });
 });
 
 describe("admin.changeRequests.get", () => {

@@ -415,6 +415,16 @@ describe("notificationHref", () => {
     expect(notificationHref(summary(2))).toBe("/admin/subscriptions?from=2026-11-19&to=2026-11-26");
     expect(
       notificationHref({
+        type: "changeRequest.flagged",
+        requestId: "r1" as Id<"shopChangeRequests">,
+        shopName: "Chez Amani",
+        field: "name",
+        value: "Gucci Goma",
+        brand: "Gucci",
+      }),
+    ).toBe("/admin/change-requests?open=r1");
+    expect(
+      notificationHref({
         type: "admin.paymentFailed",
         paymentId: "p" as Id<"payments">,
         shopId: "s" as Id<"shops">,
@@ -422,6 +432,6 @@ describe("notificationHref", () => {
         plan: "pro",
         amount: "1",
       }),
-    ).toBe("/admin/payments?status=failed&search=Chez+Amani");
+    ).toBe("/admin/payments?status=failed&search=Chez+Amani&open=p");
   });
 });

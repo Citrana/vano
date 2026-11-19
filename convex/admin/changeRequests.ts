@@ -18,6 +18,7 @@ import {
   type ProtectedField,
 } from "../lib/changeRequests";
 import { fail } from "../lib/errors";
+import { sortOrderValidator } from "../lib/listOrder";
 import { assertNotOwnShop } from "../lib/guards";
 import { notify } from "../lib/notify";
 import { shopStatusValidator } from "../lib/permissions";
@@ -66,8 +67,9 @@ function toRow(request: Doc<"shopChangeRequests">) {
 }
 
 /**
- * Newest first. Filters: status, field, created in [`from`, `to`), flagged
- * (a risky name or link: the "brand" flag); search: shop name, link, new value.
+ * Newest first (`order: "asc"` for oldest first). Filters: status, field,
+ * created in [`from`, `to`), flagged (a risky name or link: the "brand"
+ * flag); search: shop name, link, new value (by relevance, no order).
  */
 export const list = adminQuery({
   permission: "changeRequests.view",
@@ -79,9 +81,10 @@ export const list = adminQuery({
     from: v.optional(v.number()),
     to: v.optional(v.number()),
     flagged: v.optional(v.boolean()),
+    order: v.optional(sortOrderValidator),
   },
   returns: paginationResultValidator(row),
-  handler: async (ctx, { paginationOpts, status, field, search, from, to, flagged }) => {
+  handler: async (ctx, { paginationOpts, status, field, search, from, to, flagged, order }) => {
     const keep = (r: Doc<"shopChangeRequests">) => !flagged || r.flags.includes("brand");
     const text = search?.trim();
     if (text) {
@@ -116,7 +119,7 @@ export const list = adminQuery({
           : field
             ? base.withIndex("by_field", (q) => q.eq("field", field).gte("_creationTime", lo).lt("_creationTime", hi))
             : base.withIndex("by_creation_time", (q) => q.gte("_creationTime", lo).lt("_creationTime", hi));
-    const result = await filter(query.order("desc"), keep).paginate(paginationOpts);
+    const result = await filter(query.order(order ?? "desc"), keep).paginate(paginationOpts);
     return { ...result, page: result.page.map(toRow) };
   },
 });

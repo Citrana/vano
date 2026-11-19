@@ -72,6 +72,18 @@ describe("admin.products.list", () => {
     expect(await q({ search: "robe", category: "clothes" })).toEqual(["Robe wax"]);
   });
 
+  test("oldest first on request, also with a filter", async () => {
+    const t = newTest();
+    const w = await world(t);
+    const q = async (args: object) =>
+      (await as(t, w.admin).query(api.admin.products.list, { paginationOpts: page, ...args })).page.map((r) => r.name);
+    expect(await q({ order: "asc" })).toEqual(["Robe wax", "Sandales", "Sac cuir"]);
+    expect(await q({ order: "asc", visibility: "visible", category: "clothes" })).toEqual(["Robe wax"]);
+    expect(await q({ order: "desc", category: "clothes" })).toEqual(["Robe wax"]);
+    // Visibility alone uses `by_hidden_and_category`: grouped by category, then by date.
+    expect(await q({ order: "asc", visibility: "visible" })).toEqual(["Sac cuir", "Robe wax"]);
+  });
+
   test("paginates and skips products of a deleted shop", async () => {
     const t = newTest();
     const w = await world(t);
@@ -96,6 +108,21 @@ describe("admin.products.list", () => {
       /ACCOUNT_SUSPENDED/,
     );
     await expect(t.query(api.admin.products.list, { paginationOpts: page })).rejects.toThrow(/NOT_AUTHENTICATED/);
+  });
+});
+
+describe("admin.products.get", () => {
+  test("one product with its shop; null for unknown ids; needs products.view", async () => {
+    const t = newTest();
+    const w = await world(t);
+    expect(await as(t, w.admin).query(api.admin.products.get, { productId: w.shoes })).toMatchObject({
+      _id: w.shoes,
+      name: "Sandales",
+      hidden: true,
+      shop: { name: "Chez Amani", slug: "chez-amani" },
+    });
+    expect(await as(t, w.admin).query(api.admin.products.get, { productId: "nope" })).toBeNull();
+    await expect(as(t, w.amani.userId).query(api.admin.products.get, { productId: w.shoes })).rejects.toThrow(/FORBIDDEN/);
   });
 });
 

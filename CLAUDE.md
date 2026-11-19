@@ -222,7 +222,7 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   real tables (pending requests, unresolved failed payments, plans ending
   soon) and returns null for numbers the viewer may not see. Badge items
   are set with `attention` in `nav.ts`; cards link to their list with the
-  filters in the URL (`*FiltersFromParams`).
+  filters in the URL (read by the list's `table-spec.ts`).
 - Limits and retention live only in `convex/notifications/config.ts`
   (`NOTIFICATION_RETENTION_DAYS`, `COUNT_CAP`, …). The daily cron
   `notificationJobs.cleanup` deletes old rows; `notificationJobs.endingSoon`
@@ -290,6 +290,16 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   `<RequirePermission permission="…">`. Sidebar sections are defined only
   in `src/features/admin/shell/nav.ts` (flip `ready` when a page ships).
   Hiding a link or button is never security — the Convex function checks.
+- **Admin lists** use the shared `DataTable` (`src/features/admin/data-table/`);
+  a page only defines its columns, its pure URL spec (`table-spec.ts`:
+  filter keys, options, defaults) and labels (`filterDefs`). Never build a
+  list, filter bar, pagination or date input by hand. Filters, search,
+  page, page size, sort and the open row live in the URL (`useTableState`,
+  pure codec in `url-state.ts`); a record opens in `DetailsDrawer`
+  (`?open=<id>`, links built only by `adminHref`); old
+  `/admin/<list>/<id>` routes redirect there. Only the date column sorts,
+  on the server (`order` arg, `convex/lib/listOrder.ts`). Statuses use
+  `StatusTag` (one tone map in `status-tones.ts`).
 - Pure modules imported by Vitest use relative imports (Vitest has no `@/`
   alias).
 

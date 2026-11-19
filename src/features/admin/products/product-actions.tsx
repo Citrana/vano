@@ -13,15 +13,17 @@ import { useErrorMessage } from "@/lib/use-error-message"
 import { useAdminViewer } from "../shell/use-admin-viewer"
 
 /**
- * Per-product admin actions, shown on /admin/products and on the admin
- * shop page: view (when public), hide/unhide (reversible, one click),
+ * Per-product admin actions, shown in the product drawer and the shop
+ * drawer: view (when public), hide/unhide (reversible, one click),
  * delete (with confirmation). Hidden without the permission; the server
  * checks anyway.
  */
 export function ProductActions({
   product,
+  onDeleted,
 }: {
   product: { _id: Id<"products">; name: string; hidden: boolean; shopSlug: string; shopActive: boolean }
+  onDeleted?: () => void
 }) {
   const t = useTranslations("AdminProducts")
   const tc = useTranslations("Common")
@@ -52,6 +54,7 @@ export function ProductActions({
       await remove({ productId: product._id })
       toast.success(t("deleted"))
       setConfirmOpen(false)
+      onDeleted?.()
     } catch (error) {
       toast.error(errorMessage(error))
     } finally {

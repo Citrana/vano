@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest"
-import { billingFiltersFromParams } from "../billing/filter-params"
-import { changeRequestFiltersFromParams } from "../change-requests/filter-params"
+import { PAYMENTS_SPEC, SUBSCRIPTIONS_SPEC } from "../billing/table-spec"
+import { CHANGE_REQUESTS_SPEC } from "../change-requests/table-spec"
+import { parseTableState } from "../data-table/url-state"
 import { attentionHref } from "./links"
 
 const NOW = Date.parse("2026-11-19T12:00:00Z")
@@ -8,14 +9,25 @@ const query = (href: string) => new URLSearchParams(href.split("?")[1])
 
 describe("attentionHref", () => {
   test("each card's link presets the list's filters", () => {
-    expect(changeRequestFiltersFromParams(query(attentionHref("flaggedChangeRequests", NOW)))).toMatchObject({
+    expect(parseTableState(query(attentionHref("flaggedChangeRequests", NOW)), CHANGE_REQUESTS_SPEC).filters).toMatchObject({
       status: "pending",
-      flagged: true,
+      flagged: "1",
     })
-    expect(billingFiltersFromParams(query(attentionHref("failedPayments", NOW)), ["failed"])).toMatchObject({
+    expect(parseTableState(query(attentionHref("pendingChangeRequests", NOW)), CHANGE_REQUESTS_SPEC).filters).toMatchObject({
+      status: "pending",
+      flagged: "",
+    })
+    expect(parseTableState(query(attentionHref("failedPayments", NOW)), PAYMENTS_SPEC).filters).toEqual({
       status: "failed",
+      plan: "",
       from: "2026-11-12",
+      to: "",
     })
-    expect(attentionHref("endingSoon", NOW)).toBe("/admin/subscriptions?from=2026-11-19&to=2026-11-26")
+    expect(parseTableState(query(attentionHref("endingSoon", NOW)), SUBSCRIPTIONS_SPEC).filters).toEqual({
+      status: "",
+      plan: "",
+      from: "2026-11-19",
+      to: "2026-11-26",
+    })
   })
 })
