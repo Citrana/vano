@@ -538,7 +538,12 @@
     "emptyTitle": "No custom roles yet",
     "emptyBody": "Create roles like \"Support\" or \"Moderator\" and choose exactly what they can do.",
     "notFoundTitle": "Role not found",
-    "notFoundBody": "This role doesn't exist or was deleted."
+    "notFoundBody": "This role doesn't exist or was deleted.",
+    "search": "Search roles",
+    "searchPlaceholder": "Search by role name",
+    "users": "Users",
+    "noMatchTitle": "No roles found",
+    "noMatchBody": "No role matches this search."
   },
   "AdminShops": {
     "title": "Shops",

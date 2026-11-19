@@ -5,7 +5,6 @@ import { InfoIcon, ShieldXIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { toast } from "sonner"
 import { api } from "../../../../convex/_generated/api"
-import { PageTitle } from "@/components/shell/page-title"
 import { EmptyState, LoadingState } from "@/components/states/states"
 import { Card } from "@/components/ui/card"
 import { useAdminViewer, useRoleLabel } from "../shell/use-admin-viewer"
@@ -13,7 +12,7 @@ import { DeleteRoleDialog } from "./delete-role-dialog"
 import { PermissionGrid } from "./permission-grid"
 import { RoleForm } from "./role-form"
 
-/** /admin/roles/[roleId]: edit a custom role, or a read-only view with the reason. */
+/** The role drawer: edit a custom role, or a read-only view with the reason. */
 export function RoleDetails({ roleId }: { roleId: string }) {
   const t = useTranslations("AdminRoles")
   const roleLabel = useRoleLabel()
@@ -21,12 +20,9 @@ export function RoleDetails({ roleId }: { roleId: string }) {
   const role = useQuery(api.admin.roles.get, { roleId })
   const update = useMutation(api.admin.roles.update)
 
-  const title = role ? roleLabel(role) : t("roleTitle")
-  const header = <PageTitle title={title} backHref="/admin/roles" backLabel={t("back")} />
-  if (role === undefined || !viewer) return <>{header}<LoadingState /></>
-  if (role === null) {
-    return <>{header}<EmptyState icon={<ShieldXIcon />} title={t("notFoundTitle")} body={t("notFoundBody")} /></>
-  }
+  if (role === undefined || !viewer) return <LoadingState />
+  if (role === null) return <EmptyState icon={<ShieldXIcon />} title={t("notFoundTitle")} body={t("notFoundBody")} />
+  const heading = <h2 className="font-heading text-xl font-bold tracking-tight break-words">{roleLabel(role)}</h2>
 
   const canManage = viewer.permissions.includes("roles.manage")
   const ownLocked = role.isOwnRole && viewer.roleKey !== "super_admin"
@@ -42,8 +38,8 @@ export function RoleDetails({ roleId }: { roleId: string }) {
 
   if (reason) {
     return (
-      <div className="mx-auto flex max-w-3xl flex-col gap-4">
-        {header}
+      <div className="flex flex-col gap-4">
+        {heading}
         <p className="flex items-start gap-2 rounded-lg bg-muted p-3 text-sm">
           <InfoIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
           {reason}
@@ -57,8 +53,8 @@ export function RoleDetails({ roleId }: { roleId: string }) {
   }
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-4">
-      {header}
+    <div className="flex flex-col gap-4">
+      {heading}
       <Card>
         <RoleForm
           key={role._id}

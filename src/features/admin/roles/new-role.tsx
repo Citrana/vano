@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { api } from "../../../../convex/_generated/api"
 import { PageTitle } from "@/components/shell/page-title"
+import { adminHref } from "../shell/hrefs"
 import { RoleForm } from "./role-form"
 
 export function NewRole() {
@@ -21,7 +22,7 @@ export function NewRole() {
         onSubmit={async (values) => {
           const roleId = await create(values)
           toast.success(t("created"))
-          router.replace(`/admin/roles/${roleId}`)
+          router.replace(adminHref.role(roleId))
         }}
       />
     </div>

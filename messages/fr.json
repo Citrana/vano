@@ -538,7 +538,12 @@
     "emptyTitle": "Aucun rôle personnalisé",
     "emptyBody": "Créez des rôles comme « Support » ou « Modérateur » et choisissez exactement ce qu'ils peuvent faire.",
     "notFoundTitle": "Rôle introuvable",
-    "notFoundBody": "Ce rôle n'existe pas ou a été supprimé."
+    "notFoundBody": "Ce rôle n'existe pas ou a été supprimé.",
+    "search": "Rechercher un rôle",
+    "searchPlaceholder": "Rechercher par nom de rôle",
+    "users": "Utilisateurs",
+    "noMatchTitle": "Aucun rôle trouvé",
+    "noMatchBody": "Aucun rôle ne correspond à cette recherche."
   },
   "AdminShops": {
     "title": "Boutiques",

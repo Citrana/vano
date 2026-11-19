@@ -1,11 +1,8 @@
-import { RoleDetails } from "@/features/admin/roles/role-details"
-import { RequirePermission } from "@/features/admin/shell/admin-gate"
+import { redirect } from "next/navigation"
+import { adminHref } from "@/features/admin/shell/hrefs"
 
+/** Old link to one role: the list now opens it in a drawer. */
 export default async function AdminRolePage({ params }: PageProps<"/admin/roles/[roleId]">) {
   const { roleId } = await params
-  return (
-    <RequirePermission permission="roles.view">
-      <RoleDetails roleId={roleId} />
-    </RequirePermission>
-  )
+  redirect(adminHref.role(roleId))
 }

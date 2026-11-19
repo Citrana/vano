@@ -53,3 +53,22 @@ export function useTablePages<Query extends PaginatedQueryReference>(
     pageCount,
   }
 }
+
+/** The same numbered pages over a list that is loaded whole (e.g. roles). `undefined` = still loading. */
+export function useLocalPages<Row>(
+  all: readonly Row[] | undefined,
+  { page, size, setPage }: { page: number; size: number; setPage: (page: number) => void },
+): TablePages<Row> {
+  const total = all?.length ?? null
+  const pageCount = total === null ? null : Math.max(1, Math.ceil(total / size))
+  useEffect(() => {
+    if (pageCount !== null && page > pageCount) setPage(pageCount)
+  }, [page, pageCount, setPage])
+  return {
+    rows: all ? all.slice((page - 1) * size, page * size) : [],
+    loading: all === undefined,
+    loaded: total ?? 0,
+    total,
+    pageCount,
+  }
+}
