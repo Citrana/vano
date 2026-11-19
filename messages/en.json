@@ -1411,19 +1411,13 @@
     "allStatuses": "All statuses",
     "field": "Field",
     "allFields": "All fields",
-    "from": "Asked from",
-    "to": "Asked until",
-    "utcNote": "Dates are in UTC.",
-    "clear": "Clear filters",
     "emptyTitle": "No requests",
     "emptyBody": "No change requests match these filters.",
-    "loadMore": "Load more",
     "flag": {
       "brand": "Brand: {brand}",
       "cooldown": "Within 30 days"
     },
     "detailsTitle": "Change request",
-    "back": "Back to change requests",
     "notFoundTitle": "Request not found",
     "notFoundBody": "It may have been removed, or the link is wrong.",
     "oldValue": "Old value",
@@ -1462,7 +1456,11 @@
     "rejectTitle": "Reject this change?",
     "rejectBody": "The seller sees your reason. The shop stays as it is.",
     "rejectPlaceholder": "e.g. Brand names can't be used without proof you own them.",
-    "flaggedOnly": "Flagged only"
+    "flaggedOnly": "Flagged only",
+    "shop": "Shop",
+    "change": "Change",
+    "askedOn": "Asked on",
+    "flagColumn": "Flags"
   },
   "DataTable": {
     "filters": "Filters",

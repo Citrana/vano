@@ -16,6 +16,8 @@ export type Column<Row> = {
   hideBelow?: "lg" | "xl"
   /** Where this column shows on phones; columns without it only show in the drawer. */
   mobile?: "title" | "subtitle" | "meta" | "trailing"
+  /** Only on phones (e.g. "old → new" on one line); left out of the table. */
+  mobileOnly?: boolean
   /** Accessible header for icon-only columns (the visible header is empty). */
   srOnlyHeader?: boolean
 }
@@ -32,8 +34,6 @@ export type FilterDef =
       /** Label of the "all" choice ("All statuses"). */
       allLabel: string
       default?: string
-      /** Options are loaded at run time (ids); any safe id from the URL is kept. */
-      dynamic?: boolean
     }
   | { kind: "checkbox"; key: string; label: string }
   | { kind: "dateRange"; fromKey: string; toKey: string; label: string }

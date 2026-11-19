@@ -38,6 +38,7 @@ import type * as lib_entitlements from "../lib/entitlements.js";
 import type * as lib_errors from "../lib/errors.js";
 import type * as lib_guards from "../lib/guards.js";
 import type * as lib_images from "../lib/images.js";
+import type * as lib_listOrder from "../lib/listOrder.js";
 import type * as lib_money from "../lib/money.js";
 import type * as lib_notify from "../lib/notify.js";
 import type * as lib_onboarding from "../lib/onboarding.js";
@@ -119,6 +120,7 @@ declare const fullApi: ApiFromModules<{
   "lib/errors": typeof lib_errors;
   "lib/guards": typeof lib_guards;
   "lib/images": typeof lib_images;
+  "lib/listOrder": typeof lib_listOrder;
   "lib/money": typeof lib_money;
   "lib/notify": typeof lib_notify;
   "lib/onboarding": typeof lib_onboarding;

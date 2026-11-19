@@ -128,6 +128,7 @@ function DesktopTable<Row>({
   selection,
 }: DataTableProps<Row>) {
   const t = useTranslations("DataTable")
+  const tableColumns = columns.filter((c) => !c.mobileOnly)
   const pageIds = rows.map(getRowId)
   const selectedOnPage = selection ? pageIds.filter((id) => selection.selected.has(id)).length : 0
 
@@ -153,7 +154,7 @@ function DesktopTable<Row>({
               />
             </th>
           ) : null}
-          {columns.map((col) => (
+          {tableColumns.map((col) => (
             <HeaderCell key={col.id} column={col} sort={sort} />
           ))}
           <th scope="col" className="w-8">
@@ -166,7 +167,7 @@ function DesktopTable<Row>({
           ? Array.from({ length: Math.min(skeletonRows, 10) }, (_, i) => (
               <tr key={i} className="h-12">
                 {selection ? <td className="px-3" /> : null}
-                {columns.map((col) => (
+                {tableColumns.map((col) => (
                   <td key={col.id} className={cn("px-3", col.hideBelow && HIDE_BELOW[col.hideBelow])}>
                     <Skeleton className="h-3.5 w-3/4 max-w-40 rounded-sm" />
                   </td>
@@ -200,7 +201,7 @@ function DesktopTable<Row>({
                       />
                     </td>
                   ) : null}
-                  {columns.map((col, i) => (
+                  {tableColumns.map((col, i) => (
                     <td
                       key={col.id}
                       className={cn(

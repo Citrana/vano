@@ -1,97 +1,142 @@
 "use client"
 
-import { usePaginatedQuery } from "convex/react"
-import { ChevronRightIcon, FilePenLineIcon, Loader2Icon } from "lucide-react"
+import type { FunctionReturnType } from "convex/server"
+import { AlertTriangleIcon, FilePenLineIcon } from "lucide-react"
 import { useFormatter, useTranslations } from "next-intl"
-import Link from "next/link"
-import { useSearchParams } from "next/navigation"
-import { useState } from "react"
+import { useMemo } from "react"
 import { api } from "../../../../convex/_generated/api"
+import type { ChangeStatus, ProtectedField } from "../../../../convex/lib/changeRequests"
 import { PageTitle } from "@/components/shell/page-title"
-import { EmptyState, LoadingState } from "@/components/states/states"
-import { Button } from "@/components/ui/button"
-import { dayRange } from "@/features/admin/billing/billing-filters"
 import { displayValue } from "@/features/change-requests/display-value"
-import { useDebounced } from "@/lib/use-debounced"
-import { ChangeFlags, ChangeStatusBadge } from "./change-request-badges"
-import { ChangeRequestsFilters, type ChangeRequestsFilterValue } from "./change-requests-filters"
-import { changeRequestFiltersFromParams } from "./filter-params"
+import { DataTable, TableBoundary } from "../data-table/data-table"
+import { DetailsDrawer } from "../data-table/details-drawer"
+import { StatusTag } from "../data-table/status-tag"
+import { TablePagination } from "../data-table/table-pagination"
+import { TableToolbar } from "../data-table/table-toolbar"
+import { filterDefs } from "../data-table/filters"
+import type { Column } from "../data-table/types"
+import { useTablePages } from "../data-table/use-table-pages"
+import { useTableState, type TableState } from "../data-table/use-table-state"
+import { dayRange } from "../data-table/url-state"
+import { ChangeRequestDetails } from "./change-request-details"
+import { CHANGE_REQUESTS_SPEC } from "./table-spec"
 
-const PAGE_SIZE = 20
+type Row = FunctionReturnType<typeof api.admin.changeRequests.list>["page"][number]
 
 /**
- * /admin/change-requests: filters + paginated cards (one layout, phone
- * first). The URL can preset the filters (`?status=pending&flagged=1`);
- * a new URL resets them.
+ * /admin/change-requests: pending first. Filters, page and the open
+ * request live in the URL (`?status=pending&flagged=1&open=<id>`), so the
+ * attention cards and notifications open the right view.
  */
 export function ChangeRequestsSection() {
-  const params = useSearchParams()
-  return <ChangeRequestsView key={params.toString()} initial={changeRequestFiltersFromParams(params)} />
-}
-
-function ChangeRequestsView({ initial }: { initial: ChangeRequestsFilterValue }) {
   const t = useTranslations("AdminChangeRequests")
+  const ts = useTranslations("ChangeRequests.status")
   const tf = useTranslations("ChangeRequests.fieldName")
-  const format = useFormatter()
-  const [filters, setFilters] = useState<ChangeRequestsFilterValue>(initial)
-  const search = useDebounced(filters.search.trim())
-  const { results, status, loadMore } = usePaginatedQuery(
-    api.admin.changeRequests.list,
-    {
-      search: search || undefined,
-      status: filters.status || undefined,
-      field: filters.field || undefined,
-      flagged: filters.flagged || undefined,
-      ...dayRange(filters),
-    },
-    { initialNumItems: PAGE_SIZE },
+
+  const filters = useMemo(
+    () =>
+      filterDefs(CHANGE_REQUESTS_SPEC, {
+        status: { label: t("status"), allLabel: t("allStatuses"), optionLabel: (s) => ts(s as ChangeStatus) },
+        field: { label: t("field"), allLabel: t("allFields"), optionLabel: (f) => tf(f as ProtectedField) },
+        from: { label: t("askedOn") },
+        flagged: { label: t("flaggedOnly") },
+      }),
+    [t, ts, tf],
   )
+  const table = useTableState(CHANGE_REQUESTS_SPEC)
 
   return (
     <div className="flex flex-col gap-4">
       <PageTitle title={t("title")} />
-      <ChangeRequestsFilters value={filters} onChange={setFilters} />
-      {status === "LoadingFirstPage" ? (
-        <LoadingState />
-      ) : results.length === 0 && status === "Exhausted" ? (
-        <EmptyState icon={<FilePenLineIcon />} title={t("emptyTitle")} body={t("emptyBody")} />
-      ) : (
-        <>
-          <ul className="flex flex-col gap-2">
-            {results.map((row) => (
-              <li key={row._id}>
-                <Link
-                  href={`/admin/change-requests/${row._id}`}
-                  className="flex min-h-11 items-center gap-3 rounded-xl border bg-card p-3 hover:bg-muted md:p-4"
-                >
-                  <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                    <span className="flex flex-wrap items-center gap-2">
-                      <span className="font-medium">{tf(row.field)}</span>
-                      <span className="truncate text-muted-foreground">· {row.shopName}</span>
-                      <ChangeStatusBadge status={row.status} />
-                      <ChangeFlags flags={row.flags} matchedBrand={row.matchedBrand} />
-                    </span>
-                    <span className="text-sm break-words">
-                      <span className="text-muted-foreground">{displayValue(row.field, row.oldValue)}</span> →{" "}
-                      <span className="font-medium">{displayValue(row.field, row.newValue)}</span>
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {format.dateTime(new Date(row._creationTime), { dateStyle: "medium", timeStyle: "short" })}
-                    </span>
-                  </div>
-                  <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-                </Link>
-              </li>
-            ))}
-          </ul>
-          {status !== "Exhausted" ? (
-            <Button variant="outline" className="self-center" disabled={status === "LoadingMore"} onClick={() => loadMore(PAGE_SIZE)}>
-              {status === "LoadingMore" ? <Loader2Icon className="animate-spin" /> : null}
-              {t("loadMore")}
-            </Button>
-          ) : null}
-        </>
-      )}
+      <TableToolbar table={table} filters={filters} search={{ label: t("search"), placeholder: t("searchPlaceholder") }} />
+      <TableBoundary>
+        <ChangeRequestsTable table={table} />
+      </TableBoundary>
+      <DetailsDrawer openId={table.open} onClose={table.closeRow} title={t("detailsTitle")}>
+        {(id) => <ChangeRequestDetails requestId={id} />}
+      </DetailsDrawer>
     </div>
+  )
+}
+
+function ChangeRequestsTable({ table }: { table: TableState }) {
+  const t = useTranslations("AdminChangeRequests")
+  const tf = useTranslations("ChangeRequests.fieldName")
+  const tflag = useTranslations("AdminChangeRequests.flag")
+  const format = useFormatter()
+  const { filters } = table
+  const pages = useTablePages(
+    api.admin.changeRequests.list,
+    {
+      search: table.search || undefined,
+      status: (filters.status || undefined) as ChangeStatus | undefined,
+      field: (filters.field || undefined) as ProtectedField | undefined,
+      flagged: filters.flagged === "1" || undefined,
+      ...dayRange({ from: filters.from, to: filters.to }),
+      order: table.search ? undefined : table.order,
+    },
+    table,
+  )
+
+  const flagText = (row: Row) =>
+    row.flags.map((f) => (f === "brand" ? tflag("brand", { brand: row.matchedBrand ?? "" }) : tflag("cooldown"))).join(" · ")
+
+  const columns: Column<Row>[] = [
+    { id: "shop", header: t("shop"), cell: (r) => r.shopName, className: "max-w-44", mobile: "title" },
+    { id: "field", header: t("field"), cell: (r) => tf(r.field), className: "whitespace-nowrap", mobile: "subtitle" },
+    {
+      id: "change",
+      header: t("change"),
+      mobileOnly: true,
+      mobile: "meta",
+      cell: (r) => `${displayValue(r.field, r.oldValue)} → ${displayValue(r.field, r.newValue)}`,
+    },
+    { id: "old", header: t("oldValue"), cell: (r) => displayValue(r.field, r.oldValue), muted: true, className: "max-w-44" },
+    {
+      id: "new",
+      header: t("newValue"),
+      cell: (r) => <span className="font-medium">{displayValue(r.field, r.newValue)}</span>,
+      className: "max-w-44",
+    },
+    { id: "status", header: t("status"), cell: (r) => <StatusTag kind="change" status={r.status} />, mobile: "trailing" },
+    {
+      id: "asked",
+      header: t("askedOn"),
+      sortable: true,
+      cell: (r) => format.dateTime(new Date(r._creationTime), { dateStyle: "medium" }),
+      className: "whitespace-nowrap tabular-nums text-muted-foreground",
+      hideBelow: "lg",
+    },
+    {
+      id: "flag",
+      header: t("flagColumn"),
+      srOnlyHeader: true,
+      className: "w-10",
+      mobile: "trailing",
+      cell: (r) =>
+        r.flags.length > 0 ? (
+          <span title={flagText(r)} className="inline-flex text-destructive">
+            <AlertTriangleIcon className="size-4" aria-hidden />
+            <span className="sr-only">{flagText(r)}</span>
+          </span>
+        ) : null,
+    },
+  ]
+
+  return (
+    <DataTable
+      label={t("title")}
+      columns={columns}
+      rows={pages.rows}
+      getRowId={(r) => r._id}
+      loading={pages.loading}
+      skeletonRows={table.size}
+      empty={{ icon: <FilePenLineIcon />, title: t("emptyTitle"), body: t("emptyBody") }}
+      onClearFilters={table.filtered ? table.clearFilters : undefined}
+      onRowOpen={(r) => table.openRow(r._id)}
+      activeRowId={table.open}
+      sort={{ columnId: "asked", order: table.order, onChange: table.setOrder, disabled: table.search !== "" }}
+      footer={<TablePagination pages={pages} page={table.page} size={table.size} onPage={table.setPage} onSize={table.setSize} />}
+    />
   )
 }

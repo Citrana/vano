@@ -2,7 +2,6 @@
 
 import { usePathname, useSearchParams } from "next/navigation"
 import { useCallback, useMemo } from "react"
-import type { FilterDef } from "./types"
 import {
   activeFilterCount,
   defaultFilters,
@@ -13,18 +12,6 @@ import {
   type TableSpec,
   type TableUrlState,
 } from "./url-state"
-
-/** The pure URL spec of a page's filters (labels are dropped). */
-export function specFromFilters(filters: readonly FilterDef[], extra: Omit<TableSpec, "filters"> = {}): TableSpec {
-  return {
-    ...extra,
-    filters: filters.map((f) =>
-      f.kind === "select"
-        ? { kind: "select", key: f.key, default: f.default, options: f.dynamic ? undefined : f.options.map((o) => o.value) }
-        : f,
-    ),
-  }
-}
 
 export type TableState = TableUrlState & {
   spec: TableSpec

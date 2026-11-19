@@ -141,7 +141,8 @@ export function notificationHref(data: NotificationData): string {
   switch (data.type) {
     case "changeRequest.submitted":
     case "changeRequest.flagged":
-      return `/admin/change-requests/${data.requestId}`;
+      // The list opens the request in its drawer (src/features/admin/shell/hrefs.ts).
+      return `/admin/change-requests?${new URLSearchParams({ open: data.requestId })}`;
     case "changeRequest.approved":
     case "changeRequest.rejected":
       return "/dashboard/settings";

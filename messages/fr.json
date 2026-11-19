@@ -1411,19 +1411,13 @@
     "allStatuses": "Tous les statuts",
     "field": "Champ",
     "allFields": "Tous les champs",
-    "from": "Demandée depuis",
-    "to": "Demandée jusqu'au",
-    "utcNote": "Les dates sont en UTC.",
-    "clear": "Effacer les filtres",
     "emptyTitle": "Aucune demande",
     "emptyBody": "Aucune demande ne correspond à ces filtres.",
-    "loadMore": "Voir plus",
     "flag": {
       "brand": "Marque : {brand}",
       "cooldown": "Moins de 30 jours"
     },
     "detailsTitle": "Demande de modification",
-    "back": "Retour aux demandes",
     "notFoundTitle": "Demande introuvable",
     "notFoundBody": "Elle a peut-être été supprimée, ou le lien est incorrect.",
     "oldValue": "Ancienne valeur",
@@ -1462,7 +1456,11 @@
     "rejectTitle": "Refuser cette modification ?",
     "rejectBody": "Le vendeur voit votre raison. La boutique reste inchangée.",
     "rejectPlaceholder": "ex. Les noms de marque ne peuvent pas être utilisés sans preuve de propriété.",
-    "flaggedOnly": "Signalées seulement"
+    "flaggedOnly": "Signalées seulement",
+    "shop": "Boutique",
+    "change": "Modification",
+    "askedOn": "Demandée le",
+    "flagColumn": "Alertes"
   },
   "DataTable": {
     "filters": "Filtres",

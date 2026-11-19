@@ -1,6 +1,5 @@
 import { describe, expect, test } from "vitest"
 import { billingFiltersFromParams } from "./billing/filter-params"
-import { DEFAULT_FILTERS, changeRequestFiltersFromParams } from "./change-requests/filter-params"
 
 const p = (query: string) => new URLSearchParams(query)
 
@@ -20,19 +19,5 @@ describe("billingFiltersFromParams", () => {
       from: "",
       to: "",
     })
-  })
-})
-
-describe("changeRequestFiltersFromParams", () => {
-  test("no filter in the URL keeps the defaults", () => {
-    expect(changeRequestFiltersFromParams(p(""))).toEqual(DEFAULT_FILTERS)
-  })
-
-  test("the flagged link: pending + flagged only", () => {
-    expect(changeRequestFiltersFromParams(p("status=pending&flagged=1"))).toEqual({ ...DEFAULT_FILTERS, flagged: true })
-  })
-
-  test("any filter replaces the defaults; bad values are dropped", () => {
-    expect(changeRequestFiltersFromParams(p("field=slug&status=maybe"))).toEqual({ ...DEFAULT_FILTERS, status: "", field: "slug" })
   })
 })
