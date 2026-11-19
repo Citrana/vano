@@ -5,11 +5,12 @@ import { useTranslations } from "next-intl"
 import { useState } from "react"
 import { api } from "../../../../convex/_generated/api"
 import { utcDay } from "../../../../convex/lib/days"
+import { NeedsAttention } from "../attention/needs-attention"
 import { useAdminViewer, useRoleLabel } from "../shell/use-admin-viewer"
 import { PlatformGrowth } from "./platform-growth"
 import { PlatformTotals } from "./platform-totals"
 
-/** The admin dashboard (`dashboard.view`): live platform numbers. */
+/** The admin dashboard (`dashboard.view`): what needs attention, then live platform numbers. */
 export function AdminDashboard() {
   const t = useTranslations("AdminDashboard")
   const ta = useTranslations("Admin")
@@ -29,6 +30,7 @@ export function AdminDashboard() {
           </p>
         ) : null}
       </div>
+      <NeedsAttention />
       <PlatformTotals totals={stats?.totals} />
       <PlatformGrowth last7={stats?.last7} last30={stats?.last30} />
       <p className="text-xs text-muted-foreground">{t("utcNote")}</p>

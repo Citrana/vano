@@ -148,7 +148,7 @@ export function notificationHref(data: NotificationData): string {
     case "admin.paymentFailed":
       return `/admin/payments?${new URLSearchParams({ status: "failed", search: data.shopName })}`;
     case "admin.endingSoon":
-      return `/admin/subscriptions?${new URLSearchParams({ endsFrom: data.day, endsTo: addDays(data.day, EXPIRY_WARNING_DAYS) })}`;
+      return `/admin/subscriptions?${new URLSearchParams({ from: data.day, to: addDays(data.day, EXPIRY_WARNING_DAYS) })}`;
     case "payment.failed":
     case "plan.activated":
     case "plan.expired":

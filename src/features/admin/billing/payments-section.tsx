@@ -5,6 +5,7 @@ import type { FunctionReturnType } from "convex/server"
 import { Loader2Icon, ReceiptIcon } from "lucide-react"
 import { useFormatter, useLocale, useTranslations } from "next-intl"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { useState } from "react"
 import { api } from "../../../../convex/_generated/api"
 import { formatMoney } from "../../../../convex/lib/money"
@@ -14,16 +15,22 @@ import { EmptyState, LoadingState } from "@/components/states/states"
 import { Button } from "@/components/ui/button"
 import { PaymentStatusBadge } from "@/features/billing/payment-status-badge"
 import { useDebounced } from "@/lib/use-debounced"
-import { BillingFilters, dayRange, emptyFilters, type BillingFilterValue } from "./billing-filters"
+import { BillingFilters, dayRange, type BillingFilterValue } from "./billing-filters"
+import { billingFiltersFromParams } from "./filter-params"
 
 const PAGE_SIZE = 25
 export type AdminPaymentRow = FunctionReturnType<typeof api.admin.billing.payments>["page"][number]
 
-/** /admin/payments: every plan payment, newest first. */
+/** /admin/payments: every plan payment, newest first. The URL can preset the filters (`?status=failed`). */
 export function PaymentsSection() {
+  const params = useSearchParams()
+  return <PaymentsView key={params.toString()} initial={billingFiltersFromParams(params, PAYMENT_STATUSES)} />
+}
+
+function PaymentsView({ initial }: { initial: BillingFilterValue<PaymentStatus> }) {
   const t = useTranslations("AdminBilling")
   const ts = useTranslations("Billing.paymentStatus")
-  const [filters, setFilters] = useState<BillingFilterValue<PaymentStatus>>(emptyFilters)
+  const [filters, setFilters] = useState<BillingFilterValue<PaymentStatus>>(initial)
   const search = useDebounced(filters.search.trim())
   const range = dayRange(filters)
   const filtered = Object.values(filters).some((v) => v !== "")

@@ -412,7 +412,7 @@ describe("migrations.notificationsV1", () => {
 describe("notificationHref", () => {
   test("links each type to its page", () => {
     expect(notificationHref({ type: "plan.expired", plan: "pro", trial: false })).toBe("/dashboard/billing");
-    expect(notificationHref(summary(2))).toBe("/admin/subscriptions?endsFrom=2026-11-19&endsTo=2026-11-26");
+    expect(notificationHref(summary(2))).toBe("/admin/subscriptions?from=2026-11-19&to=2026-11-26");
     expect(
       notificationHref({
         type: "admin.paymentFailed",

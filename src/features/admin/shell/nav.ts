@@ -20,21 +20,26 @@ export type AdminNavKey =
   | "activity"
   | "settings"
 
+/** Live counts that can badge a sidebar item (`admin.attention.counts`). */
+export type AdminNavAttention = "pendingChangeRequests" | "failedPayments"
+
 export type AdminNavItem = {
   key: AdminNavKey
   href: string
   permission: Permission
   ready: boolean
+  /** Shows this live count next to the link when it's above zero. */
+  attention?: AdminNavAttention
 }
 
 export const ADMIN_NAV: readonly AdminNavItem[] = [
   { key: "dashboard", href: "/admin", permission: "dashboard.view", ready: true },
   { key: "users", href: "/admin/users", permission: "users.view", ready: true },
   { key: "shops", href: "/admin/shops", permission: "shops.view", ready: true },
-  { key: "changeRequests", href: "/admin/change-requests", permission: "changeRequests.view", ready: true },
+  { key: "changeRequests", href: "/admin/change-requests", permission: "changeRequests.view", ready: true, attention: "pendingChangeRequests" },
   { key: "products", href: "/admin/products", permission: "products.view", ready: true },
   { key: "subscriptions", href: "/admin/subscriptions", permission: "billing.view", ready: true },
-  { key: "payments", href: "/admin/payments", permission: "billing.view", ready: true },
+  { key: "payments", href: "/admin/payments", permission: "billing.view", ready: true, attention: "failedPayments" },
   { key: "roles", href: "/admin/roles", permission: "roles.view", ready: true },
   { key: "activity", href: "/admin/activity", permission: "audit.view", ready: true },
   { key: "settings", href: "/admin/settings", permission: "settings.view", ready: true },

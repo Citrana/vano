@@ -4,6 +4,7 @@ import { usePaginatedQuery } from "convex/react"
 import { ChevronRightIcon, FilePenLineIcon, Loader2Icon } from "lucide-react"
 import { useFormatter, useTranslations } from "next-intl"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { useState } from "react"
 import { api } from "../../../../convex/_generated/api"
 import { PageTitle } from "@/components/shell/page-title"
@@ -13,16 +14,26 @@ import { dayRange } from "@/features/admin/billing/billing-filters"
 import { displayValue } from "@/features/change-requests/display-value"
 import { useDebounced } from "@/lib/use-debounced"
 import { ChangeFlags, ChangeStatusBadge } from "./change-request-badges"
-import { ChangeRequestsFilters, DEFAULT_FILTERS, type ChangeRequestsFilterValue } from "./change-requests-filters"
+import { ChangeRequestsFilters, type ChangeRequestsFilterValue } from "./change-requests-filters"
+import { changeRequestFiltersFromParams } from "./filter-params"
 
 const PAGE_SIZE = 20
 
-/** /admin/change-requests: filters + paginated cards (one layout, phone first). */
+/**
+ * /admin/change-requests: filters + paginated cards (one layout, phone
+ * first). The URL can preset the filters (`?status=pending&flagged=1`);
+ * a new URL resets them.
+ */
 export function ChangeRequestsSection() {
+  const params = useSearchParams()
+  return <ChangeRequestsView key={params.toString()} initial={changeRequestFiltersFromParams(params)} />
+}
+
+function ChangeRequestsView({ initial }: { initial: ChangeRequestsFilterValue }) {
   const t = useTranslations("AdminChangeRequests")
   const tf = useTranslations("ChangeRequests.fieldName")
   const format = useFormatter()
-  const [filters, setFilters] = useState<ChangeRequestsFilterValue>(DEFAULT_FILTERS)
+  const [filters, setFilters] = useState<ChangeRequestsFilterValue>(initial)
   const search = useDebounced(filters.search.trim())
   const { results, status, loadMore } = usePaginatedQuery(
     api.admin.changeRequests.list,
@@ -30,6 +41,7 @@ export function ChangeRequestsSection() {
       search: search || undefined,
       status: filters.status || undefined,
       field: filters.field || undefined,
+      flagged: filters.flagged || undefined,
       ...dayRange(filters),
     },
     { initialNumItems: PAGE_SIZE },

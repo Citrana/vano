@@ -5,6 +5,7 @@ import type { FunctionReturnType } from "convex/server"
 import { ChevronRightIcon, CreditCardIcon, Loader2Icon } from "lucide-react"
 import { useFormatter, useTranslations } from "next-intl"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { useState } from "react"
 import { api } from "../../../../convex/_generated/api"
 import { SUBSCRIPTION_STATUSES, type SubscriptionStatus } from "../../../../convex/lib/plans"
@@ -13,16 +14,22 @@ import { EmptyState, LoadingState } from "@/components/states/states"
 import { Button } from "@/components/ui/button"
 import { SubscriptionStatusBadge } from "@/features/billing/subscription-status-badge"
 import { useDebounced } from "@/lib/use-debounced"
-import { BillingFilters, dayRange, emptyFilters, type BillingFilterValue } from "./billing-filters"
+import { BillingFilters, dayRange, type BillingFilterValue } from "./billing-filters"
+import { billingFiltersFromParams } from "./filter-params"
 
 const PAGE_SIZE = 20
 type Row = FunctionReturnType<typeof api.admin.billing.subscriptions>["page"][number]
 
-/** /admin/subscriptions: every shop's plan, soonest ending first. */
+/** /admin/subscriptions: every shop's plan, soonest ending first. The URL can preset the filters (`?from=&to=`). */
 export function SubscriptionsSection() {
+  const params = useSearchParams()
+  return <SubscriptionsView key={params.toString()} initial={billingFiltersFromParams(params, SUBSCRIPTION_STATUSES)} />
+}
+
+function SubscriptionsView({ initial }: { initial: BillingFilterValue<SubscriptionStatus> }) {
   const t = useTranslations("AdminBilling")
   const ts = useTranslations("Billing.status")
-  const [filters, setFilters] = useState<BillingFilterValue<SubscriptionStatus>>(emptyFilters)
+  const [filters, setFilters] = useState<BillingFilterValue<SubscriptionStatus>>(initial)
   const search = useDebounced(filters.search.trim())
   const range = dayRange(filters)
   const filtered = Object.values(filters).some((v) => v !== "")
