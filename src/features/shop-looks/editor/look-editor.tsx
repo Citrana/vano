@@ -337,7 +337,7 @@ export function LookEditor({ mine, shop, products }: { mine: MineLook; shop: Sho
     </>
   )
 
-  const panelProps: SectionProps = { editor, mine, disabled: suspended, tiles }
+  const panelProps: SectionProps = { editor, mine, disabled: suspended, tiles, shop: { name: shop.name, logoUrl: shop.logoUrl } }
   const sectionTitle = t(`sections.${current.key}`)
 
   const dialogs = (

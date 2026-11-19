@@ -35,8 +35,8 @@ export function PresetSwatches({
           >
             <span
               className={cn(
-                "size-6 rounded-full ring-1 ring-foreground/15 transition-transform",
-                selected ? "scale-110 ring-2 ring-foreground ring-offset-2 ring-offset-background" : "group-hover:scale-105",
+                "size-6 rounded-full transition-transform",
+                selected ? "scale-110 tile-selected" : "ring-1 ring-foreground/15 group-hover:scale-105",
               )}
               style={{ background: `linear-gradient(135deg, ${bg} 50%, ${accent} 50%)` }}
             />

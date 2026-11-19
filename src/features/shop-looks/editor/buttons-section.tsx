@@ -2,7 +2,6 @@
 
 import { BanIcon, LockIcon, MessageCircleIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
-import Link from "next/link"
 import { cn } from "cn"
 import {
   BUTTON_DECORATIONS,
@@ -18,6 +17,7 @@ import { STICKER_FILES } from "@/assets/images/stickers/files"
 import { buttonVariants } from "@/components/ui/button"
 import { ShopLookScope } from "../look-scope"
 import { ChoiceGroup, radioKeyDown } from "./choice-group"
+import { ProNote } from "./pro-note"
 import type { LookEditorState } from "./use-look-editor"
 
 /** Decoration icon → the sticker file it reuses. */
@@ -52,6 +52,7 @@ export function ButtonsSection({
   disabled: boolean
 }) {
   const t = useTranslations("LookEditor.buttons")
+  const tl = useTranslations("LookEditor.lock")
   const tp = useTranslations("Public")
   const resolved = editor.resolved.buttons
   // Edit the stored facet (not the resolved one), so defaults stay defaults.
@@ -77,14 +78,14 @@ export function ButtonsSection({
                 type="button"
                 role="radio"
                 aria-checked={selected}
-                aria-label={locked ? `${t(`designs.${design}`)}, ${t("availableOnPro")}` : t(`designs.${design}`)}
+                aria-label={locked ? `${t(`designs.${design}`)}, ${tl("availableOnPro")}` : t(`designs.${design}`)}
                 tabIndex={selected ? 0 : -1}
                 disabled={disabled}
                 onClick={() => pickDesign(design)}
                 onKeyDown={(e) => radioKeyDown(e, i, BUTTON_DESIGNS.length, (n) => pickDesign(BUTTON_DESIGNS[n]))}
                 className={cn(
                   "flex flex-col gap-1.5 rounded-lg border bg-card p-1.5 text-left focus-ring disabled:opacity-60",
-                  selected && "ring-2 ring-foreground ring-offset-2 ring-offset-background",
+                  selected && "tile-selected",
                 )}
               >
                 <ShopLookScope
@@ -106,15 +107,7 @@ export function ButtonsSection({
             )
           })}
         </div>
-        {!entitled ? (
-          <p className="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
-            <LockIcon className="size-3.5" aria-hidden />
-            {t("availableOnPro")}
-            <Link href="/dashboard/billing" className="font-medium text-foreground underline underline-offset-4">
-              {t("seePlans")}
-            </Link>
-          </p>
-        ) : null}
+        {!entitled ? <ProNote /> : null}
       </div>
 
       <div className="flex flex-col gap-2">

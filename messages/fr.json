@@ -84,7 +84,8 @@
     "LOOK_INVALID": "Certains réglages du style ne sont pas valides. Vérifiez les couleurs et le texte de la bannière.",
     "LOOK_CONTRAST": "Certains textes seraient trop difficiles à lire avec ces couleurs. Appliquez une correction proposée, puis publiez.",
     "LOOK_NO_DRAFT": "Il n'y a aucune modification à publier.",
-    "PROMO_SCHEDULE_INVALID": "Vérifiez les dates de la bannière d'événement : la fin doit suivre le début, dans les 92 jours, et le début doit être dans moins d'un an."
+    "PROMO_SCHEDULE_INVALID": "Vérifiez les dates de la bannière d'événement : la fin doit suivre le début, dans les 92 jours, et le début doit être dans moins d'un an.",
+    "DECORATION_SCHEDULE_INVALID": "Vérifiez les dates de la décoration de la photo : la fin doit suivre le début, dans les 92 jours, et le début doit être dans moins d'un an."
   },
   "Validation": {
     "required": "Ce champ est obligatoire.",
@@ -353,6 +354,12 @@
       "order": "Commander sur WhatsApp",
       "want": "Je le veux",
       "orderNow": "Commander maintenant"
+    },
+    "profileBadges": {
+      "queen": "Reine",
+      "bossLady": "Boss lady",
+      "new": "Nouveau",
+      "sale": "Promo"
     }
   },
   "NotFound": {
@@ -615,14 +622,16 @@
       "publishedAt": "Publié",
       "never": "Jamais",
       "lastReset": "Dernière réinitialisation par un administrateur",
-      "resetHint": "Retirez une photo ou un texte de bannière inapproprié, ou réinitialisez tout le style. Le vendeur est informé de la raison.",
+      "resetHint": "Retirez une photo ou un texte de bannière inapproprié, réinitialisez la photo de profil ou tout le style. Le vendeur est informé de la raison.",
       "reset": "Réinitialiser le style",
       "resetTitle": "Réinitialiser le style de {name} ?",
       "resetBody": "Cela s'applique au style en ligne et au brouillon du vendeur. Les photos retirées sont supprimées.",
       "scope": "Que réinitialiser",
       "scopeBanner": "Photo et texte de la bannière",
+      "scopeProfile": "Photo de profil",
       "scopeAll": "Tout le style",
       "scopeBannerHint": "Les couleurs et les boutons restent. La photo de bannière est retirée, le texte effacé et la bannière d'événement retirée.",
+      "scopeProfileHint": "Les couleurs, boutons et bannières restent. La forme, le contour et la décoration de la photo de profil reviennent par défaut.",
       "scopeAllHint": "La boutique revient au style Classique, boutons Classiques compris.",
       "reason": "Raison (envoyée au vendeur)",
       "reasonHelp": "{min} à {max} caractères.",
@@ -633,7 +642,9 @@
       "promoDates": "{start} → {end}",
       "promoNoStart": "dès la publication",
       "promoNoEnd": "jusqu'au retrait",
-      "draftPromo": "Bannière d'événement (brouillon)"
+      "draftPromo": "Bannière d'événement (brouillon)",
+      "decoration": "Décoration de la photo",
+      "draftDecoration": "Brouillon : {name}"
     }
   },
   "ShopStatus": {
@@ -754,7 +765,8 @@
     "scope": "Élément réinitialisé",
     "bannerText": "Texte de la bannière",
     "bannerPhoto": "Photo de bannière",
-    "promoHeadline": "Titre de la bannière d'événement"
+    "promoHeadline": "Titre de la bannière d'événement",
+    "decoration": "Décoration de la photo"
   },
   "AdminActivity": {
     "title": "Historique d'activité",
@@ -864,12 +876,14 @@
       "colors": "Couleurs",
       "buttons": "Boutons",
       "banner": "Bannière",
+      "profile": "Photo de profil",
       "events": "Bannières d'événement",
       "pick": "Choisissez une section ci-dessus pour la modifier. L'aperçu se met à jour en direct.",
       "looksHint": "Des styles prêts à l'emploi : un geste règle les couleurs, les boutons et la bannière.",
       "colorsHint": "Choisissez des couleurs qui vont bien ensemble, ou les vôtres.",
       "buttonsHint": "Le design, la décoration et le texte des boutons de votre boutique, ainsi que leur forme et leur style.",
       "bannerHint": "La bannière en haut de votre boutique : votre photo, un dégradé ou un motif prêt à l'emploi.",
+      "profileHint": "La forme, le contour et la taille de votre photo de profil, et une décoration pour vos événements.",
       "eventsHint": "Soldes, nouveautés, fêtes : s'affiche à la place de votre bannière pendant qu'elle est active, et se partage facilement."
     },
     "status": {
@@ -896,7 +910,7 @@
       "promoHidden": "Votre forfait n'affiche pas les bannières d'événement aux visiteurs. Votre bannière est enregistrée : passez à un forfait supérieur pour la retrouver."
     },
     "hints": {
-      "planLocked": "Votre forfait permet de publier uniquement le style Classique. Passez à un forfait supérieur pour publier celui-ci.",
+      "planLocked": "Votre forfait permet de publier uniquement le style Classique et une photo de profil simple. Passez à un forfait supérieur pour publier celui-ci.",
       "blocking": "Corrigez les couleurs signalées en rouge avant de publier.",
       "promoLocked": "Les bannières d'événement nécessitent Pro ou Business. Retirez-la pour publier, ou changez de forfait."
     },
@@ -952,12 +966,14 @@
         "badge": "Badges et puces sélectionnées :",
         "chip": "Puces sélectionnées :",
         "eventText": "Texte de la bannière d'événement :",
-        "buttonDesign": "Boutons et puces Éclat :"
+        "buttonDesign": "Boutons et puces Éclat :",
+        "profileBorder": "Contour de la photo de profil :"
       },
       "blocking": "trop difficile à lire ({ratio}:1). La publication est bloquée tant que ce n'est pas corrigé.",
       "warning": "peut être difficile à lire ({ratio}:1).",
       "fixAccent": "Utiliser l'accent {color}",
-      "fixBackground": "Utiliser le fond {color}"
+      "fixBackground": "Utiliser le fond {color}",
+      "fixProfileBorder": "Utiliser le contour {color}"
     },
     "buttons": {
       "shape": "Forme",
@@ -974,8 +990,6 @@
       "whatsappNote": "Le bouton de commande reste toujours vert WhatsApp pour que les clients le repèrent.",
       "design": "Design",
       "tileSample": "Commander",
-      "availableOnPro": "Disponible avec Pro",
-      "seePlans": "Voir les forfaits",
       "decoration": "Décoration",
       "label": "Texte du bouton",
       "designs": {
@@ -996,6 +1010,69 @@
         "bow": "Nœud",
         "sparkle": "Étincelle"
       }
+    },
+    "profile": {
+      "shape": "Forme de la photo",
+      "shapes": {
+        "circle": "Cercle",
+        "rounded": "Arrondi",
+        "squircle": "Carré doux",
+        "flower": "Fleur",
+        "arch": "Arche"
+      },
+      "borderColor": "Couleur du contour",
+      "colorTokens": {
+        "accent": "Assortie à ma boutique",
+        "chip": "Couleur des badges",
+        "foreground": "Couleur du texte"
+      },
+      "customColor": "Personnalisée",
+      "customColorHex": "Couleur du contour, code hex",
+      "customInUse": "Votre propre couleur",
+      "borderWidth": "Contour",
+      "borderWidths": {
+        "none": "Aucun",
+        "thin": "Fin",
+        "medium": "Moyen",
+        "thick": "Épais"
+      },
+      "borderStyle": "Style du contour",
+      "borderStyles": {
+        "solid": "Plein",
+        "double": "Double anneau",
+        "dashed": "Pointillé",
+        "glow": "Halo doux"
+      },
+      "size": "Taille",
+      "sizes": {
+        "sm": "Petite",
+        "md": "Moyenne",
+        "lg": "Grande"
+      },
+      "position": "Position",
+      "positions": {
+        "start": "À gauche",
+        "center": "Centrée"
+      },
+      "overlap": "Emplacement",
+      "overlaps": {
+        "edge": "Sur le bord de la bannière",
+        "below": "Sous la bannière"
+      },
+      "corner": "Décoration d'angle",
+      "corners": {
+        "none": "Aucune",
+        "sparkle": "Étincelle",
+        "flower": "Fleur",
+        "heart": "Cœur"
+      },
+      "decoration": "Décoration",
+      "decorationHelp": "Choisissez-en une, ou aucune. Elle se place autour de votre photo, jamais dessus.",
+      "removeDecoration": "Retirer la décoration",
+      "decorationHidden": "Masquée : votre forfait n'inclut pas les décorations",
+      "suggestTitle": "Ajouter « {name} » à votre photo de profil ?",
+      "suggestBody": "Elle s'active et s'arrête avec cette bannière.",
+      "suggestApply": "Ajouter à ma photo"
     },
     "banner": {
       "type": "Type de bannière",
@@ -1048,7 +1125,8 @@
     },
     "lock": {
       "notice": "Cette section est incluse dans Pro et Business. Essayez-la ici, puis passez à un forfait supérieur pour publier.",
-      "link": "Voir les forfaits"
+      "link": "Voir les forfaits",
+      "availableOnPro": "Disponible avec Pro"
     },
     "sheet": {
       "expand": "Agrandir",
@@ -1314,7 +1392,7 @@
       "oneBasicLook": "1 style de boutique de base",
       "salesPromotions": "Lancez des promotions et offres spéciales sur votre boutique",
       "productsAndPhotos": "Jusqu'à {products} produits, {photos} photos chacun",
-      "allLooks": "Tous les styles, couleurs, logo et bannière",
+      "allLooks": "Tous les styles, couleurs, styles de photo de profil et bannière",
       "categoriesSizesColors": "Catégories, tailles et couleurs",
       "shopStats": "Statistiques (vues, clics WhatsApp, produits les plus vus)",
       "prioritySupport": "Assistance prioritaire",
@@ -1674,7 +1752,8 @@
       },
       "look": {
         "resetBanner": "Un administrateur a retiré la photo ou le texte de la bannière de votre boutique. Raison : {reason}",
-        "resetAll": "Un administrateur a remis le style de votre boutique sur Classique. Raison : {reason}"
+        "resetAll": "Un administrateur a remis le style de votre boutique sur Classique. Raison : {reason}",
+        "resetProfile": "Un administrateur a réinitialisé la photo de profil de votre boutique (forme, contour, décoration). Raison : {reason}"
       }
     }
   },
@@ -1934,7 +2013,7 @@
       "timezone": "Les heures sont dans votre fuseau horaire.",
       "order": "La fin doit être après le début.",
       "tooFar": "Le début doit être dans moins d'un an.",
-      "tooLong": "Une bannière d'événement peut rester active {days} jours au maximum.",
+      "tooLong": "Elle peut rester active {days} jours au maximum.",
       "ended": "Ces dates sont passées : elle ne s'affichera pas. Choisissez de nouvelles dates pour la relancer."
     },
     "status": {
@@ -1959,5 +2038,35 @@
     },
     "headlineRequired": "Ajoutez un titre.",
     "stickersTitle": "Autocollants"
+  },
+  "ProfileDecorations": {
+    "none": "Aucune décoration",
+    "categories": {
+      "crown": "Couronnes",
+      "event": "Événements",
+      "everyday": "Tous les jours"
+    },
+    "items": {
+      "goldCrown": "Couronne dorée",
+      "tiara": "Diadème",
+      "flowerCrown": "Couronne de fleurs",
+      "queen": "Reine",
+      "bossLady": "Boss lady",
+      "santaHat": "Bonnet de Noël",
+      "hearts": "Cœurs",
+      "crescentStars": "Croissant et étoiles",
+      "eventFlowers": "Fleurs",
+      "newYearSparkles": "Étincelles du Nouvel An",
+      "saleTag": "Étiquette promo",
+      "pencil": "Crayon",
+      "backpack": "Cartable",
+      "spookyHat": "Chapeau d'Halloween",
+      "sparkles": "Étincelles",
+      "bow": "Nœud",
+      "butterflies": "Papillons",
+      "floralWreath": "Couronne florale",
+      "newSticker": "Autocollant « Nouveau »",
+      "saleSticker": "Autocollant « Promo »"
+    }
   }
 }

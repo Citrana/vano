@@ -67,7 +67,7 @@ export function LooksSection({
                   tiles={tiles}
                   className={cn(
                     "transition-[translate,box-shadow] duration-200 motion-reduce:transition-none",
-                    selected ? "ring-2 ring-foreground ring-offset-2 ring-offset-background" : "group-hover:-translate-y-0.5",
+                    selected ? "tile-selected" : "group-hover:-translate-y-0.5",
                   )}
                 />
                 {locked ? (

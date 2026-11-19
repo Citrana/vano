@@ -236,7 +236,7 @@ export function BannerSection({ editor, disabled }: { editor: LookEditorState; d
                 onKeyDown={(e) => radioKeyDown(e, i, GRADIENT_IDS.length, (n) => setBanner({ ...banner, gradientId: GRADIENT_IDS[n] }))}
                 className={cn(
                   "h-12 rounded-lg border focus-ring",
-                  selected && "ring-2 ring-foreground ring-offset-2 ring-offset-background",
+                  selected && "tile-selected",
                 )}
                 style={{ backgroundImage: gradientCss(gradientId) }}
               />
@@ -262,7 +262,7 @@ export function BannerSection({ editor, disabled }: { editor: LookEditorState; d
                 onKeyDown={(e) => radioKeyDown(e, i, ARTWORK_IDS.length, (n) => setBanner({ ...banner, artworkId: ARTWORK_IDS[n] }))}
                 className={cn(
                   "relative h-14 overflow-hidden rounded-lg border focus-ring",
-                  selected && "ring-2 ring-foreground ring-offset-2 ring-offset-background",
+                  selected && "tile-selected",
                 )}
               >
                 <Image src={ARTWORK_IMAGES[artworkId]} alt="" fill sizes="120px" className="object-cover" />

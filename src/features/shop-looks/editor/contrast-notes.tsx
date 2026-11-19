@@ -57,7 +57,10 @@ export function ContrastNotes({
                   style={{ backgroundColor: problem.fix.value }}
                   aria-hidden
                 />
-                {t(problem.fix.field === "accent" ? "fixAccent" : "fixBackground", { color: problem.fix.value })}
+                {t(
+                  problem.fix.field === "accent" ? "fixAccent" : problem.fix.field === "background" ? "fixBackground" : "fixProfileBorder",
+                  { color: problem.fix.value },
+                )}
               </Button>
             ) : null}
           </li>

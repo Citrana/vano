@@ -84,7 +84,8 @@
     "LOOK_INVALID": "Some of these look settings aren't valid. Check the colors and banner text.",
     "LOOK_CONTRAST": "Some text would be too hard to read with these colors. Use a suggested fix, then publish.",
     "LOOK_NO_DRAFT": "There are no changes to publish.",
-    "PROMO_SCHEDULE_INVALID": "Check the event banner dates: the end must be after the start, within 92 days, and the start within a year."
+    "PROMO_SCHEDULE_INVALID": "Check the event banner dates: the end must be after the start, within 92 days, and the start within a year.",
+    "DECORATION_SCHEDULE_INVALID": "Check the profile decoration dates: the end must be after the start, within 92 days, and the start within a year."
   },
   "Validation": {
     "required": "This field is required.",
@@ -353,6 +354,12 @@
       "order": "Order on WhatsApp",
       "want": "I want this",
       "orderNow": "Order now"
+    },
+    "profileBadges": {
+      "queen": "Queen",
+      "bossLady": "Boss lady",
+      "new": "New",
+      "sale": "Sale"
     }
   },
   "NotFound": {
@@ -615,14 +622,16 @@
       "publishedAt": "Published",
       "never": "Never",
       "lastReset": "Last reset by an admin",
-      "resetHint": "Remove an inappropriate banner photo or text, or reset the whole look. The seller is told why.",
+      "resetHint": "Remove an inappropriate banner photo or text, reset the profile photo, or reset the whole look. The seller is told why.",
       "reset": "Reset look",
       "resetTitle": "Reset the look of {name}?",
       "resetBody": "This applies to the live look and the seller's draft. Removed photos are deleted.",
       "scope": "What to reset",
       "scopeBanner": "Banner photo and text",
+      "scopeProfile": "Profile photo",
       "scopeAll": "Whole look",
       "scopeBannerHint": "Colors and buttons stay. The banner photo is removed, any banner text is cleared and the event banner is removed.",
+      "scopeProfileHint": "Colors, buttons and banners stay. The profile photo's shape, border and decoration go back to the default.",
       "scopeAllHint": "The shop goes back to the Classic look, including Classic buttons.",
       "reason": "Reason (sent to the seller)",
       "reasonHelp": "{min}–{max} characters.",
@@ -633,7 +642,9 @@
       "promoDates": "{start} → {end}",
       "promoNoStart": "from publish",
       "promoNoEnd": "until removed",
-      "draftPromo": "Event banner (draft)"
+      "draftPromo": "Event banner (draft)",
+      "decoration": "Profile decoration",
+      "draftDecoration": "Draft: {name}"
     }
   },
   "ShopStatus": {
@@ -754,7 +765,8 @@
     "scope": "What was reset",
     "bannerText": "Banner text",
     "bannerPhoto": "Banner photo",
-    "promoHeadline": "Event banner headline"
+    "promoHeadline": "Event banner headline",
+    "decoration": "Profile decoration"
   },
   "AdminActivity": {
     "title": "Activity history",
@@ -864,12 +876,14 @@
       "colors": "Colors",
       "buttons": "Buttons",
       "banner": "Banner",
+      "profile": "Profile",
       "events": "Event banners",
       "pick": "Pick a section above to edit it. The preview updates as you go.",
       "looksHint": "Ready-made looks: one tap sets the colors, buttons and banner.",
       "colorsHint": "Pick colors that go well together, or choose your own.",
       "buttonsHint": "The design, decoration and text of your shop's buttons, and their shape and style.",
       "bannerHint": "The banner at the top of your shop: your photo, a gradient or a ready-made pattern.",
+      "profileHint": "Your profile photo's shape, border and size, and a decoration for your events.",
       "eventsHint": "Sales, new arrivals, holidays: shown instead of your banner while it's on, and ready to share."
     },
     "status": {
@@ -896,7 +910,7 @@
       "promoHidden": "Your plan doesn't show event banners to visitors. Your banner is saved; upgrade to bring it back."
     },
     "hints": {
-      "planLocked": "Your plan can publish the Classic look only. Upgrade to publish this one.",
+      "planLocked": "Your plan can publish the Classic look and a simple profile photo only. Upgrade to publish this one.",
       "blocking": "Fix the colors marked in red before publishing.",
       "promoLocked": "Event banners need Pro or Business. Remove it to publish, or upgrade."
     },
@@ -952,12 +966,14 @@
         "badge": "Badges and selected chips:",
         "chip": "Selected chips:",
         "eventText": "Event banner text:",
-        "buttonDesign": "Glow buttons and chips:"
+        "buttonDesign": "Glow buttons and chips:",
+        "profileBorder": "Profile photo border:"
       },
       "blocking": "too hard to read ({ratio}:1). Publishing is blocked until it's fixed.",
       "warning": "may be hard to read ({ratio}:1).",
       "fixAccent": "Use accent {color}",
-      "fixBackground": "Use background {color}"
+      "fixBackground": "Use background {color}",
+      "fixProfileBorder": "Use border {color}"
     },
     "buttons": {
       "shape": "Shape",
@@ -974,8 +990,6 @@
       "whatsappNote": "The order button always stays WhatsApp green so customers spot it.",
       "design": "Design",
       "tileSample": "Order",
-      "availableOnPro": "Available on Pro",
-      "seePlans": "See plans",
       "decoration": "Decoration",
       "label": "Button text",
       "designs": {
@@ -996,6 +1010,69 @@
         "bow": "Bow",
         "sparkle": "Sparkle"
       }
+    },
+    "profile": {
+      "shape": "Photo shape",
+      "shapes": {
+        "circle": "Circle",
+        "rounded": "Rounded",
+        "squircle": "Squircle",
+        "flower": "Flower",
+        "arch": "Arch"
+      },
+      "borderColor": "Border color",
+      "colorTokens": {
+        "accent": "Match my shop colors",
+        "chip": "Badge color",
+        "foreground": "Text color"
+      },
+      "customColor": "Custom",
+      "customColorHex": "Border color, hex code",
+      "customInUse": "Your own color",
+      "borderWidth": "Border",
+      "borderWidths": {
+        "none": "None",
+        "thin": "Thin",
+        "medium": "Medium",
+        "thick": "Thick"
+      },
+      "borderStyle": "Border style",
+      "borderStyles": {
+        "solid": "Solid",
+        "double": "Double ring",
+        "dashed": "Dashed",
+        "glow": "Soft glow"
+      },
+      "size": "Size",
+      "sizes": {
+        "sm": "Small",
+        "md": "Medium",
+        "lg": "Large"
+      },
+      "position": "Position",
+      "positions": {
+        "start": "Left",
+        "center": "Centered"
+      },
+      "overlap": "Placement",
+      "overlaps": {
+        "edge": "On the banner edge",
+        "below": "Below the banner"
+      },
+      "corner": "Corner decoration",
+      "corners": {
+        "none": "None",
+        "sparkle": "Sparkle",
+        "flower": "Flower",
+        "heart": "Heart"
+      },
+      "decoration": "Decoration",
+      "decorationHelp": "Pick one, or none. It sits around your photo, never over it.",
+      "removeDecoration": "Remove decoration",
+      "decorationHidden": "Hidden: your plan doesn't include decorations",
+      "suggestTitle": "Add the {name} to your profile photo?",
+      "suggestBody": "It turns on and off with this banner.",
+      "suggestApply": "Add to my photo"
     },
     "banner": {
       "type": "Banner type",
@@ -1048,7 +1125,8 @@
     },
     "lock": {
       "notice": "This section comes with Pro and Business. Try it here, then upgrade to publish.",
-      "link": "See plans"
+      "link": "See plans",
+      "availableOnPro": "Available on Pro"
     },
     "sheet": {
       "expand": "Show more",
@@ -1314,7 +1392,7 @@
       "oneBasicLook": "1 basic shop look",
       "salesPromotions": "Run sales and special offers on your shop",
       "productsAndPhotos": "Up to {products} products, {photos} photos each",
-      "allLooks": "All shop looks, colors, logo, and banner",
+      "allLooks": "All shop looks, colors, profile photo styles, and banner",
       "categoriesSizesColors": "Categories, sizes, and colors",
       "shopStats": "Shop stats (views, WhatsApp clicks, best-viewed products)",
       "prioritySupport": "Priority support",
@@ -1674,7 +1752,8 @@
       },
       "look": {
         "resetBanner": "An admin removed your shop banner's photo or text. Reason: {reason}",
-        "resetAll": "An admin reset your shop look to Classic. Reason: {reason}"
+        "resetAll": "An admin reset your shop look to Classic. Reason: {reason}",
+        "resetProfile": "An admin reset your shop's profile photo (shape, border, decoration). Reason: {reason}"
       }
     }
   },
@@ -1934,7 +2013,7 @@
       "timezone": "Times are in your time zone.",
       "order": "The end must be after the start.",
       "tooFar": "The start must be within a year.",
-      "tooLong": "An event banner can run for up to {days} days.",
+      "tooLong": "It can run for up to {days} days.",
       "ended": "These dates have passed, so it won't show. Pick new dates to run it again."
     },
     "status": {
@@ -1959,5 +2038,35 @@
     },
     "headlineRequired": "Add a headline.",
     "stickersTitle": "Stickers"
+  },
+  "ProfileDecorations": {
+    "none": "No decoration",
+    "categories": {
+      "crown": "Crowns",
+      "event": "Events",
+      "everyday": "Everyday"
+    },
+    "items": {
+      "goldCrown": "Gold crown",
+      "tiara": "Tiara",
+      "flowerCrown": "Flower crown",
+      "queen": "Queen",
+      "bossLady": "Boss lady",
+      "santaHat": "Santa hat",
+      "hearts": "Hearts",
+      "crescentStars": "Crescent and stars",
+      "eventFlowers": "Flowers",
+      "newYearSparkles": "New year sparkles",
+      "saleTag": "Sale tag",
+      "pencil": "Pencil",
+      "backpack": "Backpack",
+      "spookyHat": "Spooky hat",
+      "sparkles": "Sparkles",
+      "bow": "Bow",
+      "butterflies": "Butterflies",
+      "floralWreath": "Floral wreath",
+      "newSticker": "\"New\" sticker",
+      "saleSticker": "\"Sale\" sticker"
+    }
   }
 }

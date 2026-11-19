@@ -4,10 +4,11 @@ import { useMutation } from "convex/react"
 import type { FunctionReturnType } from "convex/server"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { api } from "../../../../convex/_generated/api"
-import { sameLook, withoutPromo } from "../../../../convex/lib/looks/clean"
-import { lookProblems } from "../../../../convex/lib/looks/contrast"
+import { sameLook, shownLook, withoutPromo } from "../../../../convex/lib/looks/clean"
+import { lookProblems, type LookProblem } from "../../../../convex/lib/looks/contrast"
 import { FREE_LOOK, presetLook } from "../../../../convex/lib/looks/presets"
-import { mapBannerImage, resolveLook, type ResolvedLook } from "../../../../convex/lib/looks/resolve"
+import { DEFAULT_PROFILE } from "../../../../convex/lib/looks/profile"
+import { mapBannerImage, resolveColors, resolveLook, type ResolvedLook } from "../../../../convex/lib/looks/resolve"
 import type { LookOverrides, PresetId, StoredLook } from "../../../../convex/lib/looks/validators"
 
 export type MineLook = FunctionReturnType<typeof api.shopLooks.mine>
@@ -101,24 +102,43 @@ export function useLookEditor(mine: MineLook) {
   )
 
   /**
-   * One tap: the preset's colours, buttons and banner. A seller's own photo
-   * and their event & promo banner are kept.
+   * One tap: the preset's colours, buttons and banner. A seller's own
+   * photo, their event & promo banner and their profile photo are kept.
    */
   const applyPreset = useCallback(
     (preset: PresetId) =>
       update((current) => {
-        const { banner, promo } = current.overrides
-        return { v: 1, preset, overrides: { ...(banner?.kind === "photo" ? { banner } : {}), ...(promo ? { promo } : {}) } }
+        const { banner, promo, profile } = current.overrides
+        return {
+          v: 1,
+          preset,
+          overrides: { ...(banner?.kind === "photo" ? { banner } : {}), ...(promo ? { promo } : {}), ...(profile ? { profile } : {}) },
+        }
       }),
     [update],
   )
 
-  /** Back to the preset's look; the event & promo banner is its own thing and stays. */
+  /** Back to the preset's look; the event & promo banner and the profile photo are their own things and stay. */
   const resetToPreset = useCallback(
     () =>
       update((current) => {
-        const { promo } = current.overrides
-        return promo ? { ...presetLook(current.preset), overrides: { promo } } : presetLook(current.preset)
+        const { promo, profile } = current.overrides
+        return { ...presetLook(current.preset), overrides: { ...(promo ? { promo } : {}), ...(profile ? { profile } : {}) } }
+      }),
+    [update],
+  )
+
+  /** A contrast check's one-tap fix: the accent, the background or the profile border colour. */
+  const applyFix = useCallback(
+    (fix: NonNullable<LookProblem["fix"]>) =>
+      update((current) => {
+        if (fix.field === "profileBorder") {
+          const profile = current.overrides.profile ?? DEFAULT_PROFILE
+          return { ...current, overrides: { ...current.overrides, profile: { ...profile, borderColor: { kind: "custom", hex: fix.value } } } }
+        }
+        const colors = resolveColors(current)
+        const base = current.overrides.colors ?? { accent: colors.primary, background: colors.background }
+        return { ...current, overrides: { ...current.overrides, colors: { ...base, [fix.field]: fix.value } } }
       }),
     [update],
   )
@@ -152,10 +172,16 @@ export function useLookEditor(mine: MineLook) {
   /** The draft with its event & promo banner, if any. */
   const full = useMemo(() => withUrls(draft), [withUrls, draft])
   const problems = useMemo(() => lookProblems(full), [full])
-  const live = useMemo(() => {
-    if (!mine.entitled || !mine.published) return FREE_LOOK
-    return mine.promoLive && mine.promoEntitled ? mine.published : withoutPromo(mine.published)
-  }, [mine.entitled, mine.published, mine.promoLive, mine.promoEntitled])
+  // The same rule as the public pages (`visibleLook`).
+  const live = useMemo(
+    () =>
+      shownLook(mine.published, {
+        entitled: mine.entitled,
+        promoShown: mine.promoLive && mine.promoEntitled,
+        decorationShown: mine.decorationLive,
+      }),
+    [mine.entitled, mine.published, mine.promoLive, mine.promoEntitled, mine.decorationLive],
+  )
   const unpublished = !sameLook(draft, mine.published ?? FREE_LOOK)
 
   return {
@@ -173,6 +199,7 @@ export function useLookEditor(mine: MineLook) {
     setOverride,
     applyPreset,
     resetToPreset,
+    applyFix,
     flush,
     publish,
     discard,

@@ -1,5 +1,6 @@
 "use client"
 
+import { LockIcon } from "lucide-react"
 import { useId, type KeyboardEvent, type ReactNode } from "react"
 import { cn } from "cn"
 
@@ -24,7 +25,8 @@ export function radioKeyDown(event: KeyboardEvent<HTMLElement>, index: number, c
   group?.querySelectorAll<HTMLElement>('[role="radio"]')[next]?.focus()
 }
 
-export type Choice<T extends string> = { value: T; label: string; icon?: ReactNode }
+/** `locked`: not in the seller's plan (a small lock; `lockedLabel` is read out with it). */
+export type Choice<T extends string> = { value: T; label: string; icon?: ReactNode; locked?: boolean }
 
 /** A segmented single choice (radiogroup), 44px targets, keyboard friendly. */
 export function ChoiceGroup<T extends string>({
@@ -35,6 +37,7 @@ export function ChoiceGroup<T extends string>({
   disabled = false,
   size = "default",
   wrap = false,
+  lockedLabel,
   className,
 }: {
   label: string
@@ -46,6 +49,8 @@ export function ChoiceGroup<T extends string>({
   size?: "default" | "compact"
   /** Long labels: options wrap to fit their text instead of equal columns. */
   wrap?: boolean
+  /** Read with locked options, e.g. "Available on Pro". */
+  lockedLabel?: string
   className?: string
 }) {
   const id = useId()
@@ -75,6 +80,8 @@ export function ChoiceGroup<T extends string>({
               type="button"
               role="radio"
               aria-checked={selected}
+              aria-label={option.locked && lockedLabel ? `${option.label}, ${lockedLabel}` : undefined}
+              title={option.locked ? lockedLabel : undefined}
               tabIndex={selected ? 0 : -1}
               disabled={disabled}
               onClick={() => onChange(option.value)}
@@ -87,6 +94,7 @@ export function ChoiceGroup<T extends string>({
             >
               {option.icon}
               <span className="truncate">{option.label}</span>
+              {option.locked ? <LockIcon className="size-3! shrink-0 opacity-70" aria-hidden /> : null}
             </button>
           )
         })}

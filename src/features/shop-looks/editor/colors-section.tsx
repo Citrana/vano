@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl"
 import { useId, useState } from "react"
 import { cn } from "cn"
 import { bestOn, normalizeHex, type Hex } from "../../../../convex/lib/looks/color"
-import type { LookProblem } from "../../../../convex/lib/looks/contrast"
 import { ACCENT_SWATCHES, BACKGROUND_SWATCHES } from "../../../../convex/lib/looks/presets"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -60,8 +59,8 @@ function ColorPicker({
             >
               <span
                 className={cn(
-                  "flex size-8 items-center justify-center rounded-full ring-1 ring-foreground/15 transition-transform",
-                  selected ? "ring-2 ring-foreground ring-offset-2 ring-offset-background" : "group-hover:scale-105",
+                  "flex size-8 items-center justify-center rounded-full transition-transform",
+                  selected ? "tile-selected" : "ring-1 ring-foreground/15 group-hover:scale-105",
                 )}
                 style={{ backgroundColor: color }}
               >
@@ -123,7 +122,6 @@ export function ColorsSection({ editor, disabled }: { editor: LookEditorState; d
 
   const set = (next: { accent?: Hex; background?: Hex }) =>
     editor.setOverride("colors", { accent: next.accent ?? accent, background: next.background ?? background })
-  const fix = (f: NonNullable<LookProblem["fix"]>) => set({ [f.field]: f.value })
 
   return (
     <div className="flex flex-col gap-6">
@@ -136,7 +134,7 @@ export function ColorsSection({ editor, disabled }: { editor: LookEditorState; d
         onChange={(c) => set({ background: c })}
         disabled={disabled}
       />
-      <ContrastNotes problems={editor.problems} onFix={fix} disabled={disabled} />
+      <ContrastNotes problems={editor.problems} onFix={editor.applyFix} disabled={disabled} />
       {custom ? (
         <Button
           type="button"
