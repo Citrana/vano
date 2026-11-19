@@ -47,6 +47,24 @@ async function shopFromSlug(ctx: QueryCtx, slug: string) {
     .unique();
 }
 
+/**
+ * An old shop link that still redirects (after an approved link change):
+ * the shop's current link, or null. Nothing else about the shop.
+ */
+export const slugRedirect = query({
+  args: { slug: v.string() },
+  returns: v.union(v.null(), v.object({ slug: v.string() })),
+  handler: async (ctx, { slug }) => {
+    const redirect = await ctx.db
+      .query("slugRedirects")
+      .withIndex("by_fromSlug", (q) => q.eq("fromSlug", slug.toLowerCase()))
+      .unique();
+    if (!redirect) return null;
+    const shop = await ctx.db.get("shops", redirect.shopId);
+    return shop ? { slug: shop.slug } : null;
+  },
+});
+
 /** Just the shop's public fields (no products), or null. Cheap existence check. */
 export const shopBasics = query({
   args: { slug: v.string() },

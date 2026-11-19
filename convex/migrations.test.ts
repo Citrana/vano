@@ -8,7 +8,7 @@ import {
   insertUserWithRole,
   newTest,
   sellerWithShop,
-  shopArgs,
+  settingsArgs,
   storeFile,
   type T,
 } from "./lib/test.utils";
@@ -164,7 +164,7 @@ describe("migrations:rbacV1", () => {
     const userId = await legacyUser(t, "old@example.com");
     await legacyShop(t, userId, "old-shop");
     await migrate(t);
-    await as(t, userId).mutation(api.shops.update, shopArgs({ slug: "old-shop", name: "Renamed" }));
-    expect((await as(t, userId).query(api.shops.myShop, {}))?.name).toBe("Renamed");
+    await as(t, userId).mutation(api.shops.update, settingsArgs({ city: "Kinshasa" }));
+    expect((await as(t, userId).query(api.shops.myShop, {}))?.city).toBe("Kinshasa");
   });
 });

@@ -117,8 +117,10 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 - The demo shop (`/demo`) is static data in `demo/demo-shop.ts` rendered
   with the public shop components: no Convex, no stats.
 - Shop looks (`bold | soft | dark`) are token overrides under
-  `[data-shop-theme]` in `globals.css`, listed in
-  `src/features/shop-themes/themes.ts`.
+  `[data-shop-theme]` in `globals.css`. The list and validator live in
+  `convex/lib/themes.ts` (re-exported by
+  `src/features/shop-themes/themes.ts`); the seller's pick is stored on
+  `shops.theme` (Shop settings). Public pages don't apply it yet.
 - Server components must not import values from `"use client"` modules
   (they arrive as client references); shared constants go in plain `.ts`.
 
@@ -154,6 +156,42 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   `PAYMENTS_MOCK_ENABLED=true` on the deployment. Never set them on prod.
 - Admins grant / extend plans with `billing.manage`, a reason, never on
   their own shop (`assertNotOwnShop`).
+
+## Protected shop changes
+
+- After creation, a shop's **name, link (slug) and WhatsApp number** only
+  change through a request an admin approves (anti-impersonation).
+  `shops.update` never accepts them; `applyShopChange`
+  (`convex/lib/shopChanges.ts`) is their only writer, called by
+  `admin/changeRequests.approve`. Currency is locked once a shop has
+  products (`CURRENCY_LOCKED`).
+- Every limit lives in `convex/lib/changeRequests.ts`
+  (`CHANGE_COOLDOWN_DAYS`, `SLUG_REDIRECT_DAYS`, reason lengths, code
+  TTL/attempts). One pending request per field. A request inside the
+  cooldown is accepted but flagged; approving it needs
+  `overrideCooldown` (logged). Brand names in `convex/lib/protectedNames.ts`
+  are **flagged** for the admin, never silently accepted or refused;
+  reserved route words are refused by `slugProblem`.
+- Link availability is one rule: `slugHolder` / `slugAvailableFor`
+  (a shop's slug, or another shop's live `slugRedirects` row). Old links
+  redirect (307) to the shop's current link for 90 days and stay reserved
+  meanwhile; `changeRequestJobs.cleanup` (daily cron) frees them. The
+  redirect lookups live in the `[slug]`, `(shop)` and `[productId]` layouts.
+- A new WhatsApp number needs a verified code (`changeRequests.sendPhoneCode`
+  / `verifyPhoneCode`): only a salted hash is stored, sends are rate
+  limited (`convex/lib/rateLimits.ts`, `@convex-dev/rate-limiter`), wrong
+  codes are counted (the mutation returns the problem instead of throwing,
+  or the count would roll back). Senders implement `CodeSender`
+  (`convex/verification/`), chosen by `VERIFICATION_SENDER` (`log` for
+  now). **Test mode** (`VERIFICATION_SENDER=log` + `VERIFICATION_TEST_MODE=true`)
+  shows the code on screen: never set it on prod.
+- Decisions reach the seller as `sellerNotifications` rows (dashboard
+  notice + badge on Shop settings), written with `notifySeller`
+  (`convex/lib/notify.ts`). Outside channels implement
+  `NotificationChannel` (`convex/notifications/`), enabled by
+  `NOTIFY_CHANNELS`. Admin access: `changeRequests.view` / `.decide`,
+  never on your own shop. Every request, cancel, decision and applied
+  change is logged (`logAdminAction`, phone numbers masked).
 
 ## Stats
 
@@ -199,11 +237,16 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 - **Mobile-first**: design for ~360px first, tap targets ≥ 44px, no
   horizontal page scroll.
 - Every page has loading, empty and error states (`src/components/states`).
+- The dashboard's "Get your shop ready" checklist is computed by
+  `convex/lib/onboarding.ts` from real data (products, `shops.theme`,
+  `shops.onboarding.linkSharedAt`). `shops.update` patches only the
+  settings it accepts, so other fields (protected ones, status,
+  onboarding) are never touched by it.
 - Forms: react-hook-form + Zod. Required fields use `<Label required>`;
   forms with several fields show `<RequiredFieldsHint />`.
 - Components are small and grouped by feature in `src/features/<feature>/`
   (`auth`, `shop`, `product`, `public`, `stats`, `i18n`, `marketing/*`,
-  `shop-themes`, `billing`, `admin/*`).
+  `shop-themes`, `billing`, `change-requests`, `admin/*`).
   Generic primitives live in `src/components/ui/`.
 - Admin pages live under `src/app/admin/` and wrap their content in
   `<RequirePermission permission="…">`. Sidebar sections are defined only
@@ -230,6 +273,8 @@ convex/
   schema.ts         # all tables
   auth.ts auth.config.ts http.ts   # Convex Auth (Password, sign-up enabled)
   users.ts shops.ts products.ts files.ts public.ts stats.ts
+  changeRequests.ts changeRequestJobs.ts   # protected shop changes
+  notifications/ verification/            # swappable channels / code senders
   billing.ts billingJobs.ts crons.ts   # seller billing, expiry job
   payments/         # provider interface, mock, result handling
   lib/              # seller wrappers, shared rules, test setup

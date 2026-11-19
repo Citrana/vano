@@ -2,6 +2,7 @@
 
 import {
   CreditCardIcon,
+  FilePenLineIcon,
   HistoryIcon,
   LayoutDashboardIcon,
   PackageIcon,
@@ -23,6 +24,7 @@ const ICONS: Record<AdminNavKey, LucideIcon> = {
   dashboard: LayoutDashboardIcon,
   users: UsersIcon,
   shops: StoreIcon,
+  changeRequests: FilePenLineIcon,
   products: PackageIcon,
   subscriptions: CreditCardIcon,
   payments: ReceiptIcon,

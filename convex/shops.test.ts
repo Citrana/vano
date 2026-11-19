@@ -8,6 +8,7 @@ import {
   insertUserWithRole,
   productArgs,
   sellerWithShop,
+  settingsArgs,
   shopArgs,
   storeFile,
   newTest,
@@ -200,31 +201,50 @@ describe("shops.checkSlug", () => {
 });
 
 describe("shops.update", () => {
-  test("keeps the shop's moderation status", async () => {
+  test("saves settings and keeps status, protected fields and onboarding", async () => {
     const t = setup();
     const { userId, shopId } = await sellerWithShop(t);
-    await t.run((ctx) => ctx.db.patch("shops", shopId, { status: "active" }));
-    await as(t, userId).mutation(api.shops.update, shopArgs({ name: "Renamed" }));
+    await t.run((ctx) => ctx.db.patch("shops", shopId, { status: "active", onboarding: { linkSharedAt: 1 } }));
+    await as(t, userId).mutation(api.shops.update, settingsArgs({ city: "Kinshasa", description: "" }));
     const shop = await t.run((ctx) => ctx.db.get("shops", shopId));
-    expect(shop).toMatchObject({ name: "Renamed", status: "active" });
+    expect(shop).toMatchObject({
+      city: "Kinshasa",
+      status: "active",
+      name: "Chez Amani",
+      slug: "chez-amani",
+      whatsappNumber: "+243812345678",
+      onboarding: { linkSharedAt: 1 },
+    });
+    expect(shop?.description).toBeUndefined();
   });
 
   test("requires a shop", async () => {
     const t = setup();
     const me = as(t, await insertUser(t));
-    await expect(me.mutation(api.shops.update, shopArgs())).rejects.toThrow(/NO_SHOP/);
+    await expect(me.mutation(api.shops.update, settingsArgs())).rejects.toThrow(/NO_SHOP/);
   });
 
-  test("changes slug, keeps own slug, rejects a taken one", async () => {
+  test("refuses name, link and WhatsApp number (change requests only)", async () => {
     const t = setup();
-    await sellerWithShop(t, "a@x.com", { slug: "shop-a" });
-    const { userId } = await sellerWithShop(t, "b@x.com", { slug: "shop-b" });
+    const { userId } = await sellerWithShop(t);
     const me = as(t, userId);
-    await me.mutation(api.shops.update, shopArgs({ slug: "shop-b", name: "Renamed" }));
-    await expect(me.mutation(api.shops.update, shopArgs({ slug: "shop-a" }))).rejects.toThrow(/SLUG_TAKEN/);
-    await me.mutation(api.shops.update, shopArgs({ slug: "shop-b2" }));
-    const shop = await me.query(api.shops.myShop, {});
-    expect(shop).toMatchObject({ slug: "shop-b2", ownerId: userId });
+    for (const extra of [{ name: "Other" }, { slug: "other-shop" }, { whatsappNumber: "+243899999999" }]) {
+      await expect(
+        me.mutation(api.shops.update, { ...settingsArgs(), ...extra } as ReturnType<typeof settingsArgs>),
+      ).rejects.toThrow();
+    }
+    expect(await me.query(api.shops.myShop, {})).toMatchObject({ name: "Chez Amani", slug: "chez-amani" });
+  });
+
+  test("currency is locked once the shop has products", async () => {
+    const t = setup();
+    const { userId } = await sellerWithShop(t);
+    const me = as(t, userId);
+    await me.mutation(api.shops.update, settingsArgs({ currency: "CDF" }));
+    await me.mutation(api.products.create, await productArgs(t));
+    await expect(me.mutation(api.shops.update, settingsArgs({ currency: "USD" }))).rejects.toThrow(/CURRENCY_LOCKED/);
+    // Saving with the same currency still works.
+    await me.mutation(api.shops.update, settingsArgs({ currency: "CDF", city: "Bukavu" }));
   });
 
   test("replacing or removing the logo deletes the old file", async () => {
@@ -233,9 +253,9 @@ describe("shops.update", () => {
     const { userId } = await sellerWithShop(t, "a@x.com", { logoId: first });
     const me = as(t, userId);
     const second = await storeFile(t);
-    await me.mutation(api.shops.update, shopArgs({ logoId: second }));
+    await me.mutation(api.shops.update, settingsArgs({ logoId: second }));
     expect(await t.run((ctx) => ctx.db.system.get("_storage", first))).toBeNull();
-    await me.mutation(api.shops.update, shopArgs());
+    await me.mutation(api.shops.update, settingsArgs());
     expect(await t.run((ctx) => ctx.db.system.get("_storage", second))).toBeNull();
     expect((await me.query(api.shops.myShop, {}))?.logoId).toBeUndefined();
   });
@@ -246,9 +266,95 @@ describe("shops.update", () => {
     const me = as(t, userId);
     await me.mutation(api.products.create, await productArgs(t, { category: "shoes" }));
     await expect(
-      me.mutation(api.shops.update, shopArgs({ categories: ["clothes"] })),
+      me.mutation(api.shops.update, settingsArgs({ categories: ["clothes"] })),
     ).rejects.toThrow(/CATEGORY_IN_USE/);
-    await me.mutation(api.shops.update, shopArgs({ categories: ["shoes", "bags"] }));
+    await me.mutation(api.shops.update, settingsArgs({ categories: ["shoes", "bags"] }));
+  });
+});
+
+describe("shops theme", () => {
+  test("create and update save the shop look", async () => {
+    const t = setup();
+    const { userId } = await sellerWithShop(t, "a@x.com", { theme: "soft" });
+    const me = as(t, userId);
+    expect((await me.query(api.shops.myShop, {}))?.theme).toBe("soft");
+    await me.mutation(api.shops.update, settingsArgs({ theme: "dark" }));
+    expect((await me.query(api.shops.myShop, {}))?.theme).toBe("dark");
+  });
+
+  test("rejects an unknown look", async () => {
+    const t = setup();
+    const { userId } = await sellerWithShop(t);
+    await expect(
+      as(t, userId).mutation(api.shops.update, {
+        ...settingsArgs(),
+        theme: "neon" as "bold",
+      }),
+    ).rejects.toThrow();
+  });
+
+  test("update keeps the onboarding progress", async () => {
+    const t = setup();
+    const { userId, shopId } = await sellerWithShop(t);
+    const me = as(t, userId);
+    await me.mutation(api.shops.markLinkShared, {});
+    await me.mutation(api.shops.update, settingsArgs({ city: "Kinshasa" }));
+    const shop = await t.run((ctx) => ctx.db.get("shops", shopId));
+    expect(shop?.onboarding?.linkSharedAt).toEqual(expect.any(Number));
+  });
+});
+
+describe("shops.markLinkShared", () => {
+  test("records the first share only, on the caller's own shop", async () => {
+    const t = setup();
+    const a = await sellerWithShop(t, "a@x.com", { slug: "shop-a" });
+    const b = await sellerWithShop(t, "b@x.com", { slug: "shop-b" });
+    await as(t, a.userId).mutation(api.shops.markLinkShared, {});
+    const first = (await t.run((ctx) => ctx.db.get("shops", a.shopId)))?.onboarding?.linkSharedAt;
+    expect(first).toEqual(expect.any(Number));
+    await as(t, a.userId).mutation(api.shops.markLinkShared, {});
+    const again = (await t.run((ctx) => ctx.db.get("shops", a.shopId)))?.onboarding?.linkSharedAt;
+    expect(again).toBe(first);
+    // Another seller's shop is untouched.
+    expect((await t.run((ctx) => ctx.db.get("shops", b.shopId)))?.onboarding).toBeUndefined();
+  });
+
+  test("rejects signed-out callers, sellers without a shop and suspended shops", async () => {
+    const t = setup();
+    await expect(t.mutation(api.shops.markLinkShared, {})).rejects.toThrow(/NOT_AUTHENTICATED/);
+    const noShop = as(t, await insertUser(t, "new@x.com"));
+    await expect(noShop.mutation(api.shops.markLinkShared, {})).rejects.toThrow(/NO_SHOP/);
+    const { userId, shopId } = await sellerWithShop(t);
+    await t.run((ctx) => ctx.db.patch("shops", shopId, { status: "suspended" }));
+    await expect(as(t, userId).mutation(api.shops.markLinkShared, {})).rejects.toThrow(/SHOP_SUSPENDED/);
+  });
+});
+
+describe("shops.hideChecklist", () => {
+  test("only once every step is done, then stays hidden", async () => {
+    const t = setup();
+    const { userId, shopId } = await sellerWithShop(t);
+    const me = as(t, userId);
+    const hide = () => me.mutation(api.shops.hideChecklist, {});
+    await expect(hide()).rejects.toThrow(/ONBOARDING_INCOMPLETE/);
+    await me.mutation(api.products.create, await productArgs(t));
+    await expect(hide()).rejects.toThrow(/ONBOARDING_INCOMPLETE/);
+    await me.mutation(api.shops.update, settingsArgs({ theme: "bold" }));
+    await expect(hide()).rejects.toThrow(/ONBOARDING_INCOMPLETE/);
+    await me.mutation(api.shops.markLinkShared, {});
+    await hide();
+    const hiddenAt = (await t.run((ctx) => ctx.db.get("shops", shopId)))?.onboarding?.checklistHiddenAt;
+    expect(hiddenAt).toEqual(expect.any(Number));
+    await hide();
+    expect((await t.run((ctx) => ctx.db.get("shops", shopId)))?.onboarding?.checklistHiddenAt).toBe(hiddenAt);
+  });
+
+  test("rejects signed-out callers and suspended shops", async () => {
+    const t = setup();
+    await expect(t.mutation(api.shops.hideChecklist, {})).rejects.toThrow(/NOT_AUTHENTICATED/);
+    const { userId, shopId } = await sellerWithShop(t);
+    await t.run((ctx) => ctx.db.patch("shops", shopId, { status: "suspended" }));
+    await expect(as(t, userId).mutation(api.shops.hideChecklist, {})).rejects.toThrow(/SHOP_SUSPENDED/);
   });
 });
 

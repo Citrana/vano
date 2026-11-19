@@ -12,7 +12,7 @@ export type StatsSummary = { today: Totals; last7: Totals; last30: Totals }
 
 const PERIODS = ["today", "last7", "last30"] as const
 
-/** Shop views, product views, WhatsApp order clicks for a chosen period. */
+/** Shop views, product views and WhatsApp clicks for a chosen period. */
 export function StatsCards({ summary }: { summary: StatsSummary | undefined }) {
   const t = useTranslations("Stats")
   const [period, setPeriod] = useState<(typeof PERIODS)[number]>("last7")
@@ -47,10 +47,10 @@ export function StatsCards({ summary }: { summary: StatsSummary | undefined }) {
       </div>
       <dl className="grid grid-cols-3 gap-2">
         {tiles.map(({ key, icon: Icon }) => (
-          <div key={key} className="flex flex-col gap-1 rounded-lg bg-muted/60 p-3">
-            <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Icon className="size-3.5 shrink-0" aria-hidden />
-              <span className="leading-tight">{t(key)}</span>
+          <div key={key} className="flex min-w-0 flex-col gap-2 rounded-lg bg-muted/60 p-4">
+            <dt className="flex flex-col gap-1.5 text-xs text-muted-foreground">
+              <Icon className="size-4 shrink-0" aria-hidden />
+              <span className="leading-snug break-words">{t(key)}</span>
             </dt>
             <dd className="font-heading text-2xl font-bold tracking-tight tabular-nums">
               {totals ? totals[key].toLocaleString() : <Skeleton className="h-7 w-10" />}

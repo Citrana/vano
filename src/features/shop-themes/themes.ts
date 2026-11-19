@@ -1,10 +1,11 @@
+import type { ShopTheme } from "../../../convex/lib/themes"
+
 /**
- * Shop looks. Tokens live in src/app/globals.css under
- * [data-shop-theme="…"]; this list drives pickers and swatches. The seller
- * theme picker (next task) will store one of these ids on the shop.
+ * Shop looks. The list (and the validator) live in convex/lib/themes.ts;
+ * tokens live in src/app/globals.css under [data-shop-theme="…"]. Sellers
+ * pick one in Shop settings (stored on `shops.theme`).
  */
-export const SHOP_THEMES = ["bold", "soft", "dark"] as const
-export type ShopTheme = (typeof SHOP_THEMES)[number]
+export { SHOP_THEMES, type ShopTheme } from "../../../convex/lib/themes"
 
 /** Swatch colors for the theme dots (background + accent). */
 export const THEME_SWATCH: Record<ShopTheme, { bg: string; accent: string }> = {

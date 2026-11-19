@@ -12,6 +12,7 @@ export type AdminNavKey =
   | "dashboard"
   | "users"
   | "shops"
+  | "changeRequests"
   | "products"
   | "subscriptions"
   | "payments"
@@ -30,6 +31,7 @@ export const ADMIN_NAV: readonly AdminNavItem[] = [
   { key: "dashboard", href: "/admin", permission: "dashboard.view", ready: true },
   { key: "users", href: "/admin/users", permission: "users.view", ready: true },
   { key: "shops", href: "/admin/shops", permission: "shops.view", ready: true },
+  { key: "changeRequests", href: "/admin/change-requests", permission: "changeRequests.view", ready: true },
   { key: "products", href: "/admin/products", permission: "products.view", ready: true },
   { key: "subscriptions", href: "/admin/subscriptions", permission: "billing.view", ready: true },
   { key: "payments", href: "/admin/payments", permission: "billing.view", ready: true },

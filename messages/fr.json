@@ -67,7 +67,20 @@
     "PAYMENTS_UNAVAILABLE": "Les paiements ne sont pas encore disponibles. Contactez-nous pour changer de forfait.",
     "PAYMENT_NOT_OPEN": "Ce paiement est déjà terminé.",
     "REASON_INVALID": "Indiquez une raison (5 à 500 caractères).",
-    "DAYS_INVALID": "Indiquez un nombre de jours entre 1 et 366."
+    "DAYS_INVALID": "Indiquez un nombre de jours entre 1 et 366.",
+    "ONBOARDING_INCOMPLETE": "Terminez toutes les étapes avant de masquer cette carte.",
+    "CHANGE_PENDING": "Vous avez déjà une demande en attente pour ceci. Annulez-la ou attendez la décision.",
+    "CHANGE_COOLDOWN": "Ceci a été modifié il y a moins de 30 jours. Cochez « Ignorer le délai » pour approuver quand même.",
+    "CHANGE_SAME_VALUE": "C'est déjà la valeur actuelle.",
+    "CHANGE_REASON_INVALID": "Expliquez pourquoi en 20 à 500 caractères.",
+    "REQUEST_NOT_PENDING": "Cette demande a déjà été traitée ou annulée.",
+    "CURRENCY_LOCKED": "La devise ne peut plus changer une fois que votre boutique a des produits.",
+    "PHONE_NOT_VERIFIED": "Vérifiez le nouveau numéro avec le code envoyé avant d'envoyer la demande.",
+    "CODE_INVALID": "Ce code n'est pas correct. Vérifiez-le et réessayez.",
+    "CODE_EXPIRED": "Ce code a expiré. Demandez-en un nouveau.",
+    "CODE_TOO_MANY_ATTEMPTS": "Trop de codes incorrects. Demandez-en un nouveau.",
+    "CODE_RATE_LIMITED": "Patientez une minute avant de demander un autre code.",
+    "VERIFICATION_UNAVAILABLE": "La vérification du numéro n'est pas encore disponible. Contactez-nous pour changer votre numéro."
   },
   "Validation": {
     "required": "Ce champ est obligatoire.",
@@ -135,7 +148,9 @@
     "viewShop": "Voir ma boutique",
     "menu": "Menu",
     "admin": "Admin",
-    "billing": "Forfait"
+    "billing": "Forfait",
+    "profileMenu": "Menu du compte",
+    "account": "Connecté en tant que"
   },
   "Onboarding": {
     "title": "Créez votre boutique",
@@ -176,7 +191,9 @@
     "logoUploading": "Envoi…",
     "saved": "Paramètres enregistrés",
     "charCount": "{count}/{max}",
-    "whatsappCode": "Indicatif du pays"
+    "whatsappCode": "Indicatif du pays",
+    "lookHelp": "Le style de votre boutique publique. Vous pouvez le changer à tout moment.",
+    "currencyLocked": "Verrouillée car votre boutique a des produits : leurs prix sont dans cette devise."
   },
   "Dashboard": {
     "title": "Ma boutique",
@@ -192,7 +209,7 @@
     "deleteBody": "« {name} » et ses photos seront supprimés. Cette action est définitive.",
     "deleted": "Produit supprimé",
     "views": "{count, plural, one {# vue} other {# vues}}",
-    "clicks": "{count, plural, one {# clic commande} other {# clics commande}}",
+    "clicks": "{count, plural, one {# clic WhatsApp} other {# clics WhatsApp}}",
     "hiddenByAdmin": "Masqué par l'admin",
     "overLimit": "Au-delà de la limite",
     "pinned": "Toujours affiché",
@@ -201,7 +218,37 @@
     "overLimitNotice": "{count, plural, one {# produit est masqué} other {# produits sont masqués}} dans votre boutique à cause de la limite de votre forfait. Choisissez ceux qui s'affichent, ou changez de forfait.",
     "limitReached": "Vous avez atteint la limite de {count} produits de votre forfait.",
     "upgrade": "Changer de forfait",
-    "pinLimit": "Toutes les places visibles sont déjà réservées à d'autres produits. Retirez-en une d'abord."
+    "pinLimit": "Toutes les places visibles sont déjà réservées à d'autres produits. Retirez-en une d'abord.",
+    "checklist": {
+      "title": "Préparez votre boutique",
+      "doneTitle": "Votre boutique est prête",
+      "doneBody": "Tout est prêt. Vous pouvez masquer cette carte.",
+      "progress": "{done} sur {total} terminées",
+      "hide": "Masquer",
+      "stepDone": "(terminé)",
+      "stepTodo": "(à faire)",
+      "steps": {
+        "created": {
+          "title": "Boutique créée",
+          "body": "Votre boutique et son lien sont en ligne."
+        },
+        "product": {
+          "title": "Ajoutez votre premier produit",
+          "body": "Ajoutez une photo, un prix et les tailles disponibles.",
+          "action": "Ajouter un produit"
+        },
+        "look": {
+          "title": "Choisissez le style de votre boutique",
+          "body": "Choisissez le style que vos clients verront.",
+          "action": "Choisir un style"
+        },
+        "share": {
+          "title": "Partagez le lien de votre boutique",
+          "body": "Envoyez-le sur WhatsApp ou copiez-le pour vos réseaux sociaux.",
+          "action": "Partager le lien"
+        }
+      }
+    }
   },
   "Share": {
     "title": "Le lien de votre boutique",
@@ -219,7 +266,7 @@
     "last30": "30 jours",
     "shopViews": "Visites boutique",
     "productViews": "Vues produits",
-    "whatsappClicks": "Commandes WhatsApp"
+    "whatsappClicks": "Clics WhatsApp"
   },
   "ProductForm": {
     "newTitle": "Nouveau produit",
@@ -323,7 +370,8 @@
       "activity": "Historique d'activité",
       "settings": "Paramètres",
       "subscriptions": "Abonnements",
-      "payments": "Paiements"
+      "payments": "Paiements",
+      "changeRequests": "Demandes de modification"
     }
   },
   "Roles": {
@@ -444,6 +492,11 @@
     "ownBilling": {
       "title": "Facturation de sa boutique",
       "manage": "Gérer le forfait et les paiements de sa boutique"
+    },
+    "changeRequests": {
+      "title": "Demandes de modification",
+      "view": "Voir les demandes de modification du nom, du lien et du WhatsApp",
+      "decide": "Approuver ou refuser les demandes de modification"
     }
   },
   "AdminRoles": {
@@ -564,7 +617,10 @@
     "shop": {
       "suspend": "A suspendu une boutique",
       "reactivate": "A réactivé une boutique",
-      "delete": "A supprimé une boutique"
+      "delete": "A supprimé une boutique",
+      "nameChanged": "Nom de la boutique modifié",
+      "slugChanged": "Lien de la boutique modifié",
+      "whatsappChanged": "Numéro WhatsApp de la boutique modifié"
     },
     "product": {
       "hide": "A masqué un produit",
@@ -596,6 +652,12 @@
       "pending": "Paiement en attente",
       "cancelled": "Paiement annulé",
       "expired": "Paiement expiré"
+    },
+    "changeRequest": {
+      "created": "A demandé une modification de la boutique",
+      "cancelled": "A annulé une demande de modification",
+      "approved": "A approuvé une modification de la boutique",
+      "rejected": "A refusé une modification de la boutique"
     }
   },
   "AuditDetails": {
@@ -617,7 +679,12 @@
     "amount": "Montant",
     "provider": "Prestataire",
     "reference": "Référence",
-    "shop": "Boutique"
+    "shop": "Boutique",
+    "requestId": "Demande",
+    "field": "Champ",
+    "newValue": "Nouvelle valeur",
+    "flags": "Alertes",
+    "cooldownOverridden": "Délai ignoré"
   },
   "AdminActivity": {
     "title": "Historique d'activité",
@@ -1134,9 +1201,11 @@
     "bannerAction": "Voir les forfaits",
     "dismiss": "Fermer",
     "lockedStatsTitle": "Statistiques",
-    "lockedStatsBody": "Voyez les visites de votre boutique et les clics de commande WhatsApp avec le forfait Pro.",
+    "lockedStatsBody": "Voyez les visites de votre boutique et les clics WhatsApp avec le forfait Pro.",
     "lockedStatsAction": "Voir les forfaits",
-    "keep": "Garder {plan}"
+    "keep": "Garder {plan}",
+    "trialBadge": "Essai gratuit : {count, plural, one {# jour restant} other {# jours restants}}",
+    "planBadge": "Forfait {plan}"
   },
   "Checkout": {
     "title": "Paiement",
@@ -1223,5 +1292,133 @@
     "extended": "Forfait prolongé",
     "cantExtendFree": "Cette boutique est au forfait Gratuit : offrez plutôt un forfait.",
     "ownShop": "Vous ne pouvez pas changer le forfait de votre propre boutique."
+  },
+  "ChangeRequests": {
+    "request": "Demander une modification",
+    "pending": "Modification en attente :",
+    "pendingBody": "{value}, demandée le {date}. La valeur actuelle reste en ligne jusqu'à l'approbation d'un admin.",
+    "cancelRequest": "Annuler la demande",
+    "cancelled": "Demande annulée",
+    "help": {
+      "name": "Pour protéger les acheteurs, un nouveau nom est vérifié par notre équipe.",
+      "slug": "Pour protéger les acheteurs, un nouveau lien est vérifié par notre équipe. L'ancien lien reste actif 90 jours.",
+      "whatsapp": "Pour protéger les acheteurs, un nouveau numéro est vérifié par code puis par notre équipe."
+    },
+    "title": {
+      "name": "Changer le nom de la boutique",
+      "slug": "Changer le lien de la boutique",
+      "whatsapp": "Changer le numéro WhatsApp"
+    },
+    "dialogBody": "Notre équipe vérifie chaque modification pour protéger les acheteurs des fausses boutiques. Vous verrez la décision sur votre tableau de bord.",
+    "cooldownWarning": "Vous avez modifié ceci il y a moins de 30 jours. Vous pouvez quand même demander, mais ce ne sera approuvé que dans des cas particuliers.",
+    "newName": "Nouveau nom de la boutique",
+    "newSlug": "Nouveau lien de la boutique",
+    "newWhatsapp": "Nouveau numéro WhatsApp",
+    "codeHelp": "Nous enverrons un code sur WhatsApp à ce numéro pour vérifier qu'il est à vous.",
+    "codeSent": "Nous avons envoyé un code à 6 chiffres à ce numéro. Saisissez-le ci-dessous.",
+    "testModeCode": "Mode test, votre code est {code}",
+    "code": "Code",
+    "sendCode": "Envoyer le code",
+    "resend": "Envoyer un nouveau code",
+    "verify": "Vérifier",
+    "verified": "Numéro vérifié",
+    "reason": "Pourquoi voulez-vous cette modification ?",
+    "reasonHelp": "{count}/{max}",
+    "reasonPlaceholder": "ex. Nous avons renommé notre marque et déménagé à Kinshasa.",
+    "submit": "Envoyer la demande",
+    "sending": "Envoi…",
+    "sent": "Demande envoyée. Nous vous informerons de la décision.",
+    "historyTitle": "Demandes de modification",
+    "historyBody": "Vos demandes de modification du nom, du lien ou du numéro WhatsApp.",
+    "historyEmptyTitle": "Aucune demande pour l'instant",
+    "historyEmptyBody": "Vos demandes apparaîtront ici avec la décision.",
+    "fieldName": {
+      "name": "Nom de la boutique",
+      "slug": "Lien de la boutique",
+      "whatsapp": "Numéro WhatsApp"
+    },
+    "status": {
+      "pending": "En attente",
+      "approved": "Approuvée",
+      "rejected": "Refusée",
+      "cancelled": "Annulée"
+    },
+    "askedOn": "Demandée le {date}",
+    "decidedOn": "traitée le {date}",
+    "adminReason": "Raison :"
+  },
+  "Notifications": {
+    "title": "Nouvelles de vos demandes",
+    "approved": "Votre nouveau {field} a été approuvé : {value}.",
+    "rejected": "Votre nouveau {field} n'a pas été approuvé : {value}.",
+    "reason": "Raison : {reason}",
+    "dismiss": "Masquer",
+    "view": "Voir le détail",
+    "badge": "{count, plural, one {# nouvelle} other {# nouvelles}}",
+    "field": {
+      "name": "nom de boutique",
+      "slug": "lien de boutique",
+      "whatsapp": "numéro WhatsApp"
+    }
+  },
+  "AdminChangeRequests": {
+    "title": "Demandes de modification",
+    "search": "Rechercher",
+    "searchPlaceholder": "Rechercher un nom de boutique, un lien ou une nouvelle valeur",
+    "status": "Statut",
+    "allStatuses": "Tous les statuts",
+    "field": "Champ",
+    "allFields": "Tous les champs",
+    "from": "Demandée depuis",
+    "to": "Demandée jusqu'au",
+    "utcNote": "Les dates sont en UTC.",
+    "clear": "Effacer les filtres",
+    "emptyTitle": "Aucune demande",
+    "emptyBody": "Aucune demande ne correspond à ces filtres.",
+    "loadMore": "Voir plus",
+    "flag": {
+      "brand": "Marque : {brand}",
+      "cooldown": "Moins de 30 jours"
+    },
+    "detailsTitle": "Demande de modification",
+    "back": "Retour aux demandes",
+    "notFoundTitle": "Demande introuvable",
+    "notFoundBody": "Elle a peut-être été supprimée, ou le lien est incorrect.",
+    "oldValue": "Ancienne valeur",
+    "newValue": "Valeur demandée",
+    "currentValue": "Valeur actuelle",
+    "asked": "Demandée le",
+    "sellerReason": "Raison du vendeur",
+    "warnSlugTaken": "Ce lien a été pris depuis la demande. Elle ne peut pas être approuvée : refusez-la pour que le vendeur en demande un autre.",
+    "warnCompeting": "{count, plural, one {Une autre boutique demande} other {# autres boutiques demandent}} le même lien. Une seule peut l'obtenir.",
+    "warnCooldown": "Ce champ a été modifié le {date}, il y a moins de 30 jours. L'approbation demande d'ignorer le délai.",
+    "warnBrand": "La nouvelle valeur ressemble à la marque « {brand} ». Vérifiez que le vendeur en est bien propriétaire avant d'approuver.",
+    "decided": "Traitée le",
+    "decidedBy": "Traitée par",
+    "rejectReason": "Raison du refus",
+    "cooldownOverridden": "Délai ignoré",
+    "yes": "Oui",
+    "ownShop": "C'est votre propre boutique : un autre admin doit décider.",
+    "shopLink": "Lien de la boutique",
+    "owner": "Propriétaire",
+    "shopAge": "Âge de la boutique",
+    "shopAgeValue": "{days, plural, one {# jour} other {# jours}} (depuis le {date})",
+    "products": "Produits",
+    "openShop": "Ouvrir la boutique dans l'admin",
+    "pastRequests": "Autres demandes de ce vendeur",
+    "noPastRequests": "Aucune autre demande.",
+    "approve": "Approuver",
+    "approving": "Approbation…",
+    "approved": "Modification approuvée et appliquée",
+    "approveTitle": "Approuver cette modification ?",
+    "approveBody": "La modification est appliquée maintenant. Pour un nouveau lien, l'ancien redirige pendant 90 jours et reste réservé.",
+    "overrideCooldown": "Ignorer le délai",
+    "overrideHelp": "Ce champ a changé il y a moins de 30 jours. N'approuvez que si vous avez vérifié pourquoi.",
+    "reject": "Refuser",
+    "rejecting": "Refus…",
+    "rejected": "Demande refusée",
+    "rejectTitle": "Refuser cette modification ?",
+    "rejectBody": "Le vendeur voit votre raison. La boutique reste inchangée.",
+    "rejectPlaceholder": "ex. Les noms de marque ne peuvent pas être utilisés sans preuve de propriété."
   }
 }

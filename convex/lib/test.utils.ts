@@ -2,6 +2,7 @@
 // name are deliberate: the Convex CLI skips files with more than one dot,
 // so this is never pushed to a deployment.
 import aggregateTest from "@convex-dev/aggregate/test";
+import rateLimiterTest from "@convex-dev/rate-limiter/test";
 import { convexTest, type TestConvex } from "convex-test";
 import { api } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
@@ -18,6 +19,7 @@ const AGGREGATES = ["usersByCreation", "shopsByCreation", "productsByCreation", 
 export function newTest(): T {
   const t = convexTest(schema, modules);
   for (const name of AGGREGATES) aggregateTest.register(t, name);
+  rateLimiterTest.register(t);
   return t;
 }
 
@@ -61,6 +63,21 @@ export function shopArgs(overrides: Partial<ShopArgs> = {}): ShopArgs {
   };
 }
 
+/** Arguments for `shops.update` (the directly editable settings). */
+export function settingsArgs(overrides: Partial<ShopArgs> = {}) {
+  const a = shopArgs(overrides);
+  return {
+    currency: a.currency,
+    language: a.language,
+    categories: a.categories,
+    description: a.description,
+    city: a.city,
+    country: a.country,
+    logoId: a.logoId,
+    theme: a.theme,
+  };
+}
+
 export type ShopArgs = {
   name: string;
   slug: string;
@@ -72,6 +89,7 @@ export type ShopArgs = {
   city: string;
   country: string;
   logoId?: Id<"_storage">;
+  theme?: "bold" | "soft" | "dark";
 };
 
 /** A user with a shop. */

@@ -40,3 +40,8 @@ export function splitWhatsapp(
   if (!country) return { country: fallbackCountry, national: parsed.formatInternational() };
   return { country, national: parsed.formatNational() };
 }
+
+/** A stored number for display: "+243812345678" → "+243 812 345 678". */
+export function formatWhatsapp(e164: string): string {
+  return parsePhoneNumberFromString(e164)?.formatInternational() ?? e164;
+}

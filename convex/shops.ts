@@ -1,12 +1,13 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { isSupportedCountry } from "libphonenumber-js";
+import { isSupportedCountry, type CountryCode } from "libphonenumber-js";
 import { v, type Infer } from "convex/values";
-import type { Id } from "./_generated/dataModel";
-import { query, type QueryCtx } from "./_generated/server";
+import { query } from "./_generated/server";
 import { categoryValidator, languageValidator, LIMITS } from "./lib/catalog";
+import { cleanShopName } from "./lib/changeRequests";
 import { fail } from "./lib/errors";
 import { urlOf } from "./lib/images";
 import { currencyValidator } from "./lib/money";
+import { allStepsDone, onboardingSteps } from "./lib/onboarding";
 import { normalizeWhatsapp } from "./lib/phone";
 import { onShopCreated } from "./lib/platformStats";
 import {
@@ -17,35 +18,39 @@ import {
   sellerMutation,
   sellerQuery,
 } from "./lib/seller";
+import { slugHolder } from "./lib/shopChanges";
 import { slugProblem } from "./lib/slug";
-import { startTrial, subscriptionDoc } from "./lib/subscriptions";
+import { startTrial } from "./lib/subscriptions";
+import { shopThemeValidator } from "./lib/themes";
 
-const shopInput = v.object({
-  name: v.string(),
-  slug: v.string(),
+/** Settings the seller edits directly, any time. */
+const settingsInput = v.object({
   currency: currencyValidator,
   language: languageValidator,
   categories: v.array(categoryValidator),
   description: v.optional(v.string()),
-  /** Any format; normalized to E.164 using `country` as the default region. */
-  whatsappNumber: v.string(),
   city: v.string(),
   country: v.string(),
   logoId: v.optional(v.id("_storage")),
+  theme: v.optional(shopThemeValidator),
+});
+type SettingsInput = Infer<typeof settingsInput>;
+
+/**
+ * Onboarding also sets the protected fields. After that they only change
+ * through an approved request (`changeRequests.create`, CLAUDE.md
+ * "Protected shop changes").
+ */
+const shopInput = settingsInput.extend({
+  name: v.string(),
+  slug: v.string(),
+  /** Any format; normalized to E.164 using `country` as the default region. */
+  whatsappNumber: v.string(),
 });
 type ShopInput = Infer<typeof shopInput>;
 
-/** Validates and normalizes the form; throws an error code on bad input. */
-function cleanShopInput(input: ShopInput): ShopInput {
-  const name = input.name.trim();
-  if (name.length < LIMITS.shopNameMin || name.length > LIMITS.shopNameMax) {
-    fail("NAME_INVALID");
-  }
-  const slug = input.slug.trim();
-  const problem = slugProblem(slug);
-  if (problem === "reserved") fail("SLUG_RESERVED");
-  if (problem !== null) fail("SLUG_INVALID");
-
+/** Validates and normalizes the settings; every key is present (undefined = cleared). */
+function cleanSettings(input: SettingsInput): SettingsInput {
   const categories = [...new Set(input.categories)];
   if (categories.length === 0) fail("CATEGORIES_REQUIRED");
 
@@ -59,32 +64,41 @@ function cleanShopInput(input: ShopInput): ShopInput {
   const country = input.country.trim().toUpperCase();
   if (!isSupportedCountry(country)) fail("COUNTRY_INVALID");
 
-  const whatsappNumber = normalizeWhatsapp(input.whatsappNumber, country);
-  if (whatsappNumber === null) fail("PHONE_INVALID");
-
   return {
-    name,
-    slug,
     currency: input.currency,
     language: input.language,
     categories,
     description,
-    whatsappNumber,
     city,
     country,
     logoId: input.logoId,
+    theme: input.theme,
   };
 }
 
-async function slugOwner(ctx: QueryCtx, slug: string): Promise<Id<"shops"> | null> {
-  const shop = await ctx.db
-    .query("shops")
-    .withIndex("by_slug", (q) => q.eq("slug", slug))
-    .unique();
-  return shop?._id ?? null;
+/** Validates and normalizes the onboarding form; throws an error code on bad input. */
+function cleanShopInput(input: ShopInput): ShopInput {
+  const settings = cleanSettings(input);
+  const name = cleanShopName(input.name);
+  if (name === null) fail("NAME_INVALID");
+
+  const slug = input.slug.trim();
+  const problem = slugProblem(slug);
+  if (problem === "reserved") fail("SLUG_RESERVED");
+  if (problem !== null) fail("SLUG_INVALID");
+
+  // cleanSettings checked the country is supported.
+  const whatsappNumber = normalizeWhatsapp(input.whatsappNumber, settings.country as CountryCode);
+  if (whatsappNumber === null) fail("PHONE_INVALID");
+
+  return { ...settings, name, slug, whatsappNumber };
 }
 
-/** Live availability check for the slug field. Your own slug counts as ok. */
+/**
+ * Live availability check for a slug field (onboarding, change requests).
+ * Your own slug, or one of your own old links, counts as ok; another
+ * shop's old link stays taken while it redirects.
+ */
 export const checkSlug = query({
   args: { slug: v.string() },
   returns: v.union(
@@ -102,11 +116,11 @@ export const checkSlug = query({
   handler: async (ctx, { slug }) => {
     const problem = slugProblem(slug);
     if (problem !== null) return { ok: false as const, problem };
-    const ownerShopId = await slugOwner(ctx, slug);
-    if (ownerShopId === null) return { ok: true as const };
+    const holder = await slugHolder(ctx, slug);
+    if (holder === null) return { ok: true as const };
     const userId = await getAuthUserId(ctx);
     const mine = userId === null ? null : await findShopByOwner(ctx, userId);
-    return mine?._id === ownerShopId
+    return mine?._id === holder
       ? { ok: true as const }
       : { ok: false as const, problem: "taken" as const };
   },
@@ -130,7 +144,7 @@ export const create = sellerMutation({
   handler: async (ctx, args) => {
     if (await findShopByOwner(ctx, ctx.user._id)) fail("SHOP_EXISTS");
     const input = cleanShopInput(args);
-    if ((await slugOwner(ctx, input.slug)) !== null) fail("SLUG_TAKEN");
+    if ((await slugHolder(ctx, input.slug)) !== null) fail("SLUG_TAKEN");
     if (input.logoId) await claimImages(ctx, [input.logoId]);
     const shopId = await ctx.db.insert("shops", { ...input, ownerId: ctx.user._id });
     const shop = (await ctx.db.get("shops", shopId))!;
@@ -142,20 +156,26 @@ export const create = sellerMutation({
 });
 
 /**
- * Saves shop settings. A replaced or removed logo is deleted from storage;
- * a category still used by a product can't be removed.
+ * Saves the directly editable settings. Name, link and WhatsApp number
+ * aren't accepted here (change requests). A replaced or removed logo is
+ * deleted from storage; a category still used by a product can't be
+ * removed; the currency is locked once the shop has products (their
+ * prices are in it).
  */
 export const update = sellerMutation({
   permission: "ownShop.manage",
-  args: shopInput.fields,
+  args: settingsInput.fields,
   returns: v.null(),
   handler: async (ctx, args) => {
     const shop = await requireOwnShop(ctx);
-    const input = cleanShopInput(args);
+    const input = cleanSettings(args);
 
-    if (input.slug !== shop.slug) {
-      const owner = await slugOwner(ctx, input.slug);
-      if (owner !== null && owner !== shop._id) fail("SLUG_TAKEN");
+    if (input.currency !== shop.currency) {
+      const anyProduct = await ctx.db
+        .query("products")
+        .withIndex("by_shopId", (q) => q.eq("shopId", shop._id))
+        .first();
+      if (anyProduct) fail("CURRENCY_LOCKED");
     }
 
     const removed = shop.categories.filter((c) => !input.categories.includes(c));
@@ -178,17 +198,52 @@ export const update = sellerMutation({
       input.logoId ? [input.logoId] : [],
     );
 
-    // Fields the seller doesn't control are carried over, or `replace` would drop them.
-    await ctx.db.replace("shops", shop._id, {
-      ...input,
-      ownerId: shop.ownerId,
-      status: shop.status,
+    // A patch: only these keys change (undefined clears an optional one),
+    // so protected fields, status and onboarding progress are untouched.
+    await ctx.db.patch("shops", shop._id, input);
+    return null;
+  },
+});
+
+/**
+ * Dashboard checklist: the seller shared, copied or opened their link.
+ * Only the first time is recorded.
+ */
+export const markLinkShared = sellerMutation({
+  permission: "ownShop.manage",
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    const shop = await requireOwnShop(ctx);
+    if (shop.onboarding?.linkSharedAt !== undefined) return null;
+    await ctx.db.patch("shops", shop._id, {
+      onboarding: { ...shop.onboarding, linkSharedAt: Date.now() },
     });
-    // Keep the copy used by the admin subscription search in sync.
-    if (input.name !== shop.name) {
-      const subscription = await subscriptionDoc(ctx, shop._id);
-      if (subscription) await ctx.db.patch("subscriptions", subscription._id, { shopName: input.name });
-    }
+    return null;
+  },
+});
+
+/** Hides the dashboard checklist for good, once every step is done. */
+export const hideChecklist = sellerMutation({
+  permission: "ownShop.manage",
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    const shop = await requireOwnShop(ctx);
+    const firstProduct = await ctx.db
+      .query("products")
+      .withIndex("by_shopId", (q) => q.eq("shopId", shop._id))
+      .first();
+    const steps = onboardingSteps({
+      productCount: firstProduct ? 1 : 0,
+      theme: shop.theme,
+      linkSharedAt: shop.onboarding?.linkSharedAt,
+    });
+    if (!allStepsDone(steps)) fail("ONBOARDING_INCOMPLETE");
+    if (shop.onboarding?.checklistHiddenAt !== undefined) return null;
+    await ctx.db.patch("shops", shop._id, {
+      onboarding: { ...shop.onboarding, checklistHiddenAt: Date.now() },
+    });
     return null;
   },
 });

@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { getTranslations } from "next-intl/server"
 import { notFound } from "next/navigation"
-import { getShopBasics } from "@/features/public/data"
+import { getShopBasics, getSlugRedirect } from "@/features/public/data"
 import { ShopUnavailable } from "@/features/public/shop-unavailable"
 
 /** A suspended shop: "temporarily unavailable" title, kept out of search engines. */
@@ -22,12 +22,17 @@ export async function generateMetadata({ params }: LayoutProps<"/[slug]">): Prom
  * under loading.tsx can only send 200 + noindex). Uses the light
  * `shopBasics` query, since this also runs for every product page.
  * A suspended shop shows the "temporarily unavailable" page instead of
- * the shop or any of its products.
+ * the shop or any of its products. An old link that still redirects (an
+ * approved link change) renders the children, whose layouts redirect to
+ * the new link, keeping the product id for product pages.
  */
 export default async function ShopLayout({ children, params }: LayoutProps<"/[slug]">) {
   const { slug } = await params
   const basics = await getShopBasics(slug)
-  if (!basics) notFound()
+  if (!basics) {
+    if (await getSlugRedirect(slug)) return children
+    notFound()
+  }
   if (basics.suspended) return <ShopUnavailable name={basics.name} language={basics.language} />
   return children
 }

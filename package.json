@@ -15,6 +15,7 @@
     "@base-ui/react": "^1.8.0",
     "@convex-dev/aggregate": "0.3.4",
     "@convex-dev/auth": "^0.0.95",
+    "@convex-dev/rate-limiter": "^0.4.3",
     "@hookform/resolvers": "^7.0.7",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.4.0",
