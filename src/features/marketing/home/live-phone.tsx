@@ -2,12 +2,13 @@ import { getLocale, getTranslations } from "next-intl/server"
 import { DEMO_CURRENCY, DEMO_PRODUCTS, DEMO_SLUG } from "@/features/marketing/demo/demo-shop"
 import { ProductGrid } from "@/features/public/product-grid"
 import { ShopHeader } from "@/features/public/shop-header"
+import { PhoneFrame } from "@/features/shop-looks/phone-frame"
 import { PhoneThemeScreen } from "./phone-theme"
 
 /**
  * A CSS phone frame showing the real demo shop (same components and
- * themes as /demo), drawn at 375px and zoomed to fit the screen. The
- * content is inert: one label describes it.
+ * presets as /demo and sellers' shops), drawn at 375px and zoomed to fit
+ * the screen. The content is inert: one label describes it.
  */
 export async function LivePhone() {
   const t = await getTranslations("Home")
@@ -30,25 +31,11 @@ export async function LivePhone() {
   }))
 
   return (
-    <figure
-      role="img"
-      aria-label={t("mockupLabel")}
-      className="relative w-[240px] rounded-[2.5rem] bg-ink p-2 text-left shadow-float sm:w-[260px] md:w-[280px] lg:w-[300px]"
-    >
-      <div className="relative aspect-[9/19] overflow-hidden rounded-[2rem]">
-        <PhoneThemeScreen>
-          <div
-            inert
-            aria-hidden
-            className="w-[375px] [zoom:0.597] sm:[zoom:0.651] md:[zoom:0.704] lg:[zoom:0.757]"
-          >
-            <div className="flex flex-col gap-5 px-4 pt-12 pb-6">
-              <ShopHeader shop={shop} />
-              <ProductGrid slug={DEMO_SLUG} currency={DEMO_CURRENCY} products={products} columns="phone" />
-            </div>
-          </div>
-        </PhoneThemeScreen>
-      </div>
-    </figure>
+    <PhoneFrame label={t("mockupLabel")} className="w-[240px] sm:w-[260px] md:w-[280px] lg:w-[300px]">
+      <PhoneThemeScreen zoomClassName="[zoom:0.597] sm:[zoom:0.651] md:[zoom:0.704] lg:[zoom:0.757]">
+        <ShopHeader shop={shop} onBanner />
+        <ProductGrid slug={DEMO_SLUG} currency={DEMO_CURRENCY} products={products} columns="phone" />
+      </PhoneThemeScreen>
+    </PhoneFrame>
   )
 }

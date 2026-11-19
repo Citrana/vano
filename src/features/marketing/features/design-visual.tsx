@@ -1,18 +1,16 @@
 import { CheckIcon } from "lucide-react"
 import { getTranslations } from "next-intl/server"
-import { Badge } from "@/components/ui/badge"
 import { ThemePreviews } from "@/features/marketing/features/theme-previews"
 
-/** Bold/Soft/Dark previews + what sellers can change (looks are coming soon). */
+/** The preset looks + what sellers can change. */
 export async function DesignVisual() {
   const t = await getTranslations("Features")
-  const tm = await getTranslations("Marketing")
-  const available = [t("canShopName"), t("canLogo"), t("canDescription")]
+  const available = [t("canShopName"), t("canLogo"), t("canDescription"), t("canColors"), t("canBanner")]
   return (
     <div className="flex flex-col gap-5">
       <ThemePreviews />
-      <div className="rounded-xl border bg-card p-4">
-        <p className="mb-2 text-sm font-semibold text-muted-foreground">{t("designCanChange")}</p>
+      <div className="flex flex-col gap-3 rounded-xl border bg-card p-4">
+        <p className="text-sm font-semibold text-muted-foreground">{t("designCanChange")}</p>
         <ul className="flex flex-wrap gap-x-4 gap-y-2 text-sm font-medium">
           {available.map((item) => (
             <li key={item} className="inline-flex items-center gap-1.5">
@@ -20,11 +18,8 @@ export async function DesignVisual() {
               {item}
             </li>
           ))}
-          <li className="inline-flex items-center gap-1.5 text-muted-foreground">
-            {t("canColors")}
-            <Badge>{tm("comingSoon")}</Badge>
-          </li>
         </ul>
+        <p className="text-sm text-muted-foreground">{t("canLooksNote")}</p>
       </div>
     </div>
   )

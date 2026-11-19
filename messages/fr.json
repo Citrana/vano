@@ -801,6 +801,20 @@
     "soft": "Doux",
     "dark": "Sombre"
   },
+  "ShopLooks": {
+    "label": "Style de la boutique",
+    "presets": {
+      "classic": "Classique",
+      "blush": "Rose poudré",
+      "lavender": "Lavande",
+      "emeraldGold": "Émeraude & Or",
+      "noir": "Noir",
+      "sunset": "Coucher de soleil",
+      "roseGarden": "Jardin de roses",
+      "ocean": "Océan",
+      "kitenge": "Kitenge"
+    }
+  },
   "Demo": {
     "shopName": "Vano Démo",
     "shopDescription": "Des produits d'exemple pour montrer à quoi peut ressembler votre boutique Vano.",
@@ -912,15 +926,17 @@
     "soon360Body": "Bientôt, vos clients pourront faire tourner une chaussure sous tous les angles avant de commander.",
     "soonTryOn": "Essayage virtuel",
     "soonTryOnBody": "Bientôt, vos clients pourront voir à quoi une tenue pourrait ressembler sur eux.",
-    "designDetail": "Votre boutique doit ressembler à votre marque. Affichez le nom et le logo en haut et ajoutez quelques lignes sur ce que vous vendez. Les thèmes de couleurs sont en préparation.",
+    "designDetail": "Votre boutique doit ressembler à votre marque. Choisissez un style prêt à l'emploi, puis personnalisez-le avec vos couleurs, le style des boutons et une bannière. Les visiteurs ne voient vos changements qu'une fois publiés.",
     "designBullet1": "Nom et logo affichés sur chaque page",
     "designBullet2": "Quelques lignes pour présenter votre marque",
-    "designBullet3": "Thèmes audacieux, doux ou sombre (bientôt)",
+    "designBullet3": "Neuf styles prêts à l’emploi, vos couleurs, vos boutons et une bannière",
     "designCanChange": "Ce que vous pouvez changer",
     "canShopName": "Nom de la boutique",
     "canLogo": "Logo",
     "canDescription": "Description",
     "canColors": "Couleurs et style",
+    "canBanner": "Bannière",
+    "canLooksNote": "Les styles, couleurs et la bannière sont inclus dans Pro et Business (et l'essai gratuit). Les boutiques gratuites ont le style Classique.",
     "whatsappDetail": "Chaque fiche produit a un bouton de commande. La discussion s'ouvre avec l'article, la taille et le prix déjà écrits pour le client : il ne vous reste qu'à répondre.",
     "whatsappBullet1": "Article, taille et prix écrits pour eux",
     "whatsappBullet2": "Vous convenez de la livraison et du paiement dans la discussion",

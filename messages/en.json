@@ -801,6 +801,20 @@
     "soft": "Soft",
     "dark": "Dark"
   },
+  "ShopLooks": {
+    "label": "Shop look",
+    "presets": {
+      "classic": "Classic",
+      "blush": "Blush",
+      "lavender": "Lavender",
+      "emeraldGold": "Emerald & Gold",
+      "noir": "Noir",
+      "sunset": "Sunset",
+      "roseGarden": "Rose Garden",
+      "ocean": "Ocean",
+      "kitenge": "Kitenge"
+    }
+  },
   "Demo": {
     "shopName": "Vano Demo",
     "shopDescription": "Sample products to show what your Vano shop can look like.",
@@ -912,15 +926,17 @@
     "soon360Body": "Soon your customers will be able to turn a shoe all the way around before they order.",
     "soonTryOn": "Virtual try-on",
     "soonTryOnBody": "Soon customers will be able to see how an outfit could look on them.",
-    "designDetail": "Your shop should feel like your brand. Put your shop name and logo at the top and add a few lines about what you sell. Color themes are being built.",
+    "designDetail": "Your shop should feel like your brand. Pick a ready-made look, then make it yours with your colors, button style and a banner. Visitors only see your changes once you publish them.",
     "designBullet1": "Name and logo shown on every page",
     "designBullet2": "A few lines that introduce your brand",
-    "designBullet3": "Bold, soft or dark themes (coming soon)",
+    "designBullet3": "Nine ready-made looks, your colors, buttons and banner",
     "designCanChange": "What you can change",
     "canShopName": "Shop name",
     "canLogo": "Logo",
     "canDescription": "Description",
     "canColors": "Colors and style",
+    "canBanner": "Banner",
+    "canLooksNote": "Looks, colors and banner are on Pro and Business (and the free trial). Free shops get the Classic look.",
     "whatsappDetail": "Each product page has an order button. The chat opens with the item, the size and the price written for the customer, so you only need to reply.",
     "whatsappBullet1": "Item, size and price written for them",
     "whatsappBullet2": "You agree on delivery and payment in the chat",
