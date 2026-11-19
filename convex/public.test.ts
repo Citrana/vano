@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { api } from "./_generated/api";
-import { as, productArgs, sellerWithShop, newTest } from "./lib/test.utils";
+import { presetLook } from "./lib/looks/presets";
+import { as, productArgs, sellerWithShop, newTest, setSubscription, storeFile } from "./lib/test.utils";
 
 const setup = newTest;
 
@@ -111,6 +112,58 @@ describe("hidden products", () => {
     expect((await me.query(api.products.getMine, { productId: hidden }))?.hidden).toBe(true);
     await me.mutation(api.products.update, { productId: hidden, ...(await productArgs(t, { name: "Jupe 2" })) });
     expect((await t.run((ctx) => ctx.db.get("products", hidden)))?.hidden).toBe(true);
+  });
+});
+
+describe("shop look", () => {
+  test("a shop with nothing published shows the free look", async () => {
+    const t = setup();
+    await sellerWithShop(t);
+    const page = active(await t.query(api.public.shopBySlug, { slug: "chez-amani" }));
+    expect(page.shop.look).toMatchObject({ preset: "classic", banner: { kind: "gradient" } });
+  });
+
+  test("the published look shows, never the draft or a storage id", async () => {
+    const t = setup();
+    const { userId } = await sellerWithShop(t);
+    const seller = as(t, userId);
+    const imageId = await storeFile(t);
+    await seller.mutation(api.shopLooks.saveDraft, {
+      look: {
+        ...presetLook("noir"),
+        overrides: { banner: { kind: "photo", imageId, focusX: 50, focusY: 50, zoom: 1, height: "lg" } },
+      },
+    });
+    await seller.mutation(api.shopLooks.publish, {});
+    await seller.mutation(api.shopLooks.saveDraft, { look: presetLook("ocean") });
+
+    const page = active(await t.query(api.public.shopBySlug, { slug: "chez-amani" }));
+    expect(page.shop.look.preset).toBe("noir");
+    expect(page.shop.look.banner).toMatchObject({ kind: "photo", height: "lg" });
+    expect(page.shop.look.banner.kind === "photo" && page.shop.look.banner.image).toMatch(/^https?:/);
+    expect(JSON.stringify(page)).not.toContain(imageId);
+    expect(JSON.stringify(page)).not.toContain("ocean");
+
+    const basics = await t.query(api.public.shopBasics, { slug: "chez-amani" });
+    expect(basics).toMatchObject({ look: { preset: "noir" } });
+  });
+
+  test("after a downgrade visitors see the free look; upgrading brings the design back", async () => {
+    const t = setup();
+    const { userId, shopId } = await sellerWithShop(t);
+    const seller = as(t, userId);
+    await seller.mutation(api.shopLooks.saveDraft, { look: presetLook("roseGarden") });
+    await seller.mutation(api.shopLooks.publish, {});
+    await seller.mutation(api.products.create, await productArgs(t));
+    const productId = active(await t.query(api.public.shopBySlug, { slug: "chez-amani" })).products[0]._id;
+
+    await setSubscription(t, shopId, { plan: "free", status: "expired" });
+    expect(active(await t.query(api.public.shopBySlug, { slug: "chez-amani" })).shop.look.preset).toBe("classic");
+    const product = active(await t.query(api.public.productForPage, { slug: "chez-amani", productId }));
+    expect(product.shop.look.preset).toBe("classic");
+
+    await setSubscription(t, shopId, { plan: "pro", status: "active", periodEnd: Date.now() + 86_400_000 });
+    expect(active(await t.query(api.public.shopBySlug, { slug: "chez-amani" })).shop.look.preset).toBe("roseGarden");
   });
 });
 

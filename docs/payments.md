@@ -6,11 +6,19 @@ providers, checkout, the scheduled jobs or billing admin updates this file
 in the same commit, with a dated entry in the change log below
 (see CLAUDE.md "Billing").
 
-**Last updated: 2026-11-19 09:40 CAT (UTC+02:00)**
+**Last updated: 2026-11-19 12:39 CAT (UTC+02:00)**
 
 ## Change log
 
 Newest first. Format: `YYYY-MM-DD HH:MM TZ — what changed (files)`.
+
+- **2026-11-19 12:39 CAT (UTC+02:00)**: the `allLooks` feature is now
+  enforced. `shopLooks.publish` calls `requireCan({ kind: "feature",
+  feature: "allLooks" })` for any look other than the free one (Classic,
+  nothing changed). Drafts save on every plan. Public pages show the
+  published look only while `hasFeature(shop, "allLooks")`; otherwise they
+  show the free look and the saved design is kept. (`convex/shopLooks.ts`,
+  `convex/lib/looks/store.ts`, `convex/public.ts`)
 
 - **2026-11-19 09:40 CAT (UTC+02:00)**: `/admin/subscriptions` on the shared data
   table: sort by end date, filters in the URL; a row opens the shop drawer
@@ -304,6 +312,11 @@ All checks go through `convex/lib/entitlements.ts`:
   editable. "Show in shop" pins one; pinning beyond the limit is refused.
   Upgrading shows everything again at once.
 - Public product pages show only the plan's number of photos; all stay stored.
+- Shop looks: a downgraded shop keeps its published look (`shopLooks`)
+  but visitors see the free look (`visibleLook` in
+  `convex/lib/looks/store.ts`). The "Shop look" page explains this, and
+  upgrading brings the design back at once. Publishing a non-free look is
+  `PLAN_FEATURE_LOCKED` on Free; drafts still save.
 - Stats are still recorded on Free; `stats.summary` returns
   `{ locked: true }` and the dashboard shows an upgrade card.
 - A new paid feature = a `PlanFeatureFlag` in `plans.ts` + a
