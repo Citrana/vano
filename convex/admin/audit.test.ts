@@ -106,6 +106,32 @@ describe("admin.audit.list", () => {
     expect(await range("2026-11-04", "2026-11-05")).toEqual([]);
   });
 
+  test("oldest first on request, also with a filter", async () => {
+    const t = newTest();
+    const w = await history(t);
+    const q = async (args: object) =>
+      (await as(t, w.boss).query(api.admin.audit.list, { paginationOpts: page, ...args })).page.map((r) => r.action);
+    expect(await q({ order: "asc" })).toEqual([
+      "superAdmin.seed",
+      "user.assignRole",
+      "user.assignRole",
+      "user.suspend",
+      "product.hide",
+    ]);
+    expect(await q({ order: "asc", actor: w.boss })).toEqual(["user.assignRole", "user.assignRole", "product.hide"]);
+  });
+
+  test("get: one entry for the drawer; null for an unknown id; needs audit.view", async () => {
+    const t = newTest();
+    const w = await history(t);
+    const [latest] = (await as(t, w.boss).query(api.admin.audit.list, { paginationOpts: page })).page;
+    expect(await as(t, w.boss).query(api.admin.audit.get, { entryId: latest._id })).toEqual(latest);
+    expect(await as(t, w.boss).query(api.admin.audit.get, { entryId: "nope" })).toBeNull();
+    // (The world's seller is suspended; a fresh one has no admin permission.)
+    const { userId: seller } = await sellerWithShop(t, "zawadi@shop.ke", { slug: "zawadi" });
+    await expect(as(t, seller).query(api.admin.audit.get, { entryId: latest._id })).rejects.toThrow(/FORBIDDEN/);
+  });
+
   test("paginates", async () => {
     const t = newTest();
     const w = await history(t);

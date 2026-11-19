@@ -708,17 +708,17 @@
     "system": "System",
     "action": "Action",
     "allActions": "All actions",
-    "from": "From",
-    "to": "To",
-    "clear": "Clear filters",
-    "utcNote": "Days are in UTC.",
     "yes": "Yes",
     "no": "No",
     "emptyTitle": "No admin activity yet",
     "emptyBody": "Admin actions (suspensions, role changes, deletions…) will appear here.",
     "emptyFilteredTitle": "No activity found",
     "emptyFilteredBody": "No activity matches these filters.",
-    "loadMore": "Load more"
+    "entryTitle": "Activity",
+    "target": "Target",
+    "when": "When",
+    "notFoundTitle": "Entry not found",
+    "notFoundBody": "The link may be wrong."
   },
   "AdminSettings": {
     "title": "Settings",
