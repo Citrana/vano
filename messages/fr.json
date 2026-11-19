@@ -601,10 +601,8 @@
     "category": "Catégorie",
     "allCategories": "Toutes les catégories",
     "soldOut": "Épuisé",
-    "shopSuspended": "Boutique suspendue",
     "emptyTitle": "Aucun produit trouvé",
     "emptyBody": "Aucun produit ne correspond à ces filtres.",
-    "loadMore": "Afficher plus",
     "view": "Voir la page publique",
     "hide": "Masquer aux clients",
     "unhide": "Réafficher aux clients",
@@ -612,7 +610,18 @@
     "unhidden": "Produit de nouveau visible.",
     "deleteTitle": "Supprimer ce produit ?",
     "deleteBody": "« {name} » et ses photos seront supprimés définitivement. Cette action est irréversible.",
-    "deleted": "Produit supprimé."
+    "deleted": "Produit supprimé.",
+    "detailsTitle": "Produit",
+    "product": "Produit",
+    "shop": "Boutique",
+    "price": "Prix",
+    "added": "Ajouté le",
+    "notFoundTitle": "Produit introuvable",
+    "notFoundBody": "Il a peut-être été supprimé, ou le lien est incorrect.",
+    "bulkHide": "Masquer",
+    "bulkShow": "Afficher",
+    "bulkHidden": "{count, plural, one {# produit masqué.} other {# produits masqués.}}",
+    "bulkShown": "{count, plural, one {# produit de nouveau visible.} other {# produits de nouveau visibles.}}"
   },
   "AuditActions": {
     "user": {
