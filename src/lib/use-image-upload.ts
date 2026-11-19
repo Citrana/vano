@@ -10,13 +10,14 @@ import { compressImage } from "./compress-image"
  * Compress → get an upload URL → POST the file → storage id. The server
  * checks and claims the file when the shop / product is saved.
  */
-export function useImageUpload() {
+export function useImageUpload(options?: { maxDimension?: number }) {
+  const maxDimension = options?.maxDimension
   const generateUploadUrl = useMutation(api.files.generateUploadUrl)
   return useCallback(
     async (file: File, onStage?: (stage: "compressing" | "uploading") => void): Promise<Id<"_storage">> => {
       if (!file.type.startsWith("image/")) throw new Error("NOT_AN_IMAGE")
       onStage?.("compressing")
-      const blob = await compressImage(file)
+      const blob = await compressImage(file, maxDimension ? { maxDimension } : undefined)
       onStage?.("uploading")
       const url = await generateUploadUrl()
       const response = await fetch(url, {
@@ -28,6 +29,6 @@ export function useImageUpload() {
       const { storageId } = (await response.json()) as { storageId: Id<"_storage"> }
       return storageId
     },
-    [generateUploadUrl],
+    [generateUploadUrl, maxDimension],
   )
 }

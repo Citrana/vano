@@ -39,10 +39,12 @@ export default async function DemoShopPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 pb-12 md:pt-6">
-      <DemoLookBanner className="-mx-4 md:mx-0 md:rounded-xl" />
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <ShopHeader shop={shop} onBanner />
-        <DemoThemeSwitch label={t("themeLabel")} />
+      <div className="flex flex-col">
+        <DemoLookBanner className="-mx-4 md:mx-0 md:rounded-xl" />
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:px-6">
+          <ShopHeader shop={shop} onBanner />
+          <DemoThemeSwitch label={t("themeLabel")} />
+        </div>
       </div>
       <ProductGrid slug={DEMO_SLUG} currency={DEMO_CURRENCY} products={products} />
     </div>

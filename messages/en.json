@@ -153,7 +153,8 @@
     "admin": "Admin",
     "billing": "Plan",
     "profileMenu": "Account menu",
-    "account": "Signed in as"
+    "account": "Signed in as",
+    "look": "Look"
   },
   "Onboarding": {
     "title": "Create your shop",
@@ -809,6 +810,148 @@
       "roseGarden": "Rose Garden",
       "ocean": "Ocean",
       "kitenge": "Kitenge"
+    }
+  },
+  "LookEditor": {
+    "title": "Shop look",
+    "sections": {
+      "label": "Sections",
+      "looks": "Looks",
+      "colors": "Colors",
+      "buttons": "Buttons",
+      "banner": "Banner"
+    },
+    "status": {
+      "saving": "Saving draft…",
+      "error": "Couldn't save your draft.",
+      "draft": "Draft saved · not live yet",
+      "live": "Live on your shop",
+      "default": "Your shop uses the default look"
+    },
+    "actions": {
+      "publish": "Publish",
+      "discard": "Discard changes",
+      "viewShop": "View my shop",
+      "retry": "Try again",
+      "upgrade": "See plans",
+      "preview": "Preview",
+      "reset": "Reset to preset"
+    },
+    "notices": {
+      "hiddenByPlan": "Visitors see the Classic look because your plan doesn't include custom looks. Your design is saved: upgrade to bring it back.",
+      "free": "On the Free plan your shop uses the Classic look. You can try every look here; upgrade to publish one.",
+      "resetByAdmin": "An admin reset your shop look on {date}.",
+      "seeNotifications": "See why in your notifications"
+    },
+    "hints": {
+      "planLocked": "Your plan can publish the Classic look only. Upgrade to publish this one.",
+      "blocking": "Fix the colors marked in red before publishing."
+    },
+    "preview": {
+      "show": "Show",
+      "draft": "My draft",
+      "live": "Live now",
+      "label": "Preview of your shop on a phone",
+      "title": "Preview",
+      "sample": "Sample products: add your own to see them here."
+    },
+    "confirm": {
+      "discardTitle": "Discard your changes?",
+      "discardBody": "Your draft goes back to what's live on your shop. This can't be undone.",
+      "publishTitle": "Publish with readability warnings?",
+      "publishBody": "Some parts may be hard to read for some customers. You can still publish, or use the suggested fixes first.",
+      "cancel": "Cancel",
+      "publishAnyway": "Publish anyway"
+    },
+    "toast": {
+      "published": "Your new look is live.",
+      "saveFailed": "Your draft couldn't be saved. Check your connection and try again.",
+      "discarded": "Changes discarded."
+    },
+    "looks": {
+      "current": "Based on {name}",
+      "customized": "customized",
+      "pro": "Pro",
+      "lockedHint": "needs a Pro or Business plan to publish"
+    },
+    "colors": {
+      "intro": "Pick from colors that go well together, or choose your own.",
+      "accent": "Accent color",
+      "background": "Background",
+      "swatch": "Color {color}",
+      "custom": "Custom",
+      "hexLabel": "{field}, hex code",
+      "customInUse": "Your own color",
+      "usePreset": "Use the look's colors"
+    },
+    "contrast": {
+      "targets": {
+        "text": "Text:",
+        "badge": "Badges and selected chips:",
+        "chip": "Selected chips:"
+      },
+      "blocking": "too hard to read ({ratio}:1). Publishing is blocked until it's fixed.",
+      "warning": "may be hard to read ({ratio}:1).",
+      "fixAccent": "Use accent {color}",
+      "fixBackground": "Use background {color}"
+    },
+    "buttons": {
+      "shape": "Shape",
+      "rounded": "Rounded",
+      "pill": "Pill",
+      "square": "Square",
+      "fill": "Fill",
+      "solid": "Filled",
+      "outline": "Outline",
+      "weight": "Style",
+      "soft": "Soft",
+      "bold": "Bold",
+      "sample": "Sample",
+      "whatsappNote": "The order button always stays WhatsApp green so customers spot it."
+    },
+    "banner": {
+      "type": "Banner type",
+      "none": "None",
+      "photo": "Photo",
+      "gradient": "Gradient",
+      "artwork": "Ready-made",
+      "cropHelp": "Tap or drag on the photo to choose what stays in view.",
+      "focusX": "Left – right",
+      "focusY": "Top – bottom",
+      "zoom": "Zoom",
+      "uploadPhoto": "Upload a photo",
+      "changePhoto": "Change photo",
+      "uploading": "Uploading…",
+      "photoHelp": "A wide photo works best. It's compressed before upload.",
+      "notAnImage": "That file isn't an image.",
+      "uploadFailed": "The photo couldn't be uploaded. Try again.",
+      "height": "Height",
+      "small": "Small",
+      "medium": "Medium",
+      "large": "Large",
+      "text": "Text on the banner (optional)",
+      "textPlaceholder": "e.g. New arrivals every Friday",
+      "textHelp": "{count} / {max} characters",
+      "align": "Text position",
+      "alignStart": "Bottom left",
+      "alignCenter": "Center",
+      "gradients": {
+        "creamBlush": "Cream and blush",
+        "blushPeach": "Blush and peach",
+        "lilacMist": "Lilac mist",
+        "roseDusk": "Rose dusk",
+        "peachSunset": "Peach sunset",
+        "aquaShore": "Aqua shore",
+        "emeraldGold": "Emerald and gold",
+        "noirGold": "Noir and gold"
+      },
+      "artworks": {
+        "kitengeDiamonds": "Kitenge diamonds",
+        "kitengeWaves": "Kitenge waves",
+        "petals": "Petals",
+        "goldArcs": "Gold arcs",
+        "softDots": "Soft dots"
+      }
     }
   },
   "Demo": {

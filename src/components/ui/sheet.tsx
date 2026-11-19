@@ -8,8 +8,8 @@ import { XIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 /**
- * A panel that slides in from the left (mobile menus) or the right (admin
- * details drawer). Built on the same base-ui Dialog as `dialog.tsx`: focus
+ * A panel that slides in from the left (mobile menus), the right (admin
+ * details drawer) or the bottom (phone previews). Built on the same base-ui Dialog as `dialog.tsx`: focus
  * trap, Escape and backdrop close, focus returns to the opener.
  */
 function Sheet(props: SheetPrimitive.Root.Props) {
@@ -23,6 +23,8 @@ function SheetTrigger(props: SheetPrimitive.Trigger.Props) {
 const SIDES = {
   left: "inset-y-0 left-0 w-72 max-w-[85vw] border-r data-open:slide-in-from-left data-closed:slide-out-to-left",
   right: "inset-y-0 right-0 w-full border-l data-open:slide-in-from-right data-closed:slide-out-to-right",
+  bottom:
+    "inset-x-0 bottom-0 max-h-[94dvh] rounded-t-xl border-t pb-[calc(1rem+env(safe-area-inset-bottom))] data-open:slide-in-from-bottom data-closed:slide-out-to-bottom",
 } as const
 
 function SheetContent({

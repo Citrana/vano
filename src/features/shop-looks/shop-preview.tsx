@@ -24,7 +24,7 @@ export function ShopPreview({
     <ShopLookScope look={look} className="size-full overflow-hidden">
       <div inert aria-hidden className={cn("w-[375px]", zoomClassName)}>
         {hasBanner ? <ShopBanner banner={look.banner} sizing="phone" priority={false} /> : null}
-        <div className={cn("flex flex-col gap-5 px-4 pb-6", hasBanner ? "pt-0" : "pt-12")}>{children}</div>
+        <div className={cn("flex flex-col gap-5 px-4 pb-6", !hasBanner && "pt-12")}>{children}</div>
       </div>
     </ShopLookScope>
   )

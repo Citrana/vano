@@ -49,10 +49,12 @@ export default async function ShopPage({ params }: PageProps<"/[slug]">) {
     <ShopLocaleProvider language={shop.language}>
       <ShopLookScope look={shop.look} className="flex flex-1 flex-col">
         <main className={`mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 pb-10 ${hasBanner ? "md:pt-6" : "pt-6 md:pt-10"}`}>
-          {hasBanner ? (
-            <ShopBanner banner={shop.look.banner} className="-mx-4 md:mx-0 md:rounded-xl" />
-          ) : null}
-          <ShopHeader shop={shop} onBanner={hasBanner} />
+          <div className="flex flex-col">
+            {hasBanner ? <ShopBanner banner={shop.look.banner} className="-mx-4 md:mx-0 md:rounded-xl" /> : null}
+            <div className={hasBanner ? "md:px-6" : undefined}>
+              <ShopHeader shop={shop} onBanner={hasBanner} />
+            </div>
+          </div>
           <ProductGrid slug={shop.slug} currency={shop.currency} products={products} />
         </main>
         <PublicFooter language={shop.language} />

@@ -29,7 +29,7 @@ export function ShopHeaderView({
       className={cn(
         "flex shrink-0 items-center justify-center overflow-hidden rounded-full border bg-card",
         compact ? "size-10" : "size-16 md:size-20",
-        onBanner && !compact && "-mt-10 ring-4 ring-background md:-mt-12",
+        onBanner && !compact && "relative z-10 -mt-8 ring-4 ring-background md:-mt-10",
       )}
     >
       {shop.logoUrl ? (
@@ -54,7 +54,7 @@ export function ShopHeaderView({
     <header className="flex flex-col gap-3">
       <div className={cn("flex gap-4", onBanner ? "items-end" : "items-center")}>
         {logo}
-        <div className="min-w-0">
+        <div className={cn("min-w-0", onBanner && "pt-2")}>
           <h1 className="font-heading text-2xl leading-tight font-bold tracking-tight text-balance md:text-3xl">{shop.name}</h1>
           {locationLabel ? (
             <p className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">

@@ -153,7 +153,8 @@
     "admin": "Admin",
     "billing": "Forfait",
     "profileMenu": "Menu du compte",
-    "account": "Connecté en tant que"
+    "account": "Connecté en tant que",
+    "look": "Style"
   },
   "Onboarding": {
     "title": "Créez votre boutique",
@@ -809,6 +810,148 @@
       "roseGarden": "Jardin de roses",
       "ocean": "Océan",
       "kitenge": "Kitenge"
+    }
+  },
+  "LookEditor": {
+    "title": "Style de la boutique",
+    "sections": {
+      "label": "Sections",
+      "looks": "Styles",
+      "colors": "Couleurs",
+      "buttons": "Boutons",
+      "banner": "Bannière"
+    },
+    "status": {
+      "saving": "Enregistrement du brouillon…",
+      "error": "Le brouillon n'a pas pu être enregistré.",
+      "draft": "Brouillon enregistré · pas encore en ligne",
+      "live": "En ligne sur votre boutique",
+      "default": "Votre boutique utilise le style par défaut"
+    },
+    "actions": {
+      "publish": "Publier",
+      "discard": "Annuler les modifications",
+      "viewShop": "Voir ma boutique",
+      "retry": "Réessayer",
+      "upgrade": "Voir les forfaits",
+      "preview": "Aperçu",
+      "reset": "Revenir au style d'origine"
+    },
+    "notices": {
+      "hiddenByPlan": "Les visiteurs voient le style Classique car votre forfait n'inclut pas les styles personnalisés. Votre création est conservée : passez à un forfait supérieur pour la retrouver.",
+      "free": "Avec le forfait Gratuit, votre boutique utilise le style Classique. Vous pouvez essayer tous les styles ici ; passez à un forfait supérieur pour en publier un.",
+      "resetByAdmin": "Un administrateur a réinitialisé le style de votre boutique le {date}.",
+      "seeNotifications": "Voir la raison dans vos notifications"
+    },
+    "hints": {
+      "planLocked": "Votre forfait permet de publier uniquement le style Classique. Passez à un forfait supérieur pour publier celui-ci.",
+      "blocking": "Corrigez les couleurs signalées en rouge avant de publier."
+    },
+    "preview": {
+      "show": "Afficher",
+      "draft": "Mon brouillon",
+      "live": "En ligne",
+      "label": "Aperçu de votre boutique sur un téléphone",
+      "title": "Aperçu",
+      "sample": "Produits d'exemple : ajoutez les vôtres pour les voir ici."
+    },
+    "confirm": {
+      "discardTitle": "Annuler vos modifications ?",
+      "discardBody": "Votre brouillon revient à ce qui est en ligne sur votre boutique. Cette action est définitive.",
+      "publishTitle": "Publier malgré les alertes de lisibilité ?",
+      "publishBody": "Certains éléments peuvent être difficiles à lire pour certains clients. Vous pouvez publier quand même, ou appliquer d'abord les corrections proposées.",
+      "cancel": "Annuler",
+      "publishAnyway": "Publier quand même"
+    },
+    "toast": {
+      "published": "Votre nouveau style est en ligne.",
+      "saveFailed": "Le brouillon n'a pas pu être enregistré. Vérifiez votre connexion et réessayez.",
+      "discarded": "Modifications annulées."
+    },
+    "looks": {
+      "current": "Basé sur {name}",
+      "customized": "personnalisé",
+      "pro": "Pro",
+      "lockedHint": "nécessite un forfait Pro ou Business pour être publié"
+    },
+    "colors": {
+      "intro": "Choisissez parmi des couleurs qui vont bien ensemble, ou choisissez les vôtres.",
+      "accent": "Couleur d'accent",
+      "background": "Fond",
+      "swatch": "Couleur {color}",
+      "custom": "Personnalisée",
+      "hexLabel": "{field}, code hexadécimal",
+      "customInUse": "Votre propre couleur",
+      "usePreset": "Utiliser les couleurs du style"
+    },
+    "contrast": {
+      "targets": {
+        "text": "Texte :",
+        "badge": "Badges et puces sélectionnées :",
+        "chip": "Puces sélectionnées :"
+      },
+      "blocking": "trop difficile à lire ({ratio}:1). La publication est bloquée tant que ce n'est pas corrigé.",
+      "warning": "peut être difficile à lire ({ratio}:1).",
+      "fixAccent": "Utiliser l'accent {color}",
+      "fixBackground": "Utiliser le fond {color}"
+    },
+    "buttons": {
+      "shape": "Forme",
+      "rounded": "Arrondie",
+      "pill": "Pilule",
+      "square": "Carrée",
+      "fill": "Remplissage",
+      "solid": "Plein",
+      "outline": "Contour",
+      "weight": "Style",
+      "soft": "Doux",
+      "bold": "Marqué",
+      "sample": "Exemple",
+      "whatsappNote": "Le bouton de commande reste toujours vert WhatsApp pour que les clients le repèrent."
+    },
+    "banner": {
+      "type": "Type de bannière",
+      "none": "Aucune",
+      "photo": "Photo",
+      "gradient": "Dégradé",
+      "artwork": "Prête à l'emploi",
+      "cropHelp": "Touchez ou faites glisser sur la photo pour choisir ce qui reste visible.",
+      "focusX": "Gauche – droite",
+      "focusY": "Haut – bas",
+      "zoom": "Zoom",
+      "uploadPhoto": "Ajouter une photo",
+      "changePhoto": "Changer la photo",
+      "uploading": "Envoi…",
+      "photoHelp": "Une photo large donne le meilleur résultat. Elle est compressée avant l'envoi.",
+      "notAnImage": "Ce fichier n'est pas une image.",
+      "uploadFailed": "La photo n'a pas pu être envoyée. Réessayez.",
+      "height": "Hauteur",
+      "small": "Petite",
+      "medium": "Moyenne",
+      "large": "Grande",
+      "text": "Texte sur la bannière (facultatif)",
+      "textPlaceholder": "ex. Nouveautés chaque vendredi",
+      "textHelp": "{count} / {max} caractères",
+      "align": "Position du texte",
+      "alignStart": "En bas à gauche",
+      "alignCenter": "Au centre",
+      "gradients": {
+        "creamBlush": "Crème et rose",
+        "blushPeach": "Rose et pêche",
+        "lilacMist": "Brume lilas",
+        "roseDusk": "Rose crépuscule",
+        "peachSunset": "Coucher pêche",
+        "aquaShore": "Rivage turquoise",
+        "emeraldGold": "Émeraude et or",
+        "noirGold": "Noir et or"
+      },
+      "artworks": {
+        "kitengeDiamonds": "Losanges kitenge",
+        "kitengeWaves": "Vagues kitenge",
+        "petals": "Pétales",
+        "goldArcs": "Arcs dorés",
+        "softDots": "Pois doux"
+      }
     }
   },
   "Demo": {
