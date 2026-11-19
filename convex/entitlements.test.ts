@@ -1,11 +1,15 @@
-import { describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 import { api } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { canShopDo, visibleProductIds } from "./lib/entitlements";
-import { PLAN_LIMITS } from "./lib/plans";
+import { DEFAULT_PLAN_CONFIG } from "./lib/planDefaults";
+import { resolvePlanLimits } from "./lib/planFeatures";
+import { DAY_MS } from "./lib/plans";
 import {
   as,
+  builtInRoles,
   insertProducts,
+  insertUserWithRole,
   newTest,
   productArgs,
   sellerWithShop,
@@ -14,14 +18,15 @@ import {
   type T,
 } from "./lib/test.utils";
 
-const FREE = PLAN_LIMITS.free;
-const PRO = PLAN_LIMITS.pro;
+const FREE = resolvePlanLimits(DEFAULT_PLAN_CONFIG, "free");
+const PRO = resolvePlanLimits(DEFAULT_PLAN_CONFIG, "pro");
+const BUSINESS = resolvePlanLimits(DEFAULT_PLAN_CONFIG, "business");
 
 describe("canShopDo", () => {
   test("product limit; unlimited plans are left to the platform ceiling", () => {
     expect(canShopDo(FREE, { kind: "addProduct", products: 9 })).toBeNull();
     expect(canShopDo(FREE, { kind: "addProduct", products: 10 })).toBe("PLAN_LIMIT_PRODUCTS");
-    expect(canShopDo(PLAN_LIMITS.business, { kind: "addProduct", products: 500 })).toBeNull();
+    expect(canShopDo(BUSINESS, { kind: "addProduct", products: 500 })).toBeNull();
   });
   test("photos: a product over the limit can keep its photos but not gain any", () => {
     expect(canShopDo(FREE, { kind: "setPhotos", count: 3 })).toBeNull();
@@ -163,5 +168,118 @@ describe("stats are a plan feature", () => {
     expect(await me.query(api.stats.summary, { today: "2026-11-17" })).toEqual({ locked: true });
     await setSubscription(t, shopId, { plan: "pro", status: "trialing", periodEnd: Date.now() + 86_400_000 });
     expect((await me.query(api.stats.summary, { today: "2026-11-17" })).locked).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The central check reads the live plan config and shop exceptions.
+
+afterEach(() => vi.useRealTimers());
+
+const TODAY = "2026-11-19";
+const statsLocked = async (me: ReturnType<typeof as>) =>
+  (await me.query(api.stats.summary, { today: TODAY })).locked;
+const limitsOf = async (me: ReturnType<typeof as>) => (await me.query(api.billing.mine, {})).limits;
+
+async function adminOf(t: T) {
+  const roles = await builtInRoles(t);
+  const admin = await insertUserWithRole(t, "boss@vano.app", roles.super_admin);
+  return as(t, admin);
+}
+
+describe("central check: plans", () => {
+  test("Free, the trial (= Pro), Pro, Business (includes Pro) and Enterprise", async () => {
+    const t = newTest();
+    const { me, shopId } = await freeShop(t);
+    const end = Date.now() + 30 * DAY_MS;
+    expect(await limitsOf(me)).toEqual({ products: 10, photosPerProduct: 3, teamMembers: 0, features: [] });
+    expect(await statsLocked(me)).toBe(true);
+
+    await setSubscription(t, shopId, { plan: "pro", status: "trialing", periodEnd: end });
+    expect(await limitsOf(me)).toMatchObject({ products: 50, photosPerProduct: 6, features: ["allLooks", "salesPromotions", "shopStats"] });
+    expect(await statsLocked(me)).toBe(false);
+
+    await setSubscription(t, shopId, { plan: "pro", status: "active", periodEnd: end });
+    expect((await limitsOf(me)).products).toBe(50);
+
+    await setSubscription(t, shopId, { plan: "business", status: "active", periodEnd: end });
+    const business = await limitsOf(me);
+    expect(business.products).toBeNull();
+    expect(business.features).toEqual(expect.arrayContaining(["allLooks", "salesPromotions", "shopStats", "teamRoles", "discountCodes"]));
+
+    await setSubscription(t, shopId, { plan: "enterprise", status: "active", periodEnd: end });
+    expect((await limitsOf(me)).features).toContain("multiShop");
+  });
+
+  test("expired plan and no subscription row", async () => {
+    const t = newTest();
+    const { me, shopId } = await freeShop(t);
+    await setSubscription(t, shopId, { plan: "business", status: "expired" });
+    expect((await limitsOf(me)).products).toBe(10);
+    // A shop created before billing (no row yet) is on the trial from its creation.
+    await t.run(async (ctx) => {
+      const sub = await ctx.db.query("subscriptions").withIndex("by_shopId", (q) => q.eq("shopId", shopId)).unique();
+      await ctx.db.delete("subscriptions", sub!._id);
+    });
+    expect((await limitsOf(me)).products).toBe(50);
+  });
+
+  test("downgrade keeps every product; over-limit ones are hidden, not deleted", async () => {
+    const t = newTest();
+    const { me, shopId, ids } = await freeShop(t, 12);
+    await setSubscription(t, shopId, { plan: "pro", status: "active", periodEnd: Date.now() + DAY_MS });
+    expect((await me.query(api.products.listMine, {})).filter((p) => p.overLimit)).toEqual([]);
+    await setSubscription(t, shopId, { plan: "free", status: "expired" });
+    const list = await me.query(api.products.listMine, {});
+    expect(list).toHaveLength(12);
+    expect(list.filter((p) => p.overLimit).map((p) => p._id).sort()).toEqual([ids[0], ids[1]].sort());
+  });
+});
+
+describe("central check: admin changes apply at once", () => {
+  test("a feature moved to Free and a new limit reach the shop without code changes", async () => {
+    const t = newTest();
+    const { me } = await freeShop(t, 10);
+    const admin = await adminOf(t);
+    let { version } = await admin.query(api.admin.plans.get, {});
+    version = await admin.mutation(api.admin.plans.setFeatureValue, { expectedVersion: version, feature: "shopStats", plan: "free", value: true });
+    expect(await statsLocked(me)).toBe(false);
+    await admin.mutation(api.admin.plans.setFeatureValue, { expectedVersion: version, feature: "products", plan: "free", value: 11 });
+    await expect(me.mutation(api.products.create, await productArgs(t))).resolves.toBeTruthy();
+    await expect(me.mutation(api.products.create, await productArgs(t))).rejects.toThrow(/PLAN_LIMIT_PRODUCTS/);
+  });
+
+  test("lowering a limit hides extra products but deletes nothing", async () => {
+    const t = newTest();
+    const { me } = await freeShop(t, 10);
+    const admin = await adminOf(t);
+    const { version } = await admin.query(api.admin.plans.get, {});
+    await admin.mutation(api.admin.plans.setFeatureValue, { expectedVersion: version, feature: "products", plan: "free", value: 4 });
+    const list = await me.query(api.products.listMine, {});
+    expect(list).toHaveLength(10);
+    expect(list.filter((p) => p.overLimit)).toHaveLength(6);
+  });
+});
+
+describe("central check: shop exceptions win", () => {
+  test("a granted feature and a higher limit apply until revoked or expired", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-11-19T12:00:00Z"));
+    const t = newTest();
+    const { me, shopId } = await freeShop(t, 10);
+    const admin = await adminOf(t);
+    const endsAt = Date.now() + 7 * DAY_MS;
+    await admin.mutation(api.admin.planExceptions.grant, { shopId, feature: "shopStats", value: true, endsAt, reason: "Partner shop" });
+    const products = await admin.mutation(api.admin.planExceptions.grant, { shopId, feature: "products", value: 12, endsAt, reason: "Support case" });
+    expect(await statsLocked(me)).toBe(false);
+    await expect(me.mutation(api.products.create, await productArgs(t))).resolves.toBeTruthy();
+
+    await admin.mutation(api.admin.planExceptions.revoke, { exceptionId: products });
+    expect((await limitsOf(me)).products).toBe(10);
+
+    // Past the end: mutations stop counting it at once; the job clears it for queries.
+    vi.setSystemTime(endsAt + 1000);
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
+    expect(await statsLocked(me)).toBe(true);
   });
 });

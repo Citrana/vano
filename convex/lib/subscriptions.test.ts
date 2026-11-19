@@ -4,13 +4,15 @@ import { LIMITS } from "./catalog";
 import {
   DAY_MS,
   PLAN_IDS,
-  PLAN_LIMITS,
   daysLeft,
   grantDaysProblem,
   grantReasonProblem,
 } from "./plans";
+import { DEFAULT_PLAN_CONFIG } from "./planDefaults";
+import { resolvePlanLimits } from "./planFeatures";
 import {
   applyPurchase,
+  pricesOf,
   effectivePlan,
   expireIfDue,
   extendState,
@@ -21,6 +23,8 @@ import {
 import { newTest, sellerWithShop } from "./test.utils";
 
 const NOW = Date.UTC(2026, 10, 18, 12);
+const PRICES = pricesOf(DEFAULT_PLAN_CONFIG);
+const PLAN_LIMITS = Object.fromEntries(PLAN_IDS.map((id) => [id, resolvePlanLimits(DEFAULT_PLAN_CONFIG, id)]));
 const days = (n: number) => n * DAY_MS;
 const active = (plan: SubscriptionState["plan"], endInDays: number): SubscriptionState => ({
   plan,
@@ -61,13 +65,13 @@ describe("addMonths", () => {
 
 describe("trial and expiry", () => {
   test("a trial is two months of Pro", () => {
-    const trial = trialState(NOW);
+    const trial = trialState(NOW, 2);
     expect(trial).toMatchObject({ plan: "pro", status: "trialing", periodStart: NOW });
     expect(trial.periodEnd).toBe(addMonths(NOW, 2));
     expect(effectivePlan(trial)).toBe("pro");
   });
   test("an ended trial becomes free, an ended paid plan expired", () => {
-    const trial = trialState(NOW - days(70));
+    const trial = trialState(NOW - days(70), 2);
     expect(expireIfDue(trial, NOW)).toEqual({ plan: "free", status: "free", periodStart: trial.periodEnd, periodEnd: null });
     expect(expireIfDue(active("business", -1), NOW)).toMatchObject({ plan: "free", status: "expired" });
     expect(effectivePlan({ ...active("business", -1), status: "expired" })).toBe("free");
@@ -81,20 +85,20 @@ describe("trial and expiry", () => {
 
 describe("applyPurchase", () => {
   test("same plan adds a period to the current end", () => {
-    expect(applyPurchase(active("pro", 5), "pro", NOW)).toMatchObject({ plan: "pro", status: "active", periodEnd: NOW + days(35) });
+    expect(applyPurchase(active("pro", 5), "pro", NOW, PRICES)).toMatchObject({ plan: "pro", status: "active", periodEnd: NOW + days(35) });
   });
   test("during the trial the remaining trial days are kept", () => {
-    const trial = { ...trialState(NOW - days(10)), periodEnd: NOW + days(20) };
-    expect(applyPurchase(trial, "business", NOW)).toEqual({ plan: "business", status: "active", periodStart: NOW, periodEnd: NOW + days(50) });
+    const trial = { ...trialState(NOW - days(10), 2), periodEnd: NOW + days(20) };
+    expect(applyPurchase(trial, "business", NOW, PRICES)).toEqual({ plan: "business", status: "active", periodStart: NOW, periodEnd: NOW + days(50) });
   });
   test("upgrading converts unused days at the price ratio", () => {
     // 10 Pro days × 299 / 1000 = 2.99 Business days.
-    const next = applyPurchase(active("pro", 10), "business", NOW);
+    const next = applyPurchase(active("pro", 10), "business", NOW, PRICES);
     expect(next.plan).toBe("business");
     expect(next.periodEnd).toBe(NOW + days(30) + Math.floor((days(10) * 29900) / 100000));
   });
   test("downgrading converts the other way (more days)", () => {
-    const next = applyPurchase(active("business", 3), "pro", NOW);
+    const next = applyPurchase(active("business", 3), "pro", NOW, PRICES);
     expect(next.periodEnd).toBe(NOW + days(30) + Math.floor((days(3) * 100000) / 29900));
   });
   test("free, expired or an ended period start a fresh period now", () => {
@@ -103,7 +107,7 @@ describe("applyPurchase", () => {
       { plan: "free", status: "expired", periodStart: 0, periodEnd: null } as SubscriptionState,
       active("pro", -3),
     ]) {
-      expect(applyPurchase(state, "pro", NOW)).toEqual({ plan: "pro", status: "active", periodStart: NOW, periodEnd: NOW + days(30) });
+      expect(applyPurchase(state, "pro", NOW, PRICES)).toEqual({ plan: "pro", status: "active", periodStart: NOW, periodEnd: NOW + days(30) });
     }
   });
 });

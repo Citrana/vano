@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
-import { DAY_MS, PLAN_PRICE_MINOR } from "./lib/plans";
-import { as, insertUser, newTest, sellerWithShop, setSubscription, type T } from "./lib/test.utils";
+import { DAY_MS } from "./lib/plans";
+import { DEFAULT_PLAN_CONFIG } from "./lib/planDefaults";
+import { as, builtInRoles, insertUser, insertUserWithRole, newTest, sellerWithShop, setSubscription, type T } from "./lib/test.utils";
 import { mockEvent, mockRef } from "./payments/mock";
 
 beforeEach(() => {
@@ -36,7 +37,7 @@ describe("startCheckout", () => {
     const { paymentId, me, userId } = await checkout(t, "business");
     expect(await paymentOf(t, paymentId)).toMatchObject({
       plan: "business",
-      amountMinor: PLAN_PRICE_MINOR.business,
+      amountMinor: DEFAULT_PLAN_CONFIG.plans.business.monthlyMinor,
       currency: "KES",
       provider: "mock",
       status: "pending",
@@ -65,6 +66,25 @@ describe("startCheckout", () => {
     vi.stubEnv("PAYMENTS_MOCK_ENABLED", "true");
     vi.stubEnv("PAYMENTS_PROVIDER", "");
     await expect(as(t, userId).mutation(api.billing.startCheckout, { plan: "pro" })).rejects.toThrow(/PAYMENTS_UNAVAILABLE/);
+  });
+
+  test("the amount follows the admin's price; a hidden plan can't be bought", async () => {
+    const t = newTest();
+    const roles = await builtInRoles(t);
+    const admin = as(t, await insertUserWithRole(t, "boss@vano.app", roles.super_admin));
+    const v1 = await admin.mutation(api.admin.plans.updatePlan, {
+      expectedVersion: 0,
+      plan: "pro",
+      settings: { ...DEFAULT_PLAN_CONFIG.plans.pro, monthlyMinor: 39900 },
+    });
+    const { paymentId, me } = await checkout(t, "pro");
+    expect((await paymentOf(t, paymentId))?.amountMinor).toBe(39900);
+    await admin.mutation(api.admin.plans.updatePlan, {
+      expectedVersion: v1,
+      plan: "business",
+      settings: { ...DEFAULT_PLAN_CONFIG.plans.business, visible: false },
+    });
+    await expect(me.mutation(api.billing.startCheckout, { plan: "business" })).rejects.toThrow(/PLAN_INVALID/);
   });
 
   test("needs a shop; a suspended shop can't check out", async () => {
@@ -168,7 +188,7 @@ describe("billing.mine and history", () => {
     await me.mutation(api.billing.mockSimulate, { paymentId, outcome: "succeeded" });
     const mine = await me.query(api.billing.mine, {});
     expect(mine).toMatchObject({ plan: "pro", effectivePlan: "pro", status: "active", openPaymentId: null });
-    expect(mine.limits).toEqual({ products: 50, photosPerProduct: 6 });
+    expect(mine.limits).toEqual({ products: 50, photosPerProduct: 6, teamMembers: 0, features: ["allLooks", "salesPromotions", "shopStats"] });
     const history = await me.query(api.billing.payments, { paginationOpts: { numItems: 10, cursor: null } });
     expect(history.page.map((p) => [p._id, p.status])).toEqual([[paymentId, "succeeded"]]);
   });

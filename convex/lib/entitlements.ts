@@ -2,23 +2,27 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { LIMITS } from "./catalog";
 import { fail, type ErrorCode } from "./errors";
+import { activeExceptions, readPlanConfig } from "./planConfig";
 import {
-  PLAN_LIMITS,
+  applyExceptions,
   photoCap,
   productCap,
-  type PlanFeatureFlag,
-  type PlanId,
+  resolvePlanLimits,
+  type FeatureFlag,
   type PlanLimits,
-  type SubscriptionStatus,
-} from "./plans";
+} from "./planFeatures";
+import type { PlanId, SubscriptionStatus } from "./plans";
 import { effectivePlan, stateAt, subscriptionOf, type SubscriptionState } from "./subscriptions";
 
 /**
- * "Can this shop do X?" (CLAUDE.md "Billing"): the ONE place plan limits
- * are checked. Limits come from `PLAN_LIMITS` (convex/lib/plans.ts).
- * Server functions call `requireCan`; the UI calls the pure `canShopDo`
- * with the numbers from `billing.mine` to disable buttons (the server
- * checks again).
+ * "Can this shop do X?" / "What is this shop's limit for Y?" (CLAUDE.md
+ * "Billing"): the ONE place plan limits are checked. Limits come from the
+ * live plan configuration (`planConfig`, edited on the admin "Plans &
+ * features" page): the shop's effective plan, including what it inherits
+ * from lower plans, then the shop's exceptions on top. Server functions
+ * call `requireCan` / `hasFeature`; the UI calls the pure `canShopDo` with
+ * the resolved `limits` from `billing.mine` (the server checks again).
+ * Queries read the config and exceptions, so open screens update live.
  */
 
 export type Entitlements = {
@@ -39,10 +43,12 @@ export async function getEntitlements(
   shop: Doc<"shops">,
   now?: number,
 ): Promise<Entitlements> {
-  const stored = await subscriptionOf(ctx, shop);
+  const config = await readPlanConfig(ctx);
+  const stored = await subscriptionOf(ctx, shop, config);
   const state = now === undefined ? stored : stateAt(stored, now);
   const plan = effectivePlan(state);
-  return { plan, status: state.status, limits: PLAN_LIMITS[plan], state };
+  const limits = applyExceptions(resolvePlanLimits(config, plan), await activeExceptions(ctx, shop._id, now));
+  return { plan, status: state.status, limits, state };
 }
 
 export type PlanAction =
@@ -52,7 +58,7 @@ export type PlanAction =
   | { kind: "setPhotos"; count: number; previousCount?: number }
   /** Keep one more product visible; `pinned` = currently pinned count. */
   | { kind: "pinProduct"; pinned: number }
-  | { kind: "feature"; feature: PlanFeatureFlag };
+  | { kind: "feature"; feature: FeatureFlag };
 
 /** Null when allowed, else the error code to show. Pure. */
 export function canShopDo(limits: PlanLimits, action: PlanAction): ErrorCode | null {
@@ -89,7 +95,7 @@ export async function requireCan(
 export async function hasFeature(
   ctx: QueryCtx,
   shop: Doc<"shops">,
-  feature: PlanFeatureFlag,
+  feature: FeatureFlag,
 ): Promise<boolean> {
   const { limits } = await getEntitlements(ctx, shop);
   return canShopDo(limits, { kind: "feature", feature }) === null;
