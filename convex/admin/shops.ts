@@ -5,6 +5,7 @@ import { internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import { internalMutation, type QueryCtx } from "../_generated/server";
 import { adminMutation, adminQuery } from "../lib/access";
+import { sortOrderValidator, type SortOrder } from "../lib/listOrder";
 import { logAdminAction } from "../lib/audit";
 import { fail } from "../lib/errors";
 import { onProductDeleted, onShopDayStatsDeleted, onShopDeleted } from "../lib/platformStats";
@@ -44,9 +45,10 @@ function pageOfShops(
     status?: ShopStatus;
     currency?: Currency;
     category?: Category;
+    order?: SortOrder;
   },
 ): Promise<PaginationResult<Doc<"shops">>> {
-  const { paginationOpts, status, currency, category } = args;
+  const { paginationOpts, status, currency, category, order = "desc" } = args;
   const search = args.search?.trim();
   const base = (() => {
     if (search) {
@@ -64,15 +66,15 @@ function pageOfShops(
         .withIndex("by_status_and_currency", (q) =>
           currency ? q.eq("status", status).eq("currency", currency) : q.eq("status", status),
         )
-        .order("desc");
+        .order(order);
     }
     if (currency) {
       return ctx.db
         .query("shops")
         .withIndex("by_currency", (q) => q.eq("currency", currency))
-        .order("desc");
+        .order(order);
     }
-    return ctx.db.query("shops").order("desc");
+    return ctx.db.query("shops").order(order);
   })();
   // Categories are an array (not indexable): filtered while paginating, so
   // a page can come back shorter than asked.
@@ -84,7 +86,7 @@ async function ownerEmail(ctx: QueryCtx, ownerId: Id<"users">): Promise<string> 
   return (await ctx.db.get("users", ownerId))?.email ?? "";
 }
 
-/** Shops, newest first (or by relevance when searching the name). */
+/** Shops, newest first (`order: "asc"` = oldest first; by relevance when searching the name). */
 export const list = adminQuery({
   permission: "shops.view",
   args: {
@@ -93,6 +95,7 @@ export const list = adminQuery({
     status: v.optional(shopStatusValidator),
     currency: v.optional(currencyValidator),
     category: v.optional(categoryValidator),
+    order: v.optional(sortOrderValidator),
   },
   returns: paginationResultValidator(shopRow),
   handler: async (ctx, args) => {

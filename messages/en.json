@@ -543,7 +543,6 @@
   "AdminShops": {
     "title": "Shops",
     "detailsTitle": "Shop",
-    "back": "Back to shops",
     "search": "Search shops",
     "searchPlaceholder": "Search by shop name",
     "status": "Status",

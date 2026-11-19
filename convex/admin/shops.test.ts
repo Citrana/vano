@@ -78,6 +78,16 @@ describe("admin.shops.list", () => {
     expect(await q({ search: "bea", category: "bags" })).toEqual(["Bea Bags"]);
   });
 
+  test("oldest first on request, also with a filter", async () => {
+    const t = newTest();
+    const w = await world(t);
+    const q = async (args: object) =>
+      (await as(t, w.admin).query(api.admin.shops.list, { paginationOpts: page, ...args })).page.map((r) => r.name);
+    expect(await q({ order: "asc" })).toEqual(["Chez Amani", "Bea Bags", "Kito Shoes"]);
+    expect(await q({ order: "asc", category: "shoes" })).toEqual(["Chez Amani", "Kito Shoes"]);
+    expect(await q({ order: "desc", category: "shoes" })).toEqual(["Kito Shoes", "Chez Amani"]);
+  });
+
   test("paginates", async () => {
     const t = newTest();
     const w = await world(t);
