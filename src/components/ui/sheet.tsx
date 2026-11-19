@@ -34,11 +34,11 @@ function SheetContent({
   const t = useTranslations("Common")
   return (
     <SheetPrimitive.Portal>
-      <SheetPrimitive.Backdrop className="fixed inset-0 z-50 bg-black/30 duration-150 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0" />
+      <SheetPrimitive.Backdrop className="fixed inset-0 z-50 bg-black/30 duration-200 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards" />
       <SheetPrimitive.Popup
         data-slot="sheet-content"
         className={cn(
-          "fixed z-50 flex flex-col gap-4 bg-background p-4 text-sm shadow-float duration-200 outline-none data-open:animate-in data-closed:animate-out motion-reduce:animate-none",
+          "fixed z-50 flex flex-col gap-4 bg-background p-4 text-sm shadow-float duration-200 outline-none data-open:animate-in data-closed:animate-out data-closed:fill-mode-forwards motion-reduce:animate-none",
           SIDES[side],
           className
         )}
