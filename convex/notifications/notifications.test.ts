@@ -432,6 +432,6 @@ describe("notificationHref", () => {
         plan: "pro",
         amount: "1",
       }),
-    ).toBe("/admin/payments?status=failed&search=Chez+Amani");
+    ).toBe("/admin/payments?status=failed&search=Chez+Amani&open=p");
   });
 });

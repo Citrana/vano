@@ -6,11 +6,23 @@ providers, checkout, the scheduled jobs or billing admin updates this file
 in the same commit, with a dated entry in the change log below
 (see CLAUDE.md "Billing").
 
-**Last updated: 2026-11-19 08:43 CAT (UTC+02:00)**
+**Last updated: 2026-11-19 09:40 CAT (UTC+02:00)**
 
 ## Change log
 
 Newest first. Format: `YYYY-MM-DD HH:MM TZ — what changed (files)`.
+
+- **2026-11-19 09:40 CAT (UTC+02:00)**: admin billing lists move to the
+  shared admin data table. `admin.billing.payments` and
+  `admin.billing.subscriptions` take an optional `order` (`asc | desc`;
+  defaults unchanged: payments newest first, subscriptions soonest ending
+  first; ignored while searching). New `admin.billing.payment` (one
+  payment by id, `billing.view`) feeds the payment drawer. Filters, page
+  and the open row live in the URL; the failed-payment notification opens
+  the payment (`?status=failed&search=<shop>&open=<paymentId>`). No change
+  to money, plans or providers. (`convex/admin/billing.ts`,
+  `convex/lib/listOrder.ts`, `convex/notifications/types.ts`,
+  `src/features/admin/billing/*`)
 
 - **2026-11-19 08:43 CAT (UTC+02:00)**: billing notifications (in-app,
   via the central `notify` service). `writeSubscription` tells the seller
@@ -72,11 +84,11 @@ which every product list depends on. Raising it needs paginated lists.
 | `convex/billing.ts` | Seller API: `mine`, `payments`, `payment`, `startCheckout`, `cancelCheckout`, `mockSimulate` |
 | `convex/billingJobs.ts` | `expireDue` (ends trials and paid periods) |
 | `convex/crons.ts` | Hourly `expireDue`, daily `reconcilePending` |
-| `convex/admin/billing.ts` | Admin API: `subscriptions`, `payments`, `forShop`, `grant`, `extend` |
+| `convex/admin/billing.ts` | Admin API: `subscriptions`, `payments`, `payment`, `forShop`, `grant`, `extend` |
 | `convex/http.ts` | Provider webhooks: `POST /payments/callback/<provider>` |
 | `convex/migrations.ts` | `billingV1`: a trial for shops created before billing |
 | `src/features/billing/` | Seller UI: plan card, plan options and dialogs, payment history, checkout, banner, locked stats card |
-| `src/features/admin/billing/` | Admin UI: lists, filters, shop plan panel, grant/extend dialog |
+| `src/features/admin/billing/` | Admin UI: list columns and URL specs (on the shared `DataTable`), payment drawer, shop plan panel, grant/extend dialog |
 | `src/app/(seller)/dashboard/billing/` | `/dashboard/billing` and `/dashboard/billing/checkout/[paymentId]` |
 | `src/app/admin/{subscriptions,payments}/` | Admin pages |
 
@@ -301,8 +313,10 @@ All checks go through `convex/lib/entitlements.ts`:
   (`assertNotOwnShop` → `CANNOT_MODIFY_SELF`), and are logged with
   `{ plan, days, reason, previousPlan, previousEnd }`.
 - Admin pages: `/admin/subscriptions` (search by shop name; filter by plan,
-  status and end date), `/admin/payments` (search; filter by plan, status
-  and date), and a plan panel on `/admin/shops/[shopId]`.
+  status and end date; sort by end date), `/admin/payments` (search; filter
+  by plan, status and date; sort by date; a drawer per payment), and a plan
+  panel in the shop drawer (`/admin/shops?open=<shopId>`). Filters, page
+  and the open row are kept in the URL.
 - Activity entries (`/admin/activity`): `subscription.activated`,
   `subscription.trialEnded`, `subscription.expired`, `subscription.grant`,
   `subscription.extend`, `payment.started`, `payment.succeeded`,

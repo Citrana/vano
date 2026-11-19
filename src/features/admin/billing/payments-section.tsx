@@ -1,146 +1,131 @@
 "use client"
 
-import { usePaginatedQuery } from "convex/react"
-import type { FunctionReturnType } from "convex/server"
-import { Loader2Icon, ReceiptIcon } from "lucide-react"
+import { useQuery } from "convex/react"
+import { ReceiptIcon } from "lucide-react"
 import { useFormatter, useLocale, useTranslations } from "next-intl"
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
-import { useState } from "react"
+import { useMemo } from "react"
 import { api } from "../../../../convex/_generated/api"
 import { formatMoney } from "../../../../convex/lib/money"
-import { PAYMENT_STATUSES, type PaymentStatus } from "../../../../convex/payments/types"
+import type { PlanId } from "../../../../convex/lib/plans"
+import type { PaymentStatus } from "../../../../convex/payments/types"
 import { PageTitle } from "@/components/shell/page-title"
 import { EmptyState, LoadingState } from "@/components/states/states"
-import { Button } from "@/components/ui/button"
-import { PaymentStatusBadge } from "@/features/billing/payment-status-badge"
-import { useDebounced } from "@/lib/use-debounced"
-import { BillingFilters, dayRange, type BillingFilterValue } from "./billing-filters"
-import { billingFiltersFromParams } from "./filter-params"
-
-const PAGE_SIZE = 25
-export type AdminPaymentRow = FunctionReturnType<typeof api.admin.billing.payments>["page"][number]
+import { DataTable, TableBoundary } from "../data-table/data-table"
+import { DetailItem, DetailList } from "../data-table/detail-list"
+import { DetailsDrawer } from "../data-table/details-drawer"
+import { filterDefs } from "../data-table/filters"
+import { StatusTag } from "../data-table/status-tag"
+import { TablePagination } from "../data-table/table-pagination"
+import { TableToolbar } from "../data-table/table-toolbar"
+import { useTablePages } from "../data-table/use-table-pages"
+import { useTableState, type TableState } from "../data-table/use-table-state"
+import { dayRange } from "../data-table/url-state"
+import { useAdminViewer } from "../shell/use-admin-viewer"
+import { adminHref } from "../shell/hrefs"
+import { usePaymentColumns } from "./payment-columns"
+import { PAYMENTS_SPEC } from "./table-spec"
 
 /** /admin/payments: every plan payment, newest first. The URL can preset the filters (`?status=failed`). */
 export function PaymentsSection() {
-  const params = useSearchParams()
-  return <PaymentsView key={params.toString()} initial={billingFiltersFromParams(params, PAYMENT_STATUSES)} />
-}
-
-function PaymentsView({ initial }: { initial: BillingFilterValue<PaymentStatus> }) {
   const t = useTranslations("AdminBilling")
   const ts = useTranslations("Billing.paymentStatus")
-  const [filters, setFilters] = useState<BillingFilterValue<PaymentStatus>>(initial)
-  const search = useDebounced(filters.search.trim())
-  const range = dayRange(filters)
-  const filtered = Object.values(filters).some((v) => v !== "")
-  const { results, status, loadMore } = usePaginatedQuery(
-    api.admin.billing.payments,
-    {
-      search: search || undefined,
-      plan: filters.plan || undefined,
-      status: filters.status || undefined,
-      from: range.from,
-      to: range.to,
-    },
-    { initialNumItems: PAGE_SIZE },
+  const tp = useTranslations("Pricing.plans")
+  const filters = useMemo(
+    () =>
+      filterDefs(PAYMENTS_SPEC, {
+        status: { label: t("status"), allLabel: t("allStatuses"), optionLabel: (s) => ts(s as PaymentStatus) },
+        plan: { label: t("plan"), allLabel: t("allPlans"), optionLabel: (p) => tp(`${p as PlanId}.name`) },
+        from: { label: t("date") },
+      }),
+    [t, ts, tp],
   )
+  const table = useTableState(PAYMENTS_SPEC)
 
   return (
     <div className="flex flex-col gap-4">
       <PageTitle title={t("paymentsTitle")} />
-      <BillingFilters
-        value={filters}
-        onChange={setFilters}
-        statuses={PAYMENT_STATUSES}
-        statusLabel={(s) => ts(s)}
-        fromLabel={t("from")}
-        toLabel={t("to")}
-      />
-      {status === "LoadingFirstPage" ? (
-        <LoadingState />
-      ) : results.length === 0 && status === "Exhausted" ? (
-        <EmptyState
-          icon={<ReceiptIcon />}
-          title={t("emptyPaymentsTitle")}
-          body={filtered ? t("emptyFilteredBody") : t("emptyPaymentsBody")}
-        />
-      ) : (
-        <>
-          {results.length > 0 ? <AdminPaymentsList rows={results} /> : null}
-          {status !== "Exhausted" ? (
-            <Button variant="outline" className="self-center" disabled={status === "LoadingMore"} onClick={() => loadMore(PAGE_SIZE)}>
-              {status === "LoadingMore" ? <Loader2Icon className="animate-spin" /> : null}
-              {t("loadMore")}
-            </Button>
-          ) : null}
-        </>
-      )}
+      <TableToolbar table={table} filters={filters} search={{ label: t("search"), placeholder: t("searchPlaceholder") }} />
+      <TableBoundary>
+        <PaymentsTable table={table} />
+      </TableBoundary>
+      <DetailsDrawer openId={table.open} onClose={table.closeRow} title={t("paymentTitle")}>
+        {(id) => <PaymentDetails paymentId={id} />}
+      </DetailsDrawer>
     </div>
   )
 }
 
-/** Cards on phones, a table from `md`. `showShop` is off inside a shop's page. */
-export function AdminPaymentsList({ rows, showShop = true }: { rows: AdminPaymentRow[]; showShop?: boolean }) {
+function PaymentsTable({ table }: { table: TableState }) {
+  const t = useTranslations("AdminBilling")
+  const columns = usePaymentColumns({ showShop: true })
+  const { filters } = table
+  const pages = useTablePages(
+    api.admin.billing.payments,
+    {
+      search: table.search || undefined,
+      plan: (filters.plan || undefined) as PlanId | undefined,
+      status: (filters.status || undefined) as PaymentStatus | undefined,
+      ...dayRange({ from: filters.from, to: filters.to }),
+      order: table.search ? undefined : table.order,
+    },
+    table,
+  )
+
+  return (
+    <DataTable
+      label={t("paymentsTitle")}
+      columns={columns}
+      rows={pages.rows}
+      getRowId={(r) => r._id}
+      loading={pages.loading}
+      skeletonRows={table.size}
+      empty={{
+        icon: <ReceiptIcon />,
+        title: t("emptyPaymentsTitle"),
+        body: table.filtered ? t("emptyFilteredBody") : t("emptyPaymentsBody"),
+      }}
+      onClearFilters={table.filtered ? table.clearFilters : undefined}
+      onRowOpen={(r) => table.openRow(r._id)}
+      activeRowId={table.open}
+      sort={{ columnId: "date", order: table.order, onChange: table.setOrder, disabled: table.search !== "" }}
+      footer={<TablePagination pages={pages} page={table.page} size={table.size} onPage={table.setPage} onSize={table.setSize} />}
+    />
+  )
+}
+
+/** The payment drawer: every field, and the way to the shop. */
+function PaymentDetails({ paymentId }: { paymentId: string }) {
   const t = useTranslations("AdminBilling")
   const tp = useTranslations("Pricing.plans")
   const format = useFormatter()
   const locale = useLocale()
+  const { viewer } = useAdminViewer()
+  const payment = useQuery(api.admin.billing.payment, { paymentId })
+
+  if (payment === undefined) return <LoadingState />
+  if (payment === null) return <EmptyState icon={<ReceiptIcon />} title={t("paymentNotFoundTitle")} body={t("paymentNotFoundBody")} />
   const date = (ms: number) => format.dateTime(new Date(ms), { dateStyle: "medium", timeStyle: "short" })
-  const amount = (row: AdminPaymentRow) => formatMoney(row.amountMinor, row.currency, locale)
-  const shopLink = (row: AdminPaymentRow) => (
-    <Link href={`/admin/shops/${row.shopId}`} className="font-medium hover:underline">{row.shopName}</Link>
-  )
 
   return (
     <>
-      <ul className="flex flex-col gap-2 md:hidden">
-        {rows.map((row) => (
-          <li key={row._id} className="flex flex-col gap-1 rounded-xl border bg-card p-3">
-            <span className="flex flex-wrap items-center justify-between gap-2">
-              {showShop ? shopLink(row) : <span className="font-medium">{tp(`${row.plan}.name`)}</span>}
-              <PaymentStatusBadge status={row.status} />
-            </span>
-            <span className="text-sm font-semibold tabular-nums">
-              {showShop ? `${tp(`${row.plan}.name`)} · ` : null}
-              {amount(row)}
-            </span>
-            <span className="truncate text-xs text-muted-foreground">
-              {date(row.createdAt)} · {row.provider}
-              {row.providerRef ? ` · ${row.providerRef}` : null}
-            </span>
-          </li>
-        ))}
-      </ul>
-      <div className="hidden overflow-hidden rounded-xl border bg-card md:block">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/60 text-left text-xs text-muted-foreground">
-            <tr>
-              <th scope="col" className="px-4 py-2 font-medium">{t("date")}</th>
-              {showShop ? <th scope="col" className="px-4 py-2 font-medium">{t("shop")}</th> : null}
-              <th scope="col" className="px-4 py-2 font-medium">{t("plan")}</th>
-              <th scope="col" className="px-4 py-2 font-medium">{t("amount")}</th>
-              <th scope="col" className="px-4 py-2 font-medium">{t("status")}</th>
-              <th scope="col" className="px-4 py-2 font-medium">{t("reference")}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {rows.map((row) => (
-              <tr key={row._id} className="hover:bg-muted/40">
-                <td className="px-4 py-2.5 whitespace-nowrap tabular-nums">{date(row.createdAt)}</td>
-                {showShop ? <td className="px-4 py-2.5">{shopLink(row)}</td> : null}
-                <td className="px-4 py-2.5">{tp(`${row.plan}.name`)}</td>
-                <td className="px-4 py-2.5 tabular-nums">{amount(row)}</td>
-                <td className="px-4 py-2.5"><PaymentStatusBadge status={row.status} /></td>
-                <td className="max-w-48 truncate px-4 py-2.5 text-xs text-muted-foreground">
-                  {row.provider}
-                  {row.providerRef ? ` · ${row.providerRef}` : null}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-2xl font-bold tabular-nums">{formatMoney(payment.amountMinor, payment.currency, locale)}</p>
+        <StatusTag kind="payment" status={payment.status} />
       </div>
+      <DetailList className="rounded-xl border bg-card p-4">
+        <DetailItem label={t("shop")}>{payment.shopName}</DetailItem>
+        <DetailItem label={t("plan")}>{tp(`${payment.plan}.name`)}</DetailItem>
+        <DetailItem label={t("date")}>{date(payment.createdAt)}</DetailItem>
+        <DetailItem label={t("completed")}>{payment.completedAt ? date(payment.completedAt) : "—"}</DetailItem>
+        <DetailItem label={t("provider")}>{payment.provider}</DetailItem>
+        <DetailItem label={t("reference")}>{payment.providerRef ?? "—"}</DetailItem>
+      </DetailList>
+      {viewer?.permissions.includes("shops.view") ? (
+        <Link href={adminHref.shop(payment.shopId)} className="self-start text-sm font-medium hover:underline">
+          {t("openShop")}
+        </Link>
+      ) : null}
     </>
   )
 }

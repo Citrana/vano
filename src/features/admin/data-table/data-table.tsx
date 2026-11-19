@@ -45,6 +45,8 @@ export type DataTableProps<Row> = {
   selection?: DataTableSelection
   /** Pagination, under the rows. */
   footer?: ReactNode
+  /** Off for small tables inside a drawer (the header sticks under the page header). */
+  stickyHeader?: boolean
 }
 
 const HIDE_BELOW = { lg: "hidden lg:table-cell", xl: "hidden xl:table-cell" } as const
@@ -126,6 +128,7 @@ function DesktopTable<Row>({
   activeRowId,
   sort,
   selection,
+  stickyHeader = true,
 }: DataTableProps<Row>) {
   const t = useTranslations("DataTable")
   const tableColumns = columns.filter((c) => !c.mobileOnly)
@@ -135,7 +138,7 @@ function DesktopTable<Row>({
   return (
     <table className="hidden w-full text-sm md:table">
       <caption className="sr-only">{label}</caption>
-      <thead className="sticky top-14 z-10 bg-card">
+      <thead className={cn("bg-card", stickyHeader && "sticky top-14 z-10")}>
         <tr className="border-b text-left text-xs text-muted-foreground">
           {selection ? (
             <th scope="col" className="w-11 px-3">

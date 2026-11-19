@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest"
+import { PAYMENTS_SPEC, SUBSCRIPTIONS_SPEC } from "../billing/table-spec"
 import { CHANGE_REQUESTS_SPEC } from "../change-requests/table-spec"
 import { parseTableState } from "../data-table/url-state"
 import { attentionHref } from "./links"
@@ -16,7 +17,17 @@ describe("attentionHref", () => {
       status: "pending",
       flagged: "",
     })
-    expect(attentionHref("failedPayments", NOW)).toBe("/admin/payments?status=failed&from=2026-11-12")
-    expect(attentionHref("endingSoon", NOW)).toBe("/admin/subscriptions?from=2026-11-19&to=2026-11-26")
+    expect(parseTableState(query(attentionHref("failedPayments", NOW)), PAYMENTS_SPEC).filters).toEqual({
+      status: "failed",
+      plan: "",
+      from: "2026-11-12",
+      to: "",
+    })
+    expect(parseTableState(query(attentionHref("endingSoon", NOW)), SUBSCRIPTIONS_SPEC).filters).toEqual({
+      status: "",
+      plan: "",
+      from: "2026-11-19",
+      to: "2026-11-26",
+    })
   })
 })

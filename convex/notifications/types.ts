@@ -147,7 +147,7 @@ export function notificationHref(data: NotificationData): string {
     case "changeRequest.rejected":
       return "/dashboard/settings";
     case "admin.paymentFailed":
-      return `/admin/payments?${new URLSearchParams({ status: "failed", search: data.shopName })}`;
+      return `/admin/payments?${new URLSearchParams({ status: "failed", search: data.shopName, open: data.paymentId })}`;
     case "admin.endingSoon":
       return `/admin/subscriptions?${new URLSearchParams({ from: data.day, to: addDays(data.day, EXPIRY_WARNING_DAYS) })}`;
     case "payment.failed":

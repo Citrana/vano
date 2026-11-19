@@ -1300,7 +1300,12 @@
     "granted": "Forfait offert",
     "extended": "Forfait prolongé",
     "cantExtendFree": "Cette boutique est au forfait Gratuit : offrez plutôt un forfait.",
-    "ownShop": "Vous ne pouvez pas changer le forfait de votre propre boutique."
+    "ownShop": "Vous ne pouvez pas changer le forfait de votre propre boutique.",
+    "paymentTitle": "Paiement",
+    "completed": "Terminé le",
+    "openShop": "Ouvrir la boutique",
+    "paymentNotFoundTitle": "Paiement introuvable",
+    "paymentNotFoundBody": "Il a peut-être été supprimé, ou le lien est incorrect."
   },
   "ChangeRequests": {
     "request": "Demander une modification",

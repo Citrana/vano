@@ -1300,7 +1300,12 @@
     "granted": "Plan granted",
     "extended": "Plan extended",
     "cantExtendFree": "This shop is on Free: grant a plan instead.",
-    "ownShop": "You can't change your own shop's plan."
+    "ownShop": "You can't change your own shop's plan.",
+    "paymentTitle": "Payment",
+    "completed": "Completed",
+    "openShop": "Open the shop",
+    "paymentNotFoundTitle": "Payment not found",
+    "paymentNotFoundBody": "It may have been removed, or the link is wrong."
   },
   "ChangeRequests": {
     "request": "Request a change",
