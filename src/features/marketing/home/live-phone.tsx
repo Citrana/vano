@@ -33,7 +33,7 @@ export async function LivePhone() {
   return (
     <PhoneFrame label={t("mockupLabel")} className="w-[240px] sm:w-[260px] md:w-[280px] lg:w-[300px]">
       <PhoneThemeScreen zoomClassName="[zoom:0.597] sm:[zoom:0.651] md:[zoom:0.704] lg:[zoom:0.757]">
-        <ShopHeader shop={shop} onBanner />
+        <ShopHeader shop={shop} onBanner sizing="phone" />
         <ProductGrid slug={DEMO_SLUG} currency={DEMO_CURRENCY} products={products} columns="phone" />
       </PhoneThemeScreen>
     </PhoneFrame>

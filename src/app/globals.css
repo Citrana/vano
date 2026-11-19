@@ -197,6 +197,13 @@
 }
 
 /* Selected state of chips / toggles: ink, never coral (coral = main button). */
+/* A selected gallery tile or swatch (looks, colours, banners, designs…): a 2px ink ring with a gap. */
+@utility tile-selected {
+  box-shadow:
+    0 0 0 2px var(--background),
+    0 0 0 4px var(--foreground);
+}
+
 @utility chip-selected {
   border-color: var(--chip, var(--foreground));
   background-color: var(--chip, var(--foreground));
@@ -394,4 +401,30 @@
   html {
     scroll-behavior: auto;
   }
+}
+
+/*
+ * Profile decorations (CLAUDE.md "Shop looks" → "Profile"): a slow,
+ * gentle twinkle or sway, only when the visitor hasn't asked for reduced
+ * motion. Still by default.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .profile-deco[data-motion] {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .profile-deco[data-motion="twinkle"] {
+    animation: profile-twinkle 3.6s ease-in-out infinite;
+  }
+  .profile-deco[data-motion="sway"] {
+    animation: profile-sway 4.8s ease-in-out infinite;
+  }
+}
+@keyframes profile-twinkle {
+  0%, 100% { opacity: 1; scale: 1; }
+  50% { opacity: 0.82; scale: 0.96; }
+}
+@keyframes profile-sway {
+  0%, 100% { rotate: -3deg; }
+  50% { rotate: 3deg; }
 }

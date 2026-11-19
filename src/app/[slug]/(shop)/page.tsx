@@ -5,7 +5,7 @@ import { getShopPage } from "@/features/public/data"
 import { ProductGrid } from "@/features/public/product-grid"
 import { PublicFooter } from "@/features/public/public-footer"
 import { ShopHeader } from "@/features/public/shop-header"
-import { ShopBanner } from "@/features/shop-looks/shop-banner"
+import { SHOP_BANNER_EDGE, ShopBanner } from "@/features/shop-looks/shop-banner"
 import { ShopLookScope } from "@/features/shop-looks/look-scope"
 import { ShopLocaleProvider } from "@/features/public/shop-locale-provider"
 import { ShopUnavailable } from "@/features/public/shop-unavailable"
@@ -50,10 +50,8 @@ export default async function ShopPage({ params }: PageProps<"/[slug]">) {
       <ShopLookScope look={shop.look} className="flex flex-1 flex-col">
         <main className={`mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 pb-10 ${hasBanner ? "md:pt-6" : "pt-6 md:pt-10"}`}>
           <div className="flex flex-col">
-            {hasBanner ? <ShopBanner banner={shop.look.banner} className="-mx-4 md:mx-0 md:rounded-xl" /> : null}
-            <div className={hasBanner ? "md:px-6" : undefined}>
-              <ShopHeader shop={shop} onBanner={hasBanner} />
-            </div>
+            {hasBanner ? <ShopBanner banner={shop.look.banner} className={SHOP_BANNER_EDGE.responsive} /> : null}
+            <ShopHeader shop={shop} profile={shop.look.profile} onBanner={hasBanner} />
           </div>
           <ProductGrid slug={shop.slug} currency={shop.currency} products={products} />
         </main>

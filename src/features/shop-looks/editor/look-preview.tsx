@@ -10,6 +10,7 @@ import { buttonVariants } from "@/components/ui/button"
 import { ProductGrid } from "@/features/public/product-grid"
 import { ShopHeaderView, type HeaderShop } from "@/features/public/shop-header-view"
 import { countryName } from "@/features/shop/countries"
+import { profileLabelsFrom } from "../profile/labels"
 import { PhoneFrame } from "../phone-frame"
 import { ShopPreview } from "../shop-preview"
 
@@ -52,7 +53,14 @@ export function LookPreview({
 
   const page = (zoom: string) => (
     <ShopPreview look={look} zoomClassName={zoom}>
-      <ShopHeaderView shop={shop} locationLabel={locationLabel} onBanner={look.banner.kind !== "none"} />
+      <ShopHeaderView
+        shop={shop}
+        locationLabel={locationLabel}
+        labels={profileLabelsFrom(t)}
+        profile={look.profile}
+        onBanner={look.banner.kind !== "none"}
+        sizing="phone"
+      />
       <ProductGrid slug={shop.slug} currency={currency} products={products.slice(0, 4)} columns="phone" />
       <span className={buttonVariants({ size: "lg", variant: "whatsapp", className: "shop-btn shop-action w-full" })}>
         <MessageCircleIcon />

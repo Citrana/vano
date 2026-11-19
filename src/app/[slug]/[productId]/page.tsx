@@ -62,7 +62,7 @@ export default async function ProductPage({ params }: PageProps<"/[slug]/[produc
             >
               <ArrowLeftIcon className="size-5" />
             </Link>
-            <ShopHeader shop={shop} compact />
+            <ShopHeader shop={shop} profile={shop.look.profile} compact />
           </div>
         </header>
         <main className="mx-auto grid w-full max-w-5xl flex-1 gap-6 px-4 pt-4 pb-28 md:grid-cols-2 md:gap-10 md:pt-8 md:pb-12">

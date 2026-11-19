@@ -4,6 +4,7 @@ import { DemoLookBanner, DemoThemeSwitch } from "@/features/marketing/demo/demo-
 import { DEMO_CURRENCY, DEMO_PRODUCTS, DEMO_SLUG } from "@/features/marketing/demo/demo-shop"
 import { ProductGrid } from "@/features/public/product-grid"
 import { ShopHeader } from "@/features/public/shop-header"
+import { SHOP_BANNER_EDGE } from "@/features/shop-looks/shop-banner"
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Demo")
@@ -40,8 +41,8 @@ export default async function DemoShopPage() {
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 pb-12 md:pt-6">
       <div className="flex flex-col">
-        <DemoLookBanner className="-mx-4 md:mx-0 md:rounded-xl" />
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:px-6">
+        <DemoLookBanner className={SHOP_BANNER_EDGE.responsive} />
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <ShopHeader shop={shop} onBanner />
           <DemoThemeSwitch label={t("themeLabel")} />
         </div>

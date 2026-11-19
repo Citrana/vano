@@ -9,6 +9,17 @@ import { EventBanner } from "./events/event-banner"
 export { BANNER_HEIGHT_CLASS }
 
 /**
+ * The banner's edges in a shop page: full-bleed on phones (over the 16px
+ * gutter), rounded inside the content column from md up. The header and
+ * the product grid start at the column's left edge, so all three line up.
+ */
+export const SHOP_BANNER_EDGE: Record<BannerSizing, string> = {
+  responsive: "-mx-4 md:mx-0 md:rounded-xl",
+  phone: "-mx-4",
+  desktop: "rounded-xl",
+}
+
+/**
  * The shop banner (CLAUDE.md "Shop looks"): a photo (focal point + zoom),
  * a curated gradient or a ready-made artwork, with optional short text,
  * or an event & promo banner (drawn by `EventBanner`).

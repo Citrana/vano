@@ -6,8 +6,9 @@ import type { ResolvedLook } from "../../../../convex/lib/looks/resolve"
 import { ProductGrid } from "@/features/public/product-grid"
 import { ShopHeaderView, type HeaderShop } from "@/features/public/shop-header-view"
 import { countryName } from "@/features/shop/countries"
+import { profileLabelsFrom } from "../profile/labels"
 import { ShopLookScope } from "../look-scope"
-import { ShopBanner } from "../shop-banner"
+import { SHOP_BANNER_EDGE, ShopBanner } from "../shop-banner"
 import type { PreviewProduct } from "./look-preview"
 
 /**
@@ -41,10 +42,22 @@ export function WidePreview({
           ))}
         </div>
         <ShopLookScope look={look} className="h-[230px] overflow-hidden">
+          {/* The public page's desktop layout: banner, header and grid share the column's left edge. */}
           <div inert aria-hidden className="w-[1280px] [zoom:0.25]">
-            {hasBanner ? <ShopBanner banner={look.banner} sizing="desktop" priority={false} /> : null}
-            <div className="mx-auto flex max-w-5xl flex-col gap-6 px-8 pb-10">
-              <ShopHeaderView shop={shop} locationLabel={locationLabel} onBanner={hasBanner} />
+            <div className={`mx-auto flex max-w-5xl flex-col gap-6 px-4 pb-10 ${hasBanner ? "pt-6" : "pt-10"}`}>
+              <div className="flex flex-col">
+                {hasBanner ? (
+                  <ShopBanner banner={look.banner} sizing="desktop" priority={false} className={SHOP_BANNER_EDGE.desktop} />
+                ) : null}
+                <ShopHeaderView
+                  shop={shop}
+                  locationLabel={locationLabel}
+                  labels={profileLabelsFrom(t)}
+                  profile={look.profile}
+                  onBanner={hasBanner}
+                  sizing="desktop"
+                />
+              </div>
               <ProductGrid slug={shop.slug} currency={currency} products={products.slice(0, 4)} />
             </div>
           </div>
