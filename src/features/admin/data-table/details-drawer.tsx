@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, type ReactNode } from "react"
+import { useRef, useState, type ReactNode } from "react"
 import { cn } from "cn"
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 
@@ -24,13 +24,21 @@ export function DetailsDrawer({
   children: (id: string) => ReactNode
 }) {
   const [shownId, setShownId] = useState(openId)
+  const titleRef = useRef<HTMLHeadingElement>(null)
   if (openId !== null && openId !== shownId) setShownId(openId)
 
   return (
     <Sheet open={openId !== null} onOpenChange={(next) => (next ? null : onClose())}>
-      <SheetContent side="right" className={cn("gap-0 p-0", wide ? "sm:max-w-2xl" : "sm:max-w-lg")}>
+      <SheetContent
+        side="right"
+        className={cn("gap-0 p-0", wide ? "sm:max-w-2xl" : "sm:max-w-lg")}
+        // Focus the title (announced by screen readers) rather than the first action inside.
+        initialFocus={titleRef}
+      >
         <div className="flex min-h-14 shrink-0 items-center border-b px-4">
-          <SheetTitle className="truncate text-base">{title}</SheetTitle>
+          <SheetTitle ref={titleRef} tabIndex={-1} className="truncate text-base outline-none">
+            {title}
+          </SheetTitle>
         </div>
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">{shownId ? children(shownId) : null}</div>
       </SheetContent>

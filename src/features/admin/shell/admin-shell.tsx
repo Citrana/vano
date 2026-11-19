@@ -3,7 +3,7 @@
 import { MenuIcon, StoreIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
 import Link from "next/link"
-import { useState, type ReactNode } from "react"
+import { useRef, useState, type ReactNode } from "react"
 import { Brand } from "@/components/shell/brand"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
@@ -23,6 +23,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const { viewer } = useAdminViewer()
   const roleLabel = useRoleLabel()
   const [menuOpen, setMenuOpen] = useState(false)
+  const menuTitle = useRef<HTMLHeadingElement>(null)
   if (!viewer) return null
   const permissions = viewer.permissions
   const canSell = permissions.includes("ownShop.manage")
@@ -50,8 +51,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
                   <MenuIcon />
                   <span className="sr-only">{t("openMenu")}</span>
                 </SheetTrigger>
-                <SheetContent>
-                  <SheetTitle>{brand}</SheetTitle>
+                {/* Opened by tap or click, focus the title, not the first link (no stray focus ring). */}
+                <SheetContent initialFocus={(type) => (type === "keyboard" ? true : menuTitle.current)}>
+                  <SheetTitle ref={menuTitle} tabIndex={-1} className="outline-none">
+                    {brand}
+                  </SheetTitle>
                   <AdminNav permissions={permissions} onNavigate={() => setMenuOpen(false)} />
                 </SheetContent>
               </Sheet>
