@@ -3,7 +3,6 @@
 import { useMutation } from "convex/react"
 import { Trash2Icon } from "lucide-react"
 import { useTranslations } from "next-intl"
-import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { toast } from "sonner"
 import { api } from "../../../../convex/_generated/api"
@@ -13,6 +12,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useErrorMessage } from "@/lib/use-error-message"
+import { closeDetailsDrawer } from "../data-table/use-table-state"
 
 /** Irreversible: the admin must type the shop's link (slug) to confirm. */
 export function DeleteShopDialog({ shopId, name, slug }: { shopId: Id<"shops">; name: string; slug: string }) {
@@ -20,7 +20,6 @@ export function DeleteShopDialog({ shopId, name, slug }: { shopId: Id<"shops">; 
   const tc = useTranslations("Common")
   const remove = useMutation(api.admin.shops.remove)
   const errorMessage = useErrorMessage()
-  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [typed, setTyped] = useState("")
   const [pending, setPending] = useState(false)
@@ -31,7 +30,7 @@ export function DeleteShopDialog({ shopId, name, slug }: { shopId: Id<"shops">; 
       await remove({ shopId })
       toast.success(t("deleted"))
       setOpen(false)
-      router.replace("/admin/shops")
+      closeDetailsDrawer()
     } catch (error) {
       toast.error(errorMessage(error))
     } finally {

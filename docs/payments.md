@@ -12,6 +12,11 @@ in the same commit, with a dated entry in the change log below
 
 Newest first. Format: `YYYY-MM-DD HH:MM TZ — what changed (files)`.
 
+- **2026-11-19 09:40 CAT (UTC+02:00)**: `/admin/subscriptions` on the shared data
+  table: sort by end date, filters in the URL; a row opens the shop drawer
+  (plan panel with grant / extend). The old billing filter components are
+  gone. (`src/features/admin/billing/subscriptions-section.tsx`)
+
 - **2026-11-19 09:40 CAT (UTC+02:00)**: admin billing lists move to the
   shared admin data table. `admin.billing.payments` and
   `admin.billing.subscriptions` take an optional `order` (`asc | desc`;

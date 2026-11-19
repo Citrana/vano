@@ -66,3 +66,10 @@ export function useTableState(spec: TableSpec): TableState {
     closeRow: useCallback(() => write((s) => ({ ...s, open: null })), [write]),
   }
 }
+
+/** Closes the details drawer from inside it (e.g. after deleting its record), keeping the list's filters. */
+export function closeDetailsDrawer() {
+  const url = new URL(window.location.href)
+  url.searchParams.delete("open")
+  window.history.replaceState(window.history.state, "", url)
+}
