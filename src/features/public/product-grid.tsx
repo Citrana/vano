@@ -56,7 +56,7 @@ export function ProductGrid({
               aria-pressed={active === key}
               onClick={() => setActive(key)}
               className={cn(
-                "min-h-10 shrink-0 rounded-full border px-4 text-sm font-medium whitespace-nowrap transition-colors",
+                "shop-chip min-h-10 shrink-0 rounded-full border px-4 text-sm font-medium whitespace-nowrap transition-colors",
                 active === key ? "chip-selected" : "bg-card hover:bg-muted"
               )}
             >

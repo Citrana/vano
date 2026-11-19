@@ -11,7 +11,8 @@ import type { ResolvedLook } from "./resolve";
 export const TEXT_MIN = 4.5;
 export const LARGE_MIN = 3;
 
-export type LookProblemTarget = "text" | "button" | "outline" | "badge" | "chip";
+/** text: body text; badge: label on the chip colour; chip: selected chip vs background. */
+export type LookProblemTarget = "text" | "badge" | "chip";
 
 export type LookProblem = {
   target: LookProblemTarget;
@@ -54,22 +55,21 @@ export function lookProblems(look: Pick<ResolvedLook<unknown>, "colors" | "butto
     fixWith("background", nudgeToContrast(c.background, c.foreground, TEXT_MIN + 1.5)),
   );
 
-  if (look.buttons.fill === "solid") {
-    check(problems, "button", contrast(c.primaryForeground, c.primary), TEXT_MIN, LARGE_MIN, () =>
-      fixWith("accent", nudgeToContrast(c.primary, c.primaryForeground, TEXT_MIN)),
-    );
-  } else {
-    check(problems, "outline", contrast(c.primary, c.background), TEXT_MIN, LARGE_MIN, () =>
-      fixWith("accent", nudgeToContrast(c.primary, c.background, TEXT_MIN)),
-    );
-  }
-
+  // Badges (sold out) and bold selected chips: label on the chip colour.
   check(problems, "badge", contrast(c.chipForeground, c.chip), TEXT_MIN, LARGE_MIN, () =>
     fixWith("accent", nudgeToContrast(c.chip, c.chipForeground, TEXT_MIN)),
   );
-  check(problems, "chip", contrast(c.chip, c.background), LARGE_MIN, null, () =>
-    fixWith("accent", nudgeToContrast(c.chip, c.background, LARGE_MIN)),
-  );
+  // Outline chips put chip-coloured text on the background; solid ones
+  // only need their shape to stand out.
+  if (look.buttons.fill === "outline") {
+    check(problems, "chip", contrast(c.chip, c.background), TEXT_MIN, LARGE_MIN, () =>
+      fixWith("accent", nudgeToContrast(c.chip, c.background, TEXT_MIN)),
+    );
+  } else if (look.buttons.weight === "bold") {
+    check(problems, "chip", contrast(c.chip, c.background), LARGE_MIN, null, () =>
+      fixWith("accent", nudgeToContrast(c.chip, c.background, LARGE_MIN)),
+    );
+  }
 
   return problems;
 }

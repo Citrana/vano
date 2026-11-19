@@ -247,6 +247,38 @@
   --chip-foreground: #1a1412;
 }
 
+/*
+ * Shop looks (convex/lib/looks, CLAUDE.md "Shop looks"). ShopLookScope
+ * sets the semantic tokens inline; these rules apply the button style to
+ * shop buttons (`shop-btn`), chips (`shop-chip`) and selected chips.
+ * Unlayered on purpose, so they win over Tailwind utilities.
+ */
+[data-shop-look] {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+[data-shop-look] .shop-btn,
+[data-shop-look] .shop-chip {
+  border-radius: var(--shop-btn-radius);
+  font-weight: var(--shop-btn-weight);
+}
+[data-shop-look][data-btn-weight="soft"] .chip-selected {
+  border-color: var(--chip-soft);
+  background-color: var(--chip-soft);
+  color: var(--chip-soft-foreground);
+}
+[data-shop-look][data-btn-fill="outline"] .shop-chip {
+  background-color: transparent;
+}
+[data-shop-look][data-btn-fill="outline"] .chip-selected {
+  border-color: var(--chip);
+  background-color: transparent;
+  color: var(--chip);
+}
+[data-shop-look][data-btn-fill="outline"][data-btn-weight="bold"] .chip-selected {
+  box-shadow: inset 0 0 0 1px var(--chip);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

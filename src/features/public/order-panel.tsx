@@ -35,7 +35,7 @@ function OptionChips({
             aria-pressed={value === option}
             onClick={() => onChange(value === option ? undefined : option)}
             className={cn(
-              "min-h-11 min-w-11 rounded-lg border px-3 text-sm font-medium transition-colors md:min-h-9",
+              "shop-chip min-h-11 min-w-11 rounded-lg border px-3 text-sm font-medium transition-colors md:min-h-9",
               value === option ? "chip-selected" : "bg-card hover:bg-muted"
             )}
           >
@@ -78,12 +78,12 @@ export function OrderPanel({
 
   return (
     <div className="flex flex-col gap-5">
-      <p className="font-heading text-3xl font-bold tracking-tight tabular-nums">{price}</p>
+      <p className="font-heading text-3xl font-bold tracking-tight text-[var(--shop-price,currentColor)] tabular-nums">{price}</p>
       <OptionChips label={t("sizes")} options={product.sizes} value={size} onChange={setSize} />
       <OptionChips label={t("colors")} options={product.colors} value={color} onChange={setColor} />
       <div className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur md:static md:border-0 md:bg-transparent md:p-0">
         {product.soldOut ? (
-          <span className={buttonVariants({ size: "lg", variant: "secondary", className: "w-full cursor-not-allowed opacity-70" })} aria-disabled>
+          <span className={buttonVariants({ size: "lg", variant: "secondary", className: "shop-btn w-full cursor-not-allowed opacity-70" })} aria-disabled>
             {t("orderSoldOut")}
           </span>
         ) : (
@@ -94,7 +94,7 @@ export function OrderPanel({
             onClick={() => {
               if (!demo) recordClick({ productId: product._id as Id<"products"> }).catch(() => {})
             }}
-            className={buttonVariants({ size: "lg", variant: "whatsapp", className: "w-full" })}
+            className={buttonVariants({ size: "lg", variant: "whatsapp", className: "shop-btn w-full" })}
           >
             <MessageCircleIcon />
             {t("order")}

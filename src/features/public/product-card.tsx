@@ -41,14 +41,14 @@ export function ProductCard({
           </div>
         )}
         {soldOut ? (
-          <span className="absolute top-2 left-2 rounded-full bg-foreground px-2.5 py-1 text-xs font-semibold text-background">
+          <span className="shop-btn absolute top-2 left-2 rounded-full bg-[var(--chip,var(--foreground))] px-2.5 py-1 text-xs font-semibold text-[var(--chip-foreground,var(--background))]">
             {t("soldOut")}
           </span>
         ) : null}
       </div>
       <div className="px-0.5">
         <p className="line-clamp-2 text-sm leading-snug">{name}</p>
-        <p className="mt-0.5 font-semibold tabular-nums">{formatMoney(price, currency, locale)}</p>
+        <p className="mt-0.5 font-semibold text-[var(--shop-price,currentColor)] tabular-nums">{formatMoney(price, currency, locale)}</p>
       </div>
     </Link>
   )

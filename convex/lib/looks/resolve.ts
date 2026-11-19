@@ -34,8 +34,14 @@ export type ResolvedColors = {
   input: Hex;
   primary: Hex;
   primaryForeground: Hex;
+  /** Selected chips and badges (bold fill). */
   chip: Hex;
   chipForeground: Hex;
+  /** Soft fill: a tint of the chip colour with readable chip-coloured text. */
+  chipSoft: Hex;
+  chipSoftForeground: Hex;
+  /** Prices: the accent when it's readable as text, else the foreground. */
+  price: Hex;
 };
 
 export type ResolvedBannerText = { value: string; align: BannerAlign };
@@ -79,6 +85,7 @@ export function resolveColors(look: StoredLook): ResolvedColors {
   const input = mix(background, foreground, dark ? 0.24 : 0.16);
   const mutedForeground = readableOn(mix(background, foreground, 0.6), foreground, [background, card, muted], 4.5);
   const chip = custom ? accent : ((preset.colors.badge ?? accent) as Hex);
+  const chipSoft = mix(background, chip, dark ? 0.24 : 0.12);
 
   return {
     background,
@@ -92,6 +99,9 @@ export function resolveColors(look: StoredLook): ResolvedColors {
     primaryForeground: bestOn(accent, [WHITE, INK]),
     chip,
     chipForeground: bestOn(chip, [WHITE, INK]),
+    chipSoft,
+    chipSoftForeground: readableOn(chip, foreground, [chipSoft], 4.5),
+    price: contrast(accent, background) >= 4.5 && contrast(accent, card) >= 4.5 ? accent : foreground,
   };
 }
 
@@ -173,7 +183,11 @@ export function lookCssVars(look: Pick<ResolvedLook<unknown>, "colors" | "button
     "--ring": c.primary,
     "--chip": c.chip,
     "--chip-foreground": c.chipForeground,
+    "--chip-soft": c.chipSoft,
+    "--chip-soft-foreground": c.chipSoftForeground,
+    "--shop-price": c.price,
     "--radius": look.radius,
     "--shop-btn-radius": BUTTON_RADIUS[look.buttons.shape],
+    "--shop-btn-weight": look.buttons.weight === "bold" ? "650" : "500",
   };
 }

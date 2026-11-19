@@ -24,7 +24,7 @@ file is a build error. Use `public/` only for files that need a fixed URL
 | `illustrations/marketing/` | Landing page spot art, coming-soon teasers |
 | `photos/products/` | Sample product photos (`demo/`: the built-in demo shop and Home phone) |
 | `photos/lifestyle/` | Sellers and people for marketing pages |
-| `patterns/` | Background shapes and textures |
+| `patterns/` | Background shapes and textures (`banners/`: the ready-made shop banners, ids in `convex/lib/looks/banners.ts`) |
 | `icons/` | Custom SVG icons that `lucide-react` doesn't have |
 
 ## Conventions
@@ -52,6 +52,7 @@ file is a build error. Use `public/` only for files that need a fixed URL
 | `brand/vano-mobile.png` | Vano design team (not used right now: the Home phone renders the live demo shop) | Own work |
 | `icons/whatsapp.png` | Vano design team (WhatsApp mark) | WhatsApp brand guidelines |
 | `icons/link.png` | Vano design team | Own work |
+| `patterns/banners/*.svg` (kitenge-diamonds, kitenge-waves, petals, gold-arcs, soft-dots) | Vano design team, original geometric and floral motifs | Own work |
 | `photos/products/demo/slip-dress.webp` | https://unsplash.com/photos/PTFAGC9Whmg | Unsplash License |
 | `photos/products/demo/slip-dress-2.webp` | https://unsplash.com/photos/qZRrpXgCio8 | Unsplash License |
 | `photos/products/demo/kente-shirt.webp` | https://unsplash.com/photos/5buvyK3DPsI | Unsplash License |

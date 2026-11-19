@@ -132,6 +132,16 @@ describe("resolveLook", () => {
     expect(mapBannerImage(look, () => null).banner).toEqual({ kind: "none" });
   });
 
+  test("soft chips stay readable; price falls back to the foreground when the accent is pale", () => {
+    for (const id of PRESET_IDS) {
+      const { colors: c } = resolveLook(presetLook(id));
+      expect(contrast(c.chipSoftForeground, c.chipSoft)).toBeGreaterThanOrEqual(TEXT_MIN);
+      expect(contrast(c.price, c.background)).toBeGreaterThanOrEqual(TEXT_MIN);
+    }
+    const pale = resolveLook(custom("#f2a6b8", "#fff8f3"));
+    expect(pale.colors.price).toBe(pale.colors.foreground);
+  });
+
   test("css vars set the semantic tokens and button radius", () => {
     const vars = lookCssVars(resolveLook(presetLook("blush")));
     expect(vars["--primary"]).toBe("#b83260");
@@ -142,11 +152,11 @@ describe("resolveLook", () => {
 describe("lookProblems", () => {
   test("a pale accent on a light background warns with a working fix", () => {
     const problems = lookProblems(resolveLook(custom("#f2a6b8", "#fff8f3", "outline")));
-    const outline = problems.find((p) => p.target === "outline");
+    const outline = problems.find((p) => p.target === "chip");
     expect(outline?.level).toBe("block");
     expect(outline?.fix?.field).toBe("accent");
     const fixed = lookProblems(resolveLook(custom(outline?.fix?.value as string, "#fff8f3", "outline")));
-    expect(fixed.find((p) => p.target === "outline")).toBeUndefined();
+    expect(fixed.find((p) => p.target === "chip")).toBeUndefined();
   });
 
   test("a mid-tone background blocks publishing with a background fix", () => {
