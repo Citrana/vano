@@ -62,6 +62,9 @@ export const ERROR_CODES = [
   "CODE_TOO_MANY_ATTEMPTS",
   "CODE_RATE_LIMITED",
   "VERIFICATION_UNAVAILABLE",
+  "LOOK_INVALID",
+  "LOOK_CONTRAST",
+  "LOOK_NO_DRAFT",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

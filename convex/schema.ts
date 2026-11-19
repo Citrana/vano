@@ -12,6 +12,7 @@ import { notificationKindValidator } from "./notifications/kinds";
 import { notificationCategoryValidator, notificationDataValidator } from "./notifications/types";
 import { currencyValidator } from "./lib/money";
 import { shopThemeValidator } from "./lib/themes";
+import { storedLookValidator } from "./lib/looks/validators";
 import {
   nextActionValidator,
   paymentOutcomeValidator,
@@ -115,6 +116,23 @@ export default defineSchema({
     .index("by_status_and_currency", ["status", "currency"])
     .index("by_currency", ["currency"])
     .searchIndex("search_name", { searchField: "name", filterFields: ["status", "currency"] }),
+
+  /**
+   * A shop's look (CLAUDE.md "Shop looks"): one row per shop, written only
+   * by `convex/shopLooks.ts` and `admin/shopLooks.ts`. No row or no
+   * `published` = the free look.
+   */
+  shopLooks: defineTable({
+    shopId: v.id("shops"),
+    /** Unpublished edits; only the owner sees them. */
+    draft: v.optional(storedLookValidator),
+    /** What visitors see (when the plan allows it). */
+    published: v.optional(storedLookValidator),
+    draftUpdatedAt: v.optional(v.number()),
+    publishedAt: v.optional(v.number()),
+    /** Set when an admin reset the look; the editor tells the seller. */
+    resetByAdminAt: v.optional(v.number()),
+  }).index("by_shopId", ["shopId"]),
 
   products: defineTable({
     shopId: v.id("shops"),

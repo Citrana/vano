@@ -53,3 +53,21 @@ export function lookImageIds(look: StoredLook | undefined | null) {
   const banner = look?.overrides.banner;
   return banner?.kind === "photo" ? [banner.imageId] : [];
 }
+
+function canonical(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonical);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value)
+        .filter(([, v]) => v !== undefined)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([k, v]) => [k, canonical(v)]),
+    );
+  }
+  return value;
+}
+
+/** Same look, whatever the key order (stored docs don't keep it). */
+export function sameLook(a: StoredLook | null | undefined, b: StoredLook | null | undefined): boolean {
+  return JSON.stringify(canonical(a ?? null)) === JSON.stringify(canonical(b ?? null));
+}

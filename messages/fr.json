@@ -80,7 +80,10 @@
     "CODE_EXPIRED": "Ce code a expiré. Demandez-en un nouveau.",
     "CODE_TOO_MANY_ATTEMPTS": "Trop de codes incorrects. Demandez-en un nouveau.",
     "CODE_RATE_LIMITED": "Patientez une minute avant de demander un autre code.",
-    "VERIFICATION_UNAVAILABLE": "La vérification du numéro n'est pas encore disponible. Contactez-nous pour changer votre numéro."
+    "VERIFICATION_UNAVAILABLE": "La vérification du numéro n'est pas encore disponible. Contactez-nous pour changer votre numéro.",
+    "LOOK_INVALID": "Certains réglages du style ne sont pas valides. Vérifiez les couleurs et le texte de la bannière.",
+    "LOOK_CONTRAST": "Certains textes seraient trop difficiles à lire avec ces couleurs. Appliquez une correction proposée, puis publiez.",
+    "LOOK_NO_DRAFT": "Il n'y a aucune modification à publier."
   },
   "Validation": {
     "required": "Ce champ est obligatoire.",

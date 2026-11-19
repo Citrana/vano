@@ -80,7 +80,10 @@
     "CODE_EXPIRED": "This code has expired. Send a new one.",
     "CODE_TOO_MANY_ATTEMPTS": "Too many wrong codes. Send a new one.",
     "CODE_RATE_LIMITED": "Please wait a minute before asking for another code.",
-    "VERIFICATION_UNAVAILABLE": "Number verification isn't available yet. Contact us to change your number."
+    "VERIFICATION_UNAVAILABLE": "Number verification isn't available yet. Contact us to change your number.",
+    "LOOK_INVALID": "Some of these look settings aren't valid. Check the colors and banner text.",
+    "LOOK_CONTRAST": "Some text would be too hard to read with these colors. Use a suggested fix, then publish.",
+    "LOOK_NO_DRAFT": "There are no changes to publish."
   },
   "Validation": {
     "required": "This field is required.",
