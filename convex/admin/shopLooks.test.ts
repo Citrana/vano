@@ -235,3 +235,95 @@ describe("button designs (admin)", () => {
     expect((await me.query(api.shopLooks.mine, {})).published?.overrides.buttons).toBeUndefined();
   });
 });
+
+describe("profile photo (admin)", () => {
+  const profileLook: StoredLook = {
+    v: 1,
+    preset: "blush",
+    overrides: {
+      colors: { accent: "#0e6e85", background: "#f1f8fa" },
+      banner: { kind: "gradient", gradientId: "roseDusk", height: "sm", text: { value: "Hello", align: "start" } },
+      profile: {
+        shape: "arch",
+        borderWidth: "thick",
+        borderStyle: "glow",
+        borderColor: { kind: "custom", hex: "#5b1f4a" },
+        size: "lg",
+        position: "center",
+        overlap: "below",
+        corner: "heart",
+        decoration: { id: "bossLady" },
+      },
+    },
+  };
+
+  test("get shows the decoration", async () => {
+    const t = newTest();
+    const w = await world(t);
+    const me = as(t, w.seller.userId);
+    await me.mutation(api.shopLooks.saveDraft, { look: profileLook });
+    await me.mutation(api.shopLooks.publish, {});
+    const view = await as(t, w.viewer).query(api.admin.shopLooks.get, { shopId: w.seller.shopId });
+    expect(view).toMatchObject({ decoration: "bossLady", decorationLive: true, draftDecoration: null, hasProfile: true });
+    expect(view?.visible.profile).toMatchObject({ shape: "arch", decoration: "bossLady" });
+  });
+
+  test("profile reset: photo options and decoration back to default, banner and colours stay; logged and told", async () => {
+    const t = newTest();
+    const w = await world(t);
+    const me = as(t, w.seller.userId);
+    await me.mutation(api.shopLooks.saveDraft, { look: profileLook });
+    await me.mutation(api.shopLooks.publish, {});
+    await me.mutation(api.shopLooks.saveDraft, { look: { ...profileLook, preset: "lavender" } });
+    await as(t, w.admin).mutation(api.admin.shopLooks.reset, { shopId: w.seller.shopId, scope: "profile", reason: "Rude badge" });
+
+    const mine = await me.query(api.shopLooks.mine, {});
+    expect(mine.published?.overrides.profile).toBeUndefined();
+    expect(mine.published?.overrides.banner).toEqual(profileLook.overrides.banner);
+    expect(mine.published?.overrides.colors).toEqual(profileLook.overrides.colors);
+    expect(mine.editing.preset).toBe("lavender"); // the draft is kept, without its profile
+    expect(mine.editing.overrides.profile).toBeUndefined();
+    expect(mine.decorationLive).toBe(false);
+    const page = await t.query(api.public.shopBySlug, { slug: "chez-amani" });
+    expect(page && !page.suspended && page.shop.look.profile).toMatchObject({ shape: "circle", decoration: null });
+
+    const [audit] = await t.run((ctx) => ctx.db.query("auditLogs").order("desc").take(1));
+    expect(audit.details).toMatchObject({ scope: "profile", decoration: "bossLady", bannerText: "", bannerPhoto: false });
+    const [notice] = await me.query(api.notifications.inbox.latest, {});
+    expect(notice.data).toEqual({ type: "look.reset", scope: "profile", reason: "Rude badge" });
+  });
+
+  test("the whole-look reset also resets the profile; the banner reset keeps it", async () => {
+    const t = newTest();
+    const w = await world(t);
+    const me = as(t, w.seller.userId);
+    await me.mutation(api.shopLooks.saveDraft, { look: profileLook });
+    await me.mutation(api.shopLooks.publish, {});
+    await as(t, w.admin).mutation(api.admin.shopLooks.reset, { shopId: w.seller.shopId, scope: "banner", reason: "Banner text" });
+    expect((await me.query(api.shopLooks.mine, {})).published?.overrides.profile).toEqual(profileLook.overrides.profile);
+    expect((await me.query(api.shopLooks.mine, {})).decorationLive).toBe(true);
+    await as(t, w.admin).mutation(api.admin.shopLooks.reset, { shopId: w.seller.shopId, scope: "all", reason: "Everything" });
+    expect((await me.query(api.shopLooks.mine, {})).published).toEqual(FREE_LOOK);
+  });
+
+  test("never on your own shop, and needs shops.resetLook", async () => {
+    const t = newTest();
+    const w = await world(t);
+    await expect(
+      as(t, w.viewer).mutation(api.admin.shopLooks.reset, { shopId: w.seller.shopId, scope: "profile", reason: "No access" }),
+    ).rejects.toThrow(/FORBIDDEN/);
+    const adminShop = await as(t, w.admin).mutation(api.shops.create, {
+      name: "Boss Shop",
+      slug: "boss-shop",
+      currency: "USD",
+      language: "en",
+      categories: ["bags"],
+      whatsappNumber: "+243 812 345 679",
+      city: "Goma",
+      country: "CD",
+    });
+    await expect(
+      as(t, w.admin).mutation(api.admin.shopLooks.reset, { shopId: adminShop, scope: "profile", reason: "My own shop" }),
+    ).rejects.toThrow(/CANNOT_MODIFY_SELF/);
+  });
+});

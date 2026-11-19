@@ -6,6 +6,7 @@ import { useId, useState } from "react"
 import { toast } from "sonner"
 import { api } from "../../../../convex/_generated/api"
 import type { Id } from "../../../../convex/_generated/dataModel"
+import type { ProfileDecorationId } from "../../../../convex/lib/looks/profile"
 import { RESET_REASON_MAX, RESET_REASON_MIN, resetReasonProblem, type ResetScope } from "../../../../convex/lib/looks/reset"
 import { LoadingState } from "@/components/states/states"
 import { Button } from "@/components/ui/button"
@@ -19,7 +20,7 @@ import { ChoiceGroup } from "@/features/shop-looks/editor/choice-group"
 import { useErrorMessage } from "@/lib/use-error-message"
 import { DetailItem, DetailList } from "../data-table/detail-list"
 
-/** Reset a shop's look (banner only, or everything) with a required reason. */
+/** Reset a shop's look (banner only, profile photo only, or everything) with a required reason. */
 function ResetLookDialog({ shopId, name }: { shopId: Id<"shops">; name: string }) {
   const t = useTranslations("AdminShops.look")
   const tc = useTranslations("Common")
@@ -61,10 +62,13 @@ function ResetLookDialog({ shopId, name }: { shopId: Id<"shops">; name: string }
             onChange={setScope}
             options={[
               { value: "banner", label: t("scopeBanner") },
+              { value: "profile", label: t("scopeProfile") },
               { value: "all", label: t("scopeAll") },
             ]}
           />
-          <p className="text-sm text-muted-foreground">{scope === "banner" ? t("scopeBannerHint") : t("scopeAllHint")}</p>
+          <p className="text-sm text-muted-foreground">
+            {scope === "banner" ? t("scopeBannerHint") : scope === "profile" ? t("scopeProfileHint") : t("scopeAllHint")}
+          </p>
           <div className="flex flex-col gap-2">
             <Label htmlFor={reasonId} required>
               {t("reason")}
@@ -107,6 +111,7 @@ export function ShopLookCard({
 }) {
   const t = useTranslations("AdminShops.look")
   const tl = useTranslations("ShopLooks")
+  const td = useTranslations("ProfileDecorations")
   const format = useFormatter()
   const look = useQuery(api.admin.shopLooks.get, { shopId })
 
@@ -147,6 +152,18 @@ export function ShopLookCard({
           </DetailItem>
         ) : null}
         {look.draftPromo ? <DetailItem label={t("draftPromo")}>{promoLine(look.draftPromo)}</DetailItem> : null}
+        {look.decoration || look.draftDecoration ? (
+          <DetailItem label={t("decoration")}>
+            {[
+              look.decoration ? `${td(`items.${look.decoration as ProfileDecorationId}`)} · ${look.decorationLive ? t("promoLive") : t("promoNotLive")}` : null,
+              look.draftDecoration && look.draftDecoration !== look.decoration
+                ? t("draftDecoration", { name: td(`items.${look.draftDecoration as ProfileDecorationId}`) })
+                : null,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </DetailItem>
+        ) : null}
         {look.draftBannerText || look.draftHasPhoto ? (
           <DetailItem label={t("draft")}>
             {[look.draftBannerText, look.draftHasPhoto ? t("draftPhoto") : null].filter(Boolean).join(" · ")}

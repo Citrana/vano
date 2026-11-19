@@ -97,10 +97,10 @@ const adminEndingSoon = v.object({
   day: v.string(),
 });
 
-/** To the seller: an admin reset their shop look ("banner": photo / text only). */
+/** To the seller: an admin reset their shop look ("banner": photo / text only; "profile": profile photo options). */
 const lookReset = v.object({
   type: v.literal("look.reset"),
-  scope: v.union(v.literal("banner"), v.literal("all")),
+  scope: v.union(v.literal("banner"), v.literal("profile"), v.literal("all")),
   reason: v.string(),
 });
 
