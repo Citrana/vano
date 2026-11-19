@@ -89,3 +89,27 @@ export const adminMutation = customMutation(
 type WithAccess<C> = C & { user: Doc<"users">; access: Access };
 export type AdminQueryCtx = WithAccess<QueryCtx>;
 export type AdminMutationCtx = WithAccess<MutationCtx>;
+
+/**
+ * Functions about the caller's own account data, open to every signed-in,
+ * non-suspended user whatever their role (e.g. their notifications). They
+ * must only read or change rows that belong to `ctx.user`.
+ */
+export const accountQuery = customQuery(
+  query,
+  customCtx(async (ctx: QueryCtx) => {
+    const access = await loadAccess(ctx);
+    return { user: access.user, access };
+  }),
+);
+
+export const accountMutation = customMutation(
+  mutation,
+  customCtx(async (ctx: MutationCtx) => {
+    const access = await loadAccess(ctx);
+    return { user: access.user, access };
+  }),
+);
+
+export type AccountQueryCtx = WithAccess<QueryCtx>;
+export type AccountMutationCtx = WithAccess<MutationCtx>;

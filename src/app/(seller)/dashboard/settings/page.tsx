@@ -2,7 +2,6 @@
 
 import { useMutation, useQuery } from "convex/react"
 import { useTranslations } from "next-intl"
-import { useEffect } from "react"
 import { toast } from "sonner"
 import { api } from "../../../../../convex/_generated/api"
 import { PageTitle } from "@/components/shell/page-title"
@@ -17,16 +16,8 @@ export default function SettingsPage() {
   const tc = useTranslations("Common")
   const shop = useQuery(api.shops.myShop, {})
   const products = useQuery(api.products.listMine, {})
-  const unread = useQuery(api.notifications.seller.unread, {})
   const update = useMutation(api.shops.update)
-  const markRead = useMutation(api.notifications.seller.markRead)
   const suspended = shop?.status === "suspended"
-
-  // Decisions are listed in the history below: opening this page reads them.
-  const hasUnread = (unread?.length ?? 0) > 0
-  useEffect(() => {
-    if (hasUnread && !suspended) markRead({}).catch(() => {})
-  }, [hasUnread, suspended, markRead])
 
   if (shop === undefined || products === undefined) return <LoadingState />
   if (shop === null) return null

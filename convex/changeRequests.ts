@@ -15,6 +15,7 @@ import {
   type ProtectedField,
 } from "./lib/changeRequests";
 import { fail, type ErrorCode } from "./lib/errors";
+import { notify } from "./lib/notify";
 import { normalizeWhatsapp } from "./lib/phone";
 import { riskyValueMatch } from "./lib/protectedNames";
 import { rateLimiter } from "./lib/rateLimits";
@@ -166,6 +167,15 @@ export const create = sellerMutation({
       matchedBrand: brand ?? undefined,
       shopName: shop.name,
       searchText: [shop.name, shop.slug, field === "whatsapp" ? "" : value].join(" ").trim(),
+    });
+    // One notification per request: flagged (risky name or link) or plain.
+    await notify(ctx, {
+      data: brand
+        ? { type: "changeRequest.flagged", requestId, shopName: shop.name, field, value, brand }
+        : { type: "changeRequest.submitted", requestId, shopName: shop.name, field },
+      to: { permission: "changeRequests.view" },
+      dedupeKey: `cr.submitted:${requestId}`,
+      exclude: [shop.ownerId],
     });
     await logAdminAction(ctx, {
       actor: ctx.user,

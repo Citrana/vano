@@ -2,7 +2,7 @@ import type { ChannelId, NotificationChannel } from "./channel";
 import { logChannel } from "./log";
 
 /**
- * Outside channels that also receive seller notifications, from the
+ * Outside channels that also receive notifications, from the
  * `NOTIFY_CHANNELS` deployment env var: a comma-separated list of ids
  * ("log"; later "whatsapp", "email"). Unset = in-app only.
  */

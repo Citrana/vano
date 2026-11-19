@@ -2,6 +2,7 @@ import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { logAdminAction, type AuditAction } from "./audit";
 import { addMonths, utcDay } from "./days";
+import { notify } from "./notify";
 import {
   DAY_MS,
   PERIOD_DAYS,
@@ -186,6 +187,7 @@ export async function writeSubscription(
   else await ctx.db.insert("subscriptions", fields);
 
   if (log.action === null) return;
+  await notifyPlanChange(ctx, shop, existing?.plan ?? null, next, log.action);
   await logAdminAction(ctx, {
     actor: log.actor,
     action: log.action,
@@ -198,6 +200,35 @@ export async function writeSubscription(
       ...log.details,
     },
   });
+}
+
+const ACTIVATED: readonly AuditAction[] = ["subscription.activated", "subscription.grant", "subscription.extend"];
+
+/**
+ * Tells the shop's owner about a plan change (CLAUDE.md "Notifications").
+ * Called only by `writeSubscription`, so every change path gets it.
+ */
+async function notifyPlanChange(
+  ctx: MutationCtx,
+  shop: Doc<"shops">,
+  previousPlan: PlanId | null,
+  next: SubscriptionState,
+  action: AuditAction,
+): Promise<void> {
+  const to = { userId: shop.ownerId };
+  if (ACTIVATED.includes(action) && next.periodEnd !== null) {
+    await notify(ctx, {
+      data: { type: "plan.activated", plan: next.plan, periodEnd: next.periodEnd },
+      to,
+      dedupeKey: `plan.activated:${shop._id}:${next.periodEnd}`,
+    });
+  } else if (action === "subscription.expired" || action === "subscription.trialEnded") {
+    await notify(ctx, {
+      data: { type: "plan.expired", plan: previousPlan ?? TRIAL_PLAN, trial: action === "subscription.trialEnded" },
+      to,
+      dedupeKey: `plan.expired:${shop._id}:${next.periodStart}`,
+    });
+  }
 }
 
 /** Every new shop starts on the trial (called from `shops.create`). */

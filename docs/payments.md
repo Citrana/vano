@@ -6,11 +6,22 @@ providers, checkout, the scheduled jobs or billing admin updates this file
 in the same commit, with a dated entry in the change log below
 (see CLAUDE.md "Billing").
 
-**Last updated: 2026-11-18 19:29 CAT (UTC+02:00)**
+**Last updated: 2026-11-19 08:43 CAT (UTC+02:00)**
 
 ## Change log
 
 Newest first. Format: `YYYY-MM-DD HH:MM TZ — what changed (files)`.
+
+- **2026-11-19 08:43 CAT (UTC+02:00)**: billing notifications (in-app,
+  via the central `notify` service). `writeSubscription` tells the seller
+  when a plan is activated / granted / extended or when it (or the trial)
+  ends; a failed payment reaches the payer and every `billing.view` admin;
+  a new daily cron `notificationJobs.endingSoon` warns sellers whose trial
+  or plan ends within `EXPIRY_WARNING_DAYS` and sends admins a daily
+  summary. Admin "needs attention" counts (`admin/attention.counts`):
+  unresolved failed payments and plans ending soon. See section 13.
+  (`convex/lib/subscriptions.ts`, `convex/payments/core.ts`,
+  `convex/notificationJobs.ts`, `convex/crons.ts`, `convex/admin/attention.ts`)
 
 - **2026-11-18 19:29 CAT (UTC+02:00)**: first version. Subscriptions with a
   2-month Pro trial, plan limits enforced on the server, a swappable
@@ -141,7 +152,8 @@ its plan's product limit.
    ended). Refused on Free (`PLAN_INVALID`); grant a plan instead.
 
 Every change except the initial trial is written by `writeSubscription`,
-which also records an activity entry in the same transaction.
+which also records an activity entry and notifies the seller (section 13)
+in the same transaction.
 
 ## 5. Payment flow
 
@@ -333,3 +345,25 @@ real provider is implemented.
 | `convex/admin/billing.test.ts` | Admin lists and filters, grant/extend rules, permissions, shop deletion |
 
 Run `pnpm test` (Node 24, `nvm use`).
+
+## 13. Notifications
+
+Billing uses the central in-app notification service (`notify` in
+`convex/lib/notify.ts`, CLAUDE.md "Notifications"). Each one is deduped,
+so a retried webhook or job never sends it twice.
+
+| When | Who | Type | Where it's sent from |
+|---|---|---|---|
+| A plan is activated (payment), granted or extended | shop owner | `plan.activated` | `writeSubscription` |
+| A paid plan or the trial ends | shop owner | `plan.expired` (`trial: true/false`) | `writeSubscription` (from `expireDue`) |
+| A payment fails (provider result or start failure) | payer | `payment.failed` | `notifyPaymentFailed` in `payments/core.ts` |
+| Same | `billing.view` admins (not the payer) | `admin.paymentFailed` | same |
+| Trial / plan ends within `EXPIRY_WARNING_DAYS` | shop owner, once per period | `plan.endingSoon` | daily cron `notificationJobs.endingSoon` |
+| Same, if any | `billing.view` admins, once a day | `admin.endingSoon` | same |
+
+Cancelled and expired checkouts don't notify (the seller left or the
+checkout went stale). The admin dashboard's **Needs attention** cards and
+the Payments sidebar badge come from `admin/attention.counts`, which reads
+the real tables: failed payments in the last `FAILED_PAYMENT_WINDOW_DAYS`
+(7) whose shop hasn't paid successfully since, and trialing / active
+subscriptions ending within `EXPIRY_WARNING_DAYS`.

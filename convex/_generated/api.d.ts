@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as admin_attention from "../admin/attention.js";
 import type * as admin_audit from "../admin/audit.js";
 import type * as admin_billing from "../admin/billing.js";
 import type * as admin_changeRequests from "../admin/changeRequests.js";
@@ -55,12 +56,15 @@ import type * as lib_slug from "../lib/slug.js";
 import type * as lib_subscriptions from "../lib/subscriptions.js";
 import type * as lib_themes from "../lib/themes.js";
 import type * as migrations from "../migrations.js";
+import type * as notificationJobs from "../notificationJobs.js";
 import type * as notifications_channel from "../notifications/channel.js";
+import type * as notifications_config from "../notifications/config.js";
 import type * as notifications_deliver from "../notifications/deliver.js";
+import type * as notifications_inbox from "../notifications/inbox.js";
 import type * as notifications_kinds from "../notifications/kinds.js";
 import type * as notifications_log from "../notifications/log.js";
 import type * as notifications_registry from "../notifications/registry.js";
-import type * as notifications_seller from "../notifications/seller.js";
+import type * as notifications_types from "../notifications/types.js";
 import type * as payments_core from "../payments/core.js";
 import type * as payments_mock from "../payments/mock.js";
 import type * as payments_provider from "../payments/provider.js";
@@ -85,6 +89,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "admin/attention": typeof admin_attention;
   "admin/audit": typeof admin_audit;
   "admin/billing": typeof admin_billing;
   "admin/changeRequests": typeof admin_changeRequests;
@@ -132,12 +137,15 @@ declare const fullApi: ApiFromModules<{
   "lib/subscriptions": typeof lib_subscriptions;
   "lib/themes": typeof lib_themes;
   migrations: typeof migrations;
+  notificationJobs: typeof notificationJobs;
   "notifications/channel": typeof notifications_channel;
+  "notifications/config": typeof notifications_config;
   "notifications/deliver": typeof notifications_deliver;
+  "notifications/inbox": typeof notifications_inbox;
   "notifications/kinds": typeof notifications_kinds;
   "notifications/log": typeof notifications_log;
   "notifications/registry": typeof notifications_registry;
-  "notifications/seller": typeof notifications_seller;
+  "notifications/types": typeof notifications_types;
   "payments/core": typeof payments_core;
   "payments/mock": typeof payments_mock;
   "payments/provider": typeof payments_provider;

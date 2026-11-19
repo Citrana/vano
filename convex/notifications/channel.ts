@@ -1,31 +1,28 @@
 import type { Language } from "../lib/catalog";
-import type { ProtectedField } from "../lib/changeRequests";
-import type { NotificationKind } from "./kinds";
+import type { NotificationData } from "./types";
 
 /**
  * The one interface an outside notification channel implements (WhatsApp,
  * email…). Adding one: a file implementing it, its id in `ChannelId`, and
- * a line in registry.ts. In-app notifications need no channel: the
- * `sellerNotifications` row is shown in the dashboard.
+ * a line in registry.ts. Features never change: they call `notify`
+ * (convex/lib/notify.ts), and the row it writes is the in-app delivery.
  */
 export type ChannelId = "log";
 
-export type SellerMessage = {
-  kind: NotificationKind;
-  /** Where to reach the seller. */
-  email: string | null;
-  whatsappNumber: string;
-  /** The shop's language, for the message text. */
-  language: Language;
-  shopName: string;
-  field: ProtectedField;
-  newValue: string;
-  /** The admin's reason, for a rejection. */
-  reason: string | null;
+export type OutgoingNotification = {
+  /** What happened, with the values the text needs (type-specific). */
+  data: NotificationData;
+  recipient: {
+    email: string | null;
+    /** The recipient's shop WhatsApp number, when they have a shop. */
+    whatsappNumber: string | null;
+    /** Their shop's language; "en" for someone without a shop. */
+    language: Language;
+  };
 };
 
 export interface NotificationChannel {
   readonly id: ChannelId;
   /** Runs in an action (may call HTTP). Throwing only logs the failure. */
-  send(message: SellerMessage): Promise<void>;
+  send(message: OutgoingNotification): Promise<void>;
 }

@@ -1,3 +1,4 @@
+import { filter } from "convex-helpers/server/filter";
 import { paginationOptsValidator, paginationResultValidator } from "convex/server";
 import { v } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
@@ -18,7 +19,7 @@ import {
 } from "../lib/changeRequests";
 import { fail } from "../lib/errors";
 import { assertNotOwnShop } from "../lib/guards";
-import { notifySeller } from "../lib/notify";
+import { notify } from "../lib/notify";
 import { shopStatusValidator } from "../lib/permissions";
 import {
   applyShopChange,
@@ -64,7 +65,10 @@ function toRow(request: Doc<"shopChangeRequests">) {
   };
 }
 
-/** Newest first. Filters: status, field, created in [`from`, `to`); search: shop name, link, new value. */
+/**
+ * Newest first. Filters: status, field, created in [`from`, `to`), flagged
+ * (a risky name or link: the "brand" flag); search: shop name, link, new value.
+ */
 export const list = adminQuery({
   permission: "changeRequests.view",
   args: {
@@ -74,12 +78,14 @@ export const list = adminQuery({
     search: v.optional(v.string()),
     from: v.optional(v.number()),
     to: v.optional(v.number()),
+    flagged: v.optional(v.boolean()),
   },
   returns: paginationResultValidator(row),
-  handler: async (ctx, { paginationOpts, status, field, search, from, to }) => {
+  handler: async (ctx, { paginationOpts, status, field, search, from, to, flagged }) => {
+    const keep = (r: Doc<"shopChangeRequests">) => !flagged || r.flags.includes("brand");
     const text = search?.trim();
     if (text) {
-      const result = await ctx.db
+      const searched = ctx.db
         .query("shopChangeRequests")
         .withSearchIndex("search_text", (q) => {
           let s = q.search("searchText", text);
@@ -92,8 +98,8 @@ export const list = adminQuery({
             from === undefined ? true : q.gte(q.field("_creationTime"), from),
             to === undefined ? true : q.lt(q.field("_creationTime"), to),
           ),
-        )
-        .paginate(paginationOpts);
+        );
+      const result = await filter(searched, keep).paginate(paginationOpts);
       return { ...result, page: result.page.map(toRow) };
     }
 
@@ -110,7 +116,7 @@ export const list = adminQuery({
           : field
             ? base.withIndex("by_field", (q) => q.eq("field", field).gte("_creationTime", lo).lt("_creationTime", hi))
             : base.withIndex("by_creation_time", (q) => q.gte("_creationTime", lo).lt("_creationTime", hi));
-    const result = await query.order("desc").paginate(paginationOpts);
+    const result = await filter(query.order("desc"), keep).paginate(paginationOpts);
     return { ...result, page: result.page.map(toRow) };
   },
 });
@@ -254,11 +260,15 @@ export const approve = adminMutation({
       decidedAt: now,
       cooldownOverridden: cooling ? true : undefined,
     });
-    await notifySeller(ctx, {
-      userId: shop.ownerId,
-      shopId: shop._id,
-      kind: "changeRequest.approved",
-      requestId: request._id,
+    await notify(ctx, {
+      data: {
+        type: "changeRequest.approved",
+        requestId: request._id,
+        field: request.field,
+        value: loggedValue(request.field, cleaned.value),
+      },
+      to: { userId: shop.ownerId },
+      dedupeKey: `cr.decided:${request._id}`,
     });
     const common = { targetType: "shop" as const, targetId: shop._id, targetLabel: shop.name, actor: ctx.user };
     await logAdminAction(ctx, {
@@ -295,11 +305,16 @@ export const reject = adminMutation({
       decidedAt: Date.now(),
       decisionReason: cleanReason,
     });
-    await notifySeller(ctx, {
-      userId: shop.ownerId,
-      shopId: shop._id,
-      kind: "changeRequest.rejected",
-      requestId: request._id,
+    await notify(ctx, {
+      data: {
+        type: "changeRequest.rejected",
+        requestId: request._id,
+        field: request.field,
+        value: loggedValue(request.field, request.newValue),
+        reason: cleanReason,
+      },
+      to: { userId: shop.ownerId },
+      dedupeKey: `cr.decided:${request._id}`,
     });
     await logAdminAction(ctx, {
       actor: ctx.user,

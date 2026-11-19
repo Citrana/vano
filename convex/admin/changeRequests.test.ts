@@ -134,8 +134,10 @@ describe("admin.changeRequests.approve", () => {
     expect(sub?.shopName).toBe("Maison Amani");
     expect(await actions(t)).toEqual(expect.arrayContaining(["changeRequest.approved", "shop.nameChanged"]));
 
-    const unread = await as(t, w.amani.userId).query(api.notifications.seller.unread, {});
-    expect(unread).toMatchObject([{ kind: "changeRequest.approved", field: "name", newValue: "Maison Amani" }]);
+    const inbox = await as(t, w.amani.userId).query(api.notifications.inbox.latest, {});
+    expect(inbox).toMatchObject([
+      { read: false, data: { type: "changeRequest.approved", requestId: id, field: "name", value: "Maison Amani" } },
+    ]);
     await expect(
       as(t, w.admin).mutation(api.admin.changeRequests.approve, { requestId: id, overrideCooldown: false }),
     ).rejects.toThrow(/REQUEST_NOT_PENDING/);
@@ -256,16 +258,16 @@ describe("admin.changeRequests.reject", () => {
     const mine = await as(t, w.amani.userId).query(api.changeRequests.mine, {});
     expect(mine.requests[0]).toMatchObject({ status: "rejected", decisionReason: "Brand names aren't allowed." });
     const seller = as(t, w.amani.userId);
-    const [notice] = await seller.query(api.notifications.seller.unread, {});
-    expect(notice).toMatchObject({ kind: "changeRequest.rejected", reason: "Brand names aren't allowed." });
+    const [notice] = await seller.query(api.notifications.inbox.latest, {});
+    expect(notice.data).toMatchObject({ type: "changeRequest.rejected", reason: "Brand names aren't allowed." });
     expect(await actions(t)).toContain("changeRequest.rejected");
 
     // Marking read: only your own.
-    await expect(as(t, w.zawadi.userId).mutation(api.notifications.seller.markRead, { id: notice._id })).rejects.toThrow(
+    await expect(as(t, w.zawadi.userId).mutation(api.notifications.inbox.markRead, { id: notice._id })).rejects.toThrow(
       /NOT_FOUND/,
     );
-    await seller.mutation(api.notifications.seller.markRead, {});
-    expect(await seller.query(api.notifications.seller.unread, {})).toEqual([]);
+    await seller.mutation(api.notifications.inbox.markAllRead, {});
+    expect(await seller.query(api.notifications.inbox.unreadCount, {})).toEqual({ count: 0, capped: false });
   });
 });
 
