@@ -85,7 +85,10 @@
     "LOOK_CONTRAST": "Certains textes seraient trop difficiles à lire avec ces couleurs. Appliquez une correction proposée, puis publiez.",
     "LOOK_NO_DRAFT": "Il n'y a aucune modification à publier.",
     "PROMO_SCHEDULE_INVALID": "Vérifiez les dates de la bannière d'événement : la fin doit suivre le début, dans les 92 jours, et le début doit être dans moins d'un an.",
-    "DECORATION_SCHEDULE_INVALID": "Vérifiez les dates de la décoration de la photo : la fin doit suivre le début, dans les 92 jours, et le début doit être dans moins d'un an."
+    "DECORATION_SCHEDULE_INVALID": "Vérifiez les dates de la décoration de la photo : la fin doit suivre le début, dans les 92 jours, et le début doit être dans moins d'un an.",
+    "PLAN_CONFIG_STALE": "Quelqu'un d'autre a modifié les formules pendant votre modification. Votre changement n'a pas été enregistré : vérifiez les dernières valeurs et réessayez.",
+    "PLAN_CONFIG_INVALID": "Certaines valeurs ne sont pas valides. Vérifiez les champs et réessayez.",
+    "EXCEPTION_INVALID": "Cette exception n'est pas valide : choisissez une fonctionnalité que la formule ne donne pas déjà, ou une limite plus haute."
   },
   "Validation": {
     "required": "Ce champ est obligatoire.",
@@ -391,7 +394,8 @@
       "settings": "Paramètres",
       "subscriptions": "Abonnements",
       "payments": "Paiements",
-      "changeRequests": "Demandes de modification"
+      "changeRequests": "Demandes de modification",
+      "plans": "Formules et fonctionnalités"
     },
     "attention": {
       "title": "À traiter",
@@ -525,6 +529,10 @@
       "title": "Demandes de modification",
       "view": "Voir les demandes de modification du nom, du lien et du WhatsApp",
       "decide": "Approuver ou refuser les demandes de modification"
+    },
+    "plans": {
+      "title": "Formules et fonctionnalités",
+      "manage": "Voir et modifier les formules, fonctionnalités et exceptions"
     }
   },
   "AdminRoles": {
@@ -735,6 +743,17 @@
       "cancelled": "A annulé une demande de modification",
       "approved": "A approuvé une modification de la boutique",
       "rejected": "A refusé une modification de la boutique"
+    },
+    "plans": {
+      "planUpdated": "A modifié une formule",
+      "featureUpdated": "A modifié une fonctionnalité de formule",
+      "pricingUpdated": "A modifié le texte de la page Tarifs",
+      "reset": "A rétabli les formules et fonctionnalités"
+    },
+    "planException": {
+      "granted": "A donné une exception de formule",
+      "revoked": "A retiré une exception de formule",
+      "expired": "Exception de formule terminée"
     }
   },
   "AuditDetails": {
@@ -766,7 +785,13 @@
     "bannerText": "Texte de la bannière",
     "bannerPhoto": "Photo de bannière",
     "promoHeadline": "Titre de la bannière d'événement",
-    "decoration": "Décoration de la photo"
+    "decoration": "Décoration de la photo",
+    "feature": "Fonctionnalité",
+    "value": "Valeur",
+    "endsAt": "Fin",
+    "fromVersion": "Version précédente",
+    "toVersion": "Nouvelle version",
+    "lowered": "Fonctionnalités retirées"
   },
   "AdminActivity": {
     "title": "Historique d'activité",
@@ -912,7 +937,7 @@
     "hints": {
       "planLocked": "Votre forfait permet de publier uniquement le style Classique et une photo de profil simple. Passez à un forfait supérieur pour publier celui-ci.",
       "blocking": "Corrigez les couleurs signalées en rouge avant de publier.",
-      "promoLocked": "Les bannières d'événement nécessitent Pro ou Business. Retirez-la pour publier, ou changez de forfait."
+      "promoLocked": "Les bannières d'événement nécessitent {plan} ou plus. Retirez-la pour publier, ou passez à une formule supérieure."
     },
     "preview": {
       "show": "Afficher",
@@ -947,8 +972,7 @@
     "looks": {
       "current": "Basé sur {name}",
       "customized": "personnalisé",
-      "pro": "Pro",
-      "lockedHint": "nécessite un forfait Pro ou Business pour être publié"
+      "lockedHint": "nécessite la formule {plan} ou supérieure pour publier"
     },
     "colors": {
       "intro": "Choisissez parmi des couleurs qui vont bien ensemble, ou choisissez les vôtres.",
@@ -1121,12 +1145,12 @@
     },
     "tabs": {
       "changed": "modifications non publiées",
-      "pro": "Pro"
+      "locked": "nécessite {plan}"
     },
     "lock": {
-      "notice": "Cette section est incluse dans Pro et Business. Essayez-la ici, puis passez à un forfait supérieur pour publier.",
+      "notice": "Cette section est incluse dans {plan} et les formules au-dessus. Essayez-la ici, puis passez à une formule supérieure pour publier.",
       "link": "Voir les forfaits",
-      "availableOnPro": "Disponible avec Pro"
+      "availableOn": "Disponible avec {plan}"
     },
     "sheet": {
       "expand": "Agrandir",
@@ -1309,10 +1333,10 @@
     "perMonth": "/mois",
     "customPrice": "Sur mesure",
     "mostPopular": "Le plus choisi",
-    "trialPill": "{months, plural, one {Votre premier mois inclut} other {Vos # premiers mois incluent}} toutes les fonctions Pro, gratuitement",
+    "trialPill": "{months, plural, one {Votre premier mois inclut} other {Vos # premiers mois incluent}} toutes les fonctions {plan}, gratuitement",
     "ctaFree": "Commencer gratuitement",
     "ctaTrial": "Essai gratuit",
-    "yearlyNote": "Payez Pro à l'année et profitez de {months, plural, one {# mois} other {# mois}} offerts.",
+    "yearlyNote": "Payez à l'année et obtenez {months, plural, one {# mois} other {# mois}} offerts.",
     "currencyNote": "Prix en KSh. D'autres devises arrivent bientôt.",
     "mpesaNote": "Paiement par M-Pesa",
     "compareTitle": "Comparer toutes les fonctions",
@@ -1320,108 +1344,37 @@
     "compareCaption": "Fonctions incluses dans chaque formule",
     "included": "Inclus",
     "notIncluded": "Non inclus",
-    "compareGroups": {
-      "shop": "Boutique",
-      "selling": "Ventes",
-      "stats": "Statistiques",
-      "team": "Équipe et outils",
-      "support": "Assistance"
-    },
-    "compare": {
-      "products": "Produits",
-      "photosPerProduct": "Photos par produit",
-      "shopLink": "Votre lien Vano",
-      "shopLooks": "Styles de boutique",
-      "colorsLogoBanner": "Couleurs, logo et bannière",
-      "categoriesSizesColors": "Catégories, tailles et couleurs",
-      "featuredSections": "Sections Coups de cœur et Nouveautés",
-      "customDomain": "Nom de domaine personnalisé",
-      "multiShop": "Plusieurs boutiques ou succursales",
-      "customBranding": "Image de marque sur mesure",
-      "whatsappOrders": "Commandes sur WhatsApp",
-      "salesPromotions": "Lancez des promotions et offres spéciales sur votre boutique",
-      "qrShareImages": "QR code de la boutique et images à partager en statut WhatsApp et sur Instagram",
-      "stockLabels": "Étiquettes Stock faible et Épuisé",
-      "discountCodes": "Codes de réduction pour vos clients",
-      "orderTracking": "Suivi des commandes (nouvelle, confirmée, livrée)",
-      "stockManagement": "Gestion du stock avec alertes de stock faible",
-      "customerList": "Liste de clients avec historique des commandes",
-      "shopStats": "Statistiques (vues, clics WhatsApp, produits les plus vus)",
-      "salesReports": "Suivi des ventes et rapports mensuels",
-      "advancedStats": "Statistiques avancées (tendances, meilleures ventes, sources des visiteurs)",
-      "teamRoles": "Comptes d'équipe avec rôles",
-      "bulkUpload": "Import de produits en masse depuis un tableur",
-      "customIntegrations": "Intégrations sur mesure (paiement, livraison)",
-      "support": "Assistance",
-      "personalizedSetup": "Mise en place et accompagnement personnalisés",
-      "serviceGuarantees": "Garanties de service"
-    },
     "compareValues": {
-      "unlimited": "Illimité",
-      "all": "Tous",
-      "standard": "Standard",
-      "priority": "Prioritaire",
-      "dedicated": "Interlocuteur dédié"
+      "unlimited": "Illimité"
     },
     "ctaTalk": "Parlons-en",
     "enterpriseMessage": "Bonjour Vano ! J'aimerais parler d'une formule personnalisée pour ma boutique.",
     "plans": {
       "free": {
-        "name": "Gratuit",
         "tagline": "Pour bien démarrer"
       },
       "pro": {
-        "name": "Pro",
         "tagline": "Pour les vendeurs qui grandissent"
       },
       "business": {
-        "name": "Business",
         "tagline": "Pour les boutiques actives et les équipes"
       },
       "enterprise": {
-        "name": "Entreprise",
         "tagline": "Parlons-en",
         "priceNote": "Prix communiqué quand vous décidez de la prendre"
       }
-    },
-    "features": {
-      "products": "Jusqu'à {count} produits",
-      "photos": "Jusqu'à {count} photos par produit",
-      "vanoLink": "Votre lien Vano",
-      "whatsappOrders": "Commandes sur WhatsApp",
-      "oneBasicLook": "1 style de boutique de base",
-      "salesPromotions": "Lancez des promotions et offres spéciales sur votre boutique",
-      "productsAndPhotos": "Jusqu'à {products} produits, {photos} photos chacun",
-      "allLooks": "Tous les styles, couleurs, styles de photo de profil et bannière",
-      "categoriesSizesColors": "Catégories, tailles et couleurs",
-      "shopStats": "Statistiques (vues, clics WhatsApp, produits les plus vus)",
-      "prioritySupport": "Assistance prioritaire",
-      "everythingPro": "Tout ce qu'inclut Pro",
-      "unlimitedProducts": "Produits illimités",
-      "discountCodes": "Codes de réduction pour vos clients",
-      "teamRoles": "Comptes d'équipe avec rôles",
-      "orderTracking": "Suivi des commandes (nouvelle, confirmée, livrée)",
-      "salesReports": "Suivi des ventes et rapports mensuels",
-      "everythingBusiness": "Tout ce qu'inclut Business",
-      "multiShop": "Plusieurs boutiques ou succursales dans un compte",
-      "personalizedSetup": "Mise en place et accompagnement personnalisés",
-      "dedicatedContact": "Un interlocuteur dédié",
-      "customIntegrations": "Intégrations sur mesure (paiement, livraison)",
-      "serviceGuarantees": "Garanties de service"
-    },
-    "featureHints": {
-      "salesPromotions": "Bannières d'événement à programmer et partager, réductions en % et badges Promo"
     },
     "faqEyebrow": "Questions",
     "faqTitle": "Questions sur les tarifs",
     "faq": {
       "q1": "Que se passe-t-il après l'essai ?",
-      "a1": "Après vos 2 mois gratuits, vous choisissez une formule. Sans choix de votre part, votre boutique passe sur Gratuit et reste en ligne avec jusqu'à 10 produits.",
+      "a1": "Après {months, plural, one {votre mois gratuit} other {vos # mois gratuits}}, vous choisissez une formule. Sinon, votre boutique passe en {free} et reste en ligne avec jusqu'à {count} produits.",
       "q2": "Puis-je changer de formule ?",
       "a2": "Oui. Vous pourrez passer à une formule supérieure ou inférieure à tout moment, depuis votre tableau de bord.",
       "q3": "Comment payer ?",
       "a3": "Rien à payer pendant l'essai. Les moyens de paiement seront annoncés avant la fin de l'essai ; M-Pesa est prévu."
-    }
+    },
+    "everythingIn": "Tout ce qu'inclut {plan}"
   },
   "Help": {
     "metaTitle": "Aide · Vano",
@@ -1560,7 +1513,7 @@
     "bannerAction": "Voir les forfaits",
     "dismiss": "Fermer",
     "lockedStatsTitle": "Statistiques",
-    "lockedStatsBody": "Voyez les visites de votre boutique et les clics WhatsApp avec le forfait Pro.",
+    "lockedStatsBody": "Voyez les vues de votre boutique et les clics WhatsApp avec la formule {plan}.",
     "lockedStatsAction": "Voir les forfaits",
     "keep": "Garder {plan}",
     "trialBadge": "Essai gratuit : {count, plural, one {# jour restant} other {# jours restants}}",
@@ -2034,7 +1987,7 @@
       "making": "Création de l'image…",
       "failed": "Impossible de créer l'image. Réessayez.",
       "done": "Image prête",
-      "locked": "Les téléchargements sont inclus dans Pro et Business."
+      "locked": "Les téléchargements sont inclus dans {plan} et les formules au-dessus."
     },
     "headlineRequired": "Ajoutez un titre.",
     "stickersTitle": "Autocollants"
@@ -2068,5 +2021,240 @@
       "newSticker": "Autocollant « Nouveau »",
       "saleSticker": "Autocollant « Promo »"
     }
+  },
+  "PlanFeatures": {
+    "products": {
+      "name": "Produits",
+      "description": "Nombre de produits qu'une boutique peut avoir (illimité = plafond de la plateforme)."
+    },
+    "photosPerProduct": {
+      "name": "Photos par produit",
+      "description": "Nombre de photos que chaque produit peut afficher."
+    },
+    "categoriesSizesColors": {
+      "name": "Catégories, tailles et couleurs",
+      "description": "Détails de produit que le vendeur peut ajouter. Pas encore vérifié par l'app."
+    },
+    "stockLabels": {
+      "name": "Étiquettes de stock",
+      "description": "Étiquettes Stock faible et Épuisé. Pas encore construit."
+    },
+    "stockManagement": {
+      "name": "Gestion du stock",
+      "description": "Quantités en stock et alertes. Pas encore construit."
+    },
+    "bulkUpload": {
+      "name": "Import en masse",
+      "description": "Ajouter des produits depuis un tableur. Pas encore construit."
+    },
+    "shopLink": {
+      "name": "Lien Vano",
+      "description": "Le lien de la boutique. Chaque boutique l'a."
+    },
+    "allLooks": {
+      "name": "Tous les styles de boutique",
+      "description": "Tous les styles, couleurs, boutons, bannière et styles de photo de profil. Sans cela, seul le style gratuit peut être publié."
+    },
+    "colorsLogoBanner": {
+      "name": "Couleurs, logo et bannière",
+      "description": "Affiché sur la page Tarifs ; la vérification est Tous les styles."
+    },
+    "featuredSections": {
+      "name": "Sections mises en avant",
+      "description": "Sections Coups de cœur et Nouveautés. Pas encore construit."
+    },
+    "customDomain": {
+      "name": "Nom de domaine",
+      "description": "La boutique sur sa propre adresse web. Pas encore construit."
+    },
+    "customBranding": {
+      "name": "Image de marque sur mesure",
+      "description": "Image de marque faite pour la boutique. Pas encore construit."
+    },
+    "whatsappOrders": {
+      "name": "Commandes WhatsApp",
+      "description": "Les clients commandent sur WhatsApp. Chaque boutique l'a."
+    },
+    "salesPromotions": {
+      "name": "Promotions et bannières d'événement",
+      "description": "Bannières d'événement, réductions en % et badges Promo, et téléchargement des bannières."
+    },
+    "qrShareImages": {
+      "name": "QR code et images à partager",
+      "description": "QR code de la boutique et images à partager. Pas encore vérifié par l'app."
+    },
+    "discountCodes": {
+      "name": "Codes de réduction",
+      "description": "Codes que les clients utilisent. Pas encore construit ; vérifié à sa sortie."
+    },
+    "orderTracking": {
+      "name": "Suivi des commandes",
+      "description": "Statuts de commande (nouvelle, confirmée, livrée). Pas encore construit ; vérifié à sa sortie."
+    },
+    "customerList": {
+      "name": "Liste de clients",
+      "description": "Clients et historique de commandes. Pas encore construit."
+    },
+    "shopStats": {
+      "name": "Statistiques",
+      "description": "Vues, clics WhatsApp et produits les plus vus dans le tableau de bord."
+    },
+    "salesReports": {
+      "name": "Rapports de ventes",
+      "description": "Suivi des ventes et rapports mensuels. Pas encore construit."
+    },
+    "advancedStats": {
+      "name": "Statistiques avancées",
+      "description": "Tendances, meilleures ventes, sources des visiteurs. Pas encore construit."
+    },
+    "teamMembers": {
+      "name": "Membres d'équipe",
+      "description": "Comptes en plus pour aider à gérer la boutique. Pas encore construit ; vérifié à sa sortie."
+    },
+    "teamRoles": {
+      "name": "Rôles d'équipe",
+      "description": "Rôles des comptes d'équipe. Pas encore construit ; vérifié à sa sortie."
+    },
+    "multiShop": {
+      "name": "Plusieurs boutiques",
+      "description": "Plusieurs boutiques ou succursales dans un compte. Pas encore construit ; vérifié à sa sortie."
+    },
+    "customIntegrations": {
+      "name": "Intégrations sur mesure",
+      "description": "Paiement ou livraison connectés pour la boutique. Pas encore construit."
+    },
+    "prioritySupport": {
+      "name": "Assistance prioritaire",
+      "description": "Réponses plus rapides de l'équipe Vano."
+    },
+    "dedicatedSupport": {
+      "name": "Interlocuteur dédié",
+      "description": "Une personne chez Vano qui suit la boutique."
+    },
+    "personalizedSetup": {
+      "name": "Mise en place personnalisée",
+      "description": "Mise en place et accompagnement avec le vendeur."
+    },
+    "serviceGuarantees": {
+      "name": "Garanties de service",
+      "description": "Niveaux de service convenus."
+    }
+  },
+  "PlanAreas": {
+    "products": "Produits",
+    "shopLook": "Style de boutique",
+    "sales": "Ventes",
+    "team": "Équipe",
+    "support": "Assistance"
+  },
+  "AdminPlans": {
+    "title": "Formules et fonctionnalités",
+    "intro": "Les formules, les prix et quelle formule a quelle fonctionnalité. L'app, la page Tarifs et le comparatif lisent ces réglages. Les changements s'appliquent tout de suite ; aucune donnée n'est jamais supprimée.",
+    "updated": "Dernier changement : {date}.",
+    "reset": "Rétablir les valeurs par défaut",
+    "resetDone": "Les formules et fonctionnalités sont revenues aux valeurs par défaut.",
+    "saved": "Enregistré.",
+    "plansTitle": "Formules",
+    "visible": "Sur la page Tarifs",
+    "nameEn": "Nom (anglais)",
+    "nameFr": "Nom (français)",
+    "monthly": "Prix mensuel",
+    "yearly": "Prix annuel",
+    "yearlyHelp": "Laissez vide s'il n'y a pas de prix annuel. La page Tarifs affiche les mois offerts.",
+    "monthlyFreeHelp": "Gratuit coûte toujours 0.",
+    "monthlyCustomHelp": "Laissez vide pour un prix sur mesure (« Parlons-en »).",
+    "trialMonths": "Essai gratuit (mois)",
+    "trialHelp": "Pour les nouvelles boutiques. Les essais en cours gardent leur date de fin.",
+    "featuresTitle": "Fonctionnalités",
+    "featuresHelp": "Activez ou désactivez une fonctionnalité, ou fixez une limite. Une formule inclut toujours tout ce qu'ont les formules en dessous.",
+    "feature": "Fonctionnalité",
+    "area": "Domaine",
+    "allAreas": "Tous les domaines",
+    "check": "Vérifié par l'app",
+    "allChecks": "Toutes les fonctionnalités",
+    "checks": {
+      "enforced": "Vérifié par l'app",
+      "pricingOnly": "Page Tarifs uniquement"
+    },
+    "pricingOnly": "Page Tarifs uniquement",
+    "pricingOnlyHelp": "Pas encore construit ou vérifié : la modifier ne change que la page Tarifs.",
+    "pricingColumn": "Page Tarifs",
+    "shown": "Affiché",
+    "hidden": "Masqué",
+    "search": "Rechercher une fonctionnalité",
+    "searchPlaceholder": "Rechercher par nom",
+    "noMatchTitle": "Aucune fonctionnalité trouvée",
+    "noMatchBody": "Essayez une autre recherche ou un autre filtre.",
+    "notFoundTitle": "Cette fonctionnalité n'existe pas",
+    "featureTitle": "Fonctionnalité",
+    "kindFlag": "Activé / désactivé",
+    "kindLimit": "Limite",
+    "unlimited": "Illimité",
+    "cellLabel": "{feature} pour {plan}",
+    "fromPlan": "Via {plan}",
+    "fromPlanValue": "{value} via {plan}",
+    "inheritHelp": "Une formule a tout ce qu'ont les formules en dessous. Modifiez-le sur la formule la plus basse.",
+    "pricingTitle": "Texte de la page Tarifs",
+    "pricingHelp": "Ce que la page Tarifs dit de cette fonctionnalité. Cela ne change pas ce que l'app vérifie.",
+    "show": "Afficher sur la page Tarifs",
+    "showOnCard": "Afficher sur les cartes de formule",
+    "order": "Ordre",
+    "orderHelp": "Les plus petits nombres passent en premier.",
+    "tableLabel": "Libellé du comparatif",
+    "cardLabel": "Ligne de la carte de formule",
+    "cardLabelLimitHelp": "Utilisez {count} à la place du nombre.",
+    "unlimitedLabel": "Ligne de carte si illimité",
+    "offLabel": "Ligne de carte si non incluse",
+    "offLabelHelp": "Affichée sur la carte de la première formule si elle n'a pas cette fonctionnalité (ex. « 1 style de boutique de base »).",
+    "hint": "Petite ligne sous le libellé",
+    "langEn": "anglais",
+    "langFr": "français",
+    "errors": {
+      "name": "Utilisez 1 à {max} caractères, dans les deux langues.",
+      "monthlyPrice": "Entrez un prix mensuel valide. Les formules payantes ont un prix supérieur à 0.",
+      "yearlyPrice": "Entrez un prix annuel supérieur à 0 et au plus 12 prix mensuels, ou laissez vide.",
+      "trialMonths": "Entrez un nombre entier de mois de {min} à {maxMonths}.",
+      "noVisiblePlan": "Au moins une formule doit être sur la page Tarifs.",
+      "label": "Utilisez 1 à {max} caractères.",
+      "order": "Entrez un nombre entier de 0 à {maxOrder}.",
+      "pair": "Écrivez-le dans les deux langues, ou laissez les deux vides."
+    },
+    "impact": {
+      "title": "Retirer cela ?",
+      "resetTitle": "Rétablir toutes les formules et fonctionnalités ?",
+      "nothingLost": "Aucune formule ne perd rien avec ce changement.",
+      "lost": "Les formules perdront : {features}{more, plural, =0 {} other { et # autres}}.",
+      "shops": "{count, plural, =0 {Aucune boutique n'est} one {# boutique est} other {# boutiques sont}} sur {plans} en ce moment.",
+      "shopsMany": "Plus de {count} boutiques sont sur {plans} en ce moment.",
+      "pricingOnly": "Ces fonctionnalités ne sont pas encore vérifiées par l'app : seule la page Tarifs change.",
+      "dataKept": "Aucune donnée n'est supprimée : produits, photos et styles restent. Une fonctionnalité verrouillée cesse simplement de fonctionner jusqu'à ce que la formule de la boutique l'inclue de nouveau.",
+      "confirm": "Oui, enregistrer",
+      "confirmReset": "Oui, rétablir"
+    }
+  },
+  "PlanExceptions": {
+    "title": "Exceptions de formule",
+    "empty": "Aucune exception. Cette boutique a exactement ce que sa formule inclut.",
+    "ownShop": "Vous ne pouvez pas donner d'exception à votre propre boutique.",
+    "add": "Ajouter une exception",
+    "addTitle": "Ajouter une exception pour {shop}",
+    "addBody": "Donnez à cette boutique une fonctionnalité ou une limite plus haute jusqu'à une date. Elle se termine d'elle-même et figure dans l'historique.",
+    "added": "Exception ajoutée.",
+    "feature": "Fonctionnalité",
+    "newLimit": "Nouvelle limite",
+    "unlimited": "Illimité",
+    "limitInvalid": "Entrez un nombre entier dans la limite de cette fonctionnalité.",
+    "flagHelp": "La boutique a cette fonctionnalité jusqu'à la date de fin.",
+    "days": "Pendant combien de jours",
+    "endsOn": "Se termine le {date}.",
+    "reason": "Raison",
+    "reasonHelp": "Pourquoi cette boutique l'obtient (partenaire, cas d'assistance…). Affiché dans l'historique.",
+    "on": "Inclus",
+    "limit": "Jusqu'à {count}",
+    "until": "Jusqu'au {date}",
+    "endedOn": "Terminée le {date}",
+    "revokedOn": "Retirée le {date}",
+    "revoke": "Retirer",
+    "revoked": "Exception retirée."
   }
 }
