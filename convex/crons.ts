@@ -1,7 +1,7 @@
 import { cronJobs } from "convex/server";
 import { internal } from "./_generated/api";
 
-/** Recurring jobs (CLAUDE.md "Billing", "Protected shop changes", "Notifications"). */
+/** Recurring jobs (CLAUDE.md "Billing", "Protected shop changes", "Notifications", "Sales"). */
 const crons = cronJobs();
 
 // Trials and paid plans that ended move to Free.
@@ -9,6 +9,9 @@ crons.interval("expire ended plans", { hours: 1 }, internal.billingJobs.expireDu
 
 // Shop plan exceptions past their end date stop (safety net for the scheduled job).
 crons.interval("expire plan exceptions", { hours: 1 }, internal.planExceptionJobs.sweep, {});
+
+// Sales past their end stop showing (safety net for the scheduled job).
+crons.interval("end finished sales", { hours: 1 }, internal.saleJobs.sweep, {});
 
 // Old open payments expire; stale pending ones are re-checked with the provider.
 crons.interval("reconcile pending payments", { hours: 24 }, internal.payments.core.reconcilePending, {});

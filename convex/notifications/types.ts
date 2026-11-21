@@ -104,6 +104,25 @@ const lookReset = v.object({
   reason: v.string(),
 });
 
+/** To the seller: their scheduled sale started / ends in a day / ended (CLAUDE.md "Sales"). */
+const saleStarted = v.object({ type: v.literal("sale.started"), saleId: v.id("sales"), name: v.string() });
+const saleEndingSoon = v.object({
+  type: v.literal("sale.endingSoon"),
+  saleId: v.id("sales"),
+  name: v.string(),
+  endsAt: v.number(),
+});
+const saleEnded = v.object({ type: v.literal("sale.ended"), saleId: v.id("sales"), name: v.string() });
+
+/** To the seller: an admin paused or deleted one of their sales. */
+const saleAdminPaused = v.object({
+  type: v.literal("sale.adminPaused"),
+  saleId: v.id("sales"),
+  name: v.string(),
+  reason: v.string(),
+});
+const saleAdminDeleted = v.object({ type: v.literal("sale.adminDeleted"), name: v.string(), reason: v.string() });
+
 export const notificationDataValidator = v.union(
   changeRequestSubmitted,
   changeRequestFlagged,
@@ -116,6 +135,11 @@ export const notificationDataValidator = v.union(
   planEndingSoon,
   adminEndingSoon,
   lookReset,
+  saleStarted,
+  saleEndingSoon,
+  saleEnded,
+  saleAdminPaused,
+  saleAdminDeleted,
 );
 export type NotificationData = Infer<typeof notificationDataValidator>;
 export type NotificationType = NotificationData["type"];
@@ -141,6 +165,11 @@ export const NOTIFICATION_TYPES: Record<NotificationType, TypeInfo> = {
   "plan.endingSoon": { category: "billing", audience: "user" },
   "admin.endingSoon": { category: "billing", audience: "billing.view" },
   "look.reset": { category: "shop", audience: "user" },
+  "sale.started": { category: "shop", audience: "user" },
+  "sale.endingSoon": { category: "shop", audience: "user" },
+  "sale.ended": { category: "shop", audience: "user" },
+  "sale.adminPaused": { category: "shop", audience: "user" },
+  "sale.adminDeleted": { category: "shop", audience: "user" },
 };
 
 export const NOTIFICATION_TYPE_LIST = Object.keys(NOTIFICATION_TYPES) as NotificationType[];
@@ -166,5 +195,12 @@ export function notificationHref(data: NotificationData): string {
       return "/dashboard/billing";
     case "look.reset":
       return "/dashboard/look";
+    case "sale.started":
+    case "sale.endingSoon":
+    case "sale.adminPaused":
+      return `/dashboard/sales/${data.saleId}`;
+    case "sale.ended":
+    case "sale.adminDeleted":
+      return "/dashboard/sales";
   }
 }
