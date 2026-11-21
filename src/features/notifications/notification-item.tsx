@@ -37,6 +37,15 @@ const ICONS: Record<NotificationType, { icon: LucideIcon; tone: string }> = {
 export type NotificationRow = FunctionReturnType<typeof api.notifications.inbox.latest>[number]
 
 /**
+ * Whether this client knows how to show the row. A row written by newer
+ * server code (a type this build doesn't have yet) is skipped instead of
+ * breaking the whole list.
+ */
+export function isKnownNotification(row: NotificationRow): boolean {
+  return Object.hasOwn(ICONS, row.data.type)
+}
+
+/**
  * The inside of a notification row: icon, text, time and the unread
  * marker. Unread doesn't rely on color: a dot, bold text and a
  * screen-reader "Unread".

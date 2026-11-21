@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
 import { CountBadge, countLabel } from "./count-badge"
-import { NotificationItem } from "./notification-item"
+import { isKnownNotification, NotificationItem } from "./notification-item"
 import { useMarkAllRead, useOpenNotification } from "./use-open-notification"
 
 /**
@@ -58,7 +58,7 @@ function Bell({ allHref }: { allHref: string }) {
 function BellList({ allHref, hasUnread }: { allHref: string; hasUnread: boolean }) {
   const t = useTranslations("Notifications")
   const router = useRouter()
-  const rows = useQuery(api.notifications.inbox.latest, {})
+  const rows = useQuery(api.notifications.inbox.latest, {})?.filter(isKnownNotification)
   const open = useOpenNotification()
   const markAllRead = useMarkAllRead()
   // Relative times are measured from when the list was opened.
