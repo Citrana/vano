@@ -5,6 +5,7 @@ import { useMemo, useState } from "react"
 import { cn } from "cn"
 import { CATEGORY_KEYS, type Category } from "../../../convex/lib/catalog"
 import type { Currency } from "../../../convex/lib/money"
+import type { PublicSale } from "../../../convex/lib/sales/active"
 import { EmptyState } from "@/components/states/states"
 import { ProductCard } from "./product-card"
 
@@ -15,41 +16,55 @@ type Item = {
   category: Category
   soldOut: boolean
   coverUrl: string | null
+  sale?: PublicSale | null
 }
 
-/** Category filter chips (only categories that have products) + grid. */
+export type GridFilter = Category | "all" | "sale"
+
+/**
+ * Filter chips + grid: a "Sale" chip while at least one product is on
+ * sale (CLAUDE.md "Sales"), then the categories that have products.
+ */
 export function ProductGrid({
   slug,
   currency,
   products,
   columns = "responsive",
+  initialFilter = "all",
 }: {
   slug: string
   currency: Currency
   products: Item[]
   /** "phone": always 2 columns (e.g. inside a phone mockup, whatever the viewport). */
   columns?: "responsive" | "phone"
+  /** E.g. "sale" from `?sale=1` (the event banner's link). */
+  initialFilter?: GridFilter
 }) {
   const t = useTranslations("Public")
   const tc = useTranslations("Categories")
-  const [active, setActive] = useState<Category | "all">("all")
+  const hasSale = products.some((p) => p.sale)
+  const [chosen, setActive] = useState<GridFilter>(initialFilter)
+  // The sale may end while the page is open: fall back to everything.
+  const active: GridFilter = chosen === "sale" && !hasSale ? "all" : chosen
   const categories = useMemo(
     () => CATEGORY_KEYS.filter((key) => products.some((p) => p.category === key)),
     [products],
   )
-  const visible = active === "all" ? products : products.filter((p) => p.category === active)
+  const visible =
+    active === "all" ? products : active === "sale" ? products.filter((p) => p.sale) : products.filter((p) => p.category === active)
+  const filters: GridFilter[] = ["all", ...(hasSale ? (["sale"] as const) : []), ...categories]
 
   if (products.length === 0) return <EmptyState title={t("empty")} />
 
   return (
     <div className="flex flex-col gap-4">
-      {categories.length > 1 ? (
+      {filters.length > 2 ? (
         <div
           role="toolbar"
           aria-label={t("filter")}
           className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 py-1"
         >
-          {(["all", ...categories] as const).map((key) => (
+          {filters.map((key) => (
             <button
               key={key}
               type="button"
@@ -60,7 +75,7 @@ export function ProductGrid({
                 active === key ? "chip-selected" : "bg-card hover:bg-muted"
               )}
             >
-              {key === "all" ? t("all") : tc(key)}
+              {key === "all" ? t("all") : key === "sale" ? t("saleFilter") : tc(key)}
             </button>
           ))}
         </div>
@@ -78,6 +93,7 @@ export function ProductGrid({
                 currency={currency}
                 soldOut={p.soldOut}
                 coverUrl={p.coverUrl}
+                sale={p.sale}
               />
             </li>
           ))}

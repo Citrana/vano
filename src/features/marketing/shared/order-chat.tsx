@@ -17,7 +17,8 @@ export async function OrderChat({ reply, typing = !reply }: { reply?: { text: st
   const locale = await getLocale()
 
   const product = DEMO_PRODUCTS[0]
-  const message = buildOrderMessage(tp, {
+  // The server translator's typing doesn't accept the shared key union.
+  const message = buildOrderMessage((key, values) => tp(key, values as Record<string, string>), {
     product: td(`products.${product.id}.name`),
     price: formatMoney(product.price, DEMO_CURRENCY, locale),
     size: "M",

@@ -1,8 +1,10 @@
 import type { Metadata } from "next"
 import { getTranslations } from "next-intl/server"
+import Link from "next/link"
 import { notFound } from "next/navigation"
 import { getShopPage } from "@/features/public/data"
 import { ProductGrid } from "@/features/public/product-grid"
+import { SaleStrip } from "@/features/public/sale-strip"
 import { PublicFooter } from "@/features/public/public-footer"
 import { ShopHeader } from "@/features/public/shop-header"
 import { SHOP_BANNER_EDGE, ShopBanner } from "@/features/shop-looks/shop-banner"
@@ -36,24 +38,50 @@ export async function generateMetadata({ params }: PageProps<"/[slug]">): Promis
   }
 }
 
-export default async function ShopPage({ params }: PageProps<"/[slug]">) {
+export default async function ShopPage({ params, searchParams }: PageProps<"/[slug]">) {
   const { slug } = await params
+  const { sale: saleParam } = await searchParams
   const page = await getShopPage(slug)
   if (!page) notFound()
   // Layouts and pages render in parallel, so this page handles it too.
   if (page.suspended) return <ShopUnavailable name={page.name} language={page.language} />
   const { shop, products } = page
   const hasBanner = shop.look.banner.kind !== "none"
+  const t = await getTranslations({ locale: shop.language, namespace: "Public" })
+  // CLAUDE.md "Sales": the "Sale" filter, the countdown strip and the
+  // event banner's link only exist while a sale is running.
+  const onSale = products.filter((p) => p.sale)
+  const banner = hasBanner ? <ShopBanner banner={shop.look.banner} className={SHOP_BANNER_EDGE.responsive} /> : null
+  const bannerLinksToSale = shop.look.banner.kind === "event" && shop.look.banner.link === "sale" && onSale.length > 0
+  const countdownEnd = onSale.reduce<number | null>(
+    (soonest, p) => (p.sale?.countdown && (soonest === null || p.sale.endsAt < soonest) ? p.sale.endsAt : soonest),
+    null,
+  )
 
   return (
     <ShopLocaleProvider language={shop.language}>
       <ShopLookScope look={shop.look} className="flex flex-1 flex-col">
         <main className={`mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 pb-10 ${hasBanner ? "md:pt-6" : "pt-6 md:pt-10"}`}>
           <div className="flex flex-col">
-            {hasBanner ? <ShopBanner banner={shop.look.banner} className={SHOP_BANNER_EDGE.responsive} /> : null}
+            {bannerLinksToSale ? (
+              <Link href={`/${shop.slug}?sale=1#products`} aria-label={t("seeSaleItems")} className="block rounded-xl focus-ring">
+                {banner}
+              </Link>
+            ) : (
+              banner
+            )}
             <ShopHeader shop={shop} profile={shop.look.profile} onBanner={hasBanner} />
           </div>
-          <ProductGrid slug={shop.slug} currency={shop.currency} products={products} />
+          {countdownEnd !== null ? <SaleStrip endsAt={countdownEnd} /> : null}
+          <div id="products" className="scroll-mt-4">
+            <ProductGrid
+              key={saleParam === "1" ? "sale" : "all"}
+              slug={shop.slug}
+              currency={shop.currency}
+              products={products}
+              initialFilter={saleParam === "1" && onSale.length > 0 ? "sale" : "all"}
+            />
+          </div>
         </main>
         <PublicFooter language={shop.language} />
       </ShopLookScope>

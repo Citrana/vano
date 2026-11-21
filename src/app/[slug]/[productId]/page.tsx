@@ -21,7 +21,10 @@ export async function generateMetadata({ params }: PageProps<"/[slug]/[productId
   if (!page || page.suspended) return {}
   const { shop, product } = page
   const title = `${product.name} – ${shop.name}`
-  const price = formatMoney(product.price, shop.currency, shop.language)
+  // On sale: the sale price and the normal one (CLAUDE.md "Sales").
+  const price = product.sale
+    ? `${formatMoney(product.sale.price, shop.currency, shop.language)} (${formatMoney(product.sale.original, shop.currency, shop.language)})`
+    : formatMoney(product.price, shop.currency, shop.language)
   const description = [price, product.description].filter(Boolean).join(" · ").slice(0, 200)
   const image = product.imageUrls[0] ?? shop.logoUrl ?? undefined
   const url = `/${shop.slug}/${product._id}`
