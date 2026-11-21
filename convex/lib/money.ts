@@ -66,3 +66,28 @@ export function priceProblem(minor: number): "notInteger" | "notPositive" | "too
   if (minor > MAX_PRICE_MINOR) return "tooHigh";
   return null;
 }
+
+/**
+ * Rounding steps for computed prices (sale percent off), in minor units,
+ * largest first: 100 FC for CDF, whole shillings for KES, cents for USD /
+ * EUR. A step is used only when it is at most 5% of the price, so a cheap
+ * item is never rounded into a much bigger discount (150 FC stays exact
+ * to the franc).
+ */
+export const ROUNDING_STEPS_MINOR: Record<Currency, readonly number[]> = {
+  USD: [1],
+  EUR: [1],
+  KES: [100, 1],
+  CDF: [10_000, 1_000, 100, 1],
+};
+
+/**
+ * Rounds a computed price to the currency's step (nearest). Returns
+ * `minor` unchanged when rounding would reach zero or `ceiling` (a sale
+ * price must stay above zero and below the normal price).
+ */
+export function roundPrice(minor: number, currency: Currency, ceiling: number): number {
+  const step = ROUNDING_STEPS_MINOR[currency].find((s) => s * 20 <= ceiling) ?? 1;
+  const rounded = Math.round(minor / step) * step;
+  return rounded > 0 && rounded < ceiling ? rounded : minor;
+}
