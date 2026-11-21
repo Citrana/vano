@@ -61,6 +61,16 @@ export function useNotificationText(): (data: NotificationData, now: number) => 
           data.scope === "banner" ? "types.look.resetBanner" : data.scope === "profile" ? "types.look.resetProfile" : "types.look.resetAll",
           { reason: data.reason },
         )
+      case "sale.started":
+        return t("types.sale.started", { name: data.name })
+      case "sale.endingSoon":
+        return t("types.sale.endingSoon", { name: data.name })
+      case "sale.ended":
+        return t("types.sale.ended", { name: data.name })
+      case "sale.adminPaused":
+        return t("types.sale.adminPaused", { name: data.name, reason: data.reason })
+      case "sale.adminDeleted":
+        return t("types.sale.adminDeleted", { name: data.name, reason: data.reason })
     }
   }
 }

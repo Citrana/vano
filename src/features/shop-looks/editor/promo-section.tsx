@@ -28,6 +28,7 @@ import { STICKER_CATEGORIES, STICKERS, type StickerId } from "@/assets/images/st
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useErrorMessage } from "@/lib/use-error-message"
+import { Switch } from "@/components/ui/switch"
 import { BannerDownloads } from "../events/banner-downloads"
 import { EventBanner } from "../events/event-banner"
 import { EVENT_FONT_CLASS } from "../events/fonts"
@@ -446,6 +447,22 @@ export function PromoSection({
         now={now}
         onCommit={(dates) => set({ ...promo, startsAt: dates.startsAt, endsAt: dates.endsAt })}
       />
+
+      {/* CLAUDE.md "Sales": one tap sends visitors to the sale items. */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col gap-0.5">
+          <span id="promo-link-label" className="text-sm font-medium">
+            {t("linkToSale")}
+          </span>
+          <span className="text-xs text-muted-foreground">{mine.saleLive ? t("linkToSaleHint") : t("linkToSaleNoSale")}</span>
+        </div>
+        <Switch
+          aria-labelledby="promo-link-label"
+          checked={promo.link === "sale"}
+          disabled={disabled}
+          onCheckedChange={(on) => set({ ...promo, link: on ? "sale" : undefined })}
+        />
+      </div>
 
       <BannerDownloads banner={resolved} slug={mine.slug} locked={locked} />
 

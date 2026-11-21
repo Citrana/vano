@@ -4,53 +4,57 @@ import { useTranslations } from "next-intl"
 import { useEffect, useId, useState } from "react"
 import { cn } from "cn"
 import { PROMO_MAX_DAYS, scheduleProblem } from "../../../../convex/lib/looks/schedule"
+import { saleScheduleProblem } from "../../../../convex/lib/sales/rules"
+import { fromLocalInput, toLocalInput } from "@/lib/local-time"
 import { Input } from "@/components/ui/input"
 import { ChoiceGroup } from "./choice-group"
 
 type Schedule = { startsAt?: number; endsAt?: number }
 
-/** Local "YYYY-MM-DDTHH:mm" for a datetime-local input. */
-function toLocalInput(ms: number | undefined): string {
-  if (ms === undefined) return ""
-  const d = new Date(ms)
-  const pad = (n: number) => String(n).padStart(2, "0")
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
-
-function fromLocalInput(value: string): number | undefined {
-  if (!value) return undefined
-  const ms = new Date(value).getTime()
-  return Number.isFinite(ms) ? ms : undefined
-}
+type Mode = "always" | "now" | "dates"
 
 /**
- * Start / end (event banners and profile decorations), written to the
- * draft only when the order is valid. Times are the seller's local time,
- * stored as UTC (schedule.ts rules).
+ * Start / end, in the seller's local time, stored as UTC (schedule.ts
+ * rules). `variant="promo"` (event banners, profile decorations): "always"
+ * or dates, written to the draft only when the order is valid.
+ * `variant="sale"` (CLAUDE.md "Sales"): "start now" or a start, and an end
+ * always (sales/rules.ts adds "the end is in the future").
  */
 export function ScheduleFields({
   schedule,
   disabled,
   now,
   onCommit,
+  variant = "promo",
 }: {
   schedule: Schedule
   disabled: boolean
   now: number
   onCommit: (dates: { startsAt?: number; endsAt?: number }) => void
+  variant?: "promo" | "sale"
 }) {
   const t = useTranslations("EventBanners.schedule")
   const id = useId()
-  const [mode, setMode] = useState<"always" | "dates">(schedule.startsAt !== undefined || schedule.endsAt !== undefined ? "dates" : "always")
+  const sale = variant === "sale"
+  const [mode, setMode] = useState<Mode>(
+    sale ? (schedule.startsAt !== undefined ? "dates" : "now") : schedule.startsAt !== undefined || schedule.endsAt !== undefined ? "dates" : "always",
+  )
   const [start, setStart] = useState(toLocalInput(schedule.startsAt))
   const [end, setEnd] = useState(toLocalInput(schedule.endsAt))
-  const dates = mode === "always" ? {} : { startsAt: fromLocalInput(start), endsAt: fromLocalInput(end) }
-  const problem = scheduleProblem(dates, now)
-  const ended = problem === null && dates.endsAt !== undefined && dates.endsAt <= now
+  const datesFor = (m: Mode, s: string, e: string): Schedule =>
+    m === "always" ? {} : { startsAt: m === "now" ? undefined : fromLocalInput(s), endsAt: fromLocalInput(e) }
+  const dates = datesFor(mode, start, end)
+  const problem = sale
+    ? dates.endsAt === undefined
+      ? "missingEnd"
+      : saleScheduleProblem({ startsAt: dates.startsAt, endsAt: dates.endsAt }, now)
+    : scheduleProblem(dates, now)
+  const ended = !sale && problem === null && dates.endsAt !== undefined && dates.endsAt <= now
 
-  function commit(nextMode: "always" | "dates", nextStart: string, nextEnd: string) {
-    const next = nextMode === "always" ? {} : { startsAt: fromLocalInput(nextStart), endsAt: fromLocalInput(nextEnd) }
-    if (scheduleProblem(next, now) !== "order") onCommit(next)
+  function commit(nextMode: Mode, nextStart: string, nextEnd: string) {
+    const next = datesFor(nextMode, nextStart, nextEnd)
+    // A sale's form validates (and shows) every problem itself.
+    if (sale || scheduleProblem(next, now) !== "order") onCommit(next)
   }
 
   return (
@@ -64,19 +68,21 @@ export function ScheduleFields({
           commit(m, start, end)
         }}
         options={[
-          { value: "always", label: t("always") },
-          { value: "dates", label: t("dates") },
+          sale ? { value: "now", label: t("startNow") } : { value: "always", label: t("always") },
+          { value: "dates", label: sale ? t("pickStart") : t("dates") },
         ]}
       />
-      {mode === "dates" ? (
+      {mode !== "always" ? (
         <div className="flex flex-col gap-3">
           <div className="grid gap-3 sm:grid-cols-2">
             {(
               [
                 ["start", start, setStart, t("start"), t("startHelp")],
-                ["end", end, setEnd, t("end"), t("endHelp")],
+                ["end", end, setEnd, t("end"), sale ? t("saleEndHelp") : t("endHelp")],
               ] as const
-            ).map(([key, value, set, label, help]) => (
+            )
+              .filter(([key]) => key === "end" || mode === "dates")
+              .map(([key, value, set, label, help]) => (
               <div key={key} className="flex flex-col gap-2">
                 <label htmlFor={`${id}-${key}`} className="text-sm font-medium">
                   {label}
@@ -89,8 +95,8 @@ export function ScheduleFields({
                   aria-describedby={`${id}-${key}-help ${id}-problem`}
                   onChange={(e) => {
                     set(e.target.value)
-                    if (key === "start") commit("dates", e.target.value, end)
-                    else commit("dates", start, e.target.value)
+                    if (key === "start") commit(mode, e.target.value, end)
+                    else commit(mode, start, e.target.value)
                   }}
                 />
                 <p id={`${id}-${key}-help`} className="text-xs text-muted-foreground">
@@ -101,13 +107,17 @@ export function ScheduleFields({
           </div>
           <p className="text-xs text-muted-foreground">{t("timezone")}</p>
           <p id={`${id}-problem`} role="status" className={cn("text-sm", problem ? "text-destructive" : "text-tag-warning-foreground")}>
-            {problem === "order"
+            {problem === "missingEnd"
+              ? t("missingEnd")
+              : problem === "order"
               ? t("order")
               : problem === "tooFar"
                 ? t("tooFar")
                 : problem === "tooLong"
                   ? t("tooLong", { days: PROMO_MAX_DAYS })
-                  : ended
+                  : problem === "ended"
+                    ? t("saleEnded")
+                    : ended
                     ? t("ended")
                     : null}
           </p>

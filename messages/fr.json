@@ -88,7 +88,15 @@
     "DECORATION_SCHEDULE_INVALID": "Vérifiez les dates de la décoration de la photo : la fin doit suivre le début, dans les 92 jours, et le début doit être dans moins d'un an.",
     "PLAN_CONFIG_STALE": "Quelqu'un d'autre a modifié les formules pendant votre modification. Votre changement n'a pas été enregistré : vérifiez les dernières valeurs et réessayez.",
     "PLAN_CONFIG_INVALID": "Certaines valeurs ne sont pas valides. Vérifiez les champs et réessayez.",
-    "EXCEPTION_INVALID": "Cette exception n'est pas valide : choisissez une fonctionnalité que la formule ne donne pas déjà, ou une limite plus haute."
+    "EXCEPTION_INVALID": "Cette exception n'est pas valide : choisissez une fonctionnalité que la formule ne donne pas déjà, ou une limite plus haute.",
+    "SALE_INVALID": "Cette promotion ne peut pas être enregistrée. Vérifiez ses informations et réessayez.",
+    "SALE_NAME_INVALID": "Donnez à la promotion un nom de 2 à 60 caractères.",
+    "SALE_DISCOUNT_INVALID": "Vérifiez la réduction : 1 à 90 %, ou un prix promo inférieur au prix normal et supérieur à zéro pour chaque produit choisi.",
+    "SALE_NO_PRODUCTS": "Cette promotion ne baisse le prix d'aucun produit. Choisissez d'autres produits ou changez la réduction.",
+    "SALE_STEEP_UNCONFIRMED": "Cette réduction dépasse 80 %. Confirmez-la avant d'enregistrer.",
+    "SALE_SCHEDULE_INVALID": "Vérifiez les dates : la fin doit être dans le futur et après le début, dans les 92 jours, et le début dans l'année.",
+    "SALE_STALE": "Cette promotion a été modifiée ailleurs pendant que vous la modifiiez. Votre changement n'a pas été enregistré : rechargez-la et réessayez.",
+    "TOO_MANY_SALES": "Vous avez atteint le nombre maximum de promotions enregistrées. Supprimez-en une ancienne d'abord."
   },
   "Validation": {
     "required": "Ce champ est obligatoire.",
@@ -160,7 +168,9 @@
     "billing": "Forfait",
     "profileMenu": "Menu du compte",
     "account": "Connecté en tant que",
-    "look": "Style"
+    "look": "Style",
+    "sales": "Promos",
+    "dashboardShort": "Accueil"
   },
   "Onboarding": {
     "title": "Créez votre boutique",
@@ -363,7 +373,19 @@
       "bossLady": "Boss lady",
       "new": "Nouveau",
       "sale": "Promo"
-    }
+    },
+    "orderSalePrice": "Prix promo : {price} (prix normal {normal})",
+    "orderSaleNote": "En promotion au moment de cette commande.",
+    "salePriceLabel": "Prix promo :",
+    "normalPriceLabel": "Prix normal :",
+    "saleBadge": "-{percent} %",
+    "saleLabel": "Promo",
+    "saleFilter": "Promo",
+    "saleEnded": "Cette promotion est terminée.",
+    "saleEndsIn": "Se termine dans {time}",
+    "countdown": "{days, plural, =0 {} other {# j }}{hours} h {minutes} min",
+    "saleEndsInSpoken": "La promotion se termine dans {days, plural, =0 {} one {# jour, } other {# jours, }}{hours, plural, one {# heure} other {# heures}} et {minutes, plural, one {# minute} other {# minutes}}",
+    "seeSaleItems": "Voir les articles en promotion"
   },
   "NotFound": {
     "title": "Page introuvable",
@@ -482,7 +504,8 @@
       "view": "Voir les boutiques",
       "suspend": "Suspendre et réactiver des boutiques",
       "delete": "Supprimer des boutiques",
-      "resetLook": "Réinitialiser le style d'une boutique"
+      "resetLook": "Réinitialiser le style d'une boutique",
+      "manageSales": "Mettre en pause ou supprimer les promotions d'une boutique"
     },
     "products": {
       "title": "Produits",
@@ -653,6 +676,21 @@
       "draftPromo": "Bannière d'événement (brouillon)",
       "decoration": "Décoration de la photo",
       "draftDecoration": "Brouillon : {name}"
+    },
+    "sales": {
+      "title": "Promotions",
+      "empty": "Cette boutique n'a aucune promotion.",
+      "pause": "Mettre en pause",
+      "pauseTitle": "Mettre « {name} » en pause ?",
+      "pauseBody": "La promotion ne s'affiche plus immédiatement et les prix normaux reviennent. Le vendeur est informé du motif et peut la reprendre après correction.",
+      "deleteTitle": "Supprimer « {name} » ?",
+      "deleteBody": "La promotion et ses chiffres sont supprimés. Les produits ne changent pas. Le vendeur est informé du motif.",
+      "reason": "Motif (envoyé au vendeur)",
+      "reasonHelp": "{min} à {max} caractères.",
+      "pausedDone": "Promotion mise en pause",
+      "deletedDone": "Promotion supprimée",
+      "pausedBecause": "Mise en pause par un administrateur : {reason}",
+      "ownShop": "C'est votre propre boutique : un autre administrateur doit modérer ses promotions."
     }
   },
   "ShopStatus": {
@@ -754,6 +792,10 @@
       "granted": "A donné une exception de formule",
       "revoked": "A retiré une exception de formule",
       "expired": "Exception de formule terminée"
+    },
+    "sale": {
+      "adminPaused": "A mis en pause une promotion",
+      "adminDeleted": "A supprimé une promotion"
     }
   },
   "AuditDetails": {
@@ -791,7 +833,8 @@
     "endsAt": "Fin",
     "fromVersion": "Version précédente",
     "toVersion": "Nouvelle version",
-    "lowered": "Fonctionnalités retirées"
+    "lowered": "Fonctionnalités retirées",
+    "sale": "Promotion"
   },
   "AdminActivity": {
     "title": "Historique d'activité",
@@ -1707,6 +1750,13 @@
         "resetBanner": "Un administrateur a retiré la photo ou le texte de la bannière de votre boutique. Raison : {reason}",
         "resetAll": "Un administrateur a remis le style de votre boutique sur Classique. Raison : {reason}",
         "resetProfile": "Un administrateur a réinitialisé la photo de profil de votre boutique (forme, contour, décoration). Raison : {reason}"
+      },
+      "sale": {
+        "started": "Votre promotion « {name} » a commencé.",
+        "endingSoon": "Votre promotion « {name} » se termine dans moins d'un jour.",
+        "ended": "Votre promotion « {name} » est terminée. Les prix normaux sont de retour.",
+        "adminPaused": "Un administrateur a mis en pause votre promotion « {name} ». Motif : {reason}",
+        "adminDeleted": "Un administrateur a supprimé votre promotion « {name} ». Motif : {reason}"
       }
     }
   },
@@ -1967,7 +2017,12 @@
       "order": "La fin doit être après le début.",
       "tooFar": "Le début doit être dans moins d'un an.",
       "tooLong": "Elle peut rester active {days} jours au maximum.",
-      "ended": "Ces dates sont passées : elle ne s'affichera pas. Choisissez de nouvelles dates pour la relancer."
+      "ended": "Ces dates sont passées : elle ne s'affichera pas. Choisissez de nouvelles dates pour la relancer.",
+      "startNow": "Commencer maintenant",
+      "pickStart": "Choisir un début",
+      "saleEndHelp": "Quand les prix normaux reviennent.",
+      "missingEnd": "Choisissez la fin de la promotion.",
+      "saleEnded": "La fin doit être dans le futur."
     },
     "status": {
       "notPublished": "Pas encore publiée",
@@ -1990,7 +2045,10 @@
       "locked": "Les téléchargements sont inclus dans {plan} et les formules au-dessus."
     },
     "headlineRequired": "Ajoutez un titre.",
-    "stickersTitle": "Autocollants"
+    "stickersTitle": "Autocollants",
+    "linkToSale": "Lier la bannière à vos articles en promotion",
+    "linkToSaleHint": "Les visiteurs qui touchent la bannière voient seulement les produits en promotion.",
+    "linkToSaleNoSale": "Fonctionne pendant qu'une de vos promotions est en cours (page Promotions)."
   },
   "ProfileDecorations": {
     "none": "Aucune décoration",
@@ -2256,5 +2314,141 @@
     "revokedOn": "Retirée le {date}",
     "revoke": "Retirer",
     "revoked": "Exception retirée."
+  },
+  "Sales": {
+    "title": "Promotions",
+    "new": "Nouvelle promo",
+    "newTitle": "Nouvelle promotion",
+    "editTitle": "Modifier la promotion",
+    "notFound": "Cette promotion n'existe plus.",
+    "backToList": "Retour aux promotions",
+    "full": "Vous avez atteint le nombre maximum de promotions enregistrées. Supprimez-en une ancienne pour en ajouter.",
+    "saved": "Promotion enregistrée",
+    "created": "Promotion publiée",
+    "emptyTitle": "Aucune promotion",
+    "emptyBody": "Mettez des produits en promotion pour un week-end, une fête ou pour vider le stock. Les clients voient le nouveau prix, l'ancien barré et un badge.",
+    "emptyFilter": "Aucune promotion avec ce statut.",
+    "filterLabel": "Filtrer les promotions par statut",
+    "filters": {
+      "all": "Toutes"
+    },
+    "status": {
+      "running": "En cours",
+      "scheduled": "Programmée",
+      "paused": "En pause",
+      "ended": "Terminée"
+    },
+    "productCount": "{count, plural, =0 {aucun produit} one {# produit} other {# produits}}",
+    "statsLine": "{views, plural, one {# vue} other {# vues}}, {clicks, plural, one {# clic WhatsApp} other {# clics WhatsApp}}",
+    "actions": "Actions pour {name}",
+    "copyName": "{name} (copie)",
+    "duplicate": "Dupliquer",
+    "duplicated": "Copie créée, en pause. Vérifiez-la, puis reprenez-la.",
+    "pause": "Mettre en pause",
+    "pausedToast": "Promotion en pause : les prix normaux sont de retour",
+    "resume": "Reprendre",
+    "resumedToast": "Promotion reprise",
+    "adminPaused": "Un administrateur a mis cette promotion en pause. Motif : {reason}. Corrigez-la, puis reprenez-la.",
+    "overlapRow": "{count, plural, one {Une autre promotion porte sur certains des mêmes produits en même temps.} other {# autres promotions portent sur certains des mêmes produits en même temps.}} Les clients ont le meilleur prix.",
+    "noProductsRow": "Cette promotion ne baisse le prix d'aucun produit pour le moment.",
+    "deleteTitle": "Supprimer cette promotion ?",
+    "deleteBody": "« {name} » et ses chiffres seront supprimés. Les prix redeviennent normaux. Vos produits ne changent pas.",
+    "deleted": "Promotion supprimée",
+    "dates": "{start} → {end}",
+    "discount": {
+      "percentOff": "-{percent} %",
+      "amountOff": "-{amount}",
+      "setPrice": "Prix promo {price}"
+    },
+    "lock": {
+      "title": "Les promotions sont disponibles avec {plan}",
+      "body": "Mettez des produits en promotion avec un prix barré, un badge et un compte à rebours.",
+      "bodyKept": "Vos promotions sont enregistrées mais ne s'affichent pas dans votre boutique avec votre offre actuelle. Vous pouvez toujours les mettre en pause ou les supprimer.",
+      "action": "Passer à {plan}"
+    },
+    "presets": {
+      "flash": {
+        "label": "Vente flash (24 h)",
+        "name": "Vente flash"
+      },
+      "weekend": {
+        "label": "Promo du week-end",
+        "name": "Promo du week-end"
+      },
+      "blackFriday": {
+        "label": "Black Friday",
+        "name": "Promo Black Friday"
+      },
+      "clearance": {
+        "label": "Déstockage",
+        "name": "Déstockage"
+      }
+    },
+    "form": {
+      "presetsTitle": "Démarrage rapide",
+      "presetsHint": "Remplit le nom, les dates et le badge. Vous pouvez tout modifier.",
+      "name": "Nom de la promotion",
+      "namePlaceholder": "Par exemple : Promo Black Friday",
+      "nameLength": "Utilisez {min} à {max} caractères.",
+      "discountType": "Réduction",
+      "kind": {
+        "percent": "Pourcentage",
+        "amount": "Montant déduit",
+        "price": "Prix promo fixe"
+      },
+      "percent": "Pourcentage de réduction",
+      "amount": "Montant déduit",
+      "salePrice": "Prix promo",
+      "percentHelp": "Un nombre entier de {min} à {max}. Les prix sont arrondis pour votre devise.",
+      "amountHelp": "Déduit du prix normal. Le prix promo doit rester supérieur à zéro.",
+      "percentRange": "Saisissez un nombre entier de {min} à {max}.",
+      "amountInvalid": "Saisissez un montant supérieur à zéro.",
+      "steepWarning": "Plus de 80 % de réduction. Vérifiez qu'il ne s'agit pas d'une erreur : une confirmation vous sera demandée.",
+      "whereTitle": "Produits",
+      "appliesTo": "S'applique à",
+      "target": {
+        "product": "Un produit",
+        "products": "Produits choisis",
+        "category": "Une catégorie",
+        "shop": "Toute la boutique"
+      },
+      "noProducts": "Ajoutez d'abord des produits à votre boutique.",
+      "chooseOne": "Choisissez le produit",
+      "chooseSeveral": "Choisissez les produits",
+      "chooseProducts": "Choisissez au moins un produit.",
+      "category": "Catégorie",
+      "chooseCategory": "Choisissez une catégorie",
+      "excludeTitle": "Exclure des produits ({count})",
+      "excludeHint": "Les produits cochés gardent leur prix normal",
+      "searchProducts": "Rechercher des produits",
+      "noProductMatch": "Aucun produit ne correspond.",
+      "soldOut": "Épuisé",
+      "selectedCount": "{count, plural, =0 {Aucun choisi} one {# choisi} other {# choisis}}",
+      "affectedLive": "{count, plural, =0 {Aucun produit n'a encore de prix plus bas.} one {# produit a un prix plus bas.} other {# produits ont un prix plus bas.}}",
+      "whenTitle": "Quand",
+      "scheduleInvalid": "Vérifiez les dates : la fin doit être dans le futur et après le début, dans les 92 jours.",
+      "showTitle": "Dans votre boutique",
+      "display": {
+        "badge": "Badge de réduction",
+        "badgeHelp": "Affiche « -30 % » sur la photo.",
+        "label": "Étiquette « Promo »",
+        "labelHelp": "Affiche « Promo » sur la photo.",
+        "countdown": "Compte à rebours",
+        "countdownHelp": "Affiche le temps restant sur la boutique et la page produit."
+      },
+      "previewTitle": "Aperçu",
+      "previewEmpty": "Choisissez une réduction et des produits pour voir un aperçu.",
+      "review": "Vérifier la promotion",
+      "overviewTitle": "Prêt à publier ?",
+      "affected": "{count, plural, =0 {Aucun produit n'a de prix plus bas.} one {# produit sera en promotion.} other {# produits seront en promotion.}}",
+      "skipped": "{count, plural, one {# produit est ignoré : la réduction n'est pas inférieure à son prix.} other {# produits sont ignorés : la réduction n'est pas inférieure à leur prix.}}",
+      "runsFromNow": "Commence maintenant, se termine le {end}.",
+      "overlapNote": "Chevauche : {names}. Quand deux promotions couvrent un produit en même temps, les clients ont le meilleur prix.",
+      "steepTitle": "Plus de 80 % de réduction",
+      "steepConfirm": "Je confirme que cette réduction est correcte.",
+      "keepEditing": "Continuer à modifier",
+      "saveChanges": "Enregistrer",
+      "publish": "Publier la promotion"
+    }
   }
 }

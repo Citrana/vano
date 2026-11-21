@@ -1,6 +1,6 @@
 "use client"
 
-import { useMutation } from "convex/react"
+import { useMutation, useQuery } from "convex/react"
 import { MessageCircleIcon } from "lucide-react"
 import { useLocale, useTranslations } from "next-intl"
 import { useState } from "react"
@@ -9,6 +9,8 @@ import { api } from "../../../convex/_generated/api"
 import type { Id } from "../../../convex/_generated/dataModel"
 import type { OrderLabel } from "../../../convex/lib/looks/buttonDesigns"
 import { formatMoney, type Currency } from "../../../convex/lib/money"
+import type { PublicSale } from "../../../convex/lib/sales/active"
+import { SaleCountdown, SalePrice, SaleTags } from "./sale"
 import { buttonVariants } from "@/components/ui/button"
 import { productUrl } from "@/lib/site"
 import { buildOrderMessage, waChatLink, waShareLink } from "@/lib/whatsapp"
@@ -50,7 +52,10 @@ function OptionChips({
 
 /**
  * Price, size/colour choice and the "Order on WhatsApp" button. The click
- * is recorded (anonymously) without delaying the link. In `demo` mode
+ * is recorded (anonymously) without delaying the link. The price is
+ * re-read live from the server (`public.productPrice`), so the WhatsApp
+ * message carries the price at the moment the customer taps, even if a
+ * sale started or ended since the page opened (CLAUDE.md "Sales"). In `demo` mode
  * (marketing demo shop) WhatsApp opens with a labelled demo message for
  * any contact, and nothing is recorded.
  */
@@ -68,21 +73,43 @@ export function OrderPanel({
   /** The order button's wording, from the shop look (`Public.orderLabels.*`). */
   label?: OrderLabel
   currency: Currency
-  product: { _id: string; name: string; price: number; sizes: string[]; colors: string[]; soldOut: boolean }
+  product: {
+    _id: string
+    name: string
+    price: number
+    sizes: string[]
+    colors: string[]
+    soldOut: boolean
+    sale?: PublicSale | null
+  }
 }) {
   const t = useTranslations("Public")
   const locale = useLocale()
   const recordClick = useMutation(api.stats.recordWhatsappClick)
+  const live = useQuery(api.public.productPrice, demo ? "skip" : { productId: product._id })
   const [size, setSize] = useState<string>()
   const [color, setColor] = useState<string>()
-  const price = formatMoney(product.price, currency, locale)
-  const message = buildOrderMessage(t, { product: product.name, price, size, color, url: productUrl(slug, product._id) })
+  // The server-rendered values until the live ones arrive.
+  const normal = live?.price ?? product.price
+  const sale = live === undefined || live === null ? (product.sale ?? null) : live.sale
+  const message = buildOrderMessage(t, {
+    product: product.name,
+    price: formatMoney(sale ? sale.price : normal, currency, locale),
+    normalPrice: sale ? formatMoney(sale.original, currency, locale) : undefined,
+    size,
+    color,
+    url: productUrl(slug, product._id),
+  })
   const href =
     demo || !whatsappNumber ? waShareLink(`${t("demoOrderNote")}\n\n${message}`) : waChatLink(whatsappNumber, message)
 
   return (
     <div className="flex flex-col gap-5">
-      <p className="font-heading text-3xl font-bold tracking-tight text-[var(--shop-price,currentColor)] tabular-nums">{price}</p>
+      <div className="flex flex-col gap-2">
+        <SaleTags sale={sale} />
+        <SalePrice price={normal} sale={sale} currency={currency} size="page" />
+        {sale?.countdown ? <SaleCountdown endsAt={sale.endsAt} /> : null}
+      </div>
       <OptionChips label={t("sizes")} options={product.sizes} value={size} onChange={setSize} />
       <OptionChips label={t("colors")} options={product.colors} value={color} onChange={setColor} />
       <div className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur md:static md:border-0 md:bg-transparent md:p-0">

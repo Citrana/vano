@@ -6,11 +6,21 @@ providers, checkout, the scheduled jobs or billing admin updates this file
 in the same commit, with a dated entry in the change log below
 (see CLAUDE.md "Billing").
 
-**Last updated: 2026-11-19 20:54 CAT (UTC+02:00)**
+**Last updated: 2026-11-20 08:09 CAT (UTC+02:00)**
 
 ## Change log
 
 Newest first. Format: `YYYY-MM-DD HH:MM TZ — what changed (files)`.
+
+- **2026-11-20 08:09 CAT (UTC+02:00)**: the `salesPromotions` feature now
+  also gates **product sales** (CLAUDE.md "Sales"). `sales.create`,
+  `update`, `duplicate` and `resume` call `requireCan(ctx, shop, { kind:
+  "feature", feature: "salesPromotions" })`; pause and delete work on
+  every plan. Public reads show a sale price only while the plan includes
+  it (`liveSalesFor` → `hasFeature`), so after a downgrade running sales
+  stop showing and normal prices return; the saved sales are kept and
+  show again after an upgrade. No change to plans, prices or payments
+  (`convex/sales.ts`, `convex/lib/sales/`, `convex/public.ts`).
 
 - **2026-11-19 20:54 CAT (UTC+02:00)**: **the admin "Plans & features" page is now the source
   of truth** for plan names, monthly / yearly prices, the trial length,
@@ -408,6 +418,10 @@ subscription row is on the trial from its creation date.
   not shown while the plan lacks `salesPromotions`; the editor says so,
   Publish (with a promo) and downloads are disabled. Upgrading shows it
   again at once if its dates are still on.
+- Sales: kept after a downgrade (running, scheduled, paused), but not
+  shown while the plan lacks `salesPromotions` (normal prices return at
+  once). The Sales page shows "Available on Pro"; sales can still be
+  paused or deleted, not created, edited, duplicated or resumed.
 - Stats are still recorded on Free; `stats.summary` returns
   `{ locked: true }` and the dashboard shows an upgrade card.
 - A new paid feature = a key in `FEATURES` (`planFeatures.ts`, `enforced:
