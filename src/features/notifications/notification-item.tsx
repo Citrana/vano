@@ -8,7 +8,10 @@ import {
   FilePenLineIcon,
   PaletteIcon,
   ShieldAlertIcon,
+  PauseCircleIcon,
   SparklesIcon,
+  TagIcon,
+  Trash2Icon,
   XCircleIcon,
   type LucideIcon,
 } from "lucide-react"
@@ -32,6 +35,11 @@ const ICONS: Record<NotificationType, { icon: LucideIcon; tone: string }> = {
   "plan.endingSoon": { icon: ClockIcon, tone: "text-muted-foreground" },
   "admin.endingSoon": { icon: ClockIcon, tone: "text-muted-foreground" },
   "look.reset": { icon: PaletteIcon, tone: "text-destructive" },
+  "sale.started": { icon: TagIcon, tone: "text-success" },
+  "sale.endingSoon": { icon: ClockIcon, tone: "text-muted-foreground" },
+  "sale.ended": { icon: TagIcon, tone: "text-muted-foreground" },
+  "sale.adminPaused": { icon: PauseCircleIcon, tone: "text-destructive" },
+  "sale.adminDeleted": { icon: Trash2Icon, tone: "text-destructive" },
 }
 
 export type NotificationRow = FunctionReturnType<typeof api.notifications.inbox.latest>[number]
