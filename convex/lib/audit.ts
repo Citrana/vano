@@ -51,6 +51,8 @@ export const AUDIT_ACTIONS = [
   "planException.granted",
   "planException.revoked",
   "planException.expired",
+  "sale.adminPaused",
+  "sale.adminDeleted",
 ] as const;
 
 export const auditActionValidator = v.union(
@@ -94,6 +96,8 @@ export const auditActionValidator = v.union(
   v.literal("planException.granted"),
   v.literal("planException.revoked"),
   v.literal("planException.expired"),
+  v.literal("sale.adminPaused"),
+  v.literal("sale.adminDeleted"),
 );
 export type AuditAction = Infer<typeof auditActionValidator>;
 
