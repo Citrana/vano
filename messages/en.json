@@ -88,7 +88,15 @@
     "DECORATION_SCHEDULE_INVALID": "Check the profile decoration dates: the end must be after the start, within 92 days, and the start within a year.",
     "PLAN_CONFIG_STALE": "Someone else changed the plans while you were editing. Your change wasn't saved: check the latest values and try again.",
     "PLAN_CONFIG_INVALID": "Some values aren't valid. Check the fields and try again.",
-    "EXCEPTION_INVALID": "This exception isn't valid: pick a feature the plan doesn't already give, or a higher limit."
+    "EXCEPTION_INVALID": "This exception isn't valid: pick a feature the plan doesn't already give, or a higher limit.",
+    "SALE_INVALID": "This sale can't be saved. Check its details and try again.",
+    "SALE_NAME_INVALID": "Give the sale a name of 2 to 60 characters.",
+    "SALE_DISCOUNT_INVALID": "Check the discount: 1 to 90% off, or a sale price lower than the normal price and above zero for every chosen product.",
+    "SALE_NO_PRODUCTS": "This sale doesn't lower the price of any product. Choose other products or change the discount.",
+    "SALE_STEEP_UNCONFIRMED": "This discount is over 80% off. Confirm it before saving.",
+    "SALE_SCHEDULE_INVALID": "Check the sale dates: the end must be in the future and after the start, within 92 days, and the start within a year.",
+    "SALE_STALE": "This sale was changed somewhere else while you were editing. Your change wasn't saved: reload it and try again.",
+    "TOO_MANY_SALES": "You've reached the maximum number of saved sales. Delete an old one first."
   },
   "Validation": {
     "required": "This field is required.",
@@ -160,7 +168,9 @@
     "billing": "Plan",
     "profileMenu": "Account menu",
     "account": "Signed in as",
-    "look": "Look"
+    "look": "Look",
+    "sales": "Sales",
+    "dashboardShort": "Home"
   },
   "Onboarding": {
     "title": "Create your shop",
@@ -363,7 +373,19 @@
       "bossLady": "Boss lady",
       "new": "New",
       "sale": "Sale"
-    }
+    },
+    "orderSalePrice": "Sale price: {price} (normal price {normal})",
+    "orderSaleNote": "On sale at the time of this order.",
+    "salePriceLabel": "Sale price:",
+    "normalPriceLabel": "Normal price:",
+    "saleBadge": "-{percent}%",
+    "saleLabel": "Sale",
+    "saleFilter": "Sale",
+    "saleEnded": "This sale has ended.",
+    "saleEndsIn": "Ends in {time}",
+    "countdown": "{days, plural, =0 {} other {#d }}{hours}h {minutes}m",
+    "saleEndsInSpoken": "Sale ends in {days, plural, =0 {} one {# day, } other {# days, }}{hours, plural, one {# hour} other {# hours}} and {minutes, plural, one {# minute} other {# minutes}}",
+    "seeSaleItems": "See the items on sale"
   },
   "NotFound": {
     "title": "Page not found",
@@ -482,7 +504,8 @@
       "view": "View shops",
       "suspend": "Suspend and reactivate shops",
       "delete": "Delete shops",
-      "resetLook": "Reset a shop's look"
+      "resetLook": "Reset a shop's look",
+      "manageSales": "Pause or delete a shop's sales"
     },
     "products": {
       "title": "Products",
@@ -653,6 +676,21 @@
       "draftPromo": "Event banner (draft)",
       "decoration": "Profile decoration",
       "draftDecoration": "Draft: {name}"
+    },
+    "sales": {
+      "title": "Sales",
+      "empty": "This shop has no sales.",
+      "pause": "Pause",
+      "pauseTitle": "Pause \"{name}\"?",
+      "pauseBody": "The sale stops showing at once and normal prices return. The seller is told why and can resume it after fixing it.",
+      "deleteTitle": "Delete \"{name}\"?",
+      "deleteBody": "The sale and its numbers are deleted. Products don't change. The seller is told why.",
+      "reason": "Reason (sent to the seller)",
+      "reasonHelp": "{min} to {max} characters.",
+      "pausedDone": "Sale paused",
+      "deletedDone": "Sale deleted",
+      "pausedBecause": "Paused by an admin: {reason}",
+      "ownShop": "This is your own shop: another admin has to moderate its sales."
     }
   },
   "ShopStatus": {
@@ -754,6 +792,10 @@
       "granted": "Gave a shop a plan exception",
       "revoked": "Removed a plan exception",
       "expired": "Plan exception ended"
+    },
+    "sale": {
+      "adminPaused": "Paused a shop's sale",
+      "adminDeleted": "Deleted a shop's sale"
     }
   },
   "AuditDetails": {
@@ -791,7 +833,8 @@
     "endsAt": "Ends",
     "fromVersion": "Previous version",
     "toVersion": "New version",
-    "lowered": "Features taken away"
+    "lowered": "Features taken away",
+    "sale": "Sale"
   },
   "AdminActivity": {
     "title": "Activity history",
@@ -1707,6 +1750,13 @@
         "resetBanner": "An admin removed your shop banner's photo or text. Reason: {reason}",
         "resetAll": "An admin reset your shop look to Classic. Reason: {reason}",
         "resetProfile": "An admin reset your shop's profile photo (shape, border, decoration). Reason: {reason}"
+      },
+      "sale": {
+        "started": "Your sale \"{name}\" has started.",
+        "endingSoon": "Your sale \"{name}\" ends in less than a day.",
+        "ended": "Your sale \"{name}\" has ended. Normal prices are back.",
+        "adminPaused": "An admin paused your sale \"{name}\". Reason: {reason}",
+        "adminDeleted": "An admin deleted your sale \"{name}\". Reason: {reason}"
       }
     }
   },
@@ -1967,7 +2017,12 @@
       "order": "The end must be after the start.",
       "tooFar": "The start must be within a year.",
       "tooLong": "It can run for up to {days} days.",
-      "ended": "These dates have passed, so it won't show. Pick new dates to run it again."
+      "ended": "These dates have passed, so it won't show. Pick new dates to run it again.",
+      "startNow": "Start now",
+      "pickStart": "Pick a start",
+      "saleEndHelp": "When normal prices come back.",
+      "missingEnd": "Choose when the sale ends.",
+      "saleEnded": "The end must be in the future."
     },
     "status": {
       "notPublished": "Not published yet",
@@ -1990,7 +2045,10 @@
       "locked": "Downloads come with {plan} and higher plans."
     },
     "headlineRequired": "Add a headline.",
-    "stickersTitle": "Stickers"
+    "stickersTitle": "Stickers",
+    "linkToSale": "Link the banner to your sale items",
+    "linkToSaleHint": "Visitors who tap the banner see only the products on sale.",
+    "linkToSaleNoSale": "Works while one of your sales is running (Sales page)."
   },
   "ProfileDecorations": {
     "none": "No decoration",
@@ -2256,5 +2314,141 @@
     "revokedOn": "Removed on {date}",
     "revoke": "Remove",
     "revoked": "Exception removed."
+  },
+  "Sales": {
+    "title": "Sales",
+    "new": "New sale",
+    "newTitle": "New sale",
+    "editTitle": "Edit sale",
+    "notFound": "This sale doesn't exist anymore.",
+    "backToList": "Back to sales",
+    "full": "You've reached the maximum number of saved sales. Delete an old one to add another.",
+    "saved": "Sale saved",
+    "created": "Sale published",
+    "emptyTitle": "No sales yet",
+    "emptyBody": "Put products on sale for a weekend, a holiday or to clear stock. Customers see the new price, the old one crossed out, and a badge.",
+    "emptyFilter": "No sales with this status.",
+    "filterLabel": "Filter sales by status",
+    "filters": {
+      "all": "All"
+    },
+    "status": {
+      "running": "Running",
+      "scheduled": "Scheduled",
+      "paused": "Paused",
+      "ended": "Ended"
+    },
+    "productCount": "{count, plural, =0 {no products} one {# product} other {# products}}",
+    "statsLine": "{views, plural, one {# view} other {# views}}, {clicks, plural, one {# WhatsApp click} other {# WhatsApp clicks}}",
+    "actions": "Actions for {name}",
+    "copyName": "{name} (copy)",
+    "duplicate": "Duplicate",
+    "duplicated": "Copy created, paused. Check it, then resume it.",
+    "pause": "Pause",
+    "pausedToast": "Sale paused: normal prices are back",
+    "resume": "Resume",
+    "resumedToast": "Sale resumed",
+    "adminPaused": "An admin paused this sale. Reason: {reason}. Fix it, then resume it.",
+    "overlapRow": "{count, plural, one {Another sale runs on some of the same products at the same time.} other {# other sales run on some of the same products at the same time.}} Customers get the best price.",
+    "noProductsRow": "This sale doesn't lower any product's price right now.",
+    "deleteTitle": "Delete this sale?",
+    "deleteBody": "\"{name}\" and its numbers will be deleted. Prices go back to normal. Your products don't change.",
+    "deleted": "Sale deleted",
+    "dates": "{start} → {end}",
+    "discount": {
+      "percentOff": "{percent}% off",
+      "amountOff": "{amount} off",
+      "setPrice": "Sale price {price}"
+    },
+    "lock": {
+      "title": "Sales are available on {plan}",
+      "body": "Put products on sale with a crossed-out price, a badge and a countdown.",
+      "bodyKept": "Your sales are saved but don't show in your shop on your current plan. You can still pause or delete them.",
+      "action": "Upgrade to {plan}"
+    },
+    "presets": {
+      "flash": {
+        "label": "Flash sale (24 h)",
+        "name": "Flash sale"
+      },
+      "weekend": {
+        "label": "Weekend sale",
+        "name": "Weekend sale"
+      },
+      "blackFriday": {
+        "label": "Black Friday",
+        "name": "Black Friday sale"
+      },
+      "clearance": {
+        "label": "Clearance",
+        "name": "Clearance"
+      }
+    },
+    "form": {
+      "presetsTitle": "Quick start",
+      "presetsHint": "Fills in the name, the dates and the badge. You can change everything.",
+      "name": "Sale name",
+      "namePlaceholder": "For example: Black Friday sale",
+      "nameLength": "Use {min} to {max} characters.",
+      "discountType": "Discount",
+      "kind": {
+        "percent": "Percent off",
+        "amount": "Amount off",
+        "price": "Set sale price"
+      },
+      "percent": "Percent off",
+      "amount": "Amount off",
+      "salePrice": "Sale price",
+      "percentHelp": "A whole number from {min} to {max}. Prices are rounded for your currency.",
+      "amountHelp": "Taken off the normal price. The sale price must stay above zero.",
+      "percentRange": "Enter a whole number from {min} to {max}.",
+      "amountInvalid": "Enter an amount above zero.",
+      "steepWarning": "More than 80% off. Check it's not a typo: you'll be asked to confirm.",
+      "whereTitle": "Products",
+      "appliesTo": "Applies to",
+      "target": {
+        "product": "One product",
+        "products": "Chosen products",
+        "category": "A category",
+        "shop": "Whole shop"
+      },
+      "noProducts": "Add products to your shop first.",
+      "chooseOne": "Choose the product",
+      "chooseSeveral": "Choose the products",
+      "chooseProducts": "Choose at least one product.",
+      "category": "Category",
+      "chooseCategory": "Choose a category",
+      "excludeTitle": "Exclude products ({count})",
+      "excludeHint": "Ticked products keep their normal price",
+      "searchProducts": "Search products",
+      "noProductMatch": "No product matches.",
+      "soldOut": "Sold out",
+      "selectedCount": "{count, plural, =0 {None chosen} one {# chosen} other {# chosen}}",
+      "affectedLive": "{count, plural, =0 {No product gets a lower price yet.} one {# product gets a lower price.} other {# products get a lower price.}}",
+      "whenTitle": "When",
+      "scheduleInvalid": "Check the dates: the end must be in the future and after the start, within 92 days.",
+      "showTitle": "In your shop",
+      "display": {
+        "badge": "Discount badge",
+        "badgeHelp": "Shows \"-30%\" on the photo.",
+        "label": "\"Sale\" label",
+        "labelHelp": "Shows \"Sale\" on the photo.",
+        "countdown": "Countdown",
+        "countdownHelp": "Shows the time left on the shop and the product page."
+      },
+      "previewTitle": "Preview",
+      "previewEmpty": "Choose a discount and products to see a preview.",
+      "review": "Review the sale",
+      "overviewTitle": "Ready to publish?",
+      "affected": "{count, plural, =0 {No product gets a lower price.} one {# product will be on sale.} other {# products will be on sale.}}",
+      "skipped": "{count, plural, one {# product is skipped: the discount isn't lower than its price.} other {# products are skipped: the discount isn't lower than their price.}}",
+      "runsFromNow": "Starts now, ends {end}.",
+      "overlapNote": "Overlaps with: {names}. When two sales cover a product at the same time, customers get the best price.",
+      "steepTitle": "Over 80% off",
+      "steepConfirm": "I confirm this discount is right.",
+      "keepEditing": "Keep editing",
+      "saveChanges": "Save changes",
+      "publish": "Publish sale"
+    }
   }
 }
