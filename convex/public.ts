@@ -5,6 +5,8 @@ import { getEntitlements, shopProducts, visibleProductIds } from "./lib/entitlem
 import { urlOf, urlsOf } from "./lib/images";
 import { publicLookFor } from "./lib/looks/store";
 import { readSettings } from "./lib/settings";
+import { bestSaleFor, publicSale } from "./lib/sales/active";
+import { liveSalesFor } from "./lib/sales/store";
 
 /**
  * Unauthenticated reads for the public shop pages. They never return
@@ -91,6 +93,7 @@ export const shopBySlug = query({
     const { limits } = await getEntitlements(ctx, shop);
     // Hidden by an admin or over the plan limit: never shown.
     const visible = visibleProductIds(products, limits);
+    const sales = await liveSalesFor(ctx, shop);
     return {
       suspended: false as const,
       shop: await publicShop(ctx, shop),
@@ -102,6 +105,7 @@ export const shopBySlug = query({
           category: p.category,
           soldOut: p.soldOut,
           coverUrl: await urlOf(ctx, p.imageIds[0]),
+          sale: publicSale(bestSaleFor(p, sales, shop.currency)),
         })),
       ),
     };
@@ -136,8 +140,30 @@ export const productForPage = query({
         sizes: product.sizes,
         colors: product.colors,
         soldOut: product.soldOut,
+        sale: publicSale(bestSaleFor(product, await liveSalesFor(ctx, shop), shop.currency)),
         imageUrls: await urlsOf(ctx, product.imageIds.slice(0, limits.photosPerProduct)),
       },
+    };
+  },
+});
+
+/**
+ * A product's price right now, for the order button (CLAUDE.md "Sales"):
+ * live, so the WhatsApp message uses the price at the moment the
+ * customer taps, even on a page opened before a sale started or ended.
+ * Null for an unknown, hidden or suspended product.
+ */
+export const productPrice = query({
+  args: { productId: v.string() },
+  handler: async (ctx, { productId }) => {
+    const id = ctx.db.normalizeId("products", productId);
+    const product = id ? await ctx.db.get("products", id) : null;
+    if (!product || product.hidden) return null;
+    const shop = await ctx.db.get("shops", product.shopId);
+    if (!shop || isSuspended(shop)) return null;
+    return {
+      price: product.price,
+      sale: publicSale(bestSaleFor(product, await liveSalesFor(ctx, shop), shop.currency)),
     };
   },
 });

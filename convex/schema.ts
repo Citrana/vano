@@ -12,6 +12,7 @@ import { notificationKindValidator } from "./notifications/kinds";
 import { notificationCategoryValidator, notificationDataValidator } from "./notifications/types";
 import { currencyValidator } from "./lib/money";
 import { storedLookValidator } from "./lib/looks/validators";
+import { saleDiscountValidator, saleDisplayValidator, saleTargetValidator } from "./lib/sales/validators";
 import {
   nextActionValidator,
   paymentOutcomeValidator,
@@ -323,6 +324,45 @@ export default defineSchema({
   })
     .index("by_productId_and_day", ["productId", "day"])
     .index("by_shopId_and_day", ["shopId", "day"]),
+
+  /**
+   * A seller's sale (CLAUDE.md "Sales"): a temporary price on top of the
+   * products' real prices, which are never changed. Written only by
+   * `convex/sales.ts`, `admin/sales.ts` and `saleJobs.ts`.
+   */
+  sales: defineTable({
+    shopId: v.id("shops"),
+    name: v.string(),
+    discount: saleDiscountValidator,
+    target: saleTargetValidator,
+    startsAt: v.number(),
+    endsAt: v.number(),
+    /** Paused by the seller. */
+    paused: v.boolean(),
+    /** Paused by an admin, with the reason (the seller may resume). */
+    adminPause: v.optional(v.object({ at: v.number(), reason: v.string() })),
+    display: saleDisplayValidator,
+    /**
+     * In its dates and not paused, right now (queries can't read the
+     * clock). Kept current by `saleJobs.sync`, scheduled at start and end.
+     */
+    live: v.boolean(),
+    /** Bumped on every write; edits send the version they started from. */
+    version: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_shopId", ["shopId"])
+    .index("by_shopId_and_live", ["shopId", "live"])
+    .index("by_live_and_endsAt", ["live", "endsAt"]),
+
+  /** Views and WhatsApp clicks on a sale's items, per UTC day. No personal data. */
+  saleDailyStats: defineTable({
+    saleId: v.id("sales"),
+    shopId: v.id("shops"),
+    day: v.string(),
+    views: v.number(),
+    whatsappClicks: v.number(),
+  }).index("by_saleId_and_day", ["saleId", "day"]),
 
   /**
    * Requests to change a protected shop field (name, link, WhatsApp).

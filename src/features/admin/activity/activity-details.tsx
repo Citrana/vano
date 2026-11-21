@@ -19,7 +19,7 @@ const DETAIL_KEYS = [
   "permissions", "added", "removed", "renamedFrom", "from", "to", "owner", "products", "force",
   "plan", "previousPlan", "days", "reason", "periodEnd", "previousEnd", "amount", "provider", "reference", "shop",
   "requestId", "field", "newValue", "flags", "cooldownOverridden", "scope", "bannerText", "bannerPhoto", "promoHeadline", "decoration",
-  "feature", "value", "endsAt", "fromVersion", "toVersion", "lowered",
+  "feature", "value", "endsAt", "fromVersion", "toVersion", "lowered", "sale",
 ] as const
 type DetailKey = (typeof DETAIL_KEYS)[number]
 const isDetailKey = (key: string): key is DetailKey => (DETAIL_KEYS as readonly string[]).includes(key)

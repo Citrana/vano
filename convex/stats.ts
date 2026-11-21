@@ -6,6 +6,7 @@ import { addDays, isDay, utcDay } from "./lib/days";
 import { LIMITS } from "./lib/catalog";
 import { onShopDayStatsWritten } from "./lib/platformStats";
 import { requireOwnShop, sellerQuery } from "./lib/seller";
+import { bumpSaleStats, saleForProduct } from "./lib/sales/store";
 
 /**
  * Anonymous view / WhatsApp-click counters (CLAUDE.md "Stats"): daily rows,
@@ -90,6 +91,9 @@ async function recordForProduct(
   const day = utcDay(Date.now());
   await bumpShop(ctx, product.shopId, day, shopField);
   await bumpProduct(ctx, product.shopId, product._id, day, productField);
+  // Per-sale numbers (CLAUDE.md "Sales"): the sale the visitor got.
+  const sale = await saleForProduct(ctx, shop, product);
+  if (sale) await bumpSaleStats(ctx, sale.saleId as Id<"sales">, product.shopId, day, productField);
   return true;
 }
 

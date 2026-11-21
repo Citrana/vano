@@ -51,6 +51,7 @@ export function cleanPromo(promo: PromoFacet): PromoFacet | null {
     height: promo.height,
     startsAt: promo.startsAt,
     endsAt: promo.endsAt,
+    link: promo.link,
   };
 }
 

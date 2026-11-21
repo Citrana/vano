@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery } from "convex/react"
-import { CreditCardIcon, LayoutGridIcon, PaletteIcon, SettingsIcon, ShieldIcon } from "lucide-react"
+import { CreditCardIcon, LayoutGridIcon, PaletteIcon, SettingsIcon, ShieldIcon, TagIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -21,7 +21,8 @@ export function SellerHeader() {
   const pathname = usePathname()
   const viewer = useQuery(api.users.viewer, {})
   const links = [
-    { href: "/dashboard", label: t("dashboard"), icon: LayoutGridIcon, active: pathname === "/dashboard" || pathname.startsWith("/dashboard/products") },
+    { href: "/dashboard", label: t("dashboard"), short: t("dashboardShort"), icon: LayoutGridIcon, active: pathname === "/dashboard" || pathname.startsWith("/dashboard/products") },
+    { href: "/dashboard/sales", label: t("sales"), icon: TagIcon, active: pathname.startsWith("/dashboard/sales") },
     { href: "/dashboard/look", label: t("look"), icon: PaletteIcon, active: pathname === "/dashboard/look" },
     { href: "/dashboard/settings", label: t("settings"), short: t("settingsShort"), icon: SettingsIcon, active: pathname === "/dashboard/settings" },
     { href: "/dashboard/billing", label: t("billing"), icon: CreditCardIcon, active: pathname.startsWith("/dashboard/billing") },
@@ -29,7 +30,7 @@ export function SellerHeader() {
     ...(viewer?.isAdmin ? [{ href: "/admin", label: t("admin"), icon: ShieldIcon, active: false }] : []),
   ]
 
-  // Phones: a tab bar (icon over a short label) so five links fit in 360px.
+  // Phones: a tab bar (icon over a short label) so six links fit in 360px.
   // Active link: a light fill only. The focus ring shows for keyboard users only.
   const nav = (mobile: boolean) => (
     <nav aria-label={t("menu")} className="flex gap-1">
@@ -47,7 +48,7 @@ export function SellerHeader() {
           <Icon />
           {/* 640–768px: icons only (labels stay for screen readers). */}
           {mobile && short ? (
-            // Phones: a short label so five tabs fit; the full name stays for screen readers.
+            // Phones: a short label so six tabs fit; the full name stays for screen readers.
             <>
               <span aria-hidden className="w-full truncate text-center">{short}</span>
               <span className="sr-only">{label}</span>

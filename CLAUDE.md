@@ -289,6 +289,46 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 - The banner, the profile photo, the name and the product grid share one
   left edge: `SHOP_BANNER_EDGE` (`shop-banner.tsx`), no extra header padding.
 
+## Sales
+
+- A sale is **a temporary price on top of the real price**: the `sales`
+  table (one row per sale: discount, target, dates, display options),
+  written only by `convex/sales.ts` (seller, `ownProducts.manage`),
+  `admin/sales.ts` and `saleJobs.ts`. Never change `products.price` for a
+  sale; the crossed-out price is always the real normal price.
+- Rules live **only** in `convex/lib/sales/` (pure): `discountedPrice`
+  (percent 1–90, amount / set price lower than the price and above zero,
+  percent rounded with `roundPrice` from `money.ts`), `bestSaleFor` (the
+  best price for the customer wins), `saleLiveAt` / `saleStatusAt`,
+  `saleScheduleProblem` (the event banner limits plus an end in the
+  future), presets. The editor, the shop and the server use the same
+  ones. Over 80% off needs `steepConfirmed`. A future discount code reuses
+  `saleDiscountValidator` + `discountedPrice`.
+- Queries never read the clock: `sales.live` is stored by every write
+  (`writeLiveAndSchedule`) and kept by `saleJobs.sync`, scheduled at the
+  start, end − 24 h and end (idempotent; it also sends `sale.started` /
+  `sale.endingSoon` / `sale.ended`); the hourly `saleJobs.sweep` is the
+  safety net. Public reads use `liveSalesFor` (live **and**
+  `salesPromotions`), and return `publicSale(...)`, never the sale row.
+- The order button re-reads `public.productPrice` live, so the WhatsApp
+  message carries the price at tap time (`orderSalePrice` +
+  `orderSaleNote` when on sale). The browser clock only drives the
+  countdown display.
+- Edits send `expectedVersion` (`SALE_STALE` if someone saved meanwhile).
+  `deleteProduct` removes the product from sales (`forgetProductInSales`);
+  deleting a sale deletes its `saleDailyStats`.
+- Shop display uses `SalePrice` / `SaleTags` / `SaleCountdown`
+  (`src/features/public/sale.tsx`): price in `--shop-price`, old price
+  `--muted-foreground`, badge with the `--chip` tokens (`shop-btn`), label
+  `shop-chip chip-selected`, so the look's buttons, decorations and
+  contrast check apply. The "Sale" filter and the event banner's sale link
+  (`promo.link = "sale"`) only exist while a sale runs.
+- Per-sale views / clicks go in `saleDailyStats` (bumped by
+  `stats.record*` for the product's current best sale).
+- Admins with `shops.manageSales` pause or delete a sale with a reason,
+  never on their own shop; logged (`sale.adminPaused` /
+  `sale.adminDeleted`) and the seller is notified (they may resume).
+
 ## Protected shop changes
 
 - After creation, a shop's **name, link (slug) and WhatsApp number** only
@@ -416,7 +456,7 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   forms with several fields show `<RequiredFieldsHint />`.
 - Components are small and grouped by feature in `src/features/<feature>/`
   (`auth`, `shop`, `product`, `public`, `stats`, `i18n`, `marketing/*`,
-  `shop-looks`, `billing`, `change-requests`, `notifications`, `admin/*`).
+  `shop-looks`, `sales`, `billing`, `change-requests`, `notifications`, `admin/*`).
   Generic primitives live in `src/components/ui/`.
 - Admin pages live under `src/app/admin/` and wrap their content in
   `<RequirePermission permission="…">`. Sidebar sections are defined only
@@ -454,6 +494,7 @@ convex/
   auth.ts auth.config.ts http.ts   # Convex Auth (Password, sign-up enabled)
   users.ts shops.ts products.ts files.ts public.ts stats.ts
   shopLooks.ts      # shop look draft / publish (lib/looks/: model, presets, contrast)
+  sales.ts saleJobs.ts   # seller sales, start/end jobs (lib/sales/: rules)
   changeRequests.ts changeRequestJobs.ts   # protected shop changes
   notifications/    # notification types, inbox, config, outside channels
   notificationJobs.ts                     # ending-soon warnings, cleanup

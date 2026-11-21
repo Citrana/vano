@@ -17,6 +17,7 @@ import { adminHref } from "../shell/hrefs"
 import { useAdminViewer } from "../shell/use-admin-viewer"
 import { DeleteShopDialog } from "./delete-shop-dialog"
 import { ShopLookCard } from "./shop-look-card"
+import { ShopSalesCard } from "./shop-sales-card"
 import { ShopProducts } from "./shop-products"
 import { SuspendShopDialog } from "./suspend-shop-dialog"
 
@@ -100,6 +101,12 @@ export function ShopDetails({ shopId }: { shopId: string }) {
         name={shop.name}
         canReset={can("shops.resetLook")}
         // A hint only: the server refuses it anyway (CANNOT_MODIFY_SELF).
+        isOwnShop={viewer.email !== null && shop.owner.email === viewer.email}
+      />
+
+      <ShopSalesCard
+        shopId={shop._id}
+        canManage={can("shops.manageSales")}
         isOwnShop={viewer.email !== null && shop.owner.email === viewer.email}
       />
 

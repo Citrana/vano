@@ -10,6 +10,7 @@ import { FREE_LOOK, isFreeLook } from "./lib/looks/presets";
 import { resolveLook } from "./lib/looks/resolve";
 import { liveFlags, promoBoundaries, scheduleProblem } from "./lib/looks/schedule";
 import { bannerUrls, lookRow } from "./lib/looks/store";
+import { liveSalesFor } from "./lib/sales/store";
 import { storedLookValidator, type StoredLook } from "./lib/looks/validators";
 import { claimImages, deleteFilesNotIn, requireOwnShop, sellerMutation, sellerQuery } from "./lib/seller";
 
@@ -74,6 +75,8 @@ export const mine = sellerQuery({
       promoLive: row?.promoLive === true,
       /** Whether the published profile decoration is live now (its dates). */
       decorationLive: row?.decorationLive === true,
+      /** A sale is running (and shown), so the event banner can link to it. */
+      saleLive: (await liveSalesFor(ctx, shop)).length > 0,
       bannerUrls: await bannerUrls(ctx, [draft, published]),
       publishedAt: row?.publishedAt ?? null,
       draftUpdatedAt: row?.draftUpdatedAt ?? null,

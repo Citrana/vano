@@ -27,6 +27,22 @@ describe("whatsapp", () => {
     )
   })
 
+  test("on sale: the sale price, the normal price and a Sale note", () => {
+    const en_t = createTranslator({ locale: "en", messages: en, namespace: "Public" })
+    const text = buildOrderMessage(en_t, { product: "Wax dress", price: "$17.50", normalPrice: "$25", url: "https://x/y" })
+    expect(text.split("\n")).toEqual([
+      "Hello! I'd like to order this product:",
+      "Product: Wax dress",
+      "Sale price: $17.50 (normal price $25)",
+      "On sale at the time of this order.",
+      "Link: https://x/y",
+    ])
+    const fr_t = createTranslator({ locale: "fr", messages: fr, namespace: "Public" })
+    expect(buildOrderMessage(fr_t, { product: "Robe", price: "17,50 $", normalPrice: "25 $", url: "u" })).toContain(
+      "Prix promo : 17,50 $ (prix normal 25 $)",
+    )
+  })
+
   test("order message in French, without size or colour", () => {
     const t = createTranslator({ locale: "fr", messages: fr, namespace: "Public" })
     const text = buildOrderMessage(t, { product: "Robe", price: "25 $", url: "https://x/y" })

@@ -11,6 +11,7 @@ import { fail } from "../lib/errors";
 import { deleteShopLook } from "../lib/looks/store";
 import { onProductDeleted, onShopDayStatsDeleted, onShopDeleted } from "../lib/platformStats";
 import { deleteFilesNotIn } from "../lib/seller";
+import { deleteSale } from "../lib/sales/store";
 import { categoryValidator, languageValidator, LIMITS, type Category } from "../lib/catalog";
 import { urlOf } from "../lib/images";
 import { currencyValidator, type Currency } from "../lib/money";
@@ -272,10 +273,12 @@ export const remove = adminMutation({
 
 const PRODUCTS_PER_BATCH = 25;
 const STATS_PER_BATCH = 200;
+const SALES_PER_BATCH = 5;
 
 /**
  * Background clean-up after `remove`: products (photos, upload rows,
- * counter), then product stats, then shop stats (and the clicks counter).
+ * counter), then sales (and their stats), then product stats, then shop
+ * stats (and the clicks counter).
  * One small batch per run; reschedules itself until nothing is left.
  */
 export const purgeShop = internalMutation({
@@ -294,6 +297,16 @@ export const purgeShop = internalMutation({
         await onProductDeleted(ctx, product);
         await ctx.db.delete("products", product._id);
       }
+      await again();
+      return null;
+    }
+
+    const sales = await ctx.db
+      .query("sales")
+      .withIndex("by_shopId", (q) => q.eq("shopId", shopId))
+      .take(SALES_PER_BATCH);
+    if (sales.length > 0) {
+      for (const sale of sales) await deleteSale(ctx, sale);
       await again();
       return null;
     }

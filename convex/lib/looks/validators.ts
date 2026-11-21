@@ -133,6 +133,11 @@ export const promoFacetValidator = v.object({
   height: bannerHeightValidator,
   startsAt: v.optional(v.number()),
   endsAt: v.optional(v.number()),
+  /**
+   * "sale": the banner links to the shop's sale items (CLAUDE.md "Sales"),
+   * only while a sale is running. Missing = no link.
+   */
+  link: v.optional(v.literal("sale")),
 });
 export type PromoFacet = Infer<typeof promoFacetValidator>;
 

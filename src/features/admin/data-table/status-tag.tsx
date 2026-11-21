@@ -20,6 +20,7 @@ const NAMESPACE = {
   user: "UserStatus",
   shop: "ShopStatus",
   visibility: "AdminProducts",
+  sale: "Sales.status",
 } as const
 
 /** A small status tag; the same status always has the same color on every admin page. */
