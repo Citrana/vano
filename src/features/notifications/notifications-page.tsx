@@ -12,7 +12,7 @@ import { EmptyState, ErrorState, LoadingState } from "@/components/states/states
 import { QueryBoundary } from "@/components/states/query-boundary"
 import { Button } from "@/components/ui/button"
 import { NativeSelect } from "@/components/ui/native-select"
-import { NotificationItem } from "./notification-item"
+import { isKnownNotification, NotificationItem } from "./notification-item"
 import { useMarkAllRead, useOpenNotification } from "./use-open-notification"
 
 const PAGE_SIZE = 20
@@ -78,11 +78,12 @@ function NotificationList({ unreadOnly, category }: { unreadOnly: boolean; categ
   const t = useTranslations("Notifications")
   const open = useOpenNotification()
   const [now] = useState(() => Date.now())
-  const { results, status, loadMore } = usePaginatedQuery(
+  const { results: allResults, status, loadMore } = usePaginatedQuery(
     api.notifications.inbox.list,
     { unreadOnly: unreadOnly || undefined, category },
     { initialNumItems: PAGE_SIZE },
   )
+  const results = allResults.filter(isKnownNotification)
 
   if (status === "LoadingFirstPage") return <LoadingState />
   if (results.length === 0 && status === "Exhausted") {
