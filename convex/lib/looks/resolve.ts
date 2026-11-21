@@ -80,6 +80,8 @@ export type ResolvedEventBanner = {
   subline: string | null;
   stickers: readonly string[];
   height: BannerHeight;
+  /** Links to the shop's sale items while a sale runs (`promo.link`). */
+  link?: "sale";
 };
 
 /** The buttons facet with every default filled in. */
@@ -247,6 +249,7 @@ export function resolveLook(look: StoredLook): ResolvedLook<string> {
       subline: promo.design.subline ?? null,
       stickers: promo.design.stickers,
       height: promo.height,
+      link: promo.link,
     };
   } else switch (banner.kind) {
     case "none":
