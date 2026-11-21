@@ -8,7 +8,7 @@ import { useCallback, useMemo, useRef, useState } from "react"
 import { api } from "../../../../convex/_generated/api"
 import { utcDay } from "../../../../convex/lib/days"
 import { canShopDo } from "../../../../convex/lib/entitlements"
-import { PLAN_LIMITS } from "../../../../convex/lib/plans"
+import { toPlanLimits } from "../../../../convex/lib/planFeatures"
 import { EmptyState, LoadingState } from "@/components/states/states"
 import { buttonVariants } from "@/components/ui/button"
 import { LockedStatsCard } from "@/features/billing/locked-stats-card"
@@ -52,7 +52,7 @@ export default function DashboardPage() {
   if (shop === undefined || products === undefined) return <LoadingState />
   if (shop === null) return null // SellerGate redirects to onboarding
   // At the plan's product limit, the add button becomes an upgrade link.
-  const limits = billing ? PLAN_LIMITS[billing.effectivePlan] : null
+  const limits = billing ? toPlanLimits(billing.limits) : null
   const atLimit = limits !== null && canShopDo(limits, { kind: "addProduct", products: products.length }) !== null
   const overLimitCount = products.filter((p) => p.overLimit).length
 

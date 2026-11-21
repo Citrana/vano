@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import { OpenShopCta } from "@/features/marketing/shared/open-shop-cta"
 import { talkHref } from "@/features/marketing/shared/site-config"
-import { YEARLY, formatPlanPrice, type Plan } from "./plans"
+import { formatPlanPrice, type Plan } from "./plans"
 
 export async function PlanCard({ plan, locale }: { plan: Plan; locale: string }) {
   const t = await getTranslations("Pricing")
@@ -24,7 +24,7 @@ export async function PlanCard({ plan, locale }: { plan: Plan; locale: string })
       {highlight ? <Badge className="absolute -top-3 left-6 h-7 px-3 text-sm">{t("mostPopular")}</Badge> : null}
       <div className="flex flex-col gap-1">
         <h2 id={headingId} className="text-xl font-extrabold">
-          {t(`plans.${plan.id}.name`)}
+          {plan.name}
         </h2>
         <p className="text-base text-muted-foreground">{t(`plans.${plan.id}.tagline`)}</p>
       </div>
@@ -40,8 +40,8 @@ export async function PlanCard({ plan, locale }: { plan: Plan; locale: string })
             {plan.priceMinor > 0 ? <span className="text-base text-muted-foreground">{t("perMonth")}</span> : null}
           </p>
         )}
-        {plan.id === YEARLY.plan ? (
-          <p className="mt-1 text-sm text-muted-foreground">{t("yearlyNote", { months: YEARLY.freeMonths })}</p>
+        {plan.yearlyFreeMonths !== null ? (
+          <p className="mt-1 text-sm text-muted-foreground">{t("yearlyNote", { months: plan.yearlyFreeMonths })}</p>
         ) : null}
       </div>
       <ul className="flex flex-1 flex-col gap-2.5">
@@ -49,10 +49,8 @@ export async function PlanCard({ plan, locale }: { plan: Plan; locale: string })
           <li key={f.key} className="flex items-start gap-2 text-base">
             <CheckIcon className="mt-0.5 size-5 shrink-0 text-success" strokeWidth={3} aria-hidden />
             <span>
-              {t(`features.${f.key}`, f.values)}
-              {f.hint ? (
-                <span className="block text-sm text-muted-foreground">{t(`featureHints.${f.key as "salesPromotions"}`)}</span>
-              ) : null}
+              {f.label}
+              {f.hint ? <span className="block text-sm text-muted-foreground">{f.hint}</span> : null}
             </span>
           </li>
         ))}

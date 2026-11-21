@@ -19,6 +19,7 @@ const DETAIL_KEYS = [
   "permissions", "added", "removed", "renamedFrom", "from", "to", "owner", "products", "force",
   "plan", "previousPlan", "days", "reason", "periodEnd", "previousEnd", "amount", "provider", "reference", "shop",
   "requestId", "field", "newValue", "flags", "cooldownOverridden", "scope", "bannerText", "bannerPhoto", "promoHeadline", "decoration",
+  "feature", "value", "endsAt", "fromVersion", "toVersion", "lowered",
 ] as const
 type DetailKey = (typeof DETAIL_KEYS)[number]
 const isDetailKey = (key: string): key is DetailKey => (DETAIL_KEYS as readonly string[]).includes(key)
@@ -29,6 +30,7 @@ const TARGET_HREF: Partial<Record<AuditTargetType, (id: string) => string>> = {
   shop: adminHref.shop,
   role: adminHref.role,
   subscription: adminHref.shop,
+  planConfig: () => "/admin/plans",
 }
 
 export function useActorLabel() {

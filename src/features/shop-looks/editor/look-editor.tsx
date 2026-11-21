@@ -39,6 +39,7 @@ import { useLeaveGuard } from "./use-leave-guard"
 import { useLookEditor, type MineLook } from "./use-look-editor"
 import { useLookSection } from "./use-look-section"
 import { WidePreview } from "./wide-preview"
+import { useUpgradePlanName } from "@/features/billing/use-plan-catalog"
 
 type Shop = NonNullable<FunctionReturnType<typeof api.shops.myShop>>
 type Products = FunctionReturnType<typeof api.products.listMine>
@@ -73,6 +74,7 @@ function Notice({ tone = "info", children }: { tone?: "info" | "warn"; children:
  */
 export function LookEditor({ mine, shop, products }: { mine: MineLook; shop: Shop; products: Products }) {
   const t = useTranslations("LookEditor")
+  const promoPlan = useUpgradePlanName("salesPromotions")
   const td = useTranslations("Demo")
   const format = useFormatter()
   const errorMessage = useErrorMessage()
@@ -232,7 +234,7 @@ export function LookEditor({ mine, shop, products }: { mine: MineLook; shop: Sho
   const publishHint = suspended
     ? null
     : promoLocked
-      ? t("hints.promoLocked")
+      ? t("hints.promoLocked", { plan: promoPlan })
       : planLocked
         ? t("hints.planLocked")
         : blocking

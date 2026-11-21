@@ -16,6 +16,7 @@ export type AdminNavKey =
   | "products"
   | "subscriptions"
   | "payments"
+  | "plans"
   | "roles"
   | "activity"
   | "settings"
@@ -40,6 +41,7 @@ export const ADMIN_NAV: readonly AdminNavItem[] = [
   { key: "products", href: "/admin/products", permission: "products.view", ready: true },
   { key: "subscriptions", href: "/admin/subscriptions", permission: "billing.view", ready: true },
   { key: "payments", href: "/admin/payments", permission: "billing.view", ready: true, attention: "failedPayments" },
+  { key: "plans", href: "/admin/plans", permission: "plans.manage", ready: true },
   { key: "roles", href: "/admin/roles", permission: "roles.view", ready: true },
   { key: "activity", href: "/admin/activity", permission: "audit.view", ready: true },
   { key: "settings", href: "/admin/settings", permission: "settings.view", ready: true },

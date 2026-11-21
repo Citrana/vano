@@ -8,6 +8,7 @@ import { toast } from "sonner"
 import type { ResolvedEventBanner } from "../../../../convex/lib/looks/resolve"
 import { Button } from "@/components/ui/button"
 import { EventBanner } from "./event-banner"
+import { useUpgradePlanName } from "@/features/billing/use-plan-catalog"
 
 /**
  * Ready sizes for sharing. Drawn at CSS size, captured at 3×:
@@ -59,6 +60,7 @@ export function BannerDownloads({
   locked: boolean
 }) {
   const t = useTranslations("EventBanners.download")
+  const upgradePlan = useUpgradePlanName("salesPromotions")
   const [making, setMaking] = useState<Size | null>(null)
   const node = useRef<HTMLDivElement>(null)
 
@@ -88,7 +90,7 @@ export function BannerDownloads({
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
         <h4 className="text-sm font-medium">{t("title")}</h4>
-        <p className="text-xs text-muted-foreground">{locked ? t("locked") : t("help")}</p>
+        <p className="text-xs text-muted-foreground">{locked ? t("locked", { plan: upgradePlan }) : t("help")}</p>
       </div>
       <div className="flex flex-wrap gap-2">
         {(Object.keys(SIZES) as Size[]).map((size) => (

@@ -85,7 +85,10 @@
     "LOOK_CONTRAST": "Some text would be too hard to read with these colors. Use a suggested fix, then publish.",
     "LOOK_NO_DRAFT": "There are no changes to publish.",
     "PROMO_SCHEDULE_INVALID": "Check the event banner dates: the end must be after the start, within 92 days, and the start within a year.",
-    "DECORATION_SCHEDULE_INVALID": "Check the profile decoration dates: the end must be after the start, within 92 days, and the start within a year."
+    "DECORATION_SCHEDULE_INVALID": "Check the profile decoration dates: the end must be after the start, within 92 days, and the start within a year.",
+    "PLAN_CONFIG_STALE": "Someone else changed the plans while you were editing. Your change wasn't saved: check the latest values and try again.",
+    "PLAN_CONFIG_INVALID": "Some values aren't valid. Check the fields and try again.",
+    "EXCEPTION_INVALID": "This exception isn't valid: pick a feature the plan doesn't already give, or a higher limit."
   },
   "Validation": {
     "required": "This field is required.",
@@ -391,7 +394,8 @@
       "settings": "Settings",
       "subscriptions": "Subscriptions",
       "payments": "Payments",
-      "changeRequests": "Change requests"
+      "changeRequests": "Change requests",
+      "plans": "Plans & features"
     },
     "attention": {
       "title": "Needs attention",
@@ -525,6 +529,10 @@
       "title": "Shop change requests",
       "view": "View name, link and WhatsApp change requests",
       "decide": "Approve or reject change requests"
+    },
+    "plans": {
+      "title": "Plans & features",
+      "manage": "View and edit plans, features and shop exceptions"
     }
   },
   "AdminRoles": {
@@ -735,6 +743,17 @@
       "cancelled": "Cancelled a shop change request",
       "approved": "Approved a shop change",
       "rejected": "Rejected a shop change"
+    },
+    "plans": {
+      "planUpdated": "Changed a plan",
+      "featureUpdated": "Changed a plan feature",
+      "pricingUpdated": "Changed pricing page text",
+      "reset": "Reset plans and features"
+    },
+    "planException": {
+      "granted": "Gave a shop a plan exception",
+      "revoked": "Removed a plan exception",
+      "expired": "Plan exception ended"
     }
   },
   "AuditDetails": {
@@ -766,7 +785,13 @@
     "bannerText": "Banner text",
     "bannerPhoto": "Banner photo",
     "promoHeadline": "Event banner headline",
-    "decoration": "Profile decoration"
+    "decoration": "Profile decoration",
+    "feature": "Feature",
+    "value": "Value",
+    "endsAt": "Ends",
+    "fromVersion": "Previous version",
+    "toVersion": "New version",
+    "lowered": "Features taken away"
   },
   "AdminActivity": {
     "title": "Activity history",
@@ -912,7 +937,7 @@
     "hints": {
       "planLocked": "Your plan can publish the Classic look and a simple profile photo only. Upgrade to publish this one.",
       "blocking": "Fix the colors marked in red before publishing.",
-      "promoLocked": "Event banners need Pro or Business. Remove it to publish, or upgrade."
+      "promoLocked": "Event banners need {plan} or higher. Remove it to publish, or upgrade."
     },
     "preview": {
       "show": "Show",
@@ -947,8 +972,7 @@
     "looks": {
       "current": "Based on {name}",
       "customized": "customized",
-      "pro": "Pro",
-      "lockedHint": "needs a Pro or Business plan to publish"
+      "lockedHint": "needs the {plan} plan or higher to publish"
     },
     "colors": {
       "intro": "Pick from colors that go well together, or choose your own.",
@@ -1121,12 +1145,12 @@
     },
     "tabs": {
       "changed": "changes not published",
-      "pro": "Pro"
+      "locked": "needs {plan}"
     },
     "lock": {
-      "notice": "This section comes with Pro and Business. Try it here, then upgrade to publish.",
+      "notice": "This section comes with {plan} and higher plans. Try it here, then upgrade to publish.",
       "link": "See plans",
-      "availableOnPro": "Available on Pro"
+      "availableOn": "Available on {plan}"
     },
     "sheet": {
       "expand": "Show more",
@@ -1309,10 +1333,10 @@
     "perMonth": "/month",
     "customPrice": "Custom",
     "mostPopular": "Most popular",
-    "trialPill": "Your first {months, plural, one {month includes} other {# months include}} all Pro features, free",
+    "trialPill": "Your first {months, plural, one {month includes} other {# months include}} all {plan} features, free",
     "ctaFree": "Start free",
     "ctaTrial": "Start free trial",
-    "yearlyNote": "Pay yearly for Pro and get {months, plural, one {# month} other {# months}} free.",
+    "yearlyNote": "Pay yearly and get {months, plural, one {# month} other {# months}} free.",
     "currencyNote": "Prices in KSh. Other currencies coming soon.",
     "mpesaNote": "Pay with M-Pesa",
     "compareTitle": "Compare all features",
@@ -1320,108 +1344,37 @@
     "compareCaption": "Features included in each plan",
     "included": "Included",
     "notIncluded": "Not included",
-    "compareGroups": {
-      "shop": "Shop",
-      "selling": "Selling",
-      "stats": "Stats",
-      "team": "Team and tools",
-      "support": "Support"
-    },
-    "compare": {
-      "products": "Products",
-      "photosPerProduct": "Photos per product",
-      "shopLink": "Your Vano link",
-      "shopLooks": "Shop looks",
-      "colorsLogoBanner": "Colors, logo, and banner",
-      "categoriesSizesColors": "Categories, sizes, and colors",
-      "featuredSections": "Featured and New arrivals sections",
-      "customDomain": "Custom domain",
-      "multiShop": "Several shops or branches",
-      "customBranding": "Custom branding",
-      "whatsappOrders": "WhatsApp orders",
-      "salesPromotions": "Run sales and special offers on your shop",
-      "qrShareImages": "Shop QR code and share images for WhatsApp status and Instagram",
-      "stockLabels": "Low-stock and Sold out labels",
-      "discountCodes": "Discount codes for customers",
-      "orderTracking": "Order tracking (new, confirmed, delivered)",
-      "stockManagement": "Stock management with low-stock alerts",
-      "customerList": "Customer list with order history",
-      "shopStats": "Shop stats (views, WhatsApp clicks, best-viewed products)",
-      "salesReports": "Sales tracking and monthly reports",
-      "advancedStats": "Advanced stats (sales trends, best sellers, visitor sources)",
-      "teamRoles": "Team accounts with roles",
-      "bulkUpload": "Bulk product upload from a spreadsheet",
-      "customIntegrations": "Custom integrations (payments, delivery)",
-      "support": "Support",
-      "personalizedSetup": "Personalized setup and onboarding",
-      "serviceGuarantees": "Service guarantees"
-    },
     "compareValues": {
-      "unlimited": "Unlimited",
-      "all": "All",
-      "standard": "Standard",
-      "priority": "Priority",
-      "dedicated": "Dedicated contact"
+      "unlimited": "Unlimited"
     },
     "ctaTalk": "Talk to us",
     "enterpriseMessage": "Hello Vano! I'd like to talk about a personalized plan for my shop.",
     "plans": {
       "free": {
-        "name": "Free",
         "tagline": "Just getting started"
       },
       "pro": {
-        "name": "Pro",
         "tagline": "For growing sellers"
       },
       "business": {
-        "name": "Business",
         "tagline": "For busy shops and teams"
       },
       "enterprise": {
-        "name": "Enterprise",
         "tagline": "Talk to us",
         "priceNote": "Price given when you decide to get it"
       }
-    },
-    "features": {
-      "products": "Up to {count} products",
-      "photos": "Up to {count} photos per product",
-      "vanoLink": "Your Vano link",
-      "whatsappOrders": "WhatsApp orders",
-      "oneBasicLook": "1 basic shop look",
-      "salesPromotions": "Run sales and special offers on your shop",
-      "productsAndPhotos": "Up to {products} products, {photos} photos each",
-      "allLooks": "All shop looks, colors, profile photo styles, and banner",
-      "categoriesSizesColors": "Categories, sizes, and colors",
-      "shopStats": "Shop stats (views, WhatsApp clicks, best-viewed products)",
-      "prioritySupport": "Priority support",
-      "everythingPro": "Everything in Pro",
-      "unlimitedProducts": "Unlimited products",
-      "discountCodes": "Discount codes for customers",
-      "teamRoles": "Team accounts with roles",
-      "orderTracking": "Order tracking (new, confirmed, delivered)",
-      "salesReports": "Sales tracking and monthly reports",
-      "everythingBusiness": "Everything in Business",
-      "multiShop": "Several shops or branches in one account",
-      "personalizedSetup": "Personalized setup and onboarding",
-      "dedicatedContact": "A dedicated contact person",
-      "customIntegrations": "Custom integrations (payments, delivery)",
-      "serviceGuarantees": "Service guarantees"
-    },
-    "featureHints": {
-      "salesPromotions": "Event banners you can schedule and share, % off, and Sale badges"
     },
     "faqEyebrow": "Questions",
     "faqTitle": "Pricing questions",
     "faq": {
       "q1": "What happens after the trial?",
-      "a1": "After your 2 free months you choose a plan. If you don't pick one, your shop moves to Free and stays online with up to 10 products.",
+      "a1": "After your {months, plural, one {free month} other {# free months}} you choose a plan. If you don't pick one, your shop moves to {free} and stays online with up to {count} products.",
       "q2": "Can I change plans?",
       "a2": "Yes. You'll be able to move up or down between plans at any time, from your dashboard.",
       "q3": "How do I pay?",
       "a3": "Nothing to pay during your trial. Payment methods will be announced before the trial ends; M-Pesa is planned."
-    }
+    },
+    "everythingIn": "Everything in {plan}"
   },
   "Help": {
     "metaTitle": "Help · Vano",
@@ -1560,7 +1513,7 @@
     "bannerAction": "See plans",
     "dismiss": "Dismiss",
     "lockedStatsTitle": "Shop stats",
-    "lockedStatsBody": "See your shop views and WhatsApp clicks with the Pro plan.",
+    "lockedStatsBody": "See your shop views and WhatsApp clicks with the {plan} plan.",
     "lockedStatsAction": "See plans",
     "keep": "Keep {plan}",
     "trialBadge": "Free trial: {count, plural, one {# day} other {# days}} left",
@@ -2034,7 +1987,7 @@
       "making": "Making the image…",
       "failed": "Couldn't make the image. Try again.",
       "done": "Image ready",
-      "locked": "Downloads come with Pro and Business."
+      "locked": "Downloads come with {plan} and higher plans."
     },
     "headlineRequired": "Add a headline.",
     "stickersTitle": "Stickers"
@@ -2068,5 +2021,240 @@
       "newSticker": "\"New\" sticker",
       "saleSticker": "\"Sale\" sticker"
     }
+  },
+  "PlanFeatures": {
+    "products": {
+      "name": "Products",
+      "description": "How many products a shop can have (unlimited = the platform ceiling)."
+    },
+    "photosPerProduct": {
+      "name": "Photos per product",
+      "description": "How many photos each product can show."
+    },
+    "categoriesSizesColors": {
+      "name": "Categories, sizes and colors",
+      "description": "Product details sellers can add. Not checked by the app yet."
+    },
+    "stockLabels": {
+      "name": "Stock labels",
+      "description": "Low-stock and Sold out labels. Not built yet."
+    },
+    "stockManagement": {
+      "name": "Stock management",
+      "description": "Stock counts with low-stock alerts. Not built yet."
+    },
+    "bulkUpload": {
+      "name": "Bulk upload",
+      "description": "Add many products from a spreadsheet. Not built yet."
+    },
+    "shopLink": {
+      "name": "Vano link",
+      "description": "The shop's own link. Every shop has it."
+    },
+    "allLooks": {
+      "name": "All shop looks",
+      "description": "Every look preset, colors, buttons, banner and profile photo styles. Without it a shop can publish the free look only."
+    },
+    "colorsLogoBanner": {
+      "name": "Colors, logo and banner",
+      "description": "Shown on the pricing page; the check is All shop looks."
+    },
+    "featuredSections": {
+      "name": "Featured sections",
+      "description": "Featured and New arrivals sections. Not built yet."
+    },
+    "customDomain": {
+      "name": "Custom domain",
+      "description": "The shop on its own web address. Not built yet."
+    },
+    "customBranding": {
+      "name": "Custom branding",
+      "description": "Branding made for the shop. Not built yet."
+    },
+    "whatsappOrders": {
+      "name": "WhatsApp orders",
+      "description": "Customers order on WhatsApp. Every shop has it."
+    },
+    "salesPromotions": {
+      "name": "Sales and event banners",
+      "description": "Event banners, % off and Sale badges, and banner downloads."
+    },
+    "qrShareImages": {
+      "name": "QR code and share images",
+      "description": "Shop QR code and share images. Not checked by the app yet."
+    },
+    "discountCodes": {
+      "name": "Discount codes",
+      "description": "Codes customers can use. Not built yet; checked once it ships."
+    },
+    "orderTracking": {
+      "name": "Order tracking",
+      "description": "Order statuses (new, confirmed, delivered). Not built yet; checked once it ships."
+    },
+    "customerList": {
+      "name": "Customer list",
+      "description": "Customers with their order history. Not built yet."
+    },
+    "shopStats": {
+      "name": "Shop stats",
+      "description": "Views, WhatsApp clicks and best-viewed products on the dashboard."
+    },
+    "salesReports": {
+      "name": "Sales reports",
+      "description": "Sales tracking and monthly reports. Not built yet."
+    },
+    "advancedStats": {
+      "name": "Advanced stats",
+      "description": "Trends, best sellers, visitor sources. Not built yet."
+    },
+    "teamMembers": {
+      "name": "Team members",
+      "description": "Extra accounts that can help run the shop. Not built yet; checked once it ships."
+    },
+    "teamRoles": {
+      "name": "Team roles",
+      "description": "Roles for team accounts. Not built yet; checked once it ships."
+    },
+    "multiShop": {
+      "name": "Several shops",
+      "description": "Several shops or branches in one account. Not built yet; checked once it ships."
+    },
+    "customIntegrations": {
+      "name": "Custom integrations",
+      "description": "Payments or delivery connected for the shop. Not built yet."
+    },
+    "prioritySupport": {
+      "name": "Priority support",
+      "description": "Faster answers from the Vano team."
+    },
+    "dedicatedSupport": {
+      "name": "Dedicated contact",
+      "description": "One person at Vano who follows the shop."
+    },
+    "personalizedSetup": {
+      "name": "Personalized setup",
+      "description": "Setup and onboarding done with the seller."
+    },
+    "serviceGuarantees": {
+      "name": "Service guarantees",
+      "description": "Agreed service levels."
+    }
+  },
+  "PlanAreas": {
+    "products": "Products",
+    "shopLook": "Shop look",
+    "sales": "Sales",
+    "team": "Team",
+    "support": "Support"
+  },
+  "AdminPlans": {
+    "title": "Plans & features",
+    "intro": "Plans, prices and which plan gets which feature. The app, the pricing page and the plan comparison read from here. Changes apply at once; nobody's data is ever deleted.",
+    "updated": "Last change: {date}.",
+    "reset": "Reset to defaults",
+    "resetDone": "Plans and features are back to the defaults.",
+    "saved": "Saved.",
+    "plansTitle": "Plans",
+    "visible": "On the pricing page",
+    "nameEn": "Name (English)",
+    "nameFr": "Name (French)",
+    "monthly": "Monthly price",
+    "yearly": "Yearly price",
+    "yearlyHelp": "Leave empty for no yearly price. The pricing page shows the months saved.",
+    "monthlyFreeHelp": "Free always costs 0.",
+    "monthlyCustomHelp": "Leave empty for a custom price (\"Talk to us\").",
+    "trialMonths": "Free trial (months)",
+    "trialHelp": "For new shops. Trials already running keep their end date.",
+    "featuresTitle": "Features",
+    "featuresHelp": "Switch a feature on or off, or set a limit. A plan always includes everything in the plans below it.",
+    "feature": "Feature",
+    "area": "Area",
+    "allAreas": "All areas",
+    "check": "Checked by the app",
+    "allChecks": "All features",
+    "checks": {
+      "enforced": "Checked by the app",
+      "pricingOnly": "Pricing page only"
+    },
+    "pricingOnly": "Pricing page only",
+    "pricingOnlyHelp": "Not built or not checked yet: switching it only changes the pricing page.",
+    "pricingColumn": "Pricing page",
+    "shown": "Shown",
+    "hidden": "Hidden",
+    "search": "Search features",
+    "searchPlaceholder": "Search by name",
+    "noMatchTitle": "No features match",
+    "noMatchBody": "Try another search or filter.",
+    "notFoundTitle": "This feature doesn't exist",
+    "featureTitle": "Feature",
+    "kindFlag": "On / off",
+    "kindLimit": "Limit",
+    "unlimited": "Unlimited",
+    "cellLabel": "{feature} on {plan}",
+    "fromPlan": "From {plan}",
+    "fromPlanValue": "{value} from {plan}",
+    "inheritHelp": "A plan gets everything its lower plans have. Change it on the lowest plan.",
+    "pricingTitle": "Pricing page text",
+    "pricingHelp": "What the pricing page says for this feature. It doesn't change what the app checks.",
+    "show": "Show on the pricing page",
+    "showOnCard": "Show on the plan cards",
+    "order": "Order",
+    "orderHelp": "Lower numbers come first.",
+    "tableLabel": "Comparison table label",
+    "cardLabel": "Plan card line",
+    "cardLabelLimitHelp": "Use {count} where the number goes.",
+    "unlimitedLabel": "Card line when unlimited",
+    "offLabel": "Card line when not included",
+    "offLabelHelp": "Shown on the first plan's card when it doesn't have this feature (e.g. \"1 basic shop look\").",
+    "hint": "Small line under the label",
+    "langEn": "English",
+    "langFr": "French",
+    "errors": {
+      "name": "Use 1 to {max} characters, in both languages.",
+      "monthlyPrice": "Enter a valid monthly price. Paid plans need a price above 0.",
+      "yearlyPrice": "Enter a yearly price above 0 and at most 12 monthly prices, or leave it empty.",
+      "trialMonths": "Enter a whole number of months from {min} to {maxMonths}.",
+      "noVisiblePlan": "At least one plan must be on the pricing page.",
+      "label": "Use 1 to {max} characters.",
+      "order": "Enter a whole number from 0 to {maxOrder}.",
+      "pair": "Write it in both languages, or leave both empty."
+    },
+    "impact": {
+      "title": "Take this away?",
+      "resetTitle": "Reset every plan and feature?",
+      "nothingLost": "No plan loses anything with this change.",
+      "lost": "Plans will lose: {features}{more, plural, =0 {} other { and # more}}.",
+      "shops": "{count, plural, =0 {No shop is} one {# shop is} other {# shops are}} on {plans} now.",
+      "shopsMany": "More than {count} shops are on {plans} now.",
+      "pricingOnly": "These features aren't checked by the app yet: only the pricing page changes.",
+      "dataKept": "Nobody's data is deleted: products, photos and looks stay. A locked feature just stops working until the shop's plan includes it again.",
+      "confirm": "Yes, save",
+      "confirmReset": "Yes, reset"
+    }
+  },
+  "PlanExceptions": {
+    "title": "Plan exceptions",
+    "empty": "No exceptions. This shop gets exactly what its plan includes.",
+    "ownShop": "You can't give exceptions to your own shop.",
+    "add": "Add exception",
+    "addTitle": "Add an exception for {shop}",
+    "addBody": "Give this shop a feature or a higher limit until a date. It ends by itself and is recorded in the activity history.",
+    "added": "Exception added.",
+    "feature": "Feature",
+    "newLimit": "New limit",
+    "unlimited": "Unlimited",
+    "limitInvalid": "Enter a whole number within this feature's limit.",
+    "flagHelp": "The shop gets this feature until the end date.",
+    "days": "For how many days",
+    "endsOn": "Ends on {date}.",
+    "reason": "Reason",
+    "reasonHelp": "Why this shop gets it (partner, support case…). Shown in the activity history.",
+    "on": "Included",
+    "limit": "Up to {count}",
+    "until": "Until {date}",
+    "endedOn": "Ended on {date}",
+    "revokedOn": "Removed on {date}",
+    "revoke": "Remove",
+    "revoked": "Exception removed."
   }
 }

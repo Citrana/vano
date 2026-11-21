@@ -34,6 +34,7 @@ import { ContrastNotes } from "./contrast-notes"
 import { ProNote } from "./pro-note"
 import { ScheduleFields, useNow } from "./schedule-fields"
 import type { LookEditorState, MineLook } from "./use-look-editor"
+import { useUpgradePlanName } from "@/features/billing/use-plan-catalog"
 
 export type ProfileShopInfo = { name: string; logoUrl: string | null }
 
@@ -85,6 +86,7 @@ function BorderColorPicker({
 }) {
   const t = useTranslations("LookEditor.profile")
   const tl = useTranslations("LookEditor.lock")
+  const availableOn = tl("availableOn", { plan: useUpgradePlanName("allLooks") })
   const id = useId()
   const { colors } = editor.resolved
   const tokenHex: Record<ProfileColorToken, Hex> = { accent: colors.primary, chip: colors.chip, foreground: colors.foreground }
@@ -138,7 +140,7 @@ function BorderColorPicker({
             className="size-11 cursor-pointer rounded-md border bg-card p-1 focus-ring"
           />
           {t("customColor")}
-          {!entitled ? <LockIcon className="size-3.5 opacity-70" aria-label={tl("availableOnPro")} /> : null}
+          {!entitled ? <LockIcon className="size-3.5 opacity-70" aria-label={availableOn} /> : null}
         </label>
         <label htmlFor={`${id}-hex`} className="sr-only">
           {t("customColorHex")}
@@ -216,6 +218,7 @@ export function ProfileSection({
 }) {
   const t = useTranslations("LookEditor.profile")
   const tl = useTranslations("LookEditor.lock")
+  const availableOn = tl("availableOn", { plan: useUpgradePlanName("allLooks") })
   const td = useTranslations("ProfileDecorations")
   const now = useNow()
   const entitled = mine.entitled
@@ -247,7 +250,7 @@ export function ProfileSection({
                 type="button"
                 role="radio"
                 aria-checked={selected}
-                aria-label={isLocked ? `${t(`shapes.${shape}`)}, ${tl("availableOnPro")}` : t(`shapes.${shape}`)}
+                aria-label={isLocked ? `${t(`shapes.${shape}`)}, ${availableOn}` : t(`shapes.${shape}`)}
                 tabIndex={selected ? 0 : -1}
                 disabled={disabled}
                 onClick={() => set({ shape })}
@@ -281,7 +284,7 @@ export function ProfileSection({
         label={t("borderWidth")}
         value={profile.borderWidth}
         disabled={disabled}
-        lockedLabel={tl("availableOnPro")}
+        lockedLabel={availableOn}
         onChange={(borderWidth) => set({ borderWidth })}
         options={PROFILE_BORDER_WIDTHS.map((w) => ({ value: w, label: t(`borderWidths.${w}`), locked: locked({ borderWidth: w }) }))}
       />
@@ -289,7 +292,7 @@ export function ProfileSection({
         label={t("borderStyle")}
         value={profile.borderStyle}
         disabled={disabled || profile.borderWidth === "none"}
-        lockedLabel={tl("availableOnPro")}
+        lockedLabel={availableOn}
         onChange={(borderStyle) => set({ borderStyle })}
         options={PROFILE_BORDER_STYLES.map((s) => ({ value: s, label: t(`borderStyles.${s}`), locked: locked({ borderStyle: s }) }))}
       />
@@ -297,7 +300,7 @@ export function ProfileSection({
         label={t("size")}
         value={profile.size}
         disabled={disabled}
-        lockedLabel={tl("availableOnPro")}
+        lockedLabel={availableOn}
         onChange={(size) => set({ size })}
         options={PROFILE_SIZES.map((s) => ({ value: s, label: t(`sizes.${s}`), locked: locked({ size: s }) }))}
       />
@@ -305,7 +308,7 @@ export function ProfileSection({
         label={t("position")}
         value={profile.position}
         disabled={disabled}
-        lockedLabel={tl("availableOnPro")}
+        lockedLabel={availableOn}
         onChange={(position) => set({ position })}
         options={[
           { value: "start", label: t("positions.start"), locked: locked({ position: "start" }) },
@@ -316,7 +319,7 @@ export function ProfileSection({
         label={t("overlap")}
         value={profile.overlap}
         disabled={disabled}
-        lockedLabel={tl("availableOnPro")}
+        lockedLabel={availableOn}
         onChange={(overlap) => set({ overlap })}
         options={[
           { value: "edge", label: t("overlaps.edge"), locked: locked({ overlap: "edge" }) },
@@ -339,8 +342,8 @@ export function ProfileSection({
                 type="button"
                 role="radio"
                 aria-checked={selected}
-                aria-label={isLocked ? `${label}, ${tl("availableOnPro")}` : label}
-                title={isLocked ? `${label} · ${tl("availableOnPro")}` : label}
+                aria-label={isLocked ? `${label}, ${availableOn}` : label}
+                title={isLocked ? `${label} · ${availableOn}` : label}
                 tabIndex={selected ? 0 : -1}
                 disabled={disabled}
                 onClick={() => set({ corner })}
@@ -391,7 +394,7 @@ export function ProfileSection({
                       key={entry.id}
                       type="button"
                       aria-pressed={selected}
-                      aria-label={entitled ? name : `${name}, ${tl("availableOnPro")}`}
+                      aria-label={entitled ? name : `${name}, ${availableOn}`}
                       disabled={disabled}
                       onClick={() => pickDecoration(entry.id)}
                       className={cn(

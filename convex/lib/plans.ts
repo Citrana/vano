@@ -1,13 +1,12 @@
 import { v, type Infer } from "convex/values";
-import { LIMITS } from "./catalog";
 import type { Currency } from "./money";
 
 /**
- * Vano plans (CLAUDE.md "Billing"): the ONE source for plan ids, prices,
- * limits, the trial and plan features. Shared by the server (limit checks,
- * checkout amounts) and the UI. Marketing display data (cards, comparison
- * table) lives in `src/features/marketing/pricing/plans.ts`, which imports
- * the numbers from here.
+ * Vano plans (CLAUDE.md "Billing"): plan ids, validators, statuses and the
+ * fixed rules (period length, grant rules). Prices, limits, features and
+ * the trial length are NOT here: they live in the `planConfig` table,
+ * edited on the admin "Plans & features" page (`convex/lib/planConfig.ts`;
+ * feature keys in `planFeatures.ts`, seed in `planDefaults.ts`).
  */
 
 export const PLAN_IDS = ["free", "pro", "business", "enterprise"] as const;
@@ -38,16 +37,7 @@ export type GrantablePlanId = Infer<typeof grantablePlanValidator>;
 
 export const PLAN_CURRENCY: Currency = "KES";
 
-/** Monthly price in minor units; null = custom price ("Talk to us"). */
-export const PLAN_PRICE_MINOR: Record<PlanId, number | null> = {
-  free: 0,
-  pro: 29900,
-  business: 100000,
-  enterprise: null,
-};
-
-/** New shops get this many calendar months of `TRIAL_PLAN`, no payment needed. */
-export const TRIAL_MONTHS = 2;
+/** New shops start a free trial of this plan (its length is in `planConfig`). */
 export const TRIAL_PLAN: PlanId = "pro";
 /** One paid period. */
 export const PERIOD_DAYS = 30;
@@ -55,59 +45,6 @@ export const PERIOD_DAYS = 30;
 export const EXPIRY_WARNING_DAYS = 7;
 
 export const DAY_MS = 86_400_000;
-
-/** Features switched on per plan. Enforced with `requireCan` (lib/entitlements.ts). */
-export type PlanFeatureFlag =
-  | "shopStats"
-  | "allLooks"
-  | "salesPromotions"
-  | "teamRoles"
-  | "discountCodes"
-  | "orderTracking"
-  | "multiShop";
-
-export type PlanLimits = {
-  /** null = unlimited (up to the platform ceiling `LIMITS.maxProducts`). */
-  products: number | null;
-  photosPerProduct: number;
-  /** Extra team accounts (not built yet). */
-  teamMembers: number;
-  features: readonly PlanFeatureFlag[];
-};
-
-const PRO_FEATURES: readonly PlanFeatureFlag[] = ["shopStats", "allLooks", "salesPromotions"];
-const BUSINESS_FEATURES: readonly PlanFeatureFlag[] = [
-  ...PRO_FEATURES,
-  "teamRoles",
-  "discountCodes",
-  "orderTracking",
-];
-
-export const PLAN_LIMITS: Record<PlanId, PlanLimits> = {
-  free: { products: 10, photosPerProduct: 3, teamMembers: 0, features: [] },
-  pro: { products: 50, photosPerProduct: 6, teamMembers: 0, features: PRO_FEATURES },
-  business: { products: null, photosPerProduct: 6, teamMembers: 5, features: BUSINESS_FEATURES },
-  enterprise: {
-    products: null,
-    photosPerProduct: 6,
-    teamMembers: 20,
-    features: [...BUSINESS_FEATURES, "multiShop"],
-  },
-};
-
-/** The product limit actually enforced (unlimited = platform ceiling). */
-export function productCap(limits: PlanLimits): number {
-  return limits.products ?? LIMITS.maxProducts;
-}
-
-/**
- * Photos allowed on a product: the plan's number, or — for a product that
- * already had more before a downgrade — what it has (it can keep them,
- * never gain more).
- */
-export function photoCap(limits: PlanLimits, previousCount = 0): number {
-  return Math.max(limits.photosPerProduct, previousCount);
-}
 
 /** free < pro < business < enterprise. */
 export function planRank(plan: PlanId): number {

@@ -20,6 +20,8 @@ export const PERMISSION_GROUPS = {
   settings: ["view", "manage"],
   /** Subscriptions and payments: view them; grant or extend plans. */
   billing: ["view", "manage"],
+  /** Plans & features: plan prices, which plan gets which feature, limits, shop exceptions. */
+  plans: ["manage"],
   /** Requests to change a shop's name, link or WhatsApp: see them; approve or reject. */
   changeRequests: ["view", "decide"],
   /** The seller's own shop — always combined with the ownership checks. */

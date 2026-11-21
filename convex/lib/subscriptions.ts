@@ -3,11 +3,11 @@ import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { logAdminAction, type AuditAction } from "./audit";
 import { addMonths, utcDay } from "./days";
 import { notify } from "./notify";
+import { readPlanConfig } from "./planConfig";
+import type { PlanConfigData } from "./planFeatures";
 import {
   DAY_MS,
   PERIOD_DAYS,
-  PLAN_PRICE_MINOR,
-  TRIAL_MONTHS,
   TRIAL_PLAN,
   type PaidPlanId,
   type PlanId,
@@ -29,12 +29,29 @@ export type SubscriptionState = {
   periodEnd: number | null;
 };
 
-export function trialState(now: number): SubscriptionState {
+/** The trial length comes from the plan config (`trialMonths` of TRIAL_PLAN). */
+export function trialState(now: number, months: number): SubscriptionState {
   return {
     plan: TRIAL_PLAN,
     status: "trialing",
     periodStart: now,
-    periodEnd: addMonths(now, TRIAL_MONTHS),
+    periodEnd: addMonths(now, months),
+  };
+}
+
+export function trialMonthsOf(config: PlanConfigData): number {
+  return config.plans[TRIAL_PLAN].trialMonths;
+}
+
+/** Monthly prices from the plan config (null = custom price). */
+export type PlanPrices = Record<PlanId, number | null>;
+
+export function pricesOf(config: PlanConfigData): PlanPrices {
+  return {
+    free: config.plans.free.monthlyMinor,
+    pro: config.plans.pro.monthlyMinor,
+    business: config.plans.business.monthlyMinor,
+    enterprise: config.plans.enterprise.monthlyMinor,
   };
 }
 
@@ -79,6 +96,7 @@ export function applyPurchase(
   current: SubscriptionState,
   plan: PaidPlanId,
   now: number,
+  prices: PlanPrices,
 ): SubscriptionState {
   const state = stateAt(current, now);
   const remaining = state.periodEnd === null ? 0 : Math.max(0, state.periodEnd - now);
@@ -90,8 +108,8 @@ export function applyPurchase(
     return { plan, status: "active", periodStart: now, periodEnd: now + remaining + PERIOD_MS };
   }
   if (state.status === "active") {
-    const oldPrice = PLAN_PRICE_MINOR[state.plan];
-    const newPrice = PLAN_PRICE_MINOR[plan] ?? 0;
+    const oldPrice = prices[state.plan];
+    const newPrice = prices[plan] ?? 0;
     // A custom-priced plan (Enterprise) keeps its days one for one.
     const credit =
       oldPrice === null || newPrice <= 0 ? remaining : Math.floor((remaining * oldPrice) / newPrice);
@@ -146,9 +164,11 @@ export function stateOf(doc: Doc<"subscriptions">): SubscriptionState {
 export async function subscriptionOf(
   ctx: QueryCtx,
   shop: Doc<"shops">,
+  config?: PlanConfigData,
 ): Promise<SubscriptionState> {
   const doc = await subscriptionDoc(ctx, shop._id);
-  return doc ? stateOf(doc) : trialState(shop._creationTime);
+  if (doc) return stateOf(doc);
+  return trialState(shop._creationTime, trialMonthsOf(config ?? (await readPlanConfig(ctx))));
 }
 
 /** Audit details use readable UTC days for dates. */
@@ -231,13 +251,14 @@ async function notifyPlanChange(
   }
 }
 
-/** Every new shop starts on the trial (called from `shops.create`). */
+/** Every new shop starts on the trial (called from `shops.create`); its length is read from the plan config. */
 export async function startTrial(
   ctx: MutationCtx,
   shop: Doc<"shops">,
   now = Date.now(),
 ): Promise<void> {
-  await writeSubscription(ctx, shop, trialState(now), {
+  const months = trialMonthsOf(await readPlanConfig(ctx));
+  await writeSubscription(ctx, shop, trialState(now, months), {
     source: "trial",
     action: null,
     actor: null,

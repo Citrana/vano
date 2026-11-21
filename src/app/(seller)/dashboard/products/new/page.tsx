@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { api } from "../../../../../../convex/_generated/api"
 import { canShopDo } from "../../../../../../convex/lib/entitlements"
-import { PLAN_LIMITS, photoCap } from "../../../../../../convex/lib/plans"
+import { photoCap, toPlanLimits } from "../../../../../../convex/lib/planFeatures"
 import { PageTitle } from "@/components/shell/page-title"
 import { EmptyState, LoadingState } from "@/components/states/states"
 import { buttonVariants } from "@/components/ui/button"
@@ -28,7 +28,7 @@ export default function NewProductPage() {
   if (shop === null) return null
 
   // The plan's limits (the server checks again on save).
-  const limits = billing ? PLAN_LIMITS[billing.effectivePlan] : null
+  const limits = billing ? toPlanLimits(billing.limits) : null
   if (billing && limits && canShopDo(limits, { kind: "addProduct", products: billing.usage.products }) !== null) {
     return (
       <div className="mx-auto max-w-2xl">

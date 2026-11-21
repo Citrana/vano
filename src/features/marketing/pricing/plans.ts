@@ -1,229 +1,135 @@
 import { formatMoney } from "../../../../convex/lib/money"
-import {
-  PLAN_CURRENCY,
-  PLAN_IDS,
-  PLAN_LIMITS,
-  PLAN_PRICE_MINOR,
-  TRIAL_MONTHS,
-  type PlanId,
-} from "../../../../convex/lib/plans"
+import { localizedIn, type CatalogFeature, type PlanCatalog } from "../../../../convex/lib/planCatalog"
+import { PLAN_AREAS, isLower, type FeatureValue, type PlanArea } from "../../../../convex/lib/planFeatures"
+import { PLAN_CURRENCY, type PlanId } from "../../../../convex/lib/plans"
 
 /**
- * Marketing display data for the plans: cards, feature lists and the
- * comparison table. Plan ids, prices, limits and the trial come from
- * `convex/lib/plans.ts` (the one source, also used by billing and limit
- * checks). Labels live in messages under `Pricing.plans.<id>` and
- * `Pricing.features.<key>`; numbers here are interpolated into them.
+ * Pricing display, DERIVED from the plan catalogue (`plans.catalog`, the
+ * live plan config edited on the admin "Plans & features" page). Nothing
+ * here is data: cards, the comparison table and the starting price are
+ * computed, so the pricing page, the plan comparison and the seller's
+ * plan options always match what the app enforces. Pure (tested with the
+ * seed).
  */
-export { PLAN_CURRENCY, TRIAL_MONTHS, type PlanId }
 
-/** Yearly billing: Pro yearly = 2 months free. Not available yet. Shown on that plan's card. */
-export const YEARLY = { comingSoon: true, freeMonths: 2, plan: "pro" } as const
-
-/** Card lines. Labels: `Pricing.features.<key>`; `values` fill its {placeholders}. */
-export type FeatureKey =
-  | "products"
-  | "photos"
-  | "vanoLink"
-  | "whatsappOrders"
-  | "oneBasicLook"
-  | "salesPromotions"
-  | "productsAndPhotos"
-  | "allLooks"
-  | "categoriesSizesColors"
-  | "shopStats"
-  | "prioritySupport"
-  | "everythingPro"
-  | "unlimitedProducts"
-  | "discountCodes"
-  | "teamRoles"
-  | "orderTracking"
-  | "salesReports"
-  | "everythingBusiness"
-  | "multiShop"
-  | "personalizedSetup"
-  | "dedicatedContact"
-  | "customIntegrations"
-  | "serviceGuarantees"
-
-/** `hint` adds a small muted line under the label: `Pricing.featureHints.<key>`. */
-export type PlanFeature = { key: FeatureKey; values?: Record<string, number>; hint?: true }
+export type CardLine = { key: string; label: string; hint?: string }
 
 export type Plan = {
   id: PlanId
+  name: string
   /** Minor units per month; null = custom price ("Talk to us"). */
   priceMinor: number | null
-  highlight?: boolean
+  /** Months saved by paying yearly, when a yearly price is set. */
+  yearlyFreeMonths: number | null
+  highlight: boolean
   /** free = "Start free", trial = "Start free trial", talk = WhatsApp. */
   cta: "free" | "trial" | "talk"
-  /** The top 5–6 items shown on the card. The full list is COMPARISON. */
-  features: PlanFeature[]
+  features: CardLine[]
 }
 
-const perPlanValue = <V,>(fn: (id: PlanId) => V) =>
-  Object.fromEntries(PLAN_IDS.map((id) => [id, fn(id)])) as Record<PlanId, V>
-/** Product limits per plan (null = unlimited). Used by cards and the table. */
-export const PRODUCT_LIMITS: Record<PlanId, number | null> = perPlanValue((id) => PLAN_LIMITS[id].products)
-/** Photos per product. Used by cards and the table. */
-export const PHOTO_LIMITS: Record<PlanId, number> = perPlanValue((id) => PLAN_LIMITS[id].photosPerProduct)
+/** A cell of the comparison table: check, dash, a number or "unlimited". */
+export type CompareCell = boolean | { count: number } | { label: "unlimited" }
+export type CompareRow = { key: string; label: string; hint?: string; cells: Record<PlanId, CompareCell> }
+export type CompareGroup = { key: PlanArea; rows: CompareRow[] }
 
-export const PLANS: Plan[] = [
-  {
-    id: "free",
-    priceMinor: PLAN_PRICE_MINOR.free,
-    cta: "free",
-    features: [
-      { key: "products", values: { count: PRODUCT_LIMITS.free! } },
-      { key: "vanoLink" },
-      { key: "whatsappOrders" },
-      { key: "oneBasicLook" },
-      { key: "photos", values: { count: PHOTO_LIMITS.free } },
-    ],
-  },
-  {
-    id: "pro",
-    priceMinor: PLAN_PRICE_MINOR.pro,
-    highlight: true,
-    cta: "trial",
-    features: [
-      { key: "salesPromotions", hint: true },
-      { key: "productsAndPhotos", values: { products: PRODUCT_LIMITS.pro!, photos: PHOTO_LIMITS.pro } },
-      { key: "allLooks" },
-      { key: "categoriesSizesColors" },
-      { key: "shopStats" },
-      { key: "prioritySupport" },
-    ],
-  },
-  {
-    id: "business",
-    priceMinor: PLAN_PRICE_MINOR.business,
-    cta: "trial",
-    features: [
-      { key: "everythingPro" },
-      { key: "unlimitedProducts" },
-      { key: "discountCodes" },
-      { key: "teamRoles" },
-      { key: "orderTracking" },
-      { key: "salesReports" },
-    ],
-  },
-  {
-    id: "enterprise",
-    priceMinor: PLAN_PRICE_MINOR.enterprise,
-    cta: "talk",
-    features: [
-      { key: "everythingBusiness" },
-      { key: "multiShop" },
-      { key: "personalizedSetup" },
-      { key: "dedicatedContact" },
-      { key: "customIntegrations" },
-      { key: "serviceGuarantees" },
-    ],
-  },
-]
+/** Plans shown on the pricing page and in the seller's plan options. */
+export function visiblePlans(catalog: PlanCatalog) {
+  return catalog.plans.filter((p) => p.visible)
+}
 
-/** A cell of the comparison table: check, dash, a number or a short label. */
-export type CompareCell = boolean | { count: number } | { label: CompareLabel }
-export type CompareLabel = "unlimited" | "all" | "standard" | "priority" | "dedicated"
-export type CompareGroupKey = "shop" | "selling" | "stats" | "team" | "support"
-export type CompareRowKey =
-  | "products"
-  | "photosPerProduct"
-  | "shopLink"
-  | "shopLooks"
-  | "colorsLogoBanner"
-  | "categoriesSizesColors"
-  | "featuredSections"
-  | "customDomain"
-  | "multiShop"
-  | "customBranding"
-  | "whatsappOrders"
-  | "salesPromotions"
-  | "qrShareImages"
-  | "stockLabels"
-  | "discountCodes"
-  | "orderTracking"
-  | "stockManagement"
-  | "customerList"
-  | "shopStats"
-  | "salesReports"
-  | "advancedStats"
-  | "teamRoles"
-  | "bulkUpload"
-  | "customIntegrations"
-  | "support"
-  | "personalizedSetup"
-  | "serviceGuarantees"
-export type CompareRow = { key: CompareRowKey; hint?: true; cells: Record<PlanId, CompareCell> }
-export type CompareGroup = { key: CompareGroupKey; rows: CompareRow[] }
+const included = (value: FeatureValue) => value === true || value === null || (typeof value === "number" && value > 0)
 
-const perPlan = (fn: (id: PlanId) => CompareCell) => perPlanValue(fn)
-/** Included from `from` upwards (free < pro < business < enterprise). */
-const from = (first: PlanId) => perPlan((id) => PLAN_IDS.indexOf(id) >= PLAN_IDS.indexOf(first))
+function lineFor(f: CatalogFeature, value: FeatureValue, locale: string): CardLine {
+  const p = f.pricing
+  const hint = p.hint ? localizedIn(p.hint, locale) : undefined
+  let label = localizedIn(p.cardLabel, locale)
+  if (f.kind === "limit") {
+    label =
+      value === null
+        ? localizedIn(p.unlimitedLabel ?? p.cardLabel, locale).replace("{count}", "∞")
+        : label.replace("{count}", String(value))
+  }
+  return { key: f.key, label, hint }
+}
 
-/** "Compare all features": the full list. Labels: `Pricing.compare.<key>`. */
-export const COMPARISON: CompareGroup[] = [
-  {
-    key: "shop",
-    rows: [
-      { key: "products", cells: perPlan((id) => (PRODUCT_LIMITS[id] === null ? { label: "unlimited" } : { count: PRODUCT_LIMITS[id]! })) },
-      { key: "photosPerProduct", cells: perPlan((id) => ({ count: PHOTO_LIMITS[id] })) },
-      { key: "shopLink", cells: from("free") },
-      { key: "shopLooks", cells: perPlan((id) => (id === "free" ? { count: 1 } : { label: "all" })) },
-      { key: "colorsLogoBanner", cells: from("pro") },
-      { key: "categoriesSizesColors", cells: from("pro") },
-      { key: "featuredSections", cells: from("pro") },
-      { key: "customDomain", cells: from("business") },
-      { key: "multiShop", cells: from("enterprise") },
-      { key: "customBranding", cells: from("enterprise") },
-    ],
-  },
-  {
-    key: "selling",
-    rows: [
-      { key: "whatsappOrders", cells: from("free") },
-      { key: "salesPromotions", hint: true, cells: from("pro") },
-      { key: "qrShareImages", cells: from("pro") },
-      { key: "stockLabels", cells: from("pro") },
-      { key: "discountCodes", cells: from("business") },
-      { key: "orderTracking", cells: from("business") },
-      { key: "stockManagement", cells: from("business") },
-      { key: "customerList", cells: from("business") },
-    ],
-  },
-  {
-    key: "stats",
-    rows: [
-      { key: "shopStats", cells: from("pro") },
-      { key: "salesReports", cells: from("business") },
-      { key: "advancedStats", cells: from("business") },
-    ],
-  },
-  {
-    key: "team",
-    rows: [
-      { key: "teamRoles", cells: from("business") },
-      { key: "bulkUpload", cells: from("business") },
-      { key: "customIntegrations", cells: from("enterprise") },
-    ],
-  },
-  {
-    key: "support",
-    rows: [
-      {
-        key: "support",
-        cells: { free: { label: "standard" }, pro: { label: "priority" }, business: { label: "priority" }, enterprise: { label: "dedicated" } },
-      },
-      { key: "personalizedSetup", cells: from("enterprise") },
-      { key: "serviceGuarantees", cells: from("enterprise") },
-    ],
-  },
-]
+function yearlyFreeMonths(monthly: number | null, yearly: number | null): number | null {
+  if (monthly === null || monthly <= 0 || yearly === null) return null
+  const months = Math.round((monthly * 12 - yearly) / monthly)
+  return months > 0 ? months : null
+}
 
-/** Lowest paid monthly price, for "then from … /month". */
-export const STARTING_PRICE_MINOR: number = Math.min(
-  ...PLANS.flatMap((p) => (p.priceMinor && p.priceMinor > 0 ? [p.priceMinor] : [])),
-)
+/**
+ * The plan cards. The first plan lists what it includes; each next plan
+ * says "Everything in <previous>" (when the previous one is paid) and adds
+ * what it gives more, in the admin's order (`pricing.order`).
+ */
+export function buildPlanCards(
+  catalog: PlanCatalog,
+  locale: string,
+  everythingIn: (planName: string) => string,
+): Plan[] {
+  const plans = visiblePlans(catalog)
+  const cardFeatures = catalog.features.filter((f) => f.pricing.show && f.pricing.showOnCard)
+  return plans.map((plan, i) => {
+    const prev = i > 0 ? plans[i - 1] : null
+    const lines: CardLine[] = []
+    if (prev === null) {
+      for (const f of cardFeatures) {
+        const value = f.values[plan.id]
+        if (included(value)) lines.push(lineFor(f, value, locale))
+        else if (f.kind === "flag" && f.pricing.offLabel) {
+          lines.push({ key: f.key, label: localizedIn(f.pricing.offLabel, locale) })
+        }
+      }
+    } else {
+      if (prev.monthlyMinor !== 0) {
+        lines.push({ key: `everything-${prev.id}`, label: everythingIn(localizedIn(prev.name, locale)) })
+      }
+      for (const f of cardFeatures) {
+        const value = f.values[plan.id]
+        if (included(value) && isLower(value, f.values[prev.id])) lines.push(lineFor(f, value, locale))
+      }
+    }
+    return {
+      id: plan.id,
+      name: localizedIn(plan.name, locale),
+      priceMinor: plan.monthlyMinor,
+      yearlyFreeMonths: yearlyFreeMonths(plan.monthlyMinor, plan.yearlyMinor),
+      highlight: plan.id === catalog.trialPlan,
+      cta: plan.monthlyMinor === 0 ? "free" : plan.monthlyMinor === null ? "talk" : "trial",
+      features: lines,
+    }
+  })
+}
+
+/** "Compare all features": rows grouped by area, in the admin's order. */
+export function buildComparison(catalog: PlanCatalog, locale: string): CompareGroup[] {
+  const plans = visiblePlans(catalog)
+  return PLAN_AREAS.flatMap((area) => {
+    const rows = catalog.features
+      .filter((f) => f.area === area && f.pricing.show)
+      .map((f) => ({
+        key: f.key,
+        label: localizedIn(f.pricing.label, locale),
+        hint: f.pricing.hint ? localizedIn(f.pricing.hint, locale) : undefined,
+        cells: Object.fromEntries(
+          plans.map((p) => {
+            const value = f.values[p.id]
+            const cell: CompareCell =
+              typeof value === "boolean" ? value : value === null ? { label: "unlimited" } : { count: value }
+            return [p.id, cell]
+          }),
+        ) as Record<PlanId, CompareCell>,
+      }))
+    return rows.length > 0 ? [{ key: area, rows }] : []
+  })
+}
+
+/** Lowest paid monthly price among visible plans, for "then from … /month". */
+export function startingPriceMinor(catalog: PlanCatalog): number | null {
+  const prices = visiblePlans(catalog).flatMap((p) => (p.monthlyMinor && p.monthlyMinor > 0 ? [p.monthlyMinor] : []))
+  return prices.length > 0 ? Math.min(...prices) : null
+}
 
 /**
  * Plan prices in shillings. Uses the regional en-KE locale for English

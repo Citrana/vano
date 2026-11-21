@@ -16,14 +16,16 @@ import {
   type PaidPlanId,
   type PlanId,
 } from "../../../convex/lib/plans"
-import { applyPurchase, type SubscriptionState } from "../../../convex/lib/subscriptions"
+import { applyPurchase, type PlanPrices, type SubscriptionState } from "../../../convex/lib/subscriptions"
+import type { PlanCatalog } from "../../../convex/lib/planCatalog"
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog"
-import { PLANS, formatPlanPrice, type Plan } from "@/features/marketing/pricing/plans"
+import { buildPlanCards, formatPlanPrice, type Plan } from "@/features/marketing/pricing/plans"
 import { talkHref } from "@/features/marketing/shared/site-config"
 import { useErrorMessage } from "@/lib/use-error-message"
 import type { MyBilling } from "./use-billing"
+import { usePlanCatalog, usePlanName } from "./use-plan-catalog"
 
 type Action =
   | { kind: "current" }
@@ -32,7 +34,8 @@ type Action =
   | { kind: "talk" }
 
 /**
- * The four plans with what the seller can do on each: buy / renew a paid
+ * The plans (from the live plan catalogue; hidden plans are left out,
+ * except the seller's current one) with what the seller can do on each: buy / renew a paid
  * plan (opens a confirmation with the new end date, then checkout), see
  * how moving to Free works, or talk to us (Enterprise, or when online
  * payments are off). One coral button: the most useful next step.
@@ -41,12 +44,16 @@ export function PlanOptions({ billing, shopName, now }: { billing: MyBilling; sh
   const t = useTranslations("Billing")
   const tp = useTranslations("Pricing")
   const locale = useLocale()
+  const catalog = usePlanCatalog()
+  const planName = usePlanName()
   const [buying, setBuying] = useState<PaidPlanId | null>(null)
   const [freeOpen, setFreeOpen] = useState(false)
 
   const current = billing.effectivePlan
   const running = billing.status === "trialing" || billing.status === "active"
-  const planName = (id: PlanId) => tp(`plans.${id}.name`)
+  if (!catalog) return null
+  const shown = { ...catalog, plans: catalog.plans.map((p) => (p.id === current ? { ...p, visible: true } : p)) }
+  const plans = buildPlanCards(shown, locale, (plan) => tp("everythingIn", { plan }))
 
   function actionFor(id: PlanId): Action {
     if (id === "enterprise") return current === "enterprise" ? { kind: "current" } : { kind: "talk" }
@@ -85,7 +92,7 @@ export function PlanOptions({ billing, shopName, now }: { billing: MyBilling; sh
         </p>
       ) : null}
       <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {PLANS.map((plan) => (
+        {plans.map((plan) => (
           <PlanOption
             key={plan.id}
             plan={plan}
@@ -100,7 +107,7 @@ export function PlanOptions({ billing, shopName, now }: { billing: MyBilling; sh
         ))}
       </ul>
 
-      <ConfirmPurchaseDialog billing={billing} plan={buying} now={now} onClose={() => setBuying(null)} />
+      <ConfirmPurchaseDialog billing={billing} catalog={catalog} plan={buying} now={now} onClose={() => setBuying(null)} />
       <FreeDialog billing={billing} open={freeOpen} onOpenChange={setFreeOpen} />
     </section>
   )
@@ -126,7 +133,7 @@ function PlanOption({
   onFree: () => void
 }) {
   const t = useTranslations("Billing")
-  const tp = useTranslations("Pricing")
+  const planName = usePlanName()
   const headingId = `billing-plan-${plan.id}`
 
   return (
@@ -139,7 +146,7 @@ function PlanOption({
     >
       <div className="flex items-start justify-between gap-2">
         <h3 id={headingId} className="text-lg font-extrabold">
-          {tp(`plans.${plan.id}.name`)}
+          {plan.name}
         </h3>
         {isCurrent ? <Badge>{t("currentBadge")}</Badge> : null}
       </div>
@@ -157,7 +164,7 @@ function PlanOption({
         {plan.features.map((f) => (
           <li key={f.key} className="flex items-start gap-2">
             <CheckIcon className="mt-0.5 size-4 shrink-0 text-success" strokeWidth={3} aria-hidden />
-            <span>{tp(`features.${f.key}`, f.values)}</span>
+            <span>{f.label}</span>
           </li>
         ))}
       </ul>
@@ -178,7 +185,7 @@ function PlanOption({
           </a>
         ) : action.kind === "free" ? (
           <Button variant="ghost" className="w-full" onClick={onFree}>
-            {t("switchTo", { plan: tp("plans.free.name") })}
+            {t("switchTo", { plan: planName("free") })}
           </Button>
         ) : null}
       </div>
@@ -191,19 +198,25 @@ function stateOf(billing: MyBilling): SubscriptionState {
 }
 
 /** What paying changes (new end date), then starts checkout. */
+function pricesFrom(catalog: PlanCatalog): PlanPrices {
+  return Object.fromEntries(catalog.plans.map((p) => [p.id, p.monthlyMinor])) as PlanPrices
+}
+
 function ConfirmPurchaseDialog({
   billing,
+  catalog,
   plan,
   now,
   onClose,
 }: {
   billing: MyBilling
+  catalog: PlanCatalog
   plan: PaidPlanId | null
   now: number
   onClose: () => void
 }) {
   const t = useTranslations("Billing")
-  const tp = useTranslations("Pricing")
+  const planName = usePlanName()
   const tc = useTranslations("Common")
   const locale = useLocale()
   const format = useFormatter()
@@ -214,8 +227,9 @@ function ConfirmPurchaseDialog({
 
   const shown = plan ?? "pro"
   const state = stateOf(billing)
-  const next = applyPurchase(state, shown, now)
-  const price = PLANS.find((p) => p.id === shown)?.priceMinor ?? 0
+  const prices = pricesFrom(catalog)
+  const next = applyPurchase(state, shown, now, prices)
+  const price = prices[shown] ?? 0
   const running = billing.status === "trialing" || billing.status === "active"
   const note =
     billing.status === "trialing"
@@ -223,7 +237,7 @@ function ConfirmPurchaseDialog({
       : running && billing.plan === shown
         ? t("confirmRenew")
         : running
-          ? t("confirmCredit", { plan: tp(`plans.${shown}.name`) })
+          ? t("confirmCredit", { plan: planName(shown) })
           : null
 
   async function confirm() {
@@ -241,7 +255,7 @@ function ConfirmPurchaseDialog({
   return (
     <Dialog open={plan !== null} onOpenChange={(open) => (open ? null : onClose())}>
       <DialogContent>
-        <DialogTitle>{t("confirmTitle", { plan: tp(`plans.${shown}.name`) })}</DialogTitle>
+        <DialogTitle>{t("confirmTitle", { plan: planName(shown) })}</DialogTitle>
         <DialogDescription>{t("confirmAmount", { amount: formatPlanPrice(price, locale) })}</DialogDescription>
         <div className="flex flex-col gap-2 text-sm">
           {next.periodEnd !== null ? (
@@ -271,7 +285,7 @@ function FreeDialog({
   onOpenChange: (open: boolean) => void
 }) {
   const t = useTranslations("Billing")
-  const tp = useTranslations("Pricing")
+  const planName = usePlanName()
   const format = useFormatter()
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -279,7 +293,7 @@ function FreeDialog({
         <DialogTitle>{t("freeTitle")}</DialogTitle>
         <DialogDescription>
           {t("freeBody", {
-            plan: tp(`plans.${billing.effectivePlan}.name`),
+            plan: planName(billing.effectivePlan),
             date: billing.periodEnd === null ? "—" : format.dateTime(new Date(billing.periodEnd), { dateStyle: "long" }),
           })}
         </DialogDescription>

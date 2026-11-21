@@ -12,6 +12,7 @@ import { StatusTag } from "../data-table/status-tag"
 import { adminHref } from "../shell/hrefs"
 import { GrantPlanDialog } from "./grant-plan-dialog"
 import { usePaymentColumns } from "./payment-columns"
+import { usePlanName } from "@/features/billing/use-plan-catalog"
 
 /** The plan card in the shop drawer: status, recent payments, grant / extend. */
 export function ShopPlanPanel({
@@ -26,7 +27,7 @@ export function ShopPlanPanel({
   isOwnShop: boolean
 }) {
   const t = useTranslations("AdminBilling")
-  const tp = useTranslations("Pricing.plans")
+  const planName = usePlanName()
   const format = useFormatter()
   const plan = useQuery(api.admin.billing.forShop, { shopId })
   const paymentColumns = usePaymentColumns({ showShop: false })
@@ -43,7 +44,7 @@ export function ShopPlanPanel({
         <StatusTag kind="subscription" status={plan.status} />
       </div>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <p className="text-lg font-bold">{tp(`${running ? plan.plan : "free"}.name`)}</p>
+        <p className="text-lg font-bold">{planName(running ? plan.plan : "free")}</p>
         {running && plan.periodEnd !== null ? (
           <p className="text-sm text-muted-foreground">
             {t("panelUntil", { date: format.dateTime(new Date(plan.periodEnd), { dateStyle: "long" }) })}

@@ -23,6 +23,7 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { useErrorMessage } from "@/lib/use-error-message"
 import { TestControls } from "./payment-history"
+import { usePlanName } from "@/features/billing/use-plan-catalog"
 
 type Payment = NonNullable<FunctionReturnType<typeof api.billing.payment>>
 
@@ -63,12 +64,12 @@ export function CheckoutView({ paymentId }: { paymentId: string }) {
 
 function Summary({ payment }: { payment: Payment }) {
   const t = useTranslations("Checkout")
-  const tp = useTranslations("Pricing.plans")
+  const planName = usePlanName()
   const locale = useLocale()
   return (
     <Card>
       <div className="flex items-baseline justify-between gap-3">
-        <p className="font-medium">{t("summary", { plan: tp(`${payment.plan}.name`) })}</p>
+        <p className="font-medium">{t("summary", { plan: planName(payment.plan) })}</p>
         <p className="font-heading text-xl font-extrabold tabular-nums">
           <span className="sr-only">{t("amount")}: </span>
           {formatMoney(payment.amountMinor, payment.currency, locale)}
@@ -80,7 +81,7 @@ function Summary({ payment }: { payment: Payment }) {
 
 function Step({ payment }: { payment: Payment }) {
   const t = useTranslations("Checkout")
-  const tp = useTranslations("Pricing.plans")
+  const planName = usePlanName()
   const format = useFormatter()
 
   switch (payment.status) {
@@ -95,7 +96,7 @@ function Step({ payment }: { payment: Payment }) {
             payment.periodEndAfter === null
               ? null
               : t("successBody", {
-                  plan: tp(`${payment.plan}.name`),
+                  plan: planName(payment.plan),
                   date: format.dateTime(new Date(payment.periodEndAfter), { dateStyle: "long" }),
                 })
           }

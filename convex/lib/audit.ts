@@ -44,6 +44,13 @@ export const AUDIT_ACTIONS = [
   "shop.slugChanged",
   "shop.whatsappChanged",
   "shop.lookReset",
+  "plans.planUpdated",
+  "plans.featureUpdated",
+  "plans.pricingUpdated",
+  "plans.reset",
+  "planException.granted",
+  "planException.revoked",
+  "planException.expired",
 ] as const;
 
 export const auditActionValidator = v.union(
@@ -80,6 +87,13 @@ export const auditActionValidator = v.union(
   v.literal("shop.slugChanged"),
   v.literal("shop.whatsappChanged"),
   v.literal("shop.lookReset"),
+  v.literal("plans.planUpdated"),
+  v.literal("plans.featureUpdated"),
+  v.literal("plans.pricingUpdated"),
+  v.literal("plans.reset"),
+  v.literal("planException.granted"),
+  v.literal("planException.revoked"),
+  v.literal("planException.expired"),
 );
 export type AuditAction = Infer<typeof auditActionValidator>;
 
@@ -91,6 +105,7 @@ export const auditTargetTypeValidator = v.union(
   v.literal("settings"),
   v.literal("subscription"),
   v.literal("payment"),
+  v.literal("planConfig"),
 );
 export type AuditTargetType = Infer<typeof auditTargetTypeValidator>;
 

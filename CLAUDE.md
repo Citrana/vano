@@ -106,10 +106,13 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   Demo, Help, Terms, Privacy). The group layout adds the announcement
   banner, `MarketingNav` and `MarketingFooter`; code is organised by page in
   `src/features/marketing/{shared,home,features,pricing,demo,help}`.
-- Plan ids, prices, limits and the trial live **only** in
-  `convex/lib/plans.ts`; marketing cards and the comparison table in
-  `src/features/marketing/pricing/plans.ts` import them (labels in
-  `Pricing.*` messages).
+- Plan names, prices, limits, features, the trial length and the
+  pricing-page text come **only** from the plan config (`plans.catalog`,
+  see "Plans & features"). `src/features/marketing/pricing/plans.ts` holds
+  no data: it derives the cards and the comparison table from the
+  catalogue (server pages: `getPlanCatalog`; client: `usePlanCatalog`,
+  `usePlanName`). A hidden plan is never listed. Never hard-code a plan
+  name, price, limit or trial length in marketing text: pass it in.
 - Contact values come from `shared/site-config.ts`
   (`NEXT_PUBLIC_CONTACT_WHATSAPP`, `NEXT_PUBLIC_CONTACT_EMAIL`).
 - Sign-up buttons always use `OpenShopCta` (sign-up closed note, signed-in
@@ -132,21 +135,25 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   and refresh its "Last updated" line. Never ship a payment change without it.
 - One `subscriptions` row per shop (`trialing | active | expired | free`),
   written only through `convex/lib/subscriptions.ts` (`writeSubscription`,
-  which also logs the change). New shops start a `TRIAL_MONTHS` Pro trial
-  in `shops.create`. Nothing renews automatically; the hourly cron
+  which also logs the change). New shops start a Pro trial in
+  `shops.create`, as long as the trial plan's `trialMonths` in the config. Nothing renews automatically; the hourly cron
   `billingJobs.expireDue` moves ended periods to Free.
 - **Every plan limit goes through `convex/lib/entitlements.ts`**:
   `requireCan(ctx, shop, action)` in mutations, `hasFeature` in queries,
-  the pure `canShopDo` in the UI. Never compare a plan name or hard-code a
-  limit. A new paid feature = a `PlanFeatureFlag` in `plans.ts` + a
-  `requireCan({ kind: "feature" })` call.
+  the pure `canShopDo` in the UI with the resolved `limits` from
+  `billing.mine`. Never compare a plan name or hard-code a limit, and
+  never read the seed (`planDefaults.ts`) to check a shop. A new paid
+  feature = a key in `FEATURES` (`convex/lib/planFeatures.ts`, `enforced:
+  true`) + seed values in `planDefaults.ts` + EN/FR `PlanFeatures.<key>`
+  + a `requireCan({ kind: "feature" })` call.
 - Downgrades never delete or change data: public visibility is computed
   (`visibleProductIds`: pinned first, then newest, up to the limit).
   Over-limit products stay editable; photos are capped publicly.
 - Payments go through the `PaymentProvider` interface
   (`convex/payments/provider.ts`), registered in `payments/registry.ts`
-  and chosen by the `PAYMENTS_PROVIDER` env var. Amounts come from
-  `PLAN_PRICE_MINOR`, never the client. Provider results (webhook
+  and chosen by the `PAYMENTS_PROVIDER` env var. Amounts come from the
+  plan config's monthly price, never the client; a hidden plan can't be
+  bought. Provider results (webhook
   `POST /payments/callback/<provider>`, status polls, the mock) are applied
   **only** by `applyEvent` in `payments/core.ts`, which dedupes event ids,
   never changes a final payment and extends a plan once (`appliedAt`).
@@ -154,6 +161,30 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   `PAYMENTS_MOCK_ENABLED=true` on the deployment. Never set them on prod.
 - Admins grant / extend plans with `billing.manage`, a reason, never on
   their own shop (`assertNotOwnShop`).
+
+### Plans & features
+
+- **The admin "Plans & features" page (`/admin/plans`) is the source of
+  truth** for plan names, monthly / yearly prices, the trial length,
+  visibility on the pricing page, which plan gets which feature, limits
+  and the pricing-page text. One `planConfig` document, read only through
+  `readPlanConfig` and written only by `writePlanConfig`
+  (`convex/lib/planConfig.ts`). `convex/lib/plans.ts` keeps ids, statuses
+  and fixed rules, never numbers.
+- Feature **keys** live in code (`FEATURES` in `convex/lib/planFeatures.ts`:
+  flag or limit, area, `enforced`, ceiling); admins can't invent keys.
+  `enforced: false` = pricing page only. The seed (`planDefaults.ts`) is
+  used only for a fresh deployment, new keys and "Reset to defaults".
+- A higher plan always includes everything in the lower ones
+  (`resolvedValue`); the trial counts as Pro. Shop exceptions
+  (`planExceptions`, a feature or higher limit until a date, with a
+  reason) are applied first by `getEntitlements`, end by themselves
+  (`planExceptionJobs`) and are shown in the shop drawer.
+- Admin writes need `plans.manage`, send the version they edited
+  (`PLAN_CONFIG_STALE` warns the second admin), are validated again on the
+  server and logged per field with old and new values. Before removing a
+  feature or lowering a limit the UI shows `admin.plans.impact` (affected
+  shops) and asks to confirm. Data is never deleted.
 
 ## Shop looks
 
@@ -428,6 +459,7 @@ convex/
   notificationJobs.ts                     # ending-soon warnings, cleanup
   verification/     # swappable code senders
   billing.ts billingJobs.ts crons.ts   # seller billing, expiry job
+  plans.ts planExceptionJobs.ts        # public plan catalogue, exception expiry
   payments/         # provider interface, mock, result handling
   lib/              # seller wrappers, shared rules, test setup
   *.test.ts

@@ -11,7 +11,8 @@ import { logAdminAction, type AuditAction } from "../lib/audit";
 import { minorToInput } from "../lib/money";
 import { notify } from "../lib/notify";
 import { DAY_MS, isPaidPlan } from "../lib/plans";
-import { applyPurchase, subscriptionOf, writeSubscription } from "../lib/subscriptions";
+import { readPlanConfig } from "../lib/planConfig";
+import { applyPurchase, pricesOf, subscriptionOf, writeSubscription } from "../lib/subscriptions";
 import { activeProvider, providerById } from "./registry";
 import {
   isOpenPayment,
@@ -158,8 +159,9 @@ export async function applyEvent(
     await logPayment(ctx, payment, "payment.succeeded");
     return "recorded";
   }
-  const current = await subscriptionOf(ctx, shop);
-  const next = applyPurchase(current, payment.plan, now);
+  const config = await readPlanConfig(ctx);
+  const current = await subscriptionOf(ctx, shop, config);
+  const next = applyPurchase(current, payment.plan, now, pricesOf(config));
   await writeSubscription(ctx, shop, next, {
     source: "payment",
     action: "subscription.activated",

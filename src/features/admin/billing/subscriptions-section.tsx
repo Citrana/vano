@@ -19,6 +19,7 @@ import { useTableState, type TableState } from "../data-table/use-table-state"
 import { dayRange } from "../data-table/url-state"
 import { ShopDetails } from "../shops/shop-details"
 import { SUBSCRIPTIONS_SPEC } from "./table-spec"
+import { usePlanName } from "@/features/billing/use-plan-catalog"
 
 type Row = FunctionReturnType<typeof api.admin.billing.subscriptions>["page"][number]
 
@@ -30,16 +31,16 @@ type Row = FunctionReturnType<typeof api.admin.billing.subscriptions>["page"][nu
 export function SubscriptionsSection() {
   const t = useTranslations("AdminBilling")
   const ts = useTranslations("Billing.status")
-  const tp = useTranslations("Pricing.plans")
+  const planName = usePlanName()
   const tshop = useTranslations("AdminShops")
   const filters = useMemo(
     () =>
       filterDefs(SUBSCRIPTIONS_SPEC, {
         status: { label: t("status"), allLabel: t("allStatuses"), optionLabel: (s) => ts(s as SubscriptionStatus) },
-        plan: { label: t("plan"), allLabel: t("allPlans"), optionLabel: (p) => tp(`${p as PlanId}.name`) },
+        plan: { label: t("plan"), allLabel: t("allPlans"), optionLabel: (p) => planName(p as PlanId) },
         from: { label: t("ends") },
       }),
-    [t, ts, tp],
+    [t, ts, planName],
   )
   const table = useTableState(SUBSCRIPTIONS_SPEC)
 
@@ -59,7 +60,7 @@ export function SubscriptionsSection() {
 
 function SubscriptionsTable({ table }: { table: TableState }) {
   const t = useTranslations("AdminBilling")
-  const tp = useTranslations("Pricing.plans")
+  const planName = usePlanName()
   const format = useFormatter()
   const { filters } = table
   const ends = dayRange({ from: filters.from, to: filters.to })
@@ -78,7 +79,7 @@ function SubscriptionsTable({ table }: { table: TableState }) {
 
   const columns: Column<Row>[] = [
     { id: "shop", header: t("shop"), cell: (r) => r.shopName, className: "max-w-60", mobile: "title" },
-    { id: "plan", header: t("plan"), cell: (r) => tp(`${r.plan}.name`), mobile: "subtitle" },
+    { id: "plan", header: t("plan"), cell: (r) => planName(r.plan), mobile: "subtitle" },
     { id: "status", header: t("status"), cell: (r) => <StatusTag kind="subscription" status={r.status} />, mobile: "trailing" },
     {
       id: "ends",

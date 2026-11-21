@@ -6,9 +6,10 @@ import type { QueryCtx } from "./_generated/server";
 import { getEntitlements, shopProducts, visibleProductIds } from "./lib/entitlements";
 import { fail } from "./lib/errors";
 import { currencyValidator } from "./lib/money";
+import { readPlanConfig } from "./lib/planConfig";
+import { limitsValidator, toLimitsResult } from "./lib/planValidators";
 import {
   PLAN_CURRENCY,
-  PLAN_PRICE_MINOR,
   paidPlanValidator,
   planIdValidator,
   subscriptionStatusValidator,
@@ -86,7 +87,8 @@ export const mine = sellerQuery({
     status: subscriptionStatusValidator,
     periodStart: v.number(),
     periodEnd: v.union(v.number(), v.null()),
-    limits: v.object({ products: v.union(v.number(), v.null()), photosPerProduct: v.number() }),
+    /** The resolved limits (plan config + exceptions), for `canShopDo` in the UI. */
+    limits: limitsValidator,
     usage: v.object({ products: v.number(), overLimit: v.number(), pinned: v.number() }),
     payments: v.object({ available: v.boolean(), testMode: v.boolean() }),
     openPaymentId: v.union(v.id("payments"), v.null()),
@@ -104,7 +106,7 @@ export const mine = sellerQuery({
       status,
       periodStart: state.periodStart,
       periodEnd: state.periodEnd,
-      limits: { products: limits.products, photosPerProduct: limits.photosPerProduct },
+      limits: toLimitsResult(limits),
       usage: {
         products: products.length,
         overLimit: listed.filter((p) => !visible.has(p._id)).length,
@@ -157,7 +159,8 @@ export const payment = sellerQuery({
 });
 
 /**
- * Starts paying for a plan. The amount comes from the plan config. An
+ * Starts paying for a plan. The amount comes from the plan config (the
+ * admin "Plans & features" page); a plan hidden there can't be bought. An
  * open checkout for the same plan is reused; one for another plan is
  * cancelled first, so a shop has at most one open payment.
  */
@@ -169,8 +172,9 @@ export const startCheckout = sellerMutation({
     const shop = await requireOwnShop(ctx);
     const provider = activeProvider();
     if (provider === null) fail("PAYMENTS_UNAVAILABLE");
-    const amountMinor = PLAN_PRICE_MINOR[plan];
-    if (amountMinor === null || amountMinor <= 0) fail("PLAN_INVALID");
+    const { plans } = await readPlanConfig(ctx);
+    const amountMinor = plans[plan].monthlyMinor;
+    if (!plans[plan].visible || amountMinor === null || amountMinor <= 0) fail("PLAN_INVALID");
 
     for (const open of await openPayments(ctx, shop._id)) {
       if (open.plan === plan && open.provider === provider.id) return open._id;

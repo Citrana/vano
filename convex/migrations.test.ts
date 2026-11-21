@@ -201,3 +201,23 @@ describe("migrations:looksV1", () => {
     expect((await as(t, none.userId).query(api.shops.myShop, {}))?.hasLook).toBe(false);
   });
 });
+
+describe("migrations:plansV1", () => {
+  test("stores the seed once; an existing config is never overwritten; safe to repeat", async () => {
+    const t = newTest();
+    expect(await t.query(internal.migrations.plansV1Status, {})).toMatchObject({ status: "not_started" });
+    expect(await t.mutation(internal.migrations.plansV1, {})).toBe("seeded");
+    expect(await t.mutation(internal.migrations.plansV1, {})).toBe("already_done");
+    const rows = await t.run((ctx) => ctx.db.query("planConfig").collect());
+    expect(rows).toHaveLength(1);
+    expect(rows[0].version).toBe(1);
+    expect(await t.query(internal.migrations.plansV1Status, {})).toMatchObject({ status: "done" });
+
+    // A deployment where an admin already saved a config before the migration ran.
+    const t2 = newTest();
+    const { plans, features, updatedAt } = rows[0];
+    await t2.run((ctx) => ctx.db.insert("planConfig", { version: 7, updatedAt, plans, features }));
+    expect(await t2.mutation(internal.migrations.plansV1, {})).toBe("already_configured");
+    expect((await t2.run((ctx) => ctx.db.query("planConfig").collect()))[0].version).toBe(7);
+  });
+});

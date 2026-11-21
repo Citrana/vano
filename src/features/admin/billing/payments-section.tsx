@@ -25,20 +25,21 @@ import { useAdminViewer } from "../shell/use-admin-viewer"
 import { adminHref } from "../shell/hrefs"
 import { usePaymentColumns } from "./payment-columns"
 import { PAYMENTS_SPEC } from "./table-spec"
+import { usePlanName } from "@/features/billing/use-plan-catalog"
 
 /** /admin/payments: every plan payment, newest first. The URL can preset the filters (`?status=failed`). */
 export function PaymentsSection() {
   const t = useTranslations("AdminBilling")
   const ts = useTranslations("Billing.paymentStatus")
-  const tp = useTranslations("Pricing.plans")
+  const planName = usePlanName()
   const filters = useMemo(
     () =>
       filterDefs(PAYMENTS_SPEC, {
         status: { label: t("status"), allLabel: t("allStatuses"), optionLabel: (s) => ts(s as PaymentStatus) },
-        plan: { label: t("plan"), allLabel: t("allPlans"), optionLabel: (p) => tp(`${p as PlanId}.name`) },
+        plan: { label: t("plan"), allLabel: t("allPlans"), optionLabel: (p) => planName(p as PlanId) },
         from: { label: t("date") },
       }),
-    [t, ts, tp],
+    [t, ts, planName],
   )
   const table = useTableState(PAYMENTS_SPEC)
 
@@ -97,7 +98,7 @@ function PaymentsTable({ table }: { table: TableState }) {
 /** The payment drawer: every field, and the way to the shop. */
 function PaymentDetails({ paymentId }: { paymentId: string }) {
   const t = useTranslations("AdminBilling")
-  const tp = useTranslations("Pricing.plans")
+  const planName = usePlanName()
   const format = useFormatter()
   const locale = useLocale()
   const { viewer } = useAdminViewer()
@@ -115,7 +116,7 @@ function PaymentDetails({ paymentId }: { paymentId: string }) {
       </div>
       <DetailList className="rounded-xl border bg-card p-4">
         <DetailItem label={t("shop")}>{payment.shopName}</DetailItem>
-        <DetailItem label={t("plan")}>{tp(`${payment.plan}.name`)}</DetailItem>
+        <DetailItem label={t("plan")}>{planName(payment.plan)}</DetailItem>
         <DetailItem label={t("date")}>{date(payment.createdAt)}</DetailItem>
         <DetailItem label={t("completed")}>{payment.completedAt ? date(payment.completedAt) : "—"}</DetailItem>
         <DetailItem label={t("provider")}>{payment.provider}</DetailItem>

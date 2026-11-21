@@ -1,9 +1,12 @@
 import type { Metadata } from "next"
 import { BanknoteIcon, CoinsIcon, GiftIcon } from "lucide-react"
 import { getLocale, getTranslations } from "next-intl/server"
+import { cn } from "cn"
 import { CompareTable } from "@/features/marketing/pricing/compare-table"
 import { PlanCard } from "@/features/marketing/pricing/plan-card"
-import { PLANS, TRIAL_MONTHS } from "@/features/marketing/pricing/plans"
+import { getPlanCatalog } from "@/features/marketing/pricing/data"
+import { buildComparison, buildPlanCards } from "@/features/marketing/pricing/plans"
+import { planNameIn } from "../../../../convex/lib/planCatalog"
 import { CtaBand } from "@/features/marketing/shared/cta-band"
 import { FaqList } from "@/features/marketing/shared/faq-list"
 import { PageIntro } from "@/features/marketing/shared/page-intro"
@@ -25,19 +28,32 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function PricingPage() {
   const t = await getTranslations("Pricing")
   const locale = await getLocale()
-  const faq = ([1, 2, 3] as const).map((n) => ({ id: `q${n}`, question: t(`faq.q${n}`), answer: t(`faq.a${n}`) }))
+  const catalog = await getPlanCatalog()
+  const plans = buildPlanCards(catalog, locale, (plan) => t("everythingIn", { plan }))
+  const months = catalog.trialMonths
+  const trialPlan = planNameIn(catalog, catalog.trialPlan, locale)
+  const freeProducts = catalog.features.find((f) => f.key === "products")?.values.free
+  const faq = [
+    {
+      id: "q1",
+      question: t("faq.q1"),
+      answer: t("faq.a1", { months, free: planNameIn(catalog, "free", locale), count: typeof freeProducts === "number" ? freeProducts : 0 }),
+    },
+    { id: "q2", question: t("faq.q2"), answer: t("faq.a2") },
+    { id: "q3", question: t("faq.q3"), answer: t("faq.a3") },
+  ]
 
   return (
     <>
-      <PageIntro eyebrow={t("eyebrow")} title={t("title", { months: TRIAL_MONTHS })} subtitle={t("subtitle")}>
+      <PageIntro eyebrow={t("eyebrow")} title={t("title", { months })} subtitle={t("subtitle")}>
         <p className="mt-1 inline-flex items-center gap-2 rounded-lg border border-plum/15 bg-blush px-4 py-2 text-base font-semibold text-pretty">
           <GiftIcon className="size-5 shrink-0 text-plum" aria-hidden />
-          {t("trialPill", { months: TRIAL_MONTHS })}
+          {t("trialPill", { months, plan: trialPlan })}
         </p>
       </PageIntro>
       <section aria-label={t("eyebrow")} className="px-4 pt-6 pb-10">
-        <ul className="mx-auto grid w-full max-w-6xl gap-6 md:grid-cols-2 lg:grid-cols-4 lg:gap-5">
-          {PLANS.map((plan) => (
+        <ul className={cn("mx-auto grid w-full max-w-6xl gap-6 md:grid-cols-2 lg:gap-5", plans.length >= 4 ? "lg:grid-cols-4" : plans.length === 3 && "lg:grid-cols-3")}>
+          {plans.map((plan) => (
             <li key={plan.id}>
               <PlanCard plan={plan} locale={locale} />
             </li>
@@ -56,7 +72,7 @@ export default async function PricingPage() {
           </ul>
         </div>
       </section>
-      <CompareTable />
+      <CompareTable plans={plans} groups={buildComparison(catalog, locale)} />
       <Section id="faq" eyebrow={t("faqEyebrow")} title={t("faqTitle")}>
         <div className="mx-auto w-full max-w-3xl">
           <FaqList items={faq} name="pricing-faq" />

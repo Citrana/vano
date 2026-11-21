@@ -8,11 +8,12 @@ import { buttonVariants } from "@/components/ui/button"
 import { Card, CardTitle } from "@/components/ui/card"
 import { SubscriptionStatusBadge } from "./subscription-status-badge"
 import type { MyBilling } from "./use-billing"
+import { usePlanName } from "@/features/billing/use-plan-catalog"
 
 /** Plan, status, end date / days left, and usage against the plan's limits. */
 export function CurrentPlanCard({ billing, now }: { billing: MyBilling; now: number }) {
   const t = useTranslations("Billing")
-  const tp = useTranslations("Pricing.plans")
+  const planName = usePlanName()
   const format = useFormatter()
   const { status, periodEnd, limits, usage } = billing
   const running = (status === "trialing" || status === "active") && periodEnd !== null
@@ -24,7 +25,7 @@ export function CurrentPlanCard({ billing, now }: { billing: MyBilling; now: num
         <div className="flex flex-col gap-1">
           <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{t("currentPlan")}</p>
           <CardTitle id="current-plan-title" className="text-2xl">
-            {tp(`${billing.effectivePlan}.name`)}
+            {planName(billing.effectivePlan)}
           </CardTitle>
         </div>
         <SubscriptionStatusBadge status={status} />

@@ -11,13 +11,14 @@ import { EmptyState, LoadingState } from "@/components/states/states"
 import { Button } from "@/components/ui/button"
 import { useErrorMessage } from "@/lib/use-error-message"
 import { PaymentStatusBadge } from "./payment-status-badge"
+import { usePlanName } from "@/features/billing/use-plan-catalog"
 
 const PAGE = 10
 
 /** Date, plan, amount, status. In test mode, pending rows can be completed or failed. */
 export function PaymentHistory({ testMode }: { testMode: boolean }) {
   const t = useTranslations("Billing")
-  const tp = useTranslations("Pricing.plans")
+  const planName = usePlanName()
   const format = useFormatter()
   const locale = useLocale()
   const { results, status, loadMore } = usePaginatedQuery(api.billing.payments, {}, { initialNumItems: PAGE })
@@ -36,7 +37,7 @@ export function PaymentHistory({ testMode }: { testMode: boolean }) {
           {results.map((p) => (
             <li key={p._id} className="flex flex-col gap-2 p-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
               <div className="flex min-w-0 flex-col">
-                <p className="font-medium">{tp(`${p.plan}.name`)}</p>
+                <p className="font-medium">{planName(p.plan)}</p>
                 <time dateTime={new Date(p.createdAt).toISOString()} className="text-xs text-muted-foreground">
                   {format.dateTime(new Date(p.createdAt), { dateStyle: "medium", timeStyle: "short" })}
                 </time>
