@@ -46,7 +46,7 @@ export const PRESETS: Record<PresetId, Preset> = {
   classic: {
     id: "classic",
     colors: { accent: "#d63e0f", background: "#fff8f3", badge: "#1a1412" },
-    buttons: { shape: "rounded", fill: "solid", weight: "bold" },
+    buttons: { shape: "square", fill: "solid", weight: "bold" },
     banner: { kind: "gradient", gradientId: "creamBlush", height: "sm" },
     radius: "0.5rem",
   },
