@@ -364,10 +364,17 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   `style` (`solid | gradient | outline`; the gradient's second stop moves
   away from the text, `promoGradientEnd`), `icon`, `title`, `countdown`,
   `closable`, and optional dates with the event banner rules. Needs
-  `announcementBar`; `shopLooks.announcementLive` is stored by `publish`
-  / `syncSchedules` like `promoLive`. Visitors close it for the visit
-  when allowed (session storage, wrapped in try/catch). The editor's
-  "Preview as: During a sale" shows a sample sale (never saved).
+  `announcementBar`; `shopLooks.announcementLive` is stored by
+  `savePromoBar` / `syncSchedules` like `promoLive`. Visitors close it for the visit
+  when allowed (session storage, wrapped in try/catch).
+- It is **edited on the Sales page** (`src/features/sales/promo-bar-editor.tsx`:
+  live preview with the shop's look and the real sale, `promo-bar-form.tsx`
+  options, one Save / Discard), read with `shopLooks.promoBar` and saved,
+  live at once, by `shopLooks.savePromoBar` (into the published look and the
+  draft; plan, dates, contrast re-checked; null removes it on any plan). The
+  Look editor never changes it: `saveDraft` / `publish` keep the published
+  bar (`withPublishedBar`), and its "Promo bar" tab is only an "Edit in
+  Sales" link (`promo-bar-moved.tsx`).
 - **Filters** (`src/features/public/filters/`): search by name, category
   chips, a Sale chip (only while a sale runs), sort (newest = the
   page's order, price low → high / high → low on the price paid now),
