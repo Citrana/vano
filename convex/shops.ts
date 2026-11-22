@@ -20,6 +20,7 @@ import {
 } from "./lib/seller";
 import { lookRow } from "./lib/looks/store";
 import { slugHolder } from "./lib/shopChanges";
+import { cleanShopInfo, socialsValidator } from "./lib/shopInfo";
 import { slugProblem } from "./lib/slug";
 import { startTrial } from "./lib/subscriptions";
 
@@ -32,6 +33,10 @@ const settingsInput = v.object({
   city: v.string(),
   country: v.string(),
   logoId: v.optional(v.id("_storage")),
+  /** About and contact (lib/shopInfo.ts). */
+  openingHours: v.optional(v.string()),
+  deliveryAreas: v.optional(v.string()),
+  socials: v.optional(socialsValidator),
 });
 type SettingsInput = Infer<typeof settingsInput>;
 
@@ -63,7 +68,11 @@ function cleanSettings(input: SettingsInput): SettingsInput {
   const country = input.country.trim().toUpperCase();
   if (!isSupportedCountry(country)) fail("COUNTRY_INVALID");
 
+  const info = cleanShopInfo(input);
+  if (!info.ok) fail(info.problem === "tooLong" ? "INFO_TOO_LONG" : "SOCIAL_INVALID");
+
   return {
+    ...info.value,
     currency: input.currency,
     language: input.language,
     categories,

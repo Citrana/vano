@@ -1,11 +1,14 @@
 import { v, type Infer } from "convex/values";
-import type { Doc } from "./_generated/dataModel";
+import { internal } from "./_generated/api";
+import type { Doc, Id } from "./_generated/dataModel";
+import type { MutationCtx } from "./_generated/server";
 import { categoryValidator, cleanTags, LIMITS, tagsProblem } from "./lib/catalog";
 import { fail } from "./lib/errors";
 import { urlOf } from "./lib/images";
 import { priceProblem } from "./lib/money";
 import { onProductCreated } from "./lib/platformStats";
 import { deleteProduct } from "./lib/productWrites";
+import { RESTOCK_MS, stockChange } from "./lib/restock";
 import { getEntitlements, requireCan, shopProducts, visibleProductIds } from "./lib/entitlements";
 import {
   claimImages,
@@ -61,6 +64,11 @@ function cleanProductInput(shop: Doc<"shops">, input: ProductInput): ProductInpu
   };
 }
 
+/** Schedules the end of "Back in stock" for a restock (lib/restock.ts). */
+async function scheduleRestockEnd(ctx: MutationCtx, productId: Id<"products">, restockedAt: number) {
+  await ctx.scheduler.runAt(restockedAt + RESTOCK_MS, internal.productJobs.endBackInStock, { productId, restockedAt });
+}
+
 /**
  * The caller's products, newest first, with cover image. `overLimit`
  * marks products the public shop doesn't show because the shop has more
@@ -84,6 +92,9 @@ export const listMine = sellerQuery({
         hidden: p.hidden ?? false,
         overLimit: !p.hidden && !visible.has(p._id),
         pinned: p.pinnedAt !== undefined,
+        featured: p.featured === true,
+        fewLeft: p.fewLeft === true,
+        backInStock: p.backInStock === true,
         imageCount: p.imageIds.length,
         coverUrl: await urlOf(ctx, p.imageIds[0]),
       })),
@@ -154,15 +165,21 @@ export const update = sellerMutation({
       input.imageIds.filter((id) => !known.has(id)),
     );
     await deleteFilesNotIn(ctx, product.imageIds, input.imageIds);
-    // `hidden` (admin) and `pinnedAt` (own action) aren't form fields;
-    // carry them over or `replace` would drop them.
+    // `hidden` (admin), `pinnedAt`, `featured` and the stock labels (own
+    // actions) aren't form fields; carry them over or `replace` would drop
+    // them. Turning "Sold out" off here also marks it back in stock.
+    const now = Date.now();
+    const stock = stockChange(product, input.soldOut, now);
     await ctx.db.replace("products", productId, {
       ...input,
+      ...stock.fields,
       shopId: shop._id,
       hidden: product.hidden,
       pinnedAt: product.pinnedAt,
-      updatedAt: Date.now(),
+      featured: product.featured,
+      updatedAt: now,
     });
+    if (stock.restocked) await scheduleRestockEnd(ctx, productId, now);
     return null;
   },
 });
@@ -172,8 +189,37 @@ export const setSoldOut = sellerMutation({
   args: { productId: v.id("products"), soldOut: v.boolean() },
   returns: v.null(),
   handler: async (ctx, { productId, soldOut }) => {
+    const { product } = await requireOwnProduct(ctx, productId);
+    if (product.soldOut === soldOut) return null;
+    const now = Date.now();
+    const stock = stockChange(product, soldOut, now);
+    await ctx.db.patch("products", productId, { ...stock.fields, updatedAt: now });
+    if (stock.restocked) await scheduleRestockEnd(ctx, productId, now);
+    return null;
+  },
+});
+
+/** Shows the product in the shop's "Featured" section (when the seller turns it on). */
+export const setFeatured = sellerMutation({
+  permission: "ownProducts.manage",
+  args: { productId: v.id("products"), featured: v.boolean() },
+  returns: v.null(),
+  handler: async (ctx, { productId, featured }) => {
     await requireOwnProduct(ctx, productId);
-    await ctx.db.patch("products", productId, { soldOut, updatedAt: Date.now() });
+    await ctx.db.patch("products", productId, { featured: featured || undefined });
+    return null;
+  },
+});
+
+/** The "Few left" label (a switch: there's no stock count). Not for a sold-out product. */
+export const setFewLeft = sellerMutation({
+  permission: "ownProducts.manage",
+  args: { productId: v.id("products"), fewLeft: v.boolean() },
+  returns: v.null(),
+  handler: async (ctx, { productId, fewLeft }) => {
+    const { product } = await requireOwnProduct(ctx, productId);
+    if (fewLeft && product.soldOut) return null;
+    await ctx.db.patch("products", productId, { fewLeft: fewLeft || undefined, updatedAt: Date.now() });
     return null;
   },
 });
