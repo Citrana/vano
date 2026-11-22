@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import { query, type QueryCtx } from "./_generated/server";
+import { CARD_TAGS_MAX } from "./lib/catalog";
 import { getEntitlements, shopProducts, visibleProductIds } from "./lib/entitlements";
 import { urlOf, urlsOf } from "./lib/images";
 import { publicLookFor } from "./lib/looks/store";
@@ -37,6 +38,14 @@ async function publicShop(ctx: QueryCtx, shop: Doc<"shops">) {
     language: shop.language,
     categories: shop.categories,
     description: shop.description ?? null,
+    /** About and contact (shown when the look's About switch is on, only the filled parts). */
+    openingHours: shop.openingHours ?? null,
+    deliveryAreas: shop.deliveryAreas ?? null,
+    socials: {
+      instagram: shop.socials?.instagram ?? null,
+      tiktok: shop.socials?.tiktok ?? null,
+      facebook: shop.socials?.facebook ?? null,
+    },
     whatsappNumber: shop.whatsappNumber,
     city: shop.city,
     country: shop.country,
@@ -104,6 +113,17 @@ export const shopBySlug = query({
           price: p.price,
           category: p.category,
           soldOut: p.soldOut,
+          /** Section and label flags (CLAUDE.md "Shop looks"). */
+          featured: p.featured === true,
+          fewLeft: p.fewLeft === true && !p.soldOut,
+          backInStock: p.backInStock === true && !p.soldOut,
+          /** Up to CARD_TAGS_MAX colours and sizes for the card (the description is on the product page). */
+          colors: p.colors.slice(0, CARD_TAGS_MAX),
+          moreColors: Math.max(0, p.colors.length - CARD_TAGS_MAX),
+          sizes: p.sizes.slice(0, CARD_TAGS_MAX),
+          moreSizes: Math.max(0, p.sizes.length - CARD_TAGS_MAX),
+          /** When it was added (the page shows "New" for NEW_BADGE_DAYS). */
+          createdAt: p._creationTime,
           coverUrl: await urlOf(ctx, p.imageIds[0]),
           sale: publicSale(bestSaleFor(p, sales, shop.currency)),
         })),
@@ -140,6 +160,7 @@ export const productForPage = query({
         sizes: product.sizes,
         colors: product.colors,
         soldOut: product.soldOut,
+        fewLeft: product.fewLeft === true && !product.soldOut,
         sale: publicSale(bestSaleFor(product, await liveSalesFor(ctx, shop), shop.currency)),
         imageUrls: await urlsOf(ctx, product.imageIds.slice(0, limits.photosPerProduct)),
       },
@@ -165,6 +186,27 @@ export const productPrice = query({
       price: product.price,
       sale: publicSale(bestSaleFor(product, await liveSalesFor(ctx, shop), shop.currency)),
     };
+  },
+});
+
+/**
+ * Live prices for every visible product of a shop, for the WhatsApp
+ * buttons on the product cards (CLAUDE.md "Sales"): one subscription for
+ * the whole page, so a card's message carries the price at tap time.
+ * Null for an unknown or suspended shop. Prices only — nothing else.
+ */
+export const shopPrices = query({
+  args: { slug: v.string() },
+  handler: async (ctx, { slug }) => {
+    const shop = await shopFromSlug(ctx, slug);
+    if (!shop || isSuspended(shop)) return null;
+    const products = await shopProducts(ctx, shop._id);
+    const { limits } = await getEntitlements(ctx, shop);
+    const visible = visibleProductIds(products, limits);
+    const sales = await liveSalesFor(ctx, shop);
+    return products
+      .filter((p) => visible.has(p._id))
+      .map((p) => ({ _id: p._id, price: p.price, sale: publicSale(bestSaleFor(p, sales, shop.currency)) }));
   },
 });
 

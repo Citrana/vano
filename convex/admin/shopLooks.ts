@@ -3,8 +3,15 @@ import { adminMutation, adminQuery } from "../lib/access";
 import { logAdminAction } from "../lib/audit";
 import { fail } from "../lib/errors";
 import { assertNotOwnShop } from "../lib/guards";
-import { lookImageIds, sameLook, withoutPromo } from "../lib/looks/clean";
-import { bannerTextOf, decorationOf, promoHeadlineOf, resetLook, resetReasonProblem } from "../lib/looks/reset";
+import { lookImageIds, sameLook, withoutAnnouncement, withoutPromo } from "../lib/looks/clean";
+import {
+  announcementTextOf,
+  bannerTextOf,
+  decorationOf,
+  promoHeadlineOf,
+  resetLook,
+  resetReasonProblem,
+} from "../lib/looks/reset";
 import { lookRow, resolveWithUrl, visibleLook } from "../lib/looks/store";
 import type { StoredLook } from "../lib/looks/validators";
 import { notify } from "../lib/notify";
@@ -14,10 +21,25 @@ import { deleteFilesNotIn } from "../lib/seller";
  * Admin view of a shop's look and the safe reset (CLAUDE.md "Shop looks"):
  * if a banner photo or text is inappropriate, an admin with
  * `shops.resetLook` removes it, with the event & promo banner ("banner"),
- * resets the profile photo options and decoration ("profile"), or resets
- * everything to the free look ("all"), with a reason. Applies to the published look and the
+ * and the announcement bar ("banner"), resets the profile photo options
+ * and decoration ("profile"), or resets everything to the free look,
+ * default sections and layout ("all"), with a reason. Applies to the published look and the
  * draft, deletes the photos, is logged and tells the seller.
  */
+
+/** The look without its dated parts (event banner, announcement bar), for comparisons. */
+const undated = (look: StoredLook) => withoutAnnouncement(withoutPromo(look));
+
+function announcementSummary(look: StoredLook | undefined, live: boolean) {
+  const announcement = look?.overrides.announcement;
+  if (!announcement) return null;
+  return {
+    text: announcement.text,
+    startsAt: announcement.startsAt ?? null,
+    endsAt: announcement.endsAt ?? null,
+    live,
+  };
+}
 
 function promoSummary(look: StoredLook | undefined, live: boolean) {
   const promo = look?.overrides.promo;
@@ -45,10 +67,13 @@ export const get = adminQuery({
       /** What visitors see now. */
       visible: await resolveWithUrl(ctx, visible),
       /** A published design the plan doesn't show (visitors see the free look). */
-      hiddenByPlan: row?.published !== undefined && !sameLook(withoutPromo(row.published), withoutPromo(visible)),
+      hiddenByPlan: row?.published !== undefined && !sameLook(undated(row.published), undated(visible)),
       /** The event & promo banner (published, then the draft's), for review. */
       promo: promoSummary(row?.published, row?.promoLive === true),
       draftPromo: promoSummary(row?.draft, false),
+      /** The announcement bar (published, then the draft's), for review. */
+      announcement: announcementSummary(row?.published, row?.announcementLive === true),
+      draftAnnouncement: announcementSummary(row?.draft, false),
       /** The profile decoration (published, then the draft's), for review. */
       decoration: decorationOf(row?.published),
       decorationLive: row?.decorationLive === true,
@@ -96,8 +121,9 @@ export const reset = adminMutation({
       draft,
       draftUpdatedAt: draft ? row.draftUpdatedAt : undefined,
       resetByAdminAt: now,
-      // The promo goes with "banner" and "all"; the decoration with "profile" and "all".
+      // The promo and the announcement bar go with "banner" and "all"; the decoration with "profile" and "all".
       promoLive: scope === "profile" ? row.promoLive : false,
+      announcementLive: scope === "profile" ? row.announcementLive : false,
       decorationLive: scope === "banner" ? row.decorationLive : false,
     });
 
@@ -115,6 +141,8 @@ export const reset = adminMutation({
         bannerPhoto: scope !== "profile" && lookImageIds(row.published).length + lookImageIds(row.draft).length > 0,
         promoHeadline: scope === "profile" ? "" : (promoHeadlineOf(row.published) ?? promoHeadlineOf(row.draft) ?? ""),
         decoration: scope === "banner" ? "" : (decorationOf(row.published) ?? decorationOf(row.draft) ?? ""),
+        announcement:
+          scope === "profile" ? "" : (announcementTextOf(row.published) ?? announcementTextOf(row.draft) ?? ""),
       },
     });
     await notify(ctx, {

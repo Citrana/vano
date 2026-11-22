@@ -3,13 +3,12 @@
 import { useTranslations } from "next-intl"
 import type { Currency } from "../../../../convex/lib/money"
 import type { ResolvedLook } from "../../../../convex/lib/looks/resolve"
-import { ProductGrid } from "@/features/public/product-grid"
-import { ShopHeaderView, type HeaderShop } from "@/features/public/shop-header-view"
+import { ShopHeaderView } from "@/features/public/shop-header-view"
 import { countryName } from "@/features/shop/countries"
 import { profileLabelsFrom } from "../profile/labels"
 import { ShopLookScope } from "../look-scope"
 import { SHOP_BANNER_EDGE, ShopBanner } from "../shop-banner"
-import type { PreviewProduct } from "./look-preview"
+import { PreviewAnnouncement, PreviewBody, type PreviewProduct, type PreviewShop } from "./preview-body"
 
 /**
  * The shop on a computer: the page at 1280px, scaled down to the preview
@@ -23,7 +22,7 @@ export function WidePreview({
   label,
 }: {
   look: ResolvedLook<string>
-  shop: HeaderShop
+  shop: PreviewShop
   currency: Currency
   products: PreviewProduct[]
   label: string
@@ -44,6 +43,7 @@ export function WidePreview({
         <ShopLookScope look={look} className="h-[230px] overflow-hidden">
           {/* The public page's desktop layout: banner, header and grid share the column's left edge. */}
           <div inert aria-hidden className="w-[1280px] [zoom:0.25]">
+            <PreviewAnnouncement look={look} shop={shop} />
             <div className={`mx-auto flex max-w-5xl flex-col gap-6 px-4 pb-10 ${hasBanner ? "pt-6" : "pt-10"}`}>
               <div className="flex flex-col">
                 {hasBanner ? (
@@ -58,7 +58,13 @@ export function WidePreview({
                   sizing="desktop"
                 />
               </div>
-              <ProductGrid slug={shop.slug} currency={currency} products={products.slice(0, 4)} />
+              <PreviewBody
+                look={look}
+                shop={shop}
+                currency={currency}
+                products={products}
+                columns="responsive"
+              />
             </div>
           </div>
         </ShopLookScope>

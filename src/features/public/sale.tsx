@@ -49,18 +49,33 @@ export function SalePrice({
 }
 
 /** The "-30%" badge and the "Sale" label, as the seller chose. */
-export function SaleTags({ sale, className }: { sale: PublicSale | null | undefined; className?: string }) {
+export function SaleTags({
+  sale,
+  className,
+  size = "default",
+}: {
+  sale: PublicSale | null | undefined
+  className?: string
+  /** "sm": the small pills of the product cards. */
+  size?: "default" | "sm"
+}) {
   const t = useTranslations("Public")
   if (!sale || (!sale.badge && !sale.label)) return null
+  const pill = size === "sm" ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-1 text-xs"
   return (
     <span className={cn("flex flex-wrap gap-1.5", className)}>
       {sale.badge ? (
-        <span className="shop-btn rounded-full bg-[var(--chip,var(--foreground))] px-2.5 py-1 text-xs font-semibold text-[var(--chip-foreground,var(--background))] tabular-nums">
+        <span
+          className={cn(
+            "shop-btn rounded-full bg-[var(--chip,var(--foreground))] font-semibold text-[var(--chip-foreground,var(--background))] tabular-nums",
+            pill,
+          )}
+        >
           {t("saleBadge", { percent: sale.percent })}
         </span>
       ) : null}
       {sale.label ? (
-        <span className="shop-chip chip-selected rounded-full border px-2.5 py-1 text-xs font-semibold">{t("saleLabel")}</span>
+        <span className={cn("shop-chip chip-selected rounded-full border font-semibold", pill)}>{t("saleLabel")}</span>
       ) : null}
     </span>
   )

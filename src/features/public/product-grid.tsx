@@ -5,11 +5,13 @@ import { useMemo, useState } from "react"
 import { cn } from "cn"
 import { CATEGORY_KEYS, type Category } from "../../../convex/lib/catalog"
 import type { Currency } from "../../../convex/lib/money"
+import type { ProductLayout } from "../../../convex/lib/looks/sections"
 import type { PublicSale } from "../../../convex/lib/sales/active"
 import { EmptyState } from "@/components/states/states"
 import { ProductCard } from "./product-card"
+import { productListClasses, type GridColumns } from "./product-layout"
 
-type Item = {
+export type GridItem = {
   _id: string
   name: string
   price: number
@@ -17,9 +19,68 @@ type Item = {
   soldOut: boolean
   coverUrl: string | null
   sale?: PublicSale | null
+  featured?: boolean
+  fewLeft?: boolean
+  backInStock?: boolean
+  /** Up to 4 colours and sizes for the card (`public.shopBySlug`). */
+  colors?: string[]
+  moreColors?: number
+  sizes?: string[]
+  moreSizes?: number
+  /** Added in the last NEW_BADGE_DAYS (computed by the page). */
+  isNew?: boolean
 }
 
 export type GridFilter = Category | "all" | "sale"
+
+/**
+ * A list of product cards in the shop's layout (no filters): the
+ * sections and the "All products" grid both draw with it.
+ */
+export function ProductList({
+  slug,
+  currency,
+  products,
+  layout = "grid2",
+  columns = "responsive",
+  highlight = null,
+}: {
+  slug: string
+  currency: Currency
+  products: GridItem[]
+  layout?: ProductLayout
+  columns?: GridColumns
+  /** A label every card shows (e.g. "Back in stock" in that section). */
+  highlight?: string | null
+}) {
+  const classes = productListClasses(layout, columns)
+  return (
+    <ul className={classes.list}>
+      {products.map((p) => (
+        <li key={p._id}>
+          <ProductCard
+            productId={p._id}
+            href={`/${slug}/${p._id}`}
+            name={p.name}
+            price={p.price}
+            currency={currency}
+            soldOut={p.soldOut}
+            coverUrl={p.coverUrl}
+            sale={p.sale}
+            fewLeft={p.fewLeft}
+            colors={p.colors ?? []}
+            moreColors={p.moreColors ?? 0}
+            sizes={p.sizes ?? []}
+            moreSizes={p.moreSizes ?? 0}
+            isNew={p.isNew ?? false}
+            highlight={highlight}
+            size={classes.size}
+          />
+        </li>
+      ))}
+    </ul>
+  )
+}
 
 /**
  * Filter chips + grid: a "Sale" chip while at least one product is on
@@ -30,13 +91,16 @@ export function ProductGrid({
   currency,
   products,
   columns = "responsive",
+  layout = "grid2",
   initialFilter = "all",
 }: {
   slug: string
   currency: Currency
-  products: Item[]
-  /** "phone": always 2 columns (e.g. inside a phone mockup, whatever the viewport). */
-  columns?: "responsive" | "phone"
+  products: GridItem[]
+  /** "phone": always the phone layout (e.g. inside a phone mockup, whatever the viewport). */
+  columns?: GridColumns
+  /** The seller's product layout (CLAUDE.md "Shop looks"). */
+  layout?: ProductLayout
   /** E.g. "sale" from `?sale=1` (the event banner's link). */
   initialFilter?: GridFilter
 }) {
@@ -83,21 +147,7 @@ export function ProductGrid({
       {visible.length === 0 ? (
         <p className="py-10 text-center text-muted-foreground">{t("emptyCategory")}</p>
       ) : (
-        <ul className={cn("grid grid-cols-2 gap-x-3 gap-y-6", columns === "responsive" && "sm:grid-cols-3 lg:grid-cols-4")}>
-          {visible.map((p) => (
-            <li key={p._id}>
-              <ProductCard
-                href={`/${slug}/${p._id}`}
-                name={p.name}
-                price={p.price}
-                currency={currency}
-                soldOut={p.soldOut}
-                coverUrl={p.coverUrl}
-                sale={p.sale}
-              />
-            </li>
-          ))}
-        </ul>
+        <ProductList slug={slug} currency={currency} products={visible} layout={layout} columns={columns} />
       )}
     </div>
   )

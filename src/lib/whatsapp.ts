@@ -39,3 +39,27 @@ export function buildOrderMessage(
     .filter((line): line is string => line !== null)
     .join("\n")
 }
+
+/**
+ * The "Order on WhatsApp" link for a product, used by the product page and
+ * the product cards (one message builder). On sale it carries the sale
+ * price and the normal one. `demo` (marketing demo shop) or no number:
+ * a share link with the demo note, for any contact.
+ */
+export function orderHref(
+  t: OrderT,
+  order: {
+    product: string
+    price: string
+    normalPrice?: string
+    url: string
+    size?: string
+    color?: string
+    whatsappNumber?: string
+    demo?: boolean
+    demoNote: string
+  },
+): string {
+  const message = buildOrderMessage(t, order)
+  return order.demo || !order.whatsappNumber ? waShareLink(`${order.demoNote}\n\n${message}`) : waChatLink(order.whatsappNumber, message)
+}

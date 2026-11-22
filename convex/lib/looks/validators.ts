@@ -1,7 +1,9 @@
 import { v, type Infer } from "convex/values";
 import { buttonDecorationValidator, buttonDesignValidator, orderLabelValidator } from "./buttonDesigns";
 import { eventFontIdValidator, eventPaletteIdValidator, eventTemplateIdValidator } from "./events";
+import { announcementFacetValidator } from "./announcement";
 import { profileFacetValidator } from "./profile";
+import { sectionsFacetValidator } from "./sections";
 
 /**
  * How a shop look is stored (CLAUDE.md "Shop looks"): a preset plus
@@ -148,6 +150,10 @@ export const lookOverridesValidator = v.object({
   promo: v.optional(promoFacetValidator),
   /** The profile photo's shape, border, layout and decoration (profile.ts). */
   profile: v.optional(profileFacetValidator),
+  /** The page's sections, their order and the product layout (sections.ts). */
+  sections: v.optional(sectionsFacetValidator),
+  /** One short line at the top of the shop, with optional dates (announcement.ts). */
+  announcement: v.optional(announcementFacetValidator),
 });
 export type LookOverrides = Infer<typeof lookOverridesValidator>;
 

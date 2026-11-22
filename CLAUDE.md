@@ -99,6 +99,8 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   shops/products return a real HTTP 404 — a `notFound()` thrown under a
   `loading.tsx` can only stream a 200. Keep `loading.tsx` files inside the
   `(shop)` group / product segment so they never wrap a child's check.
+- Shop pages carry **no Vano badge or "Create your shop" footer, in any
+  plan**. Don't add one back.
 
 ## Marketing site
 
@@ -190,7 +192,7 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 
 - A look is **a preset plus optional per-facet overrides**
   (`StoredLook` in `convex/lib/looks/validators.ts`: `colors`, `buttons`,
-  `banner`, `promo`, `profile`). A missing facet means "the preset's". Later phases (fonts,
+  `banner`, `promo`, `profile`, `sections`, `announcement`). A missing facet means "the preset's". Later phases (fonts,
   backgrounds, patterns, card styles, section order) add an optional facet,
   a default on every preset, a branch in `resolveLook` and an editor
   section; never rewrite stored looks.
@@ -288,6 +290,66 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   with one tap, taking the banner's dates; never applied by itself.
 - The banner, the profile photo, the name and the product grid share one
   left edge: `SHOP_BANNER_EDGE` (`shop-banner.tsx`), no extra header padding.
+
+### Sections, layout, announcement bar, About and contact
+
+- The optional `sections` facet (`convex/lib/looks/sections.ts`): the
+  ordered section list (`sale`, `newArrivals`, `featured`, `backInStock`,
+  one `category` per picked category, `all`), the product layout
+  (`grid2 | grid3 | large`) and the About switch. A missing facet =
+  `DEFAULT_SECTIONS` (All products, 2 columns, About on).
+  `buildShopSections` is the one rule for what shows (off or empty
+  sections never; Sale only while a sale is live; a section that only
+  repeats All products is skipped; never a blank shop), used by the
+  public page, the previews and the demo through `ShopSections`
+  (`src/features/public/shop-sections.tsx`). Layout classes live only in
+  `product-layout.ts` (phones: 2 columns max, 1 for big cards; cards keep
+  their normal size and stay left-aligned, however few products).
+- Product cards (`product-card.tsx`): a soft tinted card (`bg-muted` of the
+  look, **no border, no shadow**: the one exception to the surface border
+  rule, from the seller-facing reference design), a 4:5 photo area (the
+  whole photo fits, never cropped or zoomed; corners rounded like the card) with the badge pills on its
+  top-left corner (Sold out, sale, "New" for `NEW_BADGE_DAYS`, section
+  label, Few left), the name on one line with the prices right under it
+  (old price crossed out), colours as dots
+  (`colorSwatch`, unknown names as chips) and sizes as chips in one row,
+  no description; the compact Order button with a square share button
+  (`useShare`) beside it. The whole card opens the product (stretched name link);
+  share and Order sit above it. The compact WhatsApp Order button keeps
+  the look's design but 10px corners (`--shop-btn-radius` set inline).
+  Buttons need a `ShopOrderProvider`. "New" is computed by the page with
+  `isNewProduct` (Convex queries never read the clock). The message is
+  built only by `orderHref`
+  (`src/lib/whatsapp.ts`, also used by `OrderPanel`) with the live price
+  from `public.shopPrices` (one subscription per page). Card WhatsApp taps
+  use `stats.recordWhatsappClick`. The shop header has no buttons.
+- The header leaves room for profile decorations from `avatarOverflow`
+  (`profile.ts`), so nothing crosses the shared left edge.
+- Free publishes `isFreeSections` only (All products in 2 columns, any
+  About choice); the rest needs `featuredSections`. A downgrade shows
+  `freeSectionsOf(saved)`; the choice is kept.
+- The optional `announcement` facet (`announcement.ts`): one line, an
+  optional link (`sale` while a sale runs, or an https URL cleaned by
+  `cleanAnnouncementUrl`), a tone from shop colours (text derived,
+  checked by `lookProblems`) and optional dates with the event banner
+  rules. Needs `announcementBar`; `shopLooks.announcementLive` is stored
+  by `publish` / `syncSchedules` like `promoLive`. Visitors close it for
+  the visit (session storage, wrapped in try/catch).
+- `shownLook` gates each part on its own feature (`allLooks`,
+  `salesPromotions`, `featuredSections`, `announcementBar`); a preset
+  change never drops the sections or the announcement (`ownParts`).
+- About and contact data (opening hours, delivery areas, social handles)
+  is shop data, edited in Shop settings (`shops.update`), cleaned by
+  `convex/lib/shopInfo.ts` (handles stored, links built by `socialUrl`).
+  `ShopInfo` shows only the filled parts, and only when there's something
+  the header doesn't show (hours, delivery areas or a social link).
+- Product flags: `featured` and `fewLeft` are seller switches
+  (`products.setFeatured` / `setFewLeft`); "Back in stock" is set when
+  Sold out is turned off (`lib/restock.ts`, `stockChange`) and cleared
+  after `RESTOCK_DAYS` by `productJobs.endBackInStock` (idempotent on
+  `restockedAt`). Sold out clears both.
+- Admin reset: "banner" also removes the announcement bar; "all" goes back
+  to `FREE_LOOK` (default sections and layout, no bar).
 
 ## Sales
 
@@ -503,7 +565,8 @@ convex/
   schema.ts         # all tables
   auth.ts auth.config.ts http.ts   # Convex Auth (Password, sign-up enabled)
   users.ts shops.ts products.ts files.ts public.ts stats.ts
-  shopLooks.ts      # shop look draft / publish (lib/looks/: model, presets, contrast)
+  shopLooks.ts      # shop look draft / publish (lib/looks/: model, presets, contrast, sections)
+  productJobs.ts    # ends "Back in stock"
   sales.ts saleJobs.ts   # seller sales, start/end jobs (lib/sales/: rules)
   changeRequests.ts changeRequestJobs.ts   # protected shop changes
   notifications/    # notification types, inbox, config, outside channels

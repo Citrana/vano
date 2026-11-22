@@ -131,6 +131,14 @@ export function ShopLookCard({
     ]
       .filter(Boolean)
       .join(" · ")
+  const announcementLine = (a: NonNullable<typeof look.announcement>) =>
+    [
+      a.text,
+      t("promoDates", {
+        start: a.startsAt ? date(a.startsAt) : t("promoNoStart"),
+        end: a.endsAt ? date(a.endsAt) : t("promoNoEnd"),
+      }),
+    ].join(" · ")
 
   return (
     <Card>
@@ -152,6 +160,14 @@ export function ShopLookCard({
           </DetailItem>
         ) : null}
         {look.draftPromo ? <DetailItem label={t("draftPromo")}>{promoLine(look.draftPromo)}</DetailItem> : null}
+        {look.announcement ? (
+          <DetailItem label={t("announcement")}>
+            {announcementLine(look.announcement)} · {look.announcement.live ? t("promoLive") : t("promoNotLive")}
+          </DetailItem>
+        ) : null}
+        {look.draftAnnouncement ? (
+          <DetailItem label={t("draftAnnouncement")}>{announcementLine(look.draftAnnouncement)}</DetailItem>
+        ) : null}
         {look.decoration || look.draftDecoration ? (
           <DetailItem label={t("decoration")}>
             {[

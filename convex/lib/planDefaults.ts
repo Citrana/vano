@@ -134,7 +134,15 @@ const FEATURES: Record<FeatureKey, Seed> = {
   colorsLogoBanner: { values: PRO, pricing: tableOnly(200, "Colors, logo, and banner", "Couleurs, logo et bannière") },
   featuredSections: {
     values: PRO,
-    pricing: tableOnly(210, "Featured and New arrivals sections", "Sections Coups de cœur et Nouveautés"),
+    pricing: tableOnly(
+      210,
+      "Shop sections (sale, new arrivals, featured, back in stock, categories), their order and product layouts",
+      "Sections de la boutique (promos, nouveautés, coups de cœur, retour en stock, catégories), leur ordre et la mise en page des produits",
+    ),
+  },
+  announcementBar: {
+    values: PRO,
+    pricing: tableOnly(215, "Announcement bar at the top of your shop", "Bandeau d'annonce en haut de votre boutique"),
   },
   customDomain: { values: BUSINESS, pricing: tableOnly(220, "Custom domain", "Nom de domaine personnalisé") },
   customBranding: { values: ENTERPRISE, pricing: tableOnly(230, "Custom branding", "Image de marque sur mesure") },

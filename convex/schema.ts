@@ -1,6 +1,7 @@
 import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { socialsValidator } from "./lib/shopInfo";
 import { auditActionValidator, auditDetailsValidator, auditTargetTypeValidator } from "./lib/audit";
 import { categoryValidator, languageValidator } from "./lib/catalog";
 import {
@@ -94,6 +95,11 @@ export default defineSchema({
     language: languageValidator,
     categories: v.array(categoryValidator),
     description: v.optional(v.string()),
+    /** About and contact (lib/shopInfo.ts): free text, shown only when filled. */
+    openingHours: v.optional(v.string()),
+    deliveryAreas: v.optional(v.string()),
+    /** Profile handles (no "@", no URL), linked with `socialUrl` (lib/shopInfo.ts). */
+    socials: v.optional(socialsValidator),
     /** E.164, e.g. "+243812345678". */
     whatsappNumber: v.string(),
     city: v.string(),
@@ -147,6 +153,8 @@ export default defineSchema({
      * dates). Kept current by `shopLookJobs.syncSchedules`, like `promoLive`.
      */
     decorationLive: v.optional(v.boolean()),
+    /** Whether the published announcement bar is live right now (its dates), like `promoLive`. */
+    announcementLive: v.optional(v.boolean()),
   }).index("by_shopId", ["shopId"]),
 
   products: defineTable({
@@ -169,6 +177,17 @@ export default defineSchema({
      * is over its plan's product limit (CLAUDE.md "Billing").
      */
     pinnedAt: v.optional(v.number()),
+    /** Shown in the shop's "Featured" section (CLAUDE.md "Shop looks"). */
+    featured: v.optional(v.boolean()),
+    /** Shows a "Few left" label (the seller's switch; there's no stock count). */
+    fewLeft: v.optional(v.boolean()),
+    /** When "Sold out" was last turned off (lib/restock.ts). */
+    restockedAt: v.optional(v.number()),
+    /**
+     * In the "Back in stock" section: set with `restockedAt`, cleared by
+     * `productJobs.endBackInStock` after RESTOCK_DAYS or when sold out again.
+     */
+    backInStock: v.optional(v.boolean()),
   })
     .index("by_shopId", ["shopId"])
     .index("by_shopId_and_category", ["shopId", "category"])

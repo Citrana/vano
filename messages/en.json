@@ -96,7 +96,10 @@
     "SALE_STEEP_UNCONFIRMED": "This discount is over 80% off. Confirm it before saving.",
     "SALE_SCHEDULE_INVALID": "Check the sale dates: the end must be in the future and after the start, within 92 days, and the start within a year.",
     "SALE_STALE": "This sale was changed somewhere else while you were editing. Your change wasn't saved: reload it and try again.",
-    "TOO_MANY_SALES": "You've reached the maximum number of saved sales. Delete an old one first."
+    "TOO_MANY_SALES": "You've reached the maximum number of saved sales. Delete an old one first.",
+    "ANNOUNCEMENT_SCHEDULE_INVALID": "Check the announcement bar’s dates: the end must be after the start, at most 92 days later, and the start within a year.",
+    "INFO_TOO_LONG": "Shorten your opening hours or delivery areas.",
+    "SOCIAL_INVALID": "One of your social links isn’t a valid username or profile link."
   },
   "Validation": {
     "required": "This field is required.",
@@ -117,7 +120,8 @@
     "uploadsPending": "Wait for the photos to finish uploading.",
     "announcementBothRequired": "Write the announcement in both languages, or leave both empty.",
     "reasonLength": "Write a reason of {min} to {max} characters.",
-    "daysRange": "Enter a whole number of days from {min} to {max}."
+    "daysRange": "Enter a whole number of days from {min} to {max}.",
+    "socialInvalid": "Enter a username like @yourshop, or a link to your profile."
   },
   "Categories": {
     "clothes": "Clothes",
@@ -234,7 +238,20 @@
     "lookLabel": "Shop look",
     "lookLink": "Design your shop look",
     "lookHelp": "Colors, buttons and banner of your public shop. Edit them on the Shop look page.",
-    "currencyLocked": "Locked because your shop has products: their prices are in this currency."
+    "currencyLocked": "Locked because your shop has products: their prices are in this currency.",
+    "sectionAbout": "About and contact",
+    "aboutHelp": "Shown on your shop in an “About and contact” block when you fill at least one of these. Turn the block on or off in Shop look › Sections.",
+    "openingHours": "Opening hours",
+    "openingHoursPlaceholder": "Mon–Sat, 9am–6pm",
+    "deliveryAreas": "Delivery areas",
+    "deliveryAreasPlaceholder": "Nairobi CBD, Westlands, Kilimani",
+    "socials": {
+      "instagram": "Instagram",
+      "tiktok": "TikTok",
+      "facebook": "Facebook"
+    },
+    "socialPlaceholder": "@yourshop",
+    "socialsHelp": "Your username (@yourshop) or a link to your profile."
   },
   "Dashboard": {
     "title": "My shop",
@@ -290,7 +307,12 @@
         }
       }
     },
-    "manageProducts": "Manage products"
+    "manageProducts": "Manage products",
+    "featured": "Featured",
+    "fewLeft": "Few left",
+    "backInStock": "Back in stock",
+    "markFewLeft": "Few left",
+    "markFeatured": "Featured"
   },
   "Share": {
     "title": "Your shop link",
@@ -369,8 +391,6 @@
     "notFoundTitle": "Shop not found",
     "notFoundBody": "Check the link, or ask the seller for the right one.",
     "productNotFoundTitle": "Product not found",
-    "poweredBy": "Shop created with Vano",
-    "createYours": "Create your shop",
     "orderGreeting": "Hello! I'd like to order this product:",
     "orderProduct": "Product: {name}",
     "orderPrice": "Price: {price}",
@@ -405,7 +425,41 @@
     "saleEndsIn": "Ends in {time}",
     "countdown": "{days, plural, =0 {} other {#d }}{hours}h {minutes}m",
     "saleEndsInSpoken": "Sale ends in {days, plural, =0 {} one {# day, } other {# days, }}{hours, plural, one {# hour} other {# hours}} and {minutes, plural, one {# minute} other {# minutes}}",
-    "seeSaleItems": "See the items on sale"
+    "seeSaleItems": "See the items on sale",
+    "fewLeft": "Few left",
+    "backInStock": "Back in stock",
+    "sections": {
+      "sale": "On sale",
+      "newArrivals": "New arrivals",
+      "featured": "Featured",
+      "backInStock": "Back in stock",
+      "category": "Category",
+      "all": "All products"
+    },
+    "announcement": {
+      "label": "Shop announcement",
+      "close": "Close the announcement"
+    },
+    "about": {
+      "title": "About and contact",
+      "location": "Location",
+      "hours": "Opening hours",
+      "delivery": "Delivery",
+      "follow": "{shop} on social media",
+      "networks": {
+        "instagram": "Instagram",
+        "tiktok": "TikTok",
+        "facebook": "Facebook"
+      },
+      "opensNewTab": "(opens in a new tab)"
+    },
+    "orderShort": "Order",
+    "linkCopied": "Link copied",
+    "shareFailed": "Couldn't share the link. Copy it from the address bar.",
+    "shareProduct": "Share {product}",
+    "colorsLabel": "Colours",
+    "newBadge": "New",
+    "sizesLabel": "Sizes"
   },
   "NotFound": {
     "title": "Page not found",
@@ -678,12 +732,12 @@
       "resetTitle": "Reset the look of {name}?",
       "resetBody": "This applies to the live look and the seller's draft. Removed photos are deleted.",
       "scope": "What to reset",
-      "scopeBanner": "Banner photo and text",
+      "scopeBanner": "Banners and announcement",
       "scopeProfile": "Profile photo",
       "scopeAll": "Whole look",
-      "scopeBannerHint": "Colors and buttons stay. The banner photo is removed, any banner text is cleared and the event banner is removed.",
+      "scopeBannerHint": "Colors and buttons stay. The banner photo is removed, any banner text is cleared, and the event banner and announcement bar are removed.",
       "scopeProfileHint": "Colors, buttons and banners stay. The profile photo's shape, border and decoration go back to the default.",
-      "scopeAllHint": "The shop goes back to the Classic look, including Classic buttons.",
+      "scopeAllHint": "The shop goes back to the Classic look, including Classic buttons, the default sections and layout, and no announcement bar.",
       "reason": "Reason (sent to the seller)",
       "reasonHelp": "{min}–{max} characters.",
       "resetDone": "Look reset. The seller has been notified.",
@@ -695,7 +749,9 @@
       "promoNoEnd": "until removed",
       "draftPromo": "Event banner (draft)",
       "decoration": "Profile decoration",
-      "draftDecoration": "Draft: {name}"
+      "draftDecoration": "Draft: {name}",
+      "announcement": "Announcement bar",
+      "draftAnnouncement": "Announcement bar (draft)"
     },
     "sales": {
       "title": "Sales",
@@ -972,7 +1028,11 @@
       "buttonsHint": "The design, decoration and text of your shop's buttons, and their shape and style.",
       "bannerHint": "The banner at the top of your shop: your photo, a gradient or a ready-made pattern.",
       "profileHint": "Your profile photo's shape, border and size, and a decoration for your events.",
-      "eventsHint": "Sales, new arrivals, holidays: shown instead of your banner while it's on, and ready to share."
+      "eventsHint": "Sales, new arrivals, holidays: shown instead of your banner while it's on, and ready to share.",
+      "sections": "Sections",
+      "sectionsHint": "What your shop page shows, in which order, and how your products are laid out.",
+      "announcement": "Announcement",
+      "announcementHint": "One short line at the top of your shop, like “Free delivery in Nairobi this weekend”."
     },
     "status": {
       "saving": "Saving draft…",
@@ -995,10 +1055,11 @@
       "hiddenByPlan": "Visitors see the Classic look because your plan doesn't include custom looks. Your design is saved: upgrade to bring it back.",
       "resetByAdmin": "An admin reset your shop look on {date}.",
       "seeNotifications": "See why in your notifications",
-      "promoHidden": "Your plan doesn't show event banners to visitors. Your banner is saved; upgrade to bring it back."
+      "promoHidden": "Your plan doesn't show event banners to visitors. Your banner is saved; upgrade to bring it back.",
+      "sectionsHidden": "Your plan shows the free layout and no announcement bar to visitors. Your choices are saved: upgrade to bring them back."
     },
     "hints": {
-      "planLocked": "Your plan can publish the Classic look and a simple profile photo only. Upgrade to publish this one.",
+      "planLocked": "Your plan can publish the Classic look, a simple profile photo, the All products section in 2 columns and the About block. Upgrade to publish this one.",
       "blocking": "Fix the colors marked in red before publishing.",
       "promoLocked": "Event banners need {plan} or higher. Remove it to publish, or upgrade."
     },
@@ -1054,7 +1115,8 @@
         "chip": "Selected chips:",
         "eventText": "Event banner text:",
         "buttonDesign": "Glow buttons and chips:",
-        "profileBorder": "Profile photo border:"
+        "profileBorder": "Profile photo border:",
+        "announcement": "Announcement bar:"
       },
       "blocking": "too hard to read ({ratio}:1). Publishing is blocked until it's fixed.",
       "warning": "may be hard to read ({ratio}:1).",
@@ -1220,7 +1282,70 @@
       "collapse": "Show less",
       "close": "Close"
     },
-    "leave": "You have changes that aren't saved yet. Leave anyway?"
+    "leave": "You have changes that aren't saved yet. Leave anyway?",
+    "shopSections": {
+      "listTitle": "Shop sections",
+      "listHelp": "Turn sections on or off. Drag the handle, or use the arrows, to change the order.",
+      "names": {
+        "sale": "Sale / Offers",
+        "newArrivals": "New arrivals",
+        "featured": "Featured",
+        "backInStock": "Back in stock",
+        "all": "All products",
+        "category": "Category"
+      },
+      "hints": {
+        "sale": "Shows only while a sale is running, with its countdown and the sale items.",
+        "saleLive": "A sale is running: this section shows its countdown and the sale items.",
+        "newArrivals": "Your {count} newest products.",
+        "featured": "Products you mark as Featured on the Products page.",
+        "backInStock": "Products you turned back on from Sold out in the last {days} days.",
+        "category": "Every product in this category.",
+        "all": "Every product, with filters."
+      },
+      "moveUp": "Move {section} up",
+      "moveDown": "Move {section} down",
+      "remove": "Remove {section}",
+      "show": "Show {section}",
+      "moved": "{section} moved to position {position} of {total}.",
+      "addCategory": "Add a category section",
+      "emptyNote": "A section with no products is never shown, even when it’s on.",
+      "layout": "Product layout",
+      "layouts": {
+        "grid2": "2 columns",
+        "grid3": "3 columns",
+        "large": "Big cards"
+      },
+      "layoutHelp": "On phones: 2 columns, or 1 for big cards. With only a few products, cards get bigger and centred.",
+      "about": "About and contact",
+      "aboutHelp": "Your opening hours, delivery areas and social links. It shows only when at least one of them is filled (your description and location are already under your name).",
+      "aboutLink": "Edit in Shop settings"
+    },
+    "announcement": {
+      "show": "Show an announcement bar",
+      "text": "Message",
+      "textRequired": "Write a short message.",
+      "textCount": "{count}/{max} characters",
+      "defaultText": "Free delivery this weekend",
+      "colors": "Colors",
+      "colorsHelp": "Your shop colors. The text color is picked for you so it stays easy to read.",
+      "tones": {
+        "accent": "Accent",
+        "dark": "Dark",
+        "soft": "Soft"
+      },
+      "link": "Link",
+      "links": {
+        "none": "No link",
+        "sale": "Sale items",
+        "url": "A web page"
+      },
+      "saleLinkHelp": "Links to your sale items only while a sale is running.",
+      "saleLinkLive": "A sale is running: the bar links to its items.",
+      "url": "Web address",
+      "urlHelp": "Opens in a new tab, e.g. instagram.com/yourshop.",
+      "urlInvalid": "Enter a web address, e.g. https://example.com."
+    }
   },
   "Demo": {
     "shopName": "Vano Demo",
@@ -1767,8 +1892,8 @@
         "endingSoon": "{trial, select, true {Your free trial} other {Your {plan} plan}} {days, plural, =0 {ends today} one {ends in # day} other {ends in # days}}"
       },
       "look": {
-        "resetBanner": "An admin removed your shop banner's photo or text. Reason: {reason}",
-        "resetAll": "An admin reset your shop look to Classic. Reason: {reason}",
+        "resetBanner": "An admin removed your shop banner’s photo or text, or your announcement bar. Reason: {reason}",
+        "resetAll": "An admin reset your shop look to Classic, with the default sections and layout. Reason: {reason}",
         "resetProfile": "An admin reset your shop's profile photo (shape, border, decoration). Reason: {reason}"
       },
       "sale": {
@@ -2138,8 +2263,8 @@
       "description": "Shown on the pricing page; the check is All shop looks."
     },
     "featuredSections": {
-      "name": "Featured sections",
-      "description": "Featured and New arrivals sections. Not built yet."
+      "name": "Shop sections and layouts",
+      "description": "Sale, new arrivals, featured, back in stock and category sections, their order, and the 3-column and big-card layouts."
     },
     "customDomain": {
       "name": "Custom domain",
@@ -2216,6 +2341,10 @@
     "serviceGuarantees": {
       "name": "Service guarantees",
       "description": "Agreed service levels."
+    },
+    "announcementBar": {
+      "name": "Announcement bar",
+      "description": "One short line at the top of the shop, with a link and dates."
     }
   },
   "PlanAreas": {

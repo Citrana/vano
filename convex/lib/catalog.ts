@@ -69,3 +69,6 @@ export function tagsProblem(tags: readonly string[]): "tooMany" | "tooLong" | nu
   if (tags.some((tag) => tag.length > LIMITS.tagMax)) return "tooLong";
   return null;
 }
+
+/** Colours (and sizes) shown on a product card; the rest is "+N". */
+export const CARD_TAGS_MAX = 4;

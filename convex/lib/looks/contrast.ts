@@ -1,6 +1,6 @@
 import { contrast, nudgeToContrast, type Hex } from "./color";
 import type { EventPalette } from "./events";
-import { glowStops, type ResolvedBanner, type ResolvedLook, type ResolvedProfile } from "./resolve";
+import { glowStops, type ResolvedAnnouncement, type ResolvedBanner, type ResolvedLook, type ResolvedProfile } from "./resolve";
 
 /**
  * Automatic contrast check (CLAUDE.md "Shop looks"). Runs in the editor
@@ -16,9 +16,10 @@ export const LARGE_MIN = 3;
  * text: body text; badge: label on the chip colour; chip: selected chip vs
  * background; eventText: an event banner's headline / second line on its
  * palette; buttonDesign: a button design's label on its own fill (Glow);
- * profileBorder: the profile photo's border against the page background.
+ * profileBorder: the profile photo's border against the page background;
+ * announcement: the announcement bar's text on its fill.
  */
-export type LookProblemTarget = "text" | "badge" | "chip" | "eventText" | "buttonDesign" | "profileBorder";
+export type LookProblemTarget = "text" | "badge" | "chip" | "eventText" | "buttonDesign" | "profileBorder" | "announcement";
 
 /** What a one-tap fix changes: the accent, the background, or the profile border colour. */
 export type LookFixField = "accent" | "background" | "profileBorder";
@@ -53,7 +54,11 @@ export function eventTextContrast(palette: EventPalette): number {
 }
 
 export function lookProblems(
-  look: Pick<ResolvedLook<unknown>, "colors" | "buttons"> & { banner?: ResolvedBanner<unknown>; profile?: ResolvedProfile },
+  look: Pick<ResolvedLook<unknown>, "colors" | "buttons"> & {
+    banner?: ResolvedBanner<unknown>;
+    profile?: ResolvedProfile;
+    announcement?: ResolvedAnnouncement | null;
+  },
 ): LookProblem[] {
   const c = look.colors;
   const problems: LookProblem[] = [];
@@ -108,6 +113,19 @@ export function lookProblems(
   if (border) {
     check(problems, "profileBorder", contrast(border.color, c.background), LARGE_MIN, null, () =>
       fixWith("profileBorder", nudgeToContrast(border.color, c.background, LARGE_MIN + 0.5)),
+    );
+  }
+
+  // The announcement bar is small text on a shop colour: 4.5:1. Its text
+  // colour is derived (resolve.ts), so only a mid-tone accent can fail.
+  const bar = look.announcement;
+  if (bar) {
+    check(problems, "announcement", contrast(bar.foreground, bar.background), TEXT_MIN, LARGE_MIN, () =>
+      bar.tone === "accent"
+        ? fixWith("accent", nudgeToContrast(c.primary, c.primaryForeground, TEXT_MIN + 0.3))
+        : bar.tone === "soft"
+          ? fixWith("accent", nudgeToContrast(c.chip, c.background, TEXT_MIN))
+          : null,
     );
   }
 

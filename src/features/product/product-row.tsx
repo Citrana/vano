@@ -1,7 +1,8 @@
 "use client"
 
 import { useMutation } from "convex/react"
-import { EyeIcon, EyeOffIcon, ImageIcon, PencilIcon, PinIcon } from "lucide-react"
+import { EyeIcon, EyeOffIcon, ImageIcon, PencilIcon, PinIcon, StarIcon } from "lucide-react"
+import type { OptimisticLocalStore } from "convex/browser"
 import { useLocale, useTranslations } from "next-intl"
 import Link from "next/link"
 import { toast } from "sonner"
@@ -29,7 +30,21 @@ export type ProductRowData = {
   overLimit?: boolean
   /** Kept visible by the seller while the shop is over its limit. */
   pinned?: boolean
+  /** In the shop's "Featured" section. */
+  featured?: boolean
+  /** Shows a "Few left" label. */
+  fewLeft?: boolean
+  /** Recently restocked: in the "Back in stock" section. */
+  backInStock?: boolean
   coverUrl: string | null
+}
+
+type RowPatch = Partial<Pick<ProductRowData, "soldOut" | "featured" | "fewLeft" | "backInStock">>
+
+/** Updates one product in the cached list right away (the server confirms). */
+function patchList(store: OptimisticLocalStore, productId: Id<"products">, patch: RowPatch) {
+  const list = store.getQuery(api.products.listMine, {})
+  if (list) store.setQuery(api.products.listMine, {}, list.map((p) => (p._id === productId ? { ...p, ...patch } : p)))
 }
 
 export function ProductRow({
@@ -48,16 +63,15 @@ export function ProductRow({
   const tc = useTranslations("Categories")
   const tCommon = useTranslations("Common")
   const locale = useLocale()
-  const setSoldOut = useMutation(api.products.setSoldOut).withOptimisticUpdate((store, { productId, soldOut }) => {
-    const list = store.getQuery(api.products.listMine, {})
-    if (list) {
-      store.setQuery(
-        api.products.listMine,
-        {},
-        list.map((p) => (p._id === productId ? { ...p, soldOut } : p)),
-      )
-    }
-  })
+  const setSoldOut = useMutation(api.products.setSoldOut).withOptimisticUpdate((store, { productId, soldOut }) =>
+    patchList(store, productId, soldOut ? { soldOut, fewLeft: false, backInStock: false } : { soldOut }),
+  )
+  const setFeatured = useMutation(api.products.setFeatured).withOptimisticUpdate((store, { productId, featured }) =>
+    patchList(store, productId, { featured }),
+  )
+  const setFewLeft = useMutation(api.products.setFewLeft).withOptimisticUpdate((store, { productId, fewLeft }) =>
+    patchList(store, productId, { fewLeft }),
+  )
   const setPinned = useMutation(api.products.setPinned)
   const errorMessage = useErrorMessage()
   const pin = (pinned: boolean) =>
@@ -65,6 +79,8 @@ export function ProductRow({
       toast.error(errorCodeOf(error) === "PLAN_LIMIT_PRODUCTS" ? t("pinLimit") : errorMessage(error)),
     )
   const switchLabelId = `sold-out-${product._id}`
+  const featuredLabelId = `featured-${product._id}`
+  const fewLeftLabelId = `few-left-${product._id}`
 
   return (
     <li className="flex gap-3 rounded-xl bg-card p-3 border">
@@ -111,6 +127,14 @@ export function ProductRow({
             </Badge>
           ) : null}
           {product.soldOut ? <Badge variant="destructive">{t("soldOut")}</Badge> : null}
+          {product.featured ? (
+            <Badge variant="secondary">
+              <StarIcon aria-hidden />
+              {t("featured")}
+            </Badge>
+          ) : null}
+          {product.fewLeft && !product.soldOut ? <Badge variant="secondary">{t("fewLeft")}</Badge> : null}
+          {product.backInStock && !product.soldOut ? <Badge variant="secondary">{t("backInStock")}</Badge> : null}
           {stats ? (
             <span>
               {t("views", { count: stats.views })} · {t("clicks", { count: stats.whatsappClicks })}
@@ -128,17 +152,45 @@ export function ProductRow({
             {product.overLimit ? t("showInShop") : t("stopShowing")}
           </Button>
         ) : null}
-        <div className="mt-auto flex items-center gap-2 self-start">
-          <Switch
-            aria-labelledby={switchLabelId}
-            checked={product.soldOut}
-            onCheckedChange={(soldOut) =>
-              setSoldOut({ productId: product._id, soldOut }).catch((error) => toast.error(errorMessage(error)))
-            }
-          />
-          <span id={switchLabelId} className="text-sm">
-            {t("markSoldOut")}
-          </span>
+        <div className="mt-auto flex flex-wrap items-center gap-x-4 self-start">
+          <div className="flex items-center gap-2">
+            <Switch
+              aria-labelledby={switchLabelId}
+              checked={product.soldOut}
+              onCheckedChange={(soldOut) =>
+                setSoldOut({ productId: product._id, soldOut }).catch((error) => toast.error(errorMessage(error)))
+              }
+            />
+            <span id={switchLabelId} className="text-sm">
+              {t("markSoldOut")}
+            </span>
+          </div>
+          {!product.soldOut ? (
+            <div className="flex items-center gap-2">
+              <Switch
+                aria-labelledby={fewLeftLabelId}
+                checked={product.fewLeft === true}
+                onCheckedChange={(fewLeft) =>
+                  setFewLeft({ productId: product._id, fewLeft }).catch((error) => toast.error(errorMessage(error)))
+                }
+              />
+              <span id={fewLeftLabelId} className="text-sm">
+                {t("markFewLeft")}
+              </span>
+            </div>
+          ) : null}
+          <div className="flex items-center gap-2">
+            <Switch
+              aria-labelledby={featuredLabelId}
+              checked={product.featured === true}
+              onCheckedChange={(featured) =>
+                setFeatured({ productId: product._id, featured }).catch((error) => toast.error(errorMessage(error)))
+              }
+            />
+            <span id={featuredLabelId} className="text-sm">
+              {t("markFeatured")}
+            </span>
+          </div>
         </div>
       </div>
     </li>

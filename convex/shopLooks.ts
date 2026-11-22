@@ -8,7 +8,8 @@ import { cleanLook, lookImageIds, sameLook, withoutPromo } from "./lib/looks/cle
 import { hasBlockingProblem, lookProblems } from "./lib/looks/contrast";
 import { FREE_LOOK, isFreeLook } from "./lib/looks/presets";
 import { resolveLook } from "./lib/looks/resolve";
-import { liveFlags, promoBoundaries, scheduleProblem } from "./lib/looks/schedule";
+import { liveFlags, lookBoundaries, scheduleProblem, type LiveFlags } from "./lib/looks/schedule";
+import { isFreeSections } from "./lib/looks/sections";
 import { bannerUrls, lookRow } from "./lib/looks/store";
 import { liveSalesFor } from "./lib/sales/store";
 import { storedLookValidator, type StoredLook } from "./lib/looks/validators";
@@ -27,20 +28,20 @@ import { claimImages, deleteFilesNotIn, requireOwnShop, sellerMutation, sellerQu
  * the row (`promoLive`); the profile decoration's the same way
  * (`decorationLive`). Both are updated by `shopLookJobs.syncSchedules`,
  * scheduled at their start and end (lib/looks/schedule.ts).
+ *
+ * Sections other than "All products" and layouts other than 2 columns
+ * need `featuredSections`; the announcement bar needs `announcementBar`
+ * and, like the promo, is live only between its dates (`announcementLive`).
  */
 
-/** Whether the published promo / decoration are live, and schedules the next changes. */
+/** Whether the published promo / decoration / announcement are live, and schedules the next changes. */
 export async function syncLookSchedules(
   ctx: MutationCtx,
   row: Doc<"shopLooks">,
   published: StoredLook | undefined,
   now: number,
-): Promise<{ promoLive: boolean; decorationLive: boolean }> {
-  const times = new Set([
-    ...promoBoundaries(published?.overrides.promo, now),
-    ...promoBoundaries(published?.overrides.profile?.decoration, now),
-  ]);
-  for (const at of times) {
+): Promise<LiveFlags> {
+  for (const at of lookBoundaries(published, now)) {
     // Jobs from an older publish just recompute the same answer.
     await ctx.scheduler.runAt(at, internal.shopLookJobs.syncSchedules, { shopId: row.shopId });
   }
@@ -55,12 +56,16 @@ export const mine = sellerQuery({
     const row = await lookRow(ctx, shop._id);
     const entitled = await hasFeature(ctx, shop, "allLooks");
     const promoEntitled = await hasFeature(ctx, shop, "salesPromotions");
+    const sectionsEntitled = await hasFeature(ctx, shop, "featuredSections");
+    const announcementEntitled = await hasFeature(ctx, shop, "announcementBar");
     const published = row?.published ?? null;
     const draft = row?.draft ?? null;
     return {
       slug: shop.slug,
       /** Default event banner texts are written in the shop's language. */
       language: shop.language,
+      /** The shop's categories (the Sections editor offers a section per category). */
+      categories: shop.categories,
       /** What the editor starts from. */
       editing: draft ?? published ?? FREE_LOOK,
       published,
@@ -75,6 +80,14 @@ export const mine = sellerQuery({
       promoLive: row?.promoLive === true,
       /** Whether the published profile decoration is live now (its dates). */
       decorationLive: row?.decorationLive === true,
+      sectionsEntitled,
+      /** The published sections / layout are saved but the plan shows the Free ones. */
+      sectionsHiddenByPlan: !sectionsEntitled && !isFreeSections(published?.overrides.sections),
+      announcementEntitled,
+      /** The published announcement bar is saved but the plan doesn't show it. */
+      announcementHiddenByPlan: !announcementEntitled && published?.overrides.announcement !== undefined,
+      /** Whether the published announcement bar is live now (its dates). */
+      announcementLive: row?.announcementLive === true,
       /** A sale is running (and shown), so the event banner can link to it. */
       saleLive: (await liveSalesFor(ctx, shop)).length > 0,
       bannerUrls: await bannerUrls(ctx, [draft, published]),
@@ -130,6 +143,14 @@ export const publish = sellerMutation({
     // A decoration is a Pro option (isFreeLook above); its dates follow the promo rules.
     const decoration = draft.overrides.profile?.decoration;
     if (decoration && scheduleProblem(decoration, now) !== null) fail("DECORATION_SCHEDULE_INVALID");
+    if (!isFreeSections(draft.overrides.sections)) {
+      await requireCan(ctx, shop, { kind: "feature", feature: "featuredSections" });
+    }
+    const announcement = draft.overrides.announcement;
+    if (announcement) {
+      await requireCan(ctx, shop, { kind: "feature", feature: "announcementBar" });
+      if (scheduleProblem(announcement, now) !== null) fail("ANNOUNCEMENT_SCHEDULE_INVALID");
+    }
 
     await deleteFilesNotIn(ctx, lookImageIds(row.published), lookImageIds(draft));
     await ctx.db.patch("shopLooks", row._id, {

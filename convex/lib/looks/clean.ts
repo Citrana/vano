@@ -3,8 +3,10 @@ import { normalizeHex } from "./color";
 import { BANNER_TEXT_MAX, FOCUS_MAX, FOCUS_MIN, ZOOM_MAX, ZOOM_MIN } from "./banners";
 import { EVENT_TEMPLATES, PROMO_HEADLINE_MAX, PROMO_STICKERS_MAX, PROMO_SUBLINE_MAX } from "./events";
 import { FREE_LOOK } from "./presets";
+import { ANNOUNCEMENT_TEXT_MAX, cleanAnnouncementUrl, type AnnouncementFacet } from "./announcement";
 import { cleanProfile, freeProfileOf } from "./profile";
 import { scheduleShapeProblem } from "./schedule";
+import { cleanSections, freeSectionsOf } from "./sections";
 import type { BannerFacet, BannerText, PromoFacet, StoredLook } from "./validators";
 
 /**
@@ -55,6 +57,21 @@ export function cleanPromo(promo: PromoFacet): PromoFacet | null {
   };
 }
 
+/** Checks the announcement bar: one line of text, an https link, the schedule shape. */
+export function cleanAnnouncement(announcement: AnnouncementFacet): AnnouncementFacet | null {
+  const text = cleanLine(announcement.text);
+  if (text.length === 0 || text.length > ANNOUNCEMENT_TEXT_MAX) return null;
+  let link: AnnouncementFacet["link"];
+  if (announcement.link?.kind === "sale") link = { kind: "sale" };
+  else if (announcement.link?.kind === "url") {
+    const url = cleanAnnouncementUrl(announcement.link.url);
+    if (url === null) return null;
+    link = { kind: "url", url };
+  }
+  if (scheduleShapeProblem(announcement) !== null) return null;
+  return { text, link, tone: announcement.tone, startsAt: announcement.startsAt, endsAt: announcement.endsAt };
+}
+
 const inRange = (n: number, min: number, max: number) => Number.isFinite(n) && n >= min && n <= max;
 
 function cleanBanner(banner: BannerFacet): BannerFacet | null {
@@ -69,7 +86,7 @@ function cleanBanner(banner: BannerFacet): BannerFacet | null {
 }
 
 export function cleanLook(look: StoredLook): StoredLook | null {
-  const { colors, buttons, banner, promo, profile } = look.overrides;
+  const { colors, buttons, banner, promo, profile, sections, announcement } = look.overrides;
   const overrides: StoredLook["overrides"] = {};
   if (colors) {
     const accent = normalizeHex(colors.accent);
@@ -97,6 +114,16 @@ export function cleanLook(look: StoredLook): StoredLook | null {
     const cleaned = cleanProfile(profile);
     if (!cleaned) return null;
     overrides.profile = cleaned;
+  }
+  if (sections) {
+    const cleaned = cleanSections(sections);
+    if (!cleaned) return null;
+    overrides.sections = cleaned;
+  }
+  if (announcement) {
+    const cleaned = cleanAnnouncement(announcement);
+    if (!cleaned) return null;
+    overrides.announcement = cleaned;
   }
   return { v: 1, preset: look.preset, overrides };
 }
@@ -128,6 +155,14 @@ export function withoutPromo(look: StoredLook): StoredLook {
   return { ...look, overrides };
 }
 
+/** The look without its announcement bar (dated, so it may not show while the rest does). */
+export function withoutAnnouncement(look: StoredLook): StoredLook {
+  if (!look.overrides.announcement) return look;
+  const overrides = { ...look.overrides };
+  delete overrides.announcement;
+  return { ...look, overrides };
+}
+
 /** The look without its profile decoration (what shows when the decoration isn't live). */
 export function withoutDecoration(look: StoredLook): StoredLook {
   const profile = look.overrides.profile;
@@ -147,20 +182,43 @@ export function freeLookFor(published: StoredLook): StoredLook {
   return profile ? { ...FREE_LOOK, overrides: { profile: freeProfileOf(profile) } } : FREE_LOOK;
 }
 
+export type ShownFlags = {
+  /** `allLooks`: preset, colours, buttons, banner, profile options. */
+  entitled: boolean;
+  /** The event banner is live and the plan includes `salesPromotions`. */
+  promoShown: boolean;
+  /** The profile decoration is live. */
+  decorationShown: boolean;
+  /** `featuredSections`: sections, their order and the product layout. */
+  sectionsEntitled: boolean;
+  /** The announcement bar is live and the plan includes `announcementBar`. */
+  announcementShown: boolean;
+};
+
 /**
  * What visitors see for a published look (CLAUDE.md "Shop looks"). The
  * one rule, used by `visibleLook` on the server and by the editor's
  * "Live now" preview: no plan → the free look; the event banner only
- * while live and entitled; the profile decoration only while live.
+ * while live and entitled; the profile decoration only while live; the
+ * sections fall back to `freeSectionsOf` without `featuredSections`; the
+ * announcement bar only while live and entitled. Each part is gated on
+ * its own plan feature, so one never hides another.
  */
-export function shownLook(
-  published: StoredLook | null | undefined,
-  flags: { entitled: boolean; promoShown: boolean; decorationShown: boolean },
-): StoredLook {
+export function shownLook(published: StoredLook | null | undefined, flags: ShownFlags): StoredLook {
   if (!published) return FREE_LOOK;
-  if (!flags.entitled) return freeLookFor(published);
-  const look = flags.promoShown ? published : withoutPromo(published);
-  return flags.decorationShown ? look : withoutDecoration(look);
+  let look: StoredLook;
+  if (!flags.entitled) look = freeLookFor(published);
+  else {
+    look = flags.promoShown ? published : withoutPromo(published);
+    look = flags.decorationShown ? look : withoutDecoration(look);
+  }
+  const overrides = { ...look.overrides };
+  delete overrides.sections;
+  delete overrides.announcement;
+  const { sections, announcement } = published.overrides;
+  if (sections) overrides.sections = flags.sectionsEntitled ? sections : freeSectionsOf(sections);
+  if (announcement && flags.announcementShown) overrides.announcement = announcement;
+  return { ...look, overrides };
 }
 
 /** Same look, whatever the key order (stored docs don't keep it). */
