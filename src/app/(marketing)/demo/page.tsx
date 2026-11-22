@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
 import { getLocale, getTranslations } from "next-intl/server"
 import { DemoLookBanner, DemoThemeSwitch } from "@/features/marketing/demo/demo-theme"
-import { DEMO_CURRENCY, DEMO_PRODUCTS, DEMO_SLUG } from "@/features/marketing/demo/demo-shop"
-import { ProductGrid } from "@/features/public/product-grid"
+import { DEMO_CURRENCY, DEMO_PRODUCTS, DEMO_SECTIONS, DEMO_SLUG } from "@/features/marketing/demo/demo-shop"
+import { ShopSections } from "@/features/public/shop-sections"
 import { ShopHeader } from "@/features/public/shop-header"
 import { SHOP_BANNER_EDGE } from "@/features/shop-looks/shop-banner"
 
@@ -36,6 +36,10 @@ export default async function DemoShopPage() {
     category: p.category,
     soldOut: p.soldOut ?? false,
     coverUrl: p.photos[0].src,
+    featured: p.featured ?? false,
+    fewLeft: p.fewLeft ?? false,
+    backInStock: p.backInStock ?? false,
+    colors: p.colors,
   }))
 
   return (
@@ -47,7 +51,13 @@ export default async function DemoShopPage() {
           <DemoThemeSwitch label={t("themeLabel")} />
         </div>
       </div>
-      <ProductGrid slug={DEMO_SLUG} currency={DEMO_CURRENCY} products={products} />
+      <ShopSections
+        sections={DEMO_SECTIONS}
+        slug={DEMO_SLUG}
+        currency={DEMO_CURRENCY}
+        products={products}
+        order={{ slug: DEMO_SLUG, currency: DEMO_CURRENCY, label: "order", demo: true }}
+      />
     </div>
   )
 }

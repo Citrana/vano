@@ -2,11 +2,13 @@ import type { Metadata } from "next"
 import { getTranslations } from "next-intl/server"
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import { showsSection } from "../../../../convex/lib/looks/sections"
+import { AnnouncementBar } from "@/features/public/announcement-bar"
 import { getShopPage } from "@/features/public/data"
-import { ProductGrid } from "@/features/public/product-grid"
 import { SaleStrip } from "@/features/public/sale-strip"
-import { PublicFooter } from "@/features/public/public-footer"
 import { ShopHeader } from "@/features/public/shop-header"
+import { ShopInfo } from "@/features/public/shop-info"
+import { ShopSections } from "@/features/public/shop-sections"
 import { SHOP_BANNER_EDGE, ShopBanner } from "@/features/shop-looks/shop-banner"
 import { ShopLookScope } from "@/features/shop-looks/look-scope"
 import { ShopLocaleProvider } from "@/features/public/shop-locale-provider"
@@ -57,10 +59,19 @@ export default async function ShopPage({ params, searchParams }: PageProps<"/[sl
     (soonest, p) => (p.sale?.countdown && (soonest === null || p.sale.endsAt < soonest) ? p.sale.endsAt : soonest),
     null,
   )
+  // CLAUDE.md "Shop looks": the seller's sections; a Sale section carries the countdown itself.
+  const { sections, announcement } = shop.look
+  const saleSection = showsSection(sections, products, "sale")
+  const info = {
+    openingHours: shop.openingHours,
+    deliveryAreas: shop.deliveryAreas,
+    socials: shop.socials,
+  }
 
   return (
     <ShopLocaleProvider language={shop.language}>
       <ShopLookScope look={shop.look} className="flex flex-1 flex-col">
+        {announcement ? <AnnouncementBar announcement={announcement} slug={shop.slug} saleLive={onSale.length > 0} /> : null}
         <main className={`mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 pb-10 ${hasBanner ? "md:pt-6" : "pt-6 md:pt-10"}`}>
           <div className="flex flex-col">
             {bannerLinksToSale ? (
@@ -72,18 +83,21 @@ export default async function ShopPage({ params, searchParams }: PageProps<"/[sl
             )}
             <ShopHeader shop={shop} profile={shop.look.profile} onBanner={hasBanner} />
           </div>
-          {countdownEnd !== null ? <SaleStrip endsAt={countdownEnd} /> : null}
+          {countdownEnd !== null && !saleSection ? <SaleStrip endsAt={countdownEnd} /> : null}
           <div id="products" className="scroll-mt-4">
-            <ProductGrid
+            <ShopSections
               key={saleParam === "1" ? "sale" : "all"}
+              sections={sections}
               slug={shop.slug}
               currency={shop.currency}
               products={products}
               initialFilter={saleParam === "1" && onSale.length > 0 ? "sale" : "all"}
+              saleEndsAt={countdownEnd}
+              order={{ slug: shop.slug, currency: shop.currency, label: shop.look.buttons.label, whatsappNumber: shop.whatsappNumber }}
             />
           </div>
+          {sections.about ? <ShopInfo info={info} shopName={shop.name} /> : null}
         </main>
-        <PublicFooter language={shop.language} />
       </ShopLookScope>
       <ViewTracker shopId={shop._id} />
     </ShopLocaleProvider>

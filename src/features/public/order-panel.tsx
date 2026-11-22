@@ -13,7 +13,7 @@ import type { PublicSale } from "../../../convex/lib/sales/active"
 import { SaleCountdown, SalePrice, SaleTags } from "./sale"
 import { buttonVariants } from "@/components/ui/button"
 import { productUrl } from "@/lib/site"
-import { buildOrderMessage, waChatLink, waShareLink } from "@/lib/whatsapp"
+import { orderHref } from "@/lib/whatsapp"
 
 function OptionChips({
   label,
@@ -92,16 +92,17 @@ export function OrderPanel({
   // The server-rendered values until the live ones arrive.
   const normal = live?.price ?? product.price
   const sale = live === undefined || live === null ? (product.sale ?? null) : live.sale
-  const message = buildOrderMessage(t, {
+  const href = orderHref(t, {
     product: product.name,
     price: formatMoney(sale ? sale.price : normal, currency, locale),
     normalPrice: sale ? formatMoney(sale.original, currency, locale) : undefined,
     size,
     color,
     url: productUrl(slug, product._id),
+    whatsappNumber,
+    demo,
+    demoNote: t("demoOrderNote"),
   })
-  const href =
-    demo || !whatsappNumber ? waShareLink(`${t("demoOrderNote")}\n\n${message}`) : waChatLink(whatsappNumber, message)
 
   return (
     <div className="flex flex-col gap-5">

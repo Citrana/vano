@@ -1,5 +1,6 @@
 import { getLocale, getTranslations } from "next-intl/server"
 import { DEMO_CURRENCY, DEMO_PRODUCTS, DEMO_SLUG } from "@/features/marketing/demo/demo-shop"
+import { ShopOrderProvider } from "@/features/public/order-context"
 import { ProductGrid } from "@/features/public/product-grid"
 import { ShopHeader } from "@/features/public/shop-header"
 import { PhoneFrame } from "@/features/shop-looks/phone-frame"
@@ -34,7 +35,10 @@ export async function LivePhone() {
     <PhoneFrame label={t("mockupLabel")} className="w-[240px] sm:w-[260px] md:w-[280px] lg:w-[300px]">
       <PhoneThemeScreen zoomClassName="[zoom:0.597] sm:[zoom:0.651] md:[zoom:0.704] lg:[zoom:0.757]">
         <ShopHeader shop={shop} onBanner sizing="phone" />
-        <ProductGrid slug={DEMO_SLUG} currency={DEMO_CURRENCY} products={products} columns="phone" />
+        {/* The same cards sellers get, with their buttons drawn inert. */}
+        <ShopOrderProvider order={{ slug: DEMO_SLUG, currency: DEMO_CURRENCY, label: "order", preview: true }}>
+          <ProductGrid slug={DEMO_SLUG} currency={DEMO_CURRENCY} products={products} columns="phone" />
+        </ShopOrderProvider>
       </PhoneThemeScreen>
     </PhoneFrame>
   )

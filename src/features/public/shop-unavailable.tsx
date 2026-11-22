@@ -1,7 +1,6 @@
 import { StoreIcon } from "lucide-react"
 import { getTranslations } from "next-intl/server"
 import type { Language } from "../../../convex/lib/catalog"
-import { PublicFooter } from "./public-footer"
 
 /**
  * What visitors see while an admin has suspended the shop, in the shop's
@@ -16,7 +15,6 @@ export async function ShopUnavailable({ name, language }: { name: string; langua
         <h1 className="font-heading text-2xl font-bold tracking-tight text-balance">{t("unavailableTitle", { shop: name })}</h1>
         <p className="max-w-sm text-muted-foreground">{t("unavailableBody")}</p>
       </main>
-      <PublicFooter language={language} />
     </div>
   )
 }

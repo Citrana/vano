@@ -7,7 +7,6 @@ import { formatMoney } from "../../../../convex/lib/money"
 import { getProductPage } from "@/features/public/data"
 import { OrderPanel } from "@/features/public/order-panel"
 import { ProductGallery } from "@/features/public/product-gallery"
-import { PublicFooter } from "@/features/public/public-footer"
 import { ShopHeader } from "@/features/public/shop-header"
 import { ShopLookScope } from "@/features/shop-looks/look-scope"
 import { ShopLocaleProvider } from "@/features/public/shop-locale-provider"
@@ -78,6 +77,10 @@ export default async function ProductPage({ params }: PageProps<"/[slug]/[produc
                 <span className="shop-btn w-fit rounded-full bg-[var(--chip,var(--foreground))] px-2.5 py-1 text-xs font-semibold text-[var(--chip-foreground,var(--background))]">
                   {t("soldOut")}
                 </span>
+              ) : product.fewLeft ? (
+                <span className="shop-btn w-fit rounded-full border border-[var(--chip,var(--foreground))] bg-[var(--chip-soft,var(--muted))] px-2.5 py-1 text-xs font-semibold text-[var(--chip-soft-foreground,var(--foreground))]">
+                  {t("fewLeft")}
+                </span>
               ) : null}
             </div>
             <OrderPanel
@@ -95,9 +98,6 @@ export default async function ProductPage({ params }: PageProps<"/[slug]/[produc
             ) : null}
           </div>
         </main>
-        <div className="hidden md:block">
-          <PublicFooter language={shop.language} />
-        </div>
       </ShopLookScope>
       <ViewTracker productId={product._id} />
     </ShopLocaleProvider>
