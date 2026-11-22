@@ -6,6 +6,7 @@ import { notFound } from "next/navigation"
 import { DEMO_CURRENCY, DEMO_PRODUCTS, DEMO_SLUG, demoProduct } from "@/features/marketing/demo/demo-shop"
 import { OrderPanel } from "@/features/public/order-panel"
 import { ProductGallery } from "@/features/public/product-gallery"
+import { ProductSection } from "@/features/public/product-section"
 
 export function generateStaticParams() {
   return DEMO_PRODUCTS.map((p) => ({ productId: p.id }))
@@ -36,35 +37,42 @@ export default async function DemoProductPage({ params }: PageProps<"/demo/[prod
   const name = t(`products.${product.id}.name`)
 
   return (
-    <div className="mx-auto grid w-full max-w-5xl gap-6 px-4 pt-4 pb-28 md:grid-cols-2 md:gap-10 md:pt-8 md:pb-12">
-      <div className="flex flex-col gap-3">
-        <Link
-          href={`/${DEMO_SLUG}`}
-          className="-ml-2 inline-flex min-h-11 w-fit items-center gap-1.5 rounded-lg px-2 text-sm font-medium hover:bg-muted"
-        >
-          <ArrowLeftIcon className="size-4" aria-hidden />
-          {t("backToShop")}
-        </Link>
+    <div className="mx-auto w-full max-w-6xl px-4 pt-4 pb-[calc(6.5rem+env(safe-area-inset-bottom))] md:pt-6 md:pb-16">
+      <Link
+        href={`/${DEMO_SLUG}`}
+        className="-ml-2 mb-3 inline-flex min-h-11 w-fit items-center gap-1.5 rounded-lg px-2 text-sm font-medium hover:bg-muted"
+      >
+        <ArrowLeftIcon className="size-4" aria-hidden />
+        {t("backToShop")}
+      </Link>
+      <div className="grid gap-6 md:grid-cols-2 md:gap-10 lg:gap-14">
         <ProductGallery images={product.photos.map((p) => p.src)} name={name} />
-      </div>
-      <div className="flex flex-col gap-5 md:pt-14">
-        <div className="flex flex-col gap-2">
-          <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{tc(product.category)}</p>
-          <h1 className="font-heading text-2xl leading-tight font-bold tracking-tight text-balance md:text-3xl">{name}</h1>
-          {product.soldOut ? (
-            <span className="w-fit rounded-full bg-foreground px-2.5 py-1 text-xs font-semibold text-background">{tp("soldOut")}</span>
-          ) : null}
+        <div className="flex flex-col gap-6 md:sticky md:top-32 md:self-start">
+          <div className="flex flex-col gap-2">
+            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{tc(product.category)}</p>
+            <h1 className="font-heading text-2xl leading-tight font-bold tracking-tight text-balance md:text-3xl">{name}</h1>
+            {product.soldOut ? (
+              <span className="shop-btn w-fit rounded-full bg-[var(--chip,var(--foreground))] px-2.5 py-1 text-xs font-semibold text-[var(--chip-foreground,var(--background))]">
+                {tp("soldOut")}
+              </span>
+            ) : product.fewLeft ? (
+              <span className="shop-btn w-fit rounded-full border border-[var(--chip,var(--foreground))] bg-[var(--chip-soft,var(--muted))] px-2.5 py-1 text-xs font-semibold text-[var(--chip-soft-foreground,var(--foreground))]">
+                {tp("fewLeft")}
+              </span>
+            ) : null}
+          </div>
+          <OrderPanel
+            demo
+            slug={DEMO_SLUG}
+            currency={DEMO_CURRENCY}
+            product={{ _id: product.id, name, price: product.price, sizes: product.sizes, colors: product.colors, soldOut: product.soldOut ?? false }}
+          />
+          <div>
+            <ProductSection title={tp("description")} open>
+              <p className="text-pretty text-muted-foreground">{t(`products.${product.id}.description`)}</p>
+            </ProductSection>
+          </div>
         </div>
-        <OrderPanel
-          demo
-          slug={DEMO_SLUG}
-          currency={DEMO_CURRENCY}
-          product={{ _id: product.id, name, price: product.price, sizes: product.sizes, colors: product.colors, soldOut: product.soldOut ?? false }}
-        />
-        <section className="flex flex-col gap-2 border-t pt-5">
-          <h2 className="text-sm font-medium">{tp("description")}</h2>
-          <p className="text-pretty text-muted-foreground">{t(`products.${product.id}.description`)}</p>
-        </section>
       </div>
     </div>
   )

@@ -51,7 +51,7 @@ file is a build error. Use `public/` only for files that need a fixed URL
 | File | Source | License |
 |---|---|---|
 | `brand/vano-mobile.png` | Vano design team (not used right now: the Home phone renders the live demo shop) | Own work |
-| `icons/whatsapp.png` | Vano design team (WhatsApp mark) | WhatsApp brand guidelines |
+| `icons/whatsapp.png` | Vano design team (WhatsApp mark; landing hero and the shop order buttons, via `WhatsAppIcon`) | WhatsApp brand guidelines |
 | `icons/link.png` | Vano design team | Own work |
 | `stickers/*.svg` | Vano design team, simple geometric motifs (see `stickers/README.md`) | Own work |
 | `patterns/banners/*.svg` (kitenge-diamonds, kitenge-waves, petals, gold-arcs, soft-dots) | Vano design team, original geometric and floral motifs | Own work |

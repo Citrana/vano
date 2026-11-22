@@ -1,6 +1,6 @@
 "use client"
 
-import { BanIcon, LockIcon, MessageCircleIcon } from "lucide-react"
+import { BanIcon, LockIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { cn } from "cn"
 import {
@@ -16,6 +16,7 @@ import type { ButtonsFacet } from "../../../../convex/lib/looks/validators"
 import { STICKER_FILES } from "@/assets/images/stickers/files"
 import { buttonVariants } from "@/components/ui/button"
 import { ShopLookScope } from "../look-scope"
+import { WhatsAppIcon } from "@/features/public/whatsapp-icon"
 import { ChoiceGroup, radioKeyDown } from "./choice-group"
 import { ProNote } from "./pro-note"
 import type { LookEditorState } from "./use-look-editor"
@@ -195,7 +196,7 @@ export function ButtonsSection({
             </span>
           </div>
           <span aria-hidden className={buttonVariants({ size: "lg", variant: "whatsapp", className: "shop-btn shop-action w-full" })}>
-            <MessageCircleIcon />
+            <WhatsAppIcon />
             {tp(`orderLabels.${resolved.label}`)}
           </span>
           <p className="text-xs text-muted-foreground">{t("whatsappNote")}</p>

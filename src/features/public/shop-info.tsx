@@ -27,16 +27,28 @@ export function hasShopInfo(info: ShopInfoData): boolean {
 export function ShopInfo({ info, shopName }: { info: ShopInfoData; shopName: string }) {
   const t = useTranslations("Public.about")
   if (!hasShopInfo(info)) return null
-  const links = SOCIAL_NETWORKS.flatMap((network) => {
-    const handle = info.socials[network]
-    return handle ? [{ network, handle }] : []
-  })
-
   return (
     <section aria-labelledby="shop-about" className="flex flex-col gap-4 rounded-xl border bg-card p-3 md:p-4">
       <h2 id="shop-about" className="font-heading text-lg font-bold tracking-tight md:text-xl">
         {t("title")}
       </h2>
+      <ShopInfoDetails info={info} shopName={shopName} />
+    </section>
+  )
+}
+
+/**
+ * The filled parts only: hours and delivery areas, then the social links.
+ * Used inside `ShopInfo` and the product page's "Shop info" section.
+ */
+export function ShopInfoDetails({ info, shopName }: { info: ShopInfoData; shopName: string }) {
+  const t = useTranslations("Public.about")
+  const links = SOCIAL_NETWORKS.flatMap((network) => {
+    const handle = info.socials[network]
+    return handle ? [{ network, handle }] : []
+  })
+  return (
+    <>
       {info.openingHours || info.deliveryAreas ? (
         <dl className="grid gap-3 sm:grid-cols-2">
           {info.openingHours ? <InfoRow icon={<ClockIcon />} label={t("hours")} value={info.openingHours} /> : null}
@@ -61,7 +73,7 @@ export function ShopInfo({ info, shopName }: { info: ShopInfoData; shopName: str
           ))}
         </ul>
       ) : null}
-    </section>
+    </>
   )
 }
 
