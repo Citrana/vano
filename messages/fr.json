@@ -422,7 +422,7 @@
     "saleFilter": "Promo",
     "saleEnded": "Cette promotion est terminée.",
     "saleEndsIn": "Se termine dans {time}",
-    "countdown": "{days, plural, =0 {} other {# j }}{hours} h {minutes} min",
+    "countdown": "{days, plural, =0 {} other {# j }}{hours} h {minutes} min {seconds} s",
     "saleEndsInSpoken": "La promotion se termine dans {days, plural, =0 {} one {# jour, } other {# jours, }}{hours, plural, one {# heure} other {# heures}} et {minutes, plural, one {# minute} other {# minutes}}",
     "seeSaleItems": "Voir les articles en promotion",
     "fewLeft": "Plus que quelques-uns",

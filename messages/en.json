@@ -422,7 +422,7 @@
     "saleFilter": "Sale",
     "saleEnded": "This sale has ended.",
     "saleEndsIn": "Ends in {time}",
-    "countdown": "{days, plural, =0 {} other {#d }}{hours}h {minutes}m",
+    "countdown": "{days, plural, =0 {} other {#d }}{hours}h {minutes}m {seconds}s",
     "saleEndsInSpoken": "Sale ends in {days, plural, =0 {} one {# day, } other {# days, }}{hours, plural, one {# hour} other {# hours}} and {minutes, plural, one {# minute} other {# minutes}}",
     "seeSaleItems": "See the items on sale",
     "fewLeft": "Few left",
