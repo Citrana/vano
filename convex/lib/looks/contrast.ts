@@ -17,12 +17,15 @@ export const LARGE_MIN = 3;
  * background; eventText: an event banner's headline / second line on its
  * palette; buttonDesign: a button design's label on its own fill (Glow);
  * profileBorder: the profile photo's border against the page background;
- * announcement: the announcement bar's text on its fill.
+ * announcement: the Promo bar's text on its fill (both gradient stops).
  */
 export type LookProblemTarget = "text" | "badge" | "chip" | "eventText" | "buttonDesign" | "profileBorder" | "announcement";
 
-/** What a one-tap fix changes: the accent, the background, or the profile border colour. */
-export type LookFixField = "accent" | "background" | "profileBorder";
+/**
+ * What a one-tap fix changes: the accent, the background, the profile
+ * border colour, or the Promo bar's custom text colour.
+ */
+export type LookFixField = "accent" | "background" | "profileBorder" | "announcementText";
 
 export type LookProblem = {
   target: LookProblemTarget;
@@ -116,17 +119,27 @@ export function lookProblems(
     );
   }
 
-  // The announcement bar is small text on a shop colour: 4.5:1. Its text
-  // colour is derived (resolve.ts), so only a mid-tone accent can fail.
+  // The Promo bar is small text on its fill: 4.5:1 on every stop. With a
+  // shop colour tone the text is derived, so only a mid-tone accent can
+  // fail; custom colours are the seller's pair, refused below 4.5:1.
   const bar = look.announcement;
   if (bar) {
-    check(problems, "announcement", contrast(bar.foreground, bar.background), TEXT_MIN, LARGE_MIN, () =>
-      bar.tone === "accent"
-        ? fixWith("accent", nudgeToContrast(c.primary, c.primaryForeground, TEXT_MIN + 0.3))
-        : bar.tone === "soft"
-          ? fixWith("accent", nudgeToContrast(c.chip, c.background, TEXT_MIN))
-          : null,
-    );
+    const stops = bar.gradientTo ? [bar.background, bar.gradientTo] : [bar.background];
+    const ratio = Math.min(...stops.map((stop) => contrast(bar.foreground, stop)));
+    if (bar.custom) {
+      const darkest = stops.reduce((worst, stop) => (contrast(bar.foreground, stop) < contrast(bar.foreground, worst) ? stop : worst));
+      check(problems, "announcement", ratio, TEXT_MIN, TEXT_MIN, () =>
+        fixWith("announcementText", nudgeToContrast(bar.foreground, darkest, TEXT_MIN + 0.3)),
+      );
+    } else {
+      check(problems, "announcement", ratio, TEXT_MIN, LARGE_MIN, () =>
+        bar.tone === "accent"
+          ? fixWith("accent", nudgeToContrast(c.primary, c.primaryForeground, TEXT_MIN + 0.3))
+          : bar.tone === "soft"
+            ? fixWith("accent", nudgeToContrast(c.chip, c.background, TEXT_MIN))
+            : null,
+      );
+    }
   }
 
   return problems;

@@ -3,7 +3,7 @@ import { normalizeHex } from "./color";
 import { BANNER_TEXT_MAX, FOCUS_MAX, FOCUS_MIN, ZOOM_MAX, ZOOM_MIN } from "./banners";
 import { EVENT_TEMPLATES, PROMO_HEADLINE_MAX, PROMO_STICKERS_MAX, PROMO_SUBLINE_MAX } from "./events";
 import { FREE_LOOK } from "./presets";
-import { ANNOUNCEMENT_TEXT_MAX, cleanAnnouncementUrl, type AnnouncementFacet } from "./announcement";
+import { ANNOUNCEMENT_TEXT_MAX, cleanAnnouncementUrl, PROMO_TITLE_MAX, type AnnouncementFacet } from "./announcement";
 import { cleanProfile, freeProfileOf } from "./profile";
 import { scheduleShapeProblem } from "./schedule";
 import { cleanSections, freeSectionsOf } from "./sections";
@@ -57,10 +57,14 @@ export function cleanPromo(promo: PromoFacet): PromoFacet | null {
   };
 }
 
-/** Checks the announcement bar: one line of text, an https link, the schedule shape. */
+/**
+ * Checks the Promo bar: optional one-line text (empty = sale-only), an
+ * https link, the optional sale title, custom colours as hex, the
+ * schedule shape. Defaults are dropped so stored facets stay small.
+ */
 export function cleanAnnouncement(announcement: AnnouncementFacet): AnnouncementFacet | null {
   const text = cleanLine(announcement.text);
-  if (text.length === 0 || text.length > ANNOUNCEMENT_TEXT_MAX) return null;
+  if (text.length > ANNOUNCEMENT_TEXT_MAX) return null;
   let link: AnnouncementFacet["link"];
   if (announcement.link?.kind === "sale") link = { kind: "sale" };
   else if (announcement.link?.kind === "url") {
@@ -69,7 +73,23 @@ export function cleanAnnouncement(announcement: AnnouncementFacet): Announcement
     link = { kind: "url", url };
   }
   if (scheduleShapeProblem(announcement) !== null) return null;
-  return { text, link, tone: announcement.tone, startsAt: announcement.startsAt, endsAt: announcement.endsAt };
+  const cleaned: AnnouncementFacet = { text, link, tone: announcement.tone, startsAt: announcement.startsAt, endsAt: announcement.endsAt };
+  if (announcement.style && announcement.style !== "solid") cleaned.style = announcement.style;
+  if (announcement.colors) {
+    const background = normalizeHex(announcement.colors.background);
+    const foreground = normalizeHex(announcement.colors.foreground);
+    if (!background || !foreground) return null;
+    cleaned.colors = { background, foreground };
+  }
+  if (announcement.icon && announcement.icon !== "none") cleaned.icon = announcement.icon;
+  if (announcement.title !== undefined) {
+    const title = cleanLine(announcement.title);
+    if (title.length > PROMO_TITLE_MAX) return null;
+    if (title.length > 0) cleaned.title = title;
+  }
+  if (announcement.countdown === false) cleaned.countdown = false;
+  if (announcement.closable === false) cleaned.closable = false;
+  return cleaned;
 }
 
 const inRange = (n: number, min: number, max: number) => Number.isFinite(n) && n >= min && n <= max;

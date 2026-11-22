@@ -169,6 +169,68 @@ describe("announcement bar", () => {
   });
 });
 
+describe("Promo bar", () => {
+  const promo = {
+    ...bar,
+    style: "gradient" as const,
+    icon: "sparkle" as const,
+    title: "  Weekend sale ",
+    countdown: false,
+    closable: false,
+    colors: { background: "#1D3557", foreground: "#ffffff" },
+  };
+
+  test("publishes the style, icon, title, switches and custom colours, resolved", async () => {
+    const t = newTest();
+    const { userId } = await sellerWithShop(t);
+    const seller = as(t, userId);
+    await seller.mutation(api.shopLooks.saveDraft, { look: withParts({ announcement: promo }) });
+    await seller.mutation(api.shopLooks.publish, {});
+    const look = await publicLook(t);
+    expect(look.announcement).toMatchObject({
+      style: "gradient",
+      icon: "sparkle",
+      title: "Weekend sale",
+      countdown: false,
+      closable: false,
+      custom: true,
+      background: "#1d3557",
+      foreground: "#ffffff",
+    });
+    expect(look.announcement?.gradientTo).toMatch(/^#[0-9a-f]{6}$/);
+  });
+
+  test("a bar without text (sale-only) publishes", async () => {
+    const t = newTest();
+    const { userId, shopId } = await sellerWithShop(t);
+    await as(t, userId).mutation(api.shopLooks.saveDraft, { look: withParts({ announcement: { ...bar, text: " " } }) });
+    await as(t, userId).mutation(api.shopLooks.publish, {});
+    expect((await rowOf(t, shopId))?.announcementLive).toBe(true);
+    expect((await publicLook(t)).announcement).toMatchObject({ text: "" });
+  });
+
+  test("custom colours below 4.5:1 can be saved but not published", async () => {
+    const t = newTest();
+    const { userId } = await sellerWithShop(t);
+    const seller = as(t, userId);
+    await seller.mutation(api.shopLooks.saveDraft, {
+      look: withParts({ announcement: { ...bar, colors: { background: "#f4a3a3", foreground: "#ffffff" } } }),
+    });
+    await expect(seller.mutation(api.shopLooks.publish, {})).rejects.toThrow(/LOOK_CONTRAST/);
+    await expect(
+      seller.mutation(api.shopLooks.saveDraft, { look: withParts({ announcement: { ...bar, colors: { background: "pink", foreground: "#fff" } } }) }),
+    ).rejects.toThrow(/LOOK_INVALID/);
+  });
+
+  test("the new options need the plan feature too", async () => {
+    const t = newTest();
+    const { userId, shopId } = await sellerWithShop(t);
+    await setSubscription(t, shopId, { plan: "free", status: "free" });
+    await as(t, userId).mutation(api.shopLooks.saveDraft, { look: withParts({ announcement: promo }) });
+    await expect(as(t, userId).mutation(api.shopLooks.publish, {})).rejects.toThrow(/PLAN_FEATURE_LOCKED/);
+  });
+});
+
 describe("admin reset", () => {
   async function world(t: T) {
     const roles = await builtInRoles(t);
