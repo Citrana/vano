@@ -13,7 +13,6 @@ import { ShopForm } from "@/features/shop/shop-form"
 export default function SettingsPage() {
   const t = useTranslations("Seller")
   const tf = useTranslations("ShopForm")
-  const tc = useTranslations("Common")
   const shop = useQuery(api.shops.myShop, {})
   const products = useQuery(api.products.listMine, {})
   const update = useMutation(api.shops.update)
@@ -27,7 +26,7 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
-      <PageTitle title={t("settings")} backHref="/dashboard" backLabel={tc("back")} />
+      <PageTitle title={t("settings")} />
       <ShopForm
         key={shop._id}
         mode="edit"
