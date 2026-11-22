@@ -4,7 +4,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { showsSection } from "../../../../convex/lib/looks/sections"
 import { AnnouncementBar } from "@/features/public/announcement-bar"
-import { getShopPage } from "@/features/public/data"
+import { getShopPage, withNewBadges } from "@/features/public/data"
 import { SaleStrip } from "@/features/public/sale-strip"
 import { ShopHeader } from "@/features/public/shop-header"
 import { ShopInfo } from "@/features/public/shop-info"
@@ -47,7 +47,8 @@ export default async function ShopPage({ params, searchParams }: PageProps<"/[sl
   if (!page) notFound()
   // Layouts and pages render in parallel, so this page handles it too.
   if (page.suspended) return <ShopUnavailable name={page.name} language={page.language} />
-  const { shop, products } = page
+  const { shop } = page
+  const products = withNewBadges(page.products)
   const hasBanner = shop.look.banner.kind !== "none"
   const t = await getTranslations({ locale: shop.language, namespace: "Public" })
   // CLAUDE.md "Sales": the "Sale" filter, the countdown strip and the

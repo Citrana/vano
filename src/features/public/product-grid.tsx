@@ -22,9 +22,13 @@ export type GridItem = {
   featured?: boolean
   fewLeft?: boolean
   backInStock?: boolean
-  /** Up to 4 colours for the card (`public.shopBySlug`). */
+  /** Up to 4 colours and sizes for the card (`public.shopBySlug`). */
   colors?: string[]
   moreColors?: number
+  sizes?: string[]
+  moreSizes?: number
+  /** Added in the last NEW_BADGE_DAYS (computed by the page). */
+  isNew?: boolean
 }
 
 export type GridFilter = Category | "all" | "sale"
@@ -66,6 +70,9 @@ export function ProductList({
             fewLeft={p.fewLeft}
             colors={p.colors ?? []}
             moreColors={p.moreColors ?? 0}
+            sizes={p.sizes ?? []}
+            moreSizes={p.moreSizes ?? 0}
+            isNew={p.isNew ?? false}
             highlight={highlight}
             size={classes.size}
           />

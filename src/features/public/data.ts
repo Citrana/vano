@@ -2,6 +2,7 @@ import "server-only"
 import { fetchQuery } from "convex/nextjs"
 import { cache } from "react"
 import { api } from "../../../convex/_generated/api"
+import { isNewProduct } from "../../../convex/lib/looks/sections"
 
 /**
  * Server-side reads for the public pages, deduplicated per request so
@@ -24,3 +25,11 @@ export type ShopPage = Active<Awaited<ReturnType<typeof getShopPage>>>
 export type PublicShop = ShopPage["shop"]
 export type PublicProductCard = ShopPage["products"][number]
 export type ProductPage = Active<Awaited<ReturnType<typeof getProductPage>>>
+
+/**
+ * Adds the "New" badge flag (`isNewProduct`) at request time. The clock is
+ * read here, on the server: Convex queries never read it.
+ */
+export function withNewBadges<P extends { createdAt: number }>(products: readonly P[], now: number = Date.now()) {
+  return products.map((p) => ({ ...p, isNew: isNewProduct(p.createdAt, now) }))
+}

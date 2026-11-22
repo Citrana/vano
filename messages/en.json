@@ -457,7 +457,9 @@
     "linkCopied": "Link copied",
     "shareFailed": "Couldn't share the link. Copy it from the address bar.",
     "shareProduct": "Share {product}",
-    "colorsLabel": "Colours"
+    "colorsLabel": "Colours",
+    "newBadge": "New",
+    "sizesLabel": "Sizes"
   },
   "NotFound": {
     "title": "Page not found",
