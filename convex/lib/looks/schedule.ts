@@ -16,6 +16,7 @@ export const PROMO_MAX_DAYS = 92;
 export const PROMO_MAX_LEAD_DAYS = 365;
 const DAY_MS = 86_400_000;
 
+/** Anything with optional dates: the promo, a profile decoration, the announcement bar. */
 type Schedule = Pick<PromoFacet, "startsAt" | "endsAt">;
 
 export function promoLiveAt(promo: Schedule | undefined | null, now: number): boolean {
@@ -57,12 +58,27 @@ export function scheduleProblem(promo: Schedule, now: number): "order" | "tooFar
   return null;
 }
 
-/** Whether a published look's promo and profile decoration are live at `now`. */
-export function liveFlags(published: StoredLook | undefined | null, now: number): { promoLive: boolean; decorationLive: boolean } {
+export type LiveFlags = { promoLive: boolean; decorationLive: boolean; announcementLive: boolean };
+
+/** Whether a published look's promo, profile decoration and announcement bar are live at `now`. */
+export function liveFlags(published: StoredLook | undefined | null, now: number): LiveFlags {
   return {
     promoLive: promoLiveAt(published?.overrides.promo, now),
     decorationLive: promoLiveAt(published?.overrides.profile?.decoration, now),
+    announcementLive: promoLiveAt(published?.overrides.announcement, now),
   };
+}
+
+/** Every future start / end of a published look's dated parts. */
+export function lookBoundaries(published: StoredLook | undefined | null, now: number): number[] {
+  const o = published?.overrides;
+  return [
+    ...new Set([
+      ...promoBoundaries(o?.promo, now),
+      ...promoBoundaries(o?.profile?.decoration, now),
+      ...promoBoundaries(o?.announcement, now),
+    ]),
+  ];
 }
 
 /** Future start / end times to schedule a `syncSchedules` job at. */

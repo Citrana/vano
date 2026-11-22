@@ -6,11 +6,28 @@ providers, checkout, the scheduled jobs or billing admin updates this file
 in the same commit, with a dated entry in the change log below
 (see CLAUDE.md "Billing").
 
-**Last updated: 2026-11-20 08:09 CAT (UTC+02:00)**
+**Last updated: 2026-11-22 12:39 CAT (UTC+02:00)**
 
 ## Change log
 
 Newest first. Format: `YYYY-MM-DD HH:MM TZ — what changed (files)`.
+
+- **2026-11-22 12:39 CAT (UTC+02:00)**: two shop-look features are now
+  **enforced** (CLAUDE.md "Shop looks"). `featuredSections` (was pricing
+  only) gates the shop sections other than "All products", their order
+  and the 3-column / big-card layouts; the new `announcementBar` flag
+  (area `shopLook`, seed: Pro and up, pricing-table row 215) gates the
+  announcement bar. `shopLooks.publish` calls `requireCan(..., { kind:
+  "feature", feature: "featuredSections" })` unless `isFreeSections`, and
+  `requireCan(..., "announcementBar")` when the look has one; public reads
+  use `hasFeature` (`visibleLook`): a downgraded shop shows the Free
+  layout (All products, 2 columns, its About choice) and no announcement
+  bar, with the saved choices kept. The trial counts as Pro. Existing
+  `planConfig` documents get the new key from the seed (`mergeConfig`, no
+  migration). No change to prices, trials or payments; there is no
+  "Vano badge" feature in any plan (`convex/lib/planFeatures.ts`,
+  `convex/lib/planDefaults.ts`, `convex/shopLooks.ts`,
+  `convex/lib/looks/store.ts`).
 
 - **2026-11-20 08:09 CAT (UTC+02:00)**: the `salesPromotions` feature now
   also gates **product sales** (CLAUDE.md "Sales"). `sales.create`,
@@ -143,7 +160,7 @@ Newest first. Format: `YYYY-MM-DD HH:MM TZ — what changed (files)`.
 | Plan | Price / month | Products | Photos / product | Notable features |
 |---|---|---|---|---|
 | Free | KSh 0 | 10 | 3 | Shop link, WhatsApp orders |
-| Pro | KSh 299 | 50 | 6 | Shop stats, all looks, sales and promotions |
+| Pro | KSh 299 | 50 | 6 | Shop stats, all looks, sales and promotions, shop sections and layouts, announcement bar |
 | Business | KSh 1,000 | unlimited* | 6 | + team roles, discount codes, order tracking |
 | Enterprise | custom ("Talk to us") | unlimited* | 6 | + several shops; **granted by an admin only** |
 

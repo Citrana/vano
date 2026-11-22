@@ -36,7 +36,9 @@ export async function resolveWithUrl(ctx: QueryCtx, look: StoredLook): Promise<P
  * profile (CLAUDE.md "Billing": a downgrade never deletes the design, it
  * only stops showing it). Its event & promo banner shows only while live
  * (`promoLive`) and while the plan includes `salesPromotions`; the profile
- * decoration only while live (`decorationLive`).
+ * decoration only while live (`decorationLive`). Sections and layout
+ * need `featuredSections` (else the Free ones); the announcement bar shows
+ * only while live (`announcementLive`) and the plan includes `announcementBar`.
  */
 export async function visibleLook(ctx: QueryCtx, shop: Doc<"shops">): Promise<StoredLook> {
   const row = await lookRow(ctx, shop._id);
@@ -44,6 +46,8 @@ export async function visibleLook(ctx: QueryCtx, shop: Doc<"shops">): Promise<St
     entitled: await hasFeature(ctx, shop, "allLooks"),
     promoShown: row?.promoLive === true && (await hasFeature(ctx, shop, "salesPromotions")),
     decorationShown: row?.decorationLive === true,
+    sectionsEntitled: await hasFeature(ctx, shop, "featuredSections"),
+    announcementShown: row?.announcementLive === true && (await hasFeature(ctx, shop, "announcementBar")),
   });
 }
 

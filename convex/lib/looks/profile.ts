@@ -341,3 +341,49 @@ export function clearOfFace(box: Box): boolean {
 export function insidePad(box: Box): boolean {
   return box.x >= -PROFILE_PAD && box.y >= -PROFILE_PAD && box.x + box.w <= 100 + PROFILE_PAD && box.y + box.h <= 100 + PROFILE_PAD;
 }
+
+/** How far the avatar's drawing reaches past its photo box on each side, box units (0–100 = the box). */
+export type AvatarOverflow = { left: number; top: number; right: number; bottom: number };
+
+/** A box's bounds after its rotation (around its centre). */
+function rotatedBounds(box: Box) {
+  const cx = box.x + box.w / 2;
+  const cy = box.y + box.h / 2;
+  const r = (box.rotate * Math.PI) / 180;
+  const hw = Math.abs((box.w / 2) * Math.cos(r)) + Math.abs((box.h / 2) * Math.sin(r));
+  const hh = Math.abs((box.w / 2) * Math.sin(r)) + Math.abs((box.h / 2) * Math.cos(r));
+  return { left: cx - hw, top: cy - hh, right: cx + hw, bottom: cy + hh };
+}
+
+/** The soft glow border blurs a little past the shape. */
+const GLOW_REACH = 6;
+
+/**
+ * What the header must leave around the photo box so the decoration, the
+ * corner decoration and a glow border are fully visible: never past the
+ * page's shared left edge, never on the text (CLAUDE.md "Shop looks" →
+ * "Profile photo"). Pure; never negative.
+ */
+export function avatarOverflow(profile: {
+  shape: ProfileShape;
+  size: ProfileSize;
+  decoration: ProfileDecorationId | null;
+  corner: string;
+  glow?: boolean;
+}): AvatarOverflow {
+  const out: AvatarOverflow = { left: 0, top: 0, right: 0, bottom: 0 };
+  const boxes: Box[] = [];
+  if (profile.decoration) boxes.push(decorationBox(decorationEntry(profile.decoration), profile.shape, profile.size));
+  if (profile.corner !== "none") boxes.push(cornerBox(profile.shape, profile.size, profile.decoration));
+  for (const box of boxes) {
+    const b = rotatedBounds(box);
+    out.left = Math.max(out.left, -b.left);
+    out.top = Math.max(out.top, -b.top);
+    out.right = Math.max(out.right, b.right - 100);
+    out.bottom = Math.max(out.bottom, b.bottom - 100);
+  }
+  if (profile.glow) {
+    for (const side of ["left", "top", "right", "bottom"] as const) out[side] = Math.max(out[side], GLOW_REACH);
+  }
+  return out;
+}

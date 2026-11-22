@@ -101,17 +101,17 @@ describe("profile plans", () => {
 
   test("shownLook: plan, promo and decoration rules in one place", () => {
     const look = withProfile(pro, "noir");
-    expect(shownLook(null, { entitled: true, promoShown: true, decorationShown: true })).toEqual(FREE_LOOK);
-    expect(shownLook(look, { entitled: false, promoShown: true, decorationShown: true })).toEqual(freeLookFor(look));
-    expect(shownLook(look, { entitled: true, promoShown: false, decorationShown: true })).toEqual(look);
-    expect(shownLook(look, { entitled: true, promoShown: false, decorationShown: false })).toEqual(withoutDecoration(look));
+    expect(shownLook(null, { entitled: true, promoShown: true, decorationShown: true, sectionsEntitled: true, announcementShown: true })).toEqual(FREE_LOOK);
+    expect(shownLook(look, { entitled: false, promoShown: true, decorationShown: true, sectionsEntitled: true, announcementShown: true })).toEqual(freeLookFor(look));
+    expect(shownLook(look, { entitled: true, promoShown: false, decorationShown: true, sectionsEntitled: true, announcementShown: true })).toEqual(look);
+    expect(shownLook(look, { entitled: true, promoShown: false, decorationShown: false, sectionsEntitled: true, announcementShown: true })).toEqual(withoutDecoration(look));
     expect(withoutDecoration(look).overrides.profile?.decoration).toBeUndefined();
     expect(withoutDecoration(look).overrides.profile?.shape).toBe("flower");
   });
 
   test("liveFlags reads the decoration's dates like the promo's", () => {
     const now = 1_000_000;
-    expect(liveFlags(withProfile(pro), now)).toEqual({ promoLive: false, decorationLive: true });
+    expect(liveFlags(withProfile(pro), now)).toEqual({ promoLive: false, decorationLive: true, announcementLive: false });
     expect(liveFlags(withProfile({ ...pro, decoration: { id: "bow", startsAt: now + 1 } }), now).decorationLive).toBe(false);
     expect(liveFlags(withProfile({ ...pro, decoration: { id: "bow", endsAt: now } }), now).decorationLive).toBe(false);
     expect(liveFlags(withProfile({ ...pro, decoration: undefined }), now).decorationLive).toBe(false);

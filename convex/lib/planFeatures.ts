@@ -39,7 +39,8 @@ export const FEATURES = {
   shopLink: { kind: "flag", area: "shopLook", enforced: false },
   allLooks: { kind: "flag", area: "shopLook", enforced: true },
   colorsLogoBanner: { kind: "flag", area: "shopLook", enforced: false },
-  featuredSections: { kind: "flag", area: "shopLook", enforced: false },
+  featuredSections: { kind: "flag", area: "shopLook", enforced: true },
+  announcementBar: { kind: "flag", area: "shopLook", enforced: true },
   customDomain: { kind: "flag", area: "shopLook", enforced: false },
   customBranding: { kind: "flag", area: "shopLook", enforced: false },
   // Sales

@@ -5,17 +5,22 @@ import { liveFlags } from "./lib/looks/schedule";
 import { lookRow } from "./lib/looks/store";
 
 /**
- * Scheduled by `shopLooks.publish` at an event & promo banner's and a
- * profile decoration's start and end (CLAUDE.md "Shop looks").
- * Recomputes `promoLive` and `decorationLive` from the CURRENT published
- * look, so a job left over from an older publish is harmless.
+ * Scheduled by `shopLooks.publish` at the start and end of an event &
+ * promo banner, a profile decoration and the announcement bar (CLAUDE.md
+ * "Shop looks"). Recomputes `promoLive`, `decorationLive` and
+ * `announcementLive` from the CURRENT published look, so a job left over
+ * from an older publish is harmless.
  */
 async function sync(ctx: MutationCtx, shopId: Id<"shops">): Promise<null> {
   const row = await lookRow(ctx, shopId);
   if (!row) return null;
-  const { promoLive, decorationLive } = liveFlags(row.published, Date.now());
-  if ((row.promoLive === true) !== promoLive || (row.decorationLive === true) !== decorationLive) {
-    await ctx.db.patch("shopLooks", row._id, { promoLive, decorationLive });
+  const flags = liveFlags(row.published, Date.now());
+  if (
+    (row.promoLive === true) !== flags.promoLive ||
+    (row.decorationLive === true) !== flags.decorationLive ||
+    (row.announcementLive === true) !== flags.announcementLive
+  ) {
+    await ctx.db.patch("shopLooks", row._id, flags);
   }
   return null;
 }

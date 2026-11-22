@@ -2,7 +2,9 @@ import { bestOn, contrast, isDark, mix, type Hex } from "./color";
 import { gradientCss, GRADIENTS, type ArtworkId, type BannerAlign, type BannerHeight } from "./banners";
 import { DESIGN_DECORATION, type ButtonDecoration, type ButtonDesign, type OrderLabel } from "./buttonDesigns";
 import { EVENT_PALETTES, type EventFontId, type EventPalette, type EventPaletteId, type EventTemplateId } from "./events";
+import type { AnnouncementFacet, AnnouncementLink, AnnouncementTone } from "./announcement";
 import { PRESETS } from "./presets";
+import { sectionsOf, type SectionsFacet } from "./sections";
 import {
   BORDER_UNITS,
   DEFAULT_PROFILE,
@@ -137,6 +139,15 @@ export type ResolvedProfile = {
   initialFg: Hex;
 };
 
+/** The announcement bar, ready to draw: its fill and derived text colour. */
+export type ResolvedAnnouncement = {
+  text: string;
+  link: AnnouncementLink | null;
+  tone: AnnouncementTone;
+  background: Hex;
+  foreground: Hex;
+};
+
 export type ResolvedLook<Img> = {
   preset: PresetId;
   dark: boolean;
@@ -145,7 +156,23 @@ export type ResolvedLook<Img> = {
   radius: string;
   banner: ResolvedBanner<Img>;
   profile: ResolvedProfile;
+  /** The sections, their order and the product layout (default filled in). */
+  sections: SectionsFacet;
+  /** Null = no announcement bar (none, or not live / not in the plan: `shownLook`). */
+  announcement: ResolvedAnnouncement | null;
 };
+
+/** The announcement bar's colours: shop colours only, the text colour derived. */
+export function resolveAnnouncement(announcement: AnnouncementFacet | undefined, colors: ResolvedColors): ResolvedAnnouncement | null {
+  if (!announcement) return null;
+  const [background, foreground]: [Hex, Hex] =
+    announcement.tone === "accent"
+      ? [colors.primary, colors.primaryForeground]
+      : announcement.tone === "dark"
+        ? [colors.foreground, colors.background]
+        : [colors.chipSoft, colors.chipSoftForeground];
+  return { text: announcement.text, link: announcement.link ?? null, tone: announcement.tone, background, foreground };
+}
 
 /** A profile facet with the look's colours applied. Theme border colours follow the look. */
 export function resolveProfile(profile: ProfileFacet | undefined, colors: ResolvedColors): ResolvedProfile {
@@ -287,6 +314,8 @@ export function resolveLook(look: StoredLook): ResolvedLook<string> {
     radius: preset.radius,
     banner: resolvedBanner,
     profile: resolveProfile(look.overrides.profile, colors),
+    sections: sectionsOf(look.overrides.sections),
+    announcement: resolveAnnouncement(look.overrides.announcement, colors),
   };
 }
 

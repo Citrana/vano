@@ -31,11 +31,11 @@ describe("the seed = the plans as they were in code", () => {
       products: 50,
       photosPerProduct: 6,
       teamMembers: 0,
-      features: ["allLooks", "salesPromotions", "shopStats"],
+      features: ["allLooks", "featuredSections", "announcementBar", "salesPromotions", "shopStats"],
     });
     const business = resolvePlanLimits(SEED, "business");
     expect(business).toMatchObject({ products: null, photosPerProduct: 6, teamMembers: 5 });
-    expect([...business.features].sort()).toEqual(["allLooks", "discountCodes", "orderTracking", "salesPromotions", "shopStats", "teamRoles"]);
+    expect([...business.features].sort()).toEqual(["allLooks", "announcementBar", "discountCodes", "featuredSections", "orderTracking", "salesPromotions", "shopStats", "teamRoles"]);
     const enterprise = resolvePlanLimits(SEED, "enterprise");
     expect(enterprise).toMatchObject({ products: null, teamMembers: 20 });
     expect(enterprise.features).toContain("multiShop");

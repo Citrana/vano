@@ -196,7 +196,7 @@ describe("central check: plans", () => {
     expect(await statsLocked(me)).toBe(true);
 
     await setSubscription(t, shopId, { plan: "pro", status: "trialing", periodEnd: end });
-    expect(await limitsOf(me)).toMatchObject({ products: 50, photosPerProduct: 6, features: ["allLooks", "salesPromotions", "shopStats"] });
+    expect(await limitsOf(me)).toMatchObject({ products: 50, photosPerProduct: 6, features: ["allLooks", "featuredSections", "announcementBar", "salesPromotions", "shopStats"] });
     expect(await statsLocked(me)).toBe(false);
 
     await setSubscription(t, shopId, { plan: "pro", status: "active", periodEnd: end });

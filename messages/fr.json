@@ -96,7 +96,10 @@
     "SALE_STEEP_UNCONFIRMED": "Cette réduction dépasse 80 %. Confirmez-la avant d'enregistrer.",
     "SALE_SCHEDULE_INVALID": "Vérifiez les dates : la fin doit être dans le futur et après le début, dans les 92 jours, et le début dans l'année.",
     "SALE_STALE": "Cette promotion a été modifiée ailleurs pendant que vous la modifiiez. Votre changement n'a pas été enregistré : rechargez-la et réessayez.",
-    "TOO_MANY_SALES": "Vous avez atteint le nombre maximum de promotions enregistrées. Supprimez-en une ancienne d'abord."
+    "TOO_MANY_SALES": "Vous avez atteint le nombre maximum de promotions enregistrées. Supprimez-en une ancienne d'abord.",
+    "ANNOUNCEMENT_SCHEDULE_INVALID": "Vérifiez les dates du bandeau d’annonce : la fin doit suivre le début, au plus 92 jours après, et le début dans l’année.",
+    "INFO_TOO_LONG": "Raccourcissez vos horaires ou vos zones de livraison.",
+    "SOCIAL_INVALID": "Un de vos réseaux sociaux n’est pas un nom d’utilisateur ou un lien de profil valide."
   },
   "Validation": {
     "required": "Ce champ est obligatoire.",
@@ -117,7 +120,8 @@
     "uploadsPending": "Attendez la fin de l'envoi des photos.",
     "announcementBothRequired": "Écrivez l'annonce dans les deux langues, ou laissez les deux vides.",
     "reasonLength": "Indiquez une raison de {min} à {max} caractères.",
-    "daysRange": "Indiquez un nombre entier de jours entre {min} et {max}."
+    "daysRange": "Indiquez un nombre entier de jours entre {min} et {max}.",
+    "socialInvalid": "Saisissez un nom d’utilisateur comme @votreboutique, ou le lien de votre profil."
   },
   "Categories": {
     "clothes": "Vêtements",
@@ -234,7 +238,20 @@
     "lookLabel": "Style de la boutique",
     "lookLink": "Personnaliser le style",
     "lookHelp": "Couleurs, boutons et bannière de votre boutique publique. Modifiez-les sur la page Style de la boutique.",
-    "currencyLocked": "Verrouillée car votre boutique a des produits : leurs prix sont dans cette devise."
+    "currencyLocked": "Verrouillée car votre boutique a des produits : leurs prix sont dans cette devise.",
+    "sectionAbout": "À propos et contact",
+    "aboutHelp": "Affiché sur votre boutique dans un bloc « À propos et contact » quand au moins un de ces champs est rempli. Activez ou désactivez le bloc dans Style de la boutique › Sections.",
+    "openingHours": "Horaires",
+    "openingHoursPlaceholder": "Lun–sam, 9h–18h",
+    "deliveryAreas": "Zones de livraison",
+    "deliveryAreasPlaceholder": "Gombe, Limete, Ngaliema",
+    "socials": {
+      "instagram": "Instagram",
+      "tiktok": "TikTok",
+      "facebook": "Facebook"
+    },
+    "socialPlaceholder": "@votreboutique",
+    "socialsHelp": "Votre nom d’utilisateur (@votreboutique) ou le lien de votre profil."
   },
   "Dashboard": {
     "title": "Ma boutique",
@@ -290,7 +307,12 @@
         }
       }
     },
-    "manageProducts": "Gérer les produits"
+    "manageProducts": "Gérer les produits",
+    "featured": "Coup de cœur",
+    "fewLeft": "Plus que quelques-uns",
+    "backInStock": "De retour en stock",
+    "markFewLeft": "Plus que quelques-uns",
+    "markFeatured": "Coup de cœur"
   },
   "Share": {
     "title": "Le lien de votre boutique",
@@ -369,8 +391,6 @@
     "notFoundTitle": "Boutique introuvable",
     "notFoundBody": "Vérifiez le lien ou demandez le bon lien au vendeur.",
     "productNotFoundTitle": "Produit introuvable",
-    "poweredBy": "Boutique créée avec Vano",
-    "createYours": "Créez votre boutique",
     "orderGreeting": "Bonjour ! Je voudrais commander ce produit :",
     "orderProduct": "Produit : {name}",
     "orderPrice": "Prix : {price}",
@@ -405,7 +425,39 @@
     "saleEndsIn": "Se termine dans {time}",
     "countdown": "{days, plural, =0 {} other {# j }}{hours} h {minutes} min",
     "saleEndsInSpoken": "La promotion se termine dans {days, plural, =0 {} one {# jour, } other {# jours, }}{hours, plural, one {# heure} other {# heures}} et {minutes, plural, one {# minute} other {# minutes}}",
-    "seeSaleItems": "Voir les articles en promotion"
+    "seeSaleItems": "Voir les articles en promotion",
+    "fewLeft": "Plus que quelques-uns",
+    "backInStock": "De retour en stock",
+    "sections": {
+      "sale": "En promo",
+      "newArrivals": "Nouveautés",
+      "featured": "Coups de cœur",
+      "backInStock": "De retour en stock",
+      "category": "Catégorie",
+      "all": "Tous les produits"
+    },
+    "announcement": {
+      "label": "Annonce de la boutique",
+      "close": "Fermer l’annonce"
+    },
+    "about": {
+      "title": "À propos et contact",
+      "location": "Adresse",
+      "hours": "Horaires",
+      "delivery": "Livraison",
+      "follow": "{shop} sur les réseaux sociaux",
+      "networks": {
+        "instagram": "Instagram",
+        "tiktok": "TikTok",
+        "facebook": "Facebook"
+      },
+      "opensNewTab": "(s’ouvre dans un nouvel onglet)"
+    },
+    "orderShort": "Commander",
+    "linkCopied": "Lien copié",
+    "shareFailed": "Impossible de partager le lien. Copiez-le depuis la barre d'adresse.",
+    "shareProduct": "Partager {product}",
+    "colorsLabel": "Couleurs"
   },
   "NotFound": {
     "title": "Page introuvable",
@@ -678,12 +730,12 @@
       "resetTitle": "Réinitialiser le style de {name} ?",
       "resetBody": "Cela s'applique au style en ligne et au brouillon du vendeur. Les photos retirées sont supprimées.",
       "scope": "Que réinitialiser",
-      "scopeBanner": "Photo et texte de la bannière",
+      "scopeBanner": "Bannières et annonce",
       "scopeProfile": "Photo de profil",
       "scopeAll": "Tout le style",
-      "scopeBannerHint": "Les couleurs et les boutons restent. La photo de bannière est retirée, le texte effacé et la bannière d'événement retirée.",
+      "scopeBannerHint": "Les couleurs et les boutons restent. La photo de bannière est retirée, le texte effacé, et la bannière d’événement et le bandeau d’annonce sont retirés.",
       "scopeProfileHint": "Les couleurs, boutons et bannières restent. La forme, le contour et la décoration de la photo de profil reviennent par défaut.",
-      "scopeAllHint": "La boutique revient au style Classique, boutons Classiques compris.",
+      "scopeAllHint": "La boutique revient au style Classique, boutons Classiques, sections et mise en page par défaut compris, sans bandeau d’annonce.",
       "reason": "Raison (envoyée au vendeur)",
       "reasonHelp": "{min} à {max} caractères.",
       "resetDone": "Style réinitialisé. Le vendeur a été informé.",
@@ -695,7 +747,9 @@
       "promoNoEnd": "jusqu'au retrait",
       "draftPromo": "Bannière d'événement (brouillon)",
       "decoration": "Décoration de la photo",
-      "draftDecoration": "Brouillon : {name}"
+      "draftDecoration": "Brouillon : {name}",
+      "announcement": "Bandeau d’annonce",
+      "draftAnnouncement": "Bandeau d’annonce (brouillon)"
     },
     "sales": {
       "title": "Promotions",
@@ -972,7 +1026,11 @@
       "buttonsHint": "Le design, la décoration et le texte des boutons de votre boutique, ainsi que leur forme et leur style.",
       "bannerHint": "La bannière en haut de votre boutique : votre photo, un dégradé ou un motif prêt à l'emploi.",
       "profileHint": "La forme, le contour et la taille de votre photo de profil, et une décoration pour vos événements.",
-      "eventsHint": "Soldes, nouveautés, fêtes : s'affiche à la place de votre bannière pendant qu'elle est active, et se partage facilement."
+      "eventsHint": "Soldes, nouveautés, fêtes : s'affiche à la place de votre bannière pendant qu'elle est active, et se partage facilement.",
+      "sections": "Sections",
+      "sectionsHint": "Ce que montre votre boutique, dans quel ordre, et la mise en page de vos produits.",
+      "announcement": "Annonce",
+      "announcementHint": "Une courte ligne en haut de votre boutique, comme « Livraison gratuite à Nairobi ce week-end »."
     },
     "status": {
       "saving": "Enregistrement du brouillon…",
@@ -995,10 +1053,11 @@
       "hiddenByPlan": "Les visiteurs voient le style Classique car votre forfait n'inclut pas les styles personnalisés. Votre création est conservée : passez à un forfait supérieur pour la retrouver.",
       "resetByAdmin": "Un administrateur a réinitialisé le style de votre boutique le {date}.",
       "seeNotifications": "Voir la raison dans vos notifications",
-      "promoHidden": "Votre forfait n'affiche pas les bannières d'événement aux visiteurs. Votre bannière est enregistrée : passez à un forfait supérieur pour la retrouver."
+      "promoHidden": "Votre forfait n'affiche pas les bannières d'événement aux visiteurs. Votre bannière est enregistrée : passez à un forfait supérieur pour la retrouver.",
+      "sectionsHidden": "Votre forfait montre la mise en page gratuite et aucun bandeau d’annonce aux visiteurs. Vos choix sont enregistrés : passez à un forfait supérieur pour les retrouver."
     },
     "hints": {
-      "planLocked": "Votre forfait permet de publier uniquement le style Classique et une photo de profil simple. Passez à un forfait supérieur pour publier celui-ci.",
+      "planLocked": "Votre forfait peut publier le style Classique, une photo de profil simple, la section Tous les produits sur 2 colonnes et le bloc À propos. Passez à un forfait supérieur pour publier celui-ci.",
       "blocking": "Corrigez les couleurs signalées en rouge avant de publier.",
       "promoLocked": "Les bannières d'événement nécessitent {plan} ou plus. Retirez-la pour publier, ou passez à une formule supérieure."
     },
@@ -1054,7 +1113,8 @@
         "chip": "Puces sélectionnées :",
         "eventText": "Texte de la bannière d'événement :",
         "buttonDesign": "Boutons et puces Éclat :",
-        "profileBorder": "Contour de la photo de profil :"
+        "profileBorder": "Contour de la photo de profil :",
+        "announcement": "Bandeau d’annonce :"
       },
       "blocking": "trop difficile à lire ({ratio}:1). La publication est bloquée tant que ce n'est pas corrigé.",
       "warning": "peut être difficile à lire ({ratio}:1).",
@@ -1220,7 +1280,70 @@
       "collapse": "Réduire",
       "close": "Fermer"
     },
-    "leave": "Certaines modifications ne sont pas encore enregistrées. Quitter quand même ?"
+    "leave": "Certaines modifications ne sont pas encore enregistrées. Quitter quand même ?",
+    "shopSections": {
+      "listTitle": "Sections de la boutique",
+      "listHelp": "Activez ou désactivez les sections. Faites glisser la poignée, ou utilisez les flèches, pour changer l’ordre.",
+      "names": {
+        "sale": "Promos / Offres",
+        "newArrivals": "Nouveautés",
+        "featured": "Coups de cœur",
+        "backInStock": "De retour en stock",
+        "all": "Tous les produits",
+        "category": "Catégorie"
+      },
+      "hints": {
+        "sale": "S’affiche seulement pendant une promo, avec son compte à rebours et les articles en promo.",
+        "saleLive": "Une promo est en cours : cette section montre son compte à rebours et ses articles.",
+        "newArrivals": "Vos {count} produits les plus récents.",
+        "featured": "Les produits que vous marquez Coup de cœur sur la page Produits.",
+        "backInStock": "Les produits que vous avez remis en vente (plus Épuisé) ces {days} derniers jours.",
+        "category": "Tous les produits de cette catégorie.",
+        "all": "Tous vos produits, avec des filtres."
+      },
+      "moveUp": "Monter {section}",
+      "moveDown": "Descendre {section}",
+      "remove": "Retirer {section}",
+      "show": "Afficher {section}",
+      "moved": "{section} déplacée en position {position} sur {total}.",
+      "addCategory": "Ajouter une section par catégorie",
+      "emptyNote": "Une section sans produit n’est jamais affichée, même activée.",
+      "layout": "Mise en page des produits",
+      "layouts": {
+        "grid2": "2 colonnes",
+        "grid3": "3 colonnes",
+        "large": "Grandes cartes"
+      },
+      "layoutHelp": "Sur téléphone : 2 colonnes, ou 1 pour les grandes cartes. Avec peu de produits, les cartes sont plus grandes et centrées.",
+      "about": "À propos et contact",
+      "aboutHelp": "Vos horaires, zones de livraison et réseaux sociaux. Le bloc s’affiche seulement si au moins un est rempli (votre description et votre adresse sont déjà sous votre nom).",
+      "aboutLink": "Modifier dans Paramètres"
+    },
+    "announcement": {
+      "show": "Afficher un bandeau d’annonce",
+      "text": "Message",
+      "textRequired": "Écrivez un court message.",
+      "textCount": "{count}/{max} caractères",
+      "defaultText": "Livraison gratuite ce week-end",
+      "colors": "Couleurs",
+      "colorsHelp": "Les couleurs de votre boutique. La couleur du texte est choisie pour rester bien lisible.",
+      "tones": {
+        "accent": "Accent",
+        "dark": "Foncé",
+        "soft": "Doux"
+      },
+      "link": "Lien",
+      "links": {
+        "none": "Aucun lien",
+        "sale": "Articles en promo",
+        "url": "Une page web"
+      },
+      "saleLinkHelp": "Mène à vos articles en promo seulement pendant une promo.",
+      "saleLinkLive": "Une promo est en cours : le bandeau mène à ses articles.",
+      "url": "Adresse web",
+      "urlHelp": "S’ouvre dans un nouvel onglet, par ex. instagram.com/votreboutique.",
+      "urlInvalid": "Saisissez une adresse web, par ex. https://exemple.com."
+    }
   },
   "Demo": {
     "shopName": "Vano Démo",
@@ -1767,8 +1890,8 @@
         "endingSoon": "{trial, select, true {Votre essai gratuit} other {Votre forfait {plan}}} {days, plural, =0 {se termine aujourd'hui} one {se termine dans # jour} other {se termine dans # jours}}"
       },
       "look": {
-        "resetBanner": "Un administrateur a retiré la photo ou le texte de la bannière de votre boutique. Raison : {reason}",
-        "resetAll": "Un administrateur a remis le style de votre boutique sur Classique. Raison : {reason}",
+        "resetBanner": "Un administrateur a retiré la photo ou le texte de la bannière de votre boutique, ou votre bandeau d’annonce. Raison : {reason}",
+        "resetAll": "Un administrateur a remis le style de votre boutique sur Classique, avec les sections et la mise en page par défaut. Raison : {reason}",
         "resetProfile": "Un administrateur a réinitialisé la photo de profil de votre boutique (forme, contour, décoration). Raison : {reason}"
       },
       "sale": {
@@ -2138,8 +2261,8 @@
       "description": "Affiché sur la page Tarifs ; la vérification est Tous les styles."
     },
     "featuredSections": {
-      "name": "Sections mises en avant",
-      "description": "Sections Coups de cœur et Nouveautés. Pas encore construit."
+      "name": "Sections et mises en page",
+      "description": "Sections promos, nouveautés, coups de cœur, retour en stock et par catégorie, leur ordre, et les mises en page 3 colonnes et grandes cartes."
     },
     "customDomain": {
       "name": "Nom de domaine",
@@ -2216,6 +2339,10 @@
     "serviceGuarantees": {
       "name": "Garanties de service",
       "description": "Niveaux de service convenus."
+    },
+    "announcementBar": {
+      "name": "Bandeau d’annonce",
+      "description": "Une courte ligne en haut de la boutique, avec un lien et des dates."
     }
   },
   "PlanAreas": {
