@@ -307,12 +307,14 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   their normal size and stay left-aligned, however few products).
 - Product cards (`product-card.tsx`): a soft tinted card (`bg-muted` of the
   look, **no border, no shadow**: the one exception to the surface border
-  rule, from the seller-facing reference design), badge pills top-left
-  (Sold out, sale, "New" for `NEW_BADGE_DAYS`, section label, Few left),
-  share top-right (`useShare`), the whole photo (`object-contain`), name
-  and price on one line (old price crossed out), colours as dots
-  (`colorSwatch`, unknown names as chips) and sizes as chips, no
-  description. The whole card opens the product (stretched name link);
+  rule, from the seller-facing reference design), a 4:5 photo area (the
+  whole photo fits, never cropped or zoomed; corners rounded like the card) with the badge pills on its
+  top-left corner (Sold out, sale, "New" for `NEW_BADGE_DAYS`, section
+  label, Few left), the name on one line with the prices right under it
+  (old price crossed out), colours as dots
+  (`colorSwatch`, unknown names as chips) and sizes as chips in one row,
+  no description; the compact Order button with a square share button
+  (`useShare`) beside it. The whole card opens the product (stretched name link);
   share and Order sit above it. The compact WhatsApp Order button keeps
   the look's design but 10px corners (`--shop-btn-radius` set inline).
   Buttons need a `ShopOrderProvider`. "New" is computed by the page with
