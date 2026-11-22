@@ -459,7 +459,9 @@
     "shareProduct": "Share {product}",
     "colorsLabel": "Colours",
     "newBadge": "New",
-    "sizesLabel": "Sizes"
+    "sizesLabel": "Sizes",
+    "openPhoto": "Open photo {index} of {total} full size",
+    "shopInfo": "Shop info"
   },
   "NotFound": {
     "title": "Page not found",

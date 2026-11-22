@@ -459,7 +459,9 @@
     "shareProduct": "Partager {product}",
     "colorsLabel": "Couleurs",
     "newBadge": "Nouveau",
-    "sizesLabel": "Tailles"
+    "sizesLabel": "Tailles",
+    "openPhoto": "Ouvrir la photo {index} sur {total} en grand",
+    "shopInfo": "Infos de la boutique"
   },
   "NotFound": {
     "title": "Page introuvable",
