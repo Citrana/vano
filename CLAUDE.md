@@ -322,10 +322,12 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 - Product cards (`product-card.tsx`): a soft tinted card (`bg-muted` of the
   look, **no border, no shadow**: the one exception to the surface border
   rule, from the seller-facing reference design), a 4:5 photo area (the
-  whole photo fits, never cropped or zoomed; small corners, ≤ 6px) with
-  **one** badge on its top-left corner, the first that applies
-  (`cardBadge`: Sold out, sale "-N%" / "Sale", "New" for
-  `NEW_BADGE_DAYS` = 14, section label, Few left), the name on one line with the prices right under it
+  whole photo fits, never cropped or zoomed; small corners, ≤ 6px) and
+  **one** badge, the first that applies (`cardBadge`: Sold out, sale
+  "-N%" / "Sale", "New" for `NEW_BADGE_DAYS` = 14, section label, Few
+  left): a sale is a scalloped seal over the card's top-right corner
+  (`SaleSeal`, `--chip` tokens, static), the others a pill on the photo's
+  top-left; the name on one line with the prices right under it
   (old price crossed out), colours as dots
   (`colorSwatch`, unknown names as chips) and sizes as chips in one row,
   no description; the compact Order button with a square share button
