@@ -305,12 +305,19 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   (`src/features/public/shop-sections.tsx`). Layout classes live only in
   `product-layout.ts` (phones: 2 columns max, 1 for big cards; cards keep
   their normal size and stay left-aligned, however few products).
-- Product cards (`product-card.tsx`): bordered card with the photo inside,
-  tags top-left and a share button top-right (product link, `useShare`),
-  name with the price (old price crossed out) and up to 4 colour chips
-  (the description is only on the product page), then one slim green
-  "Order on WhatsApp" (`orderShort` on narrow cards). The photo and the
-  name open the product; the buttons need a `ShopOrderProvider`. The message is built only by `orderHref`
+- Product cards (`product-card.tsx`): a soft tinted card (`bg-muted` of the
+  look, **no border, no shadow**: the one exception to the surface border
+  rule, from the seller-facing reference design), badge pills top-left
+  (Sold out, sale, "New" for `NEW_BADGE_DAYS`, section label, Few left),
+  share top-right (`useShare`), the whole photo (`object-contain`), name
+  and price on one line (old price crossed out), colours as dots
+  (`colorSwatch`, unknown names as chips) and sizes as chips, no
+  description. The whole card opens the product (stretched name link);
+  share and Order sit above it. The compact WhatsApp Order button keeps
+  the look's design but 10px corners (`--shop-btn-radius` set inline).
+  Buttons need a `ShopOrderProvider`. "New" is computed by the page with
+  `isNewProduct` (Convex queries never read the clock). The message is
+  built only by `orderHref`
   (`src/lib/whatsapp.ts`, also used by `OrderPanel`) with the live price
   from `public.shopPrices` (one subscription per page). Card WhatsApp taps
   use `stats.recordWhatsappClick`. The shop header has no buttons.
