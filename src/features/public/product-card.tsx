@@ -1,7 +1,7 @@
 "use client"
 
 import { useMutation } from "convex/react"
-import { ImageIcon, MessageCircleIcon } from "lucide-react"
+import { ImageIcon } from "lucide-react"
 import { useLocale, useTranslations } from "next-intl"
 import Link from "next/link"
 import type { CSSProperties } from "react"
@@ -15,6 +15,7 @@ import { orderHref } from "@/lib/whatsapp"
 import { useShopOrder } from "./order-context"
 import { SalePrice, SaleTags } from "./sale"
 import { ShareButton } from "./share-button"
+import { WhatsAppIcon } from "./whatsapp-icon"
 import { colorSwatch } from "../../../convex/lib/colorSwatches"
 
 /** Small badge pills (shop button radius): filled, or outlined. */
@@ -228,7 +229,7 @@ function OrderButton({
   })
   const label = (
     <>
-      <MessageCircleIcon />
+      <WhatsAppIcon className="size-4" />
       <span className="@[15rem]:hidden">{t("orderShort")}</span>
       <span className="hidden truncate @[15rem]:inline">{t(`orderLabels.${order.label}`)}</span>
     </>

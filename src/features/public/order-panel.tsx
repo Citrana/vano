@@ -1,7 +1,6 @@
 "use client"
 
 import { useMutation, useQuery } from "convex/react"
-import { MessageCircleIcon } from "lucide-react"
 import { useLocale, useTranslations } from "next-intl"
 import { useState, type CSSProperties } from "react"
 import { cn } from "cn"
@@ -13,6 +12,7 @@ import type { PublicSale } from "../../../convex/lib/sales/active"
 import { colorSwatch } from "../../../convex/lib/colorSwatches"
 import { SaleCountdown, SalePrice, SaleTags } from "./sale"
 import { ShareButton } from "./share-button"
+import { WhatsAppIcon } from "./whatsapp-icon"
 import { buttonVariants } from "@/components/ui/button"
 import { productUrl } from "@/lib/site"
 import { orderHref } from "@/lib/whatsapp"
@@ -211,7 +211,7 @@ export function OrderPanel({
             }}
             className={buttonVariants({ size: "lg", variant: "whatsapp", className: "shop-btn shop-action min-w-0 flex-1" })}
           >
-            <MessageCircleIcon />
+            <WhatsAppIcon />
             <span className="truncate">{t(`orderLabels.${label}`)}</span>
           </a>
         )}
