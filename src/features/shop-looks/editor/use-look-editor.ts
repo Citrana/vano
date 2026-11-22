@@ -45,6 +45,8 @@ export function useLookEditor(mine: MineLook) {
   const [saveError, setSaveError] = useState<unknown>(null)
   /** Blob URLs for photos uploaded in this session (until the server URL arrives). */
   const [localUrls, setLocalUrls] = useState<Record<string, string>>({})
+  /** The Promo bar panel's "Preview as: Sale" switch (previews only, never saved). */
+  const [promoPreviewSale, setPromoPreviewSale] = useState(false)
 
   const pending = useRef<StoredLook | null>(null)
   const timer = useRef<number | undefined>(undefined)
@@ -138,13 +140,18 @@ export function useLookEditor(mine: MineLook) {
     [update],
   )
 
-  /** A contrast check's one-tap fix: the accent, the background or the profile border colour. */
+  /** A contrast check's one-tap fix: the accent, the background, the profile border or the Promo bar's text colour. */
   const applyFix = useCallback(
     (fix: NonNullable<LookProblem["fix"]>) =>
       update((current) => {
         if (fix.field === "profileBorder") {
           const profile = current.overrides.profile ?? DEFAULT_PROFILE
           return { ...current, overrides: { ...current.overrides, profile: { ...profile, borderColor: { kind: "custom", hex: fix.value } } } }
+        }
+        if (fix.field === "announcementText") {
+          const bar = current.overrides.announcement
+          if (!bar?.colors) return current
+          return { ...current, overrides: { ...current.overrides, announcement: { ...bar, colors: { ...bar.colors, foreground: fix.value } } } }
         }
         const colors = resolveColors(current)
         const base = current.overrides.colors ?? { accent: colors.primary, background: colors.background }
@@ -225,6 +232,8 @@ export function useLookEditor(mine: MineLook) {
     publish,
     discard,
     addLocalUrl,
+    promoPreviewSale,
+    setPromoPreviewSale,
   }
 }
 

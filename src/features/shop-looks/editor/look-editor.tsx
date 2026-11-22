@@ -300,13 +300,15 @@ export function LookEditor({ mine, shop, products }: { mine: MineLook; shop: Sho
   const fullPreview = (className?: string) => (
     <div className={cn("flex flex-col items-center gap-2", className)}>
       {previewWidth === "phone" ? (
-        <LookPreview look={previewLook} shop={headerShop} currency={previewCurrency} products={preview.products} label={t("preview.label")} />
+        <LookPreview look={previewLook} shop={headerShop} currency={previewCurrency} products={preview.products}
+              promoSale={editor.promoPreviewSale} label={t("preview.label")} />
       ) : (
         <WidePreview
           look={previewLook}
           shop={headerShop}
           currency={previewCurrency}
           products={preview.products}
+              promoSale={editor.promoPreviewSale}
           label={t("preview.wideLabel")}
         />
       )}
@@ -482,6 +484,7 @@ export function LookEditor({ mine, shop, products }: { mine: MineLook; shop: Sho
               shop={headerShop}
               currency={previewCurrency}
               products={preview.products}
+              promoSale={editor.promoPreviewSale}
               label={t("preview.label")}
               className="h-[26dvh]"
             />
@@ -492,6 +495,7 @@ export function LookEditor({ mine, shop, products }: { mine: MineLook; shop: Sho
                 shop={headerShop}
                 currency={previewCurrency}
                 products={preview.products}
+              promoSale={editor.promoPreviewSale}
                 label={t("preview.wideLabel")}
               />
             </div>

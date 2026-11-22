@@ -4,7 +4,7 @@ import type { Category } from "../../../../convex/lib/catalog"
 import type { Currency } from "../../../../convex/lib/money"
 import type { ResolvedLook } from "../../../../convex/lib/looks/resolve"
 import type { SocialNetwork } from "../../../../convex/lib/shopInfo"
-import { AnnouncementBar } from "@/features/public/announcement-bar"
+import { PromoBar } from "@/features/public/promo-bar"
 import type { HeaderShop } from "@/features/public/shop-header-view"
 import { ShopInfo } from "@/features/public/shop-info"
 import { ShopSections } from "@/features/public/shop-sections"
@@ -29,9 +29,23 @@ export type PreviewShop = HeaderShop & {
   socials?: Partial<Record<SocialNetwork, string | null | undefined>>
 }
 
-/** The draft's announcement bar, inert (the previews). */
-export function PreviewAnnouncement({ look, shop }: { look: ResolvedLook<string>; shop: PreviewShop }) {
-  return look.announcement ? <AnnouncementBar announcement={look.announcement} slug={shop.slug} saleLive={false} preview /> : null
+/** The editor's sample sale ("Preview as: Sale"): 20% off, ending in two days. */
+export const PREVIEW_SALE_DAYS = 2
+
+/**
+ * The draft's Promo bar, inert (the previews). `sale`: show it as during a
+ * sale (the editor's "Preview as" switch), with a sample discount.
+ */
+export function PreviewAnnouncement({ look, shop, sale = false }: { look: ResolvedLook<string>; shop: PreviewShop; sale?: boolean }) {
+  if (!look.announcement) return null
+  const sample = sale ? { percent: 20, uniform: false, endsAt: previewSaleEnd() } : null
+  return <PromoBar bar={look.announcement} sale={sample} slug={shop.slug} preview />
+}
+
+/** A stable sample end (the next hour + two days), so the countdown doesn't jump between renders. */
+function previewSaleEnd(): number {
+  const hour = 3_600_000
+  return Math.ceil(Date.now() / hour) * hour + PREVIEW_SALE_DAYS * 24 * hour
 }
 
 /**

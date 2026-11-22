@@ -25,6 +25,7 @@ export function LookPreview({
   currency,
   products,
   label,
+  promoSale = false,
   compact = false,
   className,
 }: {
@@ -34,6 +35,8 @@ export function LookPreview({
   /** 2 to PREVIEW_SECTIONS_MAX (`previewProducts`). */
   products: PreviewProduct[]
   label: string
+  /** Show the Promo bar as during a sale (the editor's "Preview as"). */
+  promoSale?: boolean
   compact?: boolean
   className?: string
 }) {
@@ -42,7 +45,7 @@ export function LookPreview({
     shop.city && shop.country ? t("location", { city: shop.city, country: countryName(shop.country, shop.language) }) : null
 
   const page = (zoom: string) => (
-    <ShopPreview look={look} zoomClassName={zoom} top={<PreviewAnnouncement look={look} shop={shop} />}>
+    <ShopPreview look={look} zoomClassName={zoom}>
       <ShopHeaderView
         shop={shop}
         locationLabel={locationLabel}
@@ -51,6 +54,7 @@ export function LookPreview({
         onBanner={look.banner.kind !== "none"}
         sizing="phone"
       />
+      <PreviewAnnouncement look={look} shop={shop} sale={promoSale} />
       <PreviewBody look={look} shop={shop} currency={currency} products={products} columns="phone" />
     </ShopPreview>
   )

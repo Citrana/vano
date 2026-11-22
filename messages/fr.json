@@ -377,7 +377,6 @@
     "all": "Tout",
     "filter": "Filtrer par catégorie",
     "empty": "Aucun produit pour l'instant. Revenez bientôt !",
-    "emptyCategory": "Aucun produit dans cette catégorie.",
     "soldOut": "Épuisé",
     "order": "Commander sur WhatsApp",
     "orderSoldOut": "Épuisé",
@@ -436,10 +435,6 @@
       "category": "Catégorie",
       "all": "Tous les produits"
     },
-    "announcement": {
-      "label": "Annonce de la boutique",
-      "close": "Fermer l’annonce"
-    },
     "about": {
       "title": "À propos et contact",
       "location": "Adresse",
@@ -461,7 +456,41 @@
     "newBadge": "Nouveau",
     "sizesLabel": "Tailles",
     "openPhoto": "Ouvrir la photo {index} sur {total} en grand",
-    "shopInfo": "Infos de la boutique"
+    "shopInfo": "Infos de la boutique",
+    "promo": {
+      "label": "Promotion de la boutique",
+      "close": "Fermer le bandeau promo",
+      "saleTitle": "Promo",
+      "off": "-{percent} %",
+      "upToOff": "Jusqu’à -{percent} %",
+      "viewSale": "Voir la promo",
+      "openLink": "Ouvrir le lien"
+    },
+    "filters": {
+      "search": "Rechercher un produit",
+      "sort": "Trier",
+      "sorts": {
+        "newest": "Nouveautés",
+        "priceAsc": "Prix croissant",
+        "priceDesc": "Prix décroissant"
+      },
+      "filters": "Filtres",
+      "filtersCount": "Filtres ({count})",
+      "close": "Fermer les filtres",
+      "showResults": "{count, plural, =0 {Aucun produit} one {Voir # produit} other {Voir # produits}}",
+      "results": "{count, plural, =0 {Aucun produit} one {# produit} other {# produits}}",
+      "clearAll": "Tout effacer",
+      "clearPanel": "Effacer ces filtres",
+      "emptyTitle": "Aucun résultat",
+      "emptyBody": "Essayez une autre recherche ou retirez un filtre.",
+      "size": "Taille",
+      "color": "Couleur",
+      "price": "Prix",
+      "min": "Min",
+      "max": "Max",
+      "priceRange": "Prix de {min} à {max}.",
+      "priceInvalid": "Saisissez des prix comme 25 ou 25,50, le max au-dessus du min."
+    }
   },
   "NotFound": {
     "title": "Page introuvable",
@@ -752,8 +781,10 @@
       "draftPromo": "Bannière d'événement (brouillon)",
       "decoration": "Décoration de la photo",
       "draftDecoration": "Brouillon : {name}",
-      "announcement": "Bandeau d’annonce",
-      "draftAnnouncement": "Bandeau d’annonce (brouillon)"
+      "announcement": "Bandeau promo",
+      "draftAnnouncement": "Bandeau promo (brouillon)",
+      "promoBarNoText": "Aucun message (promos seulement)",
+      "promoBarTitle": "Titre de promo : « {title} »"
     },
     "sales": {
       "title": "Promotions",
@@ -1033,8 +1064,8 @@
       "eventsHint": "Soldes, nouveautés, fêtes : s'affiche à la place de votre bannière pendant qu'elle est active, et se partage facilement.",
       "sections": "Sections",
       "sectionsHint": "Ce que montre votre boutique, dans quel ordre, et la mise en page de vos produits.",
-      "announcement": "Annonce",
-      "announcementHint": "Une courte ligne en haut de votre boutique, comme « Livraison gratuite à Nairobi ce week-end »."
+      "announcement": "Bandeau promo",
+      "announcementHint": "Une fine ligne sous l’en-tête de votre boutique : votre promo quand elle a lieu, sinon votre message."
     },
     "status": {
       "saving": "Enregistrement du brouillon…",
@@ -1118,13 +1149,14 @@
         "eventText": "Texte de la bannière d'événement :",
         "buttonDesign": "Boutons et puces Éclat :",
         "profileBorder": "Contour de la photo de profil :",
-        "announcement": "Bandeau d’annonce :"
+        "announcement": "Bandeau promo :"
       },
       "blocking": "trop difficile à lire ({ratio}:1). La publication est bloquée tant que ce n'est pas corrigé.",
       "warning": "peut être difficile à lire ({ratio}:1).",
       "fixAccent": "Utiliser l'accent {color}",
       "fixBackground": "Utiliser le fond {color}",
-      "fixProfileBorder": "Utiliser le contour {color}"
+      "fixProfileBorder": "Utiliser le contour {color}",
+      "fixAnnouncementText": "Utiliser le texte {color}"
     },
     "buttons": {
       "shape": "Forme",
@@ -1324,17 +1356,16 @@
       "aboutLink": "Modifier dans Paramètres"
     },
     "announcement": {
-      "show": "Afficher un bandeau d’annonce",
+      "show": "Afficher le bandeau promo",
       "text": "Message",
-      "textRequired": "Écrivez un court message.",
       "textCount": "{count}/{max} caractères",
       "defaultText": "Livraison gratuite ce week-end",
       "colors": "Couleurs",
-      "colorsHelp": "Les couleurs de votre boutique. La couleur du texte est choisie pour rester bien lisible.",
+      "colorsHelp": "Couleurs de ma boutique : la couleur du texte est choisie pour rester bien lisible.",
       "tones": {
-        "accent": "Accent",
-        "dark": "Foncé",
-        "soft": "Doux"
+        "accent": "Accent boutique",
+        "dark": "Foncé boutique",
+        "soft": "Doux boutique"
       },
       "link": "Lien",
       "links": {
@@ -1346,7 +1377,36 @@
       "saleLinkLive": "Une promo est en cours : le bandeau mène à ses articles.",
       "url": "Adresse web",
       "urlHelp": "S’ouvre dans un nouvel onglet, par ex. instagram.com/votreboutique.",
-      "urlInvalid": "Saisissez une adresse web, par ex. https://exemple.com."
+      "urlInvalid": "Saisissez une adresse web, par ex. https://exemple.com.",
+      "intro": "Pendant une promo, le bandeau l’affiche (titre, remise, compte à rebours et un lien « Voir la promo »). Sinon il affiche votre message. Sans l’un ni l’autre, il reste masqué.",
+      "previewAs": "Aperçu",
+      "previewText": "Message",
+      "previewSale": "Pendant une promo",
+      "textHelp": "Affiché quand aucune promo n’a lieu. Laissez vide pour n’afficher le bandeau que pendant les promos.",
+      "saleTitle": "Titre de la promo (facultatif)",
+      "saleTitlePlaceholder": "Promo",
+      "saleTitleHelp": "Affiché avant la remise pendant une promo, par ex. « Promo du week-end ».",
+      "countdown": "Compte à rebours",
+      "countdownHint": "Afficher le temps restant de la promo.",
+      "closable": "Les visiteurs peuvent le fermer",
+      "closableHint": "Il revient à leur prochaine visite.",
+      "style": "Style",
+      "styles": {
+        "solid": "Plein",
+        "gradient": "Dégradé",
+        "outline": "Contour"
+      },
+      "icon": "Icône",
+      "icons": {
+        "tag": "Étiquette",
+        "sparkle": "Étincelles",
+        "flower": "Fleur",
+        "none": "Aucune"
+      },
+      "customColors": "Mes couleurs",
+      "customColorsHelp": "Choisissez le fond et le texte. Le texte doit rester lisible (contraste 4,5:1) pour pouvoir publier.",
+      "background": "Fond",
+      "textColor": "Texte"
     }
   },
   "Demo": {
@@ -2345,8 +2405,8 @@
       "description": "Niveaux de service convenus."
     },
     "announcementBar": {
-      "name": "Bandeau d’annonce",
-      "description": "Une courte ligne en haut de la boutique, avec un lien et des dates."
+      "name": "Bandeau promo",
+      "description": "Une fine ligne sous l’en-tête de la boutique : la promo en cours et son compte à rebours, ou votre message, à votre style."
     }
   },
   "PlanAreas": {

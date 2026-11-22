@@ -20,12 +20,15 @@ export function WidePreview({
   currency,
   products,
   label,
+  promoSale = false,
 }: {
   look: ResolvedLook<string>
   shop: PreviewShop
   currency: Currency
   products: PreviewProduct[]
   label: string
+  /** Show the Promo bar as during a sale (the editor's "Preview as"). */
+  promoSale?: boolean
 }) {
   const t = useTranslations("Public")
   const locationLabel =
@@ -43,7 +46,6 @@ export function WidePreview({
         <ShopLookScope look={look} className="h-[230px] overflow-hidden">
           {/* The public page's desktop layout: banner, header and grid share the column's left edge. */}
           <div inert aria-hidden className="w-[1280px] [zoom:0.25]">
-            <PreviewAnnouncement look={look} shop={shop} />
             <div className={`mx-auto flex max-w-5xl flex-col gap-6 px-4 pb-10 ${hasBanner ? "pt-6" : "pt-10"}`}>
               <div className="flex flex-col">
                 {hasBanner ? (
@@ -58,6 +60,7 @@ export function WidePreview({
                   sizing="desktop"
                 />
               </div>
+              <PreviewAnnouncement look={look} shop={shop} sale={promoSale} />
               <PreviewBody
                 look={look}
                 shop={shop}
