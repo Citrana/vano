@@ -48,20 +48,11 @@ export function SalePrice({
   )
 }
 
-/** The "-30%" badge and the "Sale" label, as the seller chose. */
-export function SaleTags({
-  sale,
-  className,
-  size = "default",
-}: {
-  sale: PublicSale | null | undefined
-  className?: string
-  /** "sm": the small pills of the product cards. */
-  size?: "default" | "sm"
-}) {
+/** The "-30%" badge and the "Sale" label, as the seller chose (product page; cards show one badge, `cardBadge`). */
+export function SaleTags({ sale, className }: { sale: PublicSale | null | undefined; className?: string }) {
   const t = useTranslations("Public")
   if (!sale || (!sale.badge && !sale.label)) return null
-  const pill = size === "sm" ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-1 text-xs"
+  const pill = "px-2.5 py-1 text-xs"
   return (
     <span className={cn("flex flex-wrap gap-1.5", className)}>
       {sale.badge ? (
