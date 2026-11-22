@@ -1,7 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server"
 import { DEMO_CURRENCY, DEMO_PRODUCTS, DEMO_SLUG } from "@/features/marketing/demo/demo-shop"
 import { ShopOrderProvider } from "@/features/public/order-context"
-import { ProductGrid } from "@/features/public/product-grid"
+import { ProductList } from "@/features/public/product-grid"
 import { ShopHeader } from "@/features/public/shop-header"
 import { PhoneFrame } from "@/features/shop-looks/phone-frame"
 import { PhoneThemeScreen } from "./phone-theme"
@@ -37,7 +37,7 @@ export async function LivePhone() {
         <ShopHeader shop={shop} onBanner sizing="phone" />
         {/* The same cards sellers get, with their buttons drawn inert. */}
         <ShopOrderProvider order={{ slug: DEMO_SLUG, currency: DEMO_CURRENCY, label: "order", preview: true }}>
-          <ProductGrid slug={DEMO_SLUG} currency={DEMO_CURRENCY} products={products} columns="phone" />
+          <ProductList slug={DEMO_SLUG} currency={DEMO_CURRENCY} products={products} columns="phone" />
         </ShopOrderProvider>
       </PhoneThemeScreen>
     </PhoneFrame>

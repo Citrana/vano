@@ -15,9 +15,16 @@ function Drawer({ modal = false, disablePointerDismissal = true, ...props }: Dra
   return <DrawerPrimitive.Root data-slot="drawer" modal={modal} disablePointerDismissal={disablePointerDismissal} {...props} />
 }
 
-function DrawerContent({ className, children, ...props }: DrawerPrimitive.Popup.Props) {
+function DrawerContent({
+  className,
+  children,
+  container,
+  ...props
+}: DrawerPrimitive.Popup.Props &
+  /** Where the sheet is mounted (e.g. inside a shop look scope, so it uses the shop's colours). */
+  Pick<DrawerPrimitive.Portal.Props, "container">) {
   return (
-    <DrawerPrimitive.Portal>
+    <DrawerPrimitive.Portal container={container}>
       {/* The viewport lets clicks through: only the sheet itself catches them. */}
       <DrawerPrimitive.Viewport className="pointer-events-none fixed inset-0 z-40 flex items-end justify-center">
         <DrawerPrimitive.Popup
