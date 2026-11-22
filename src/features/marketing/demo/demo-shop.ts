@@ -49,13 +49,15 @@ export type DemoProduct = {
   featured?: boolean
   fewLeft?: boolean
   backInStock?: boolean
+  /** Shows the "New" badge. */
+  isNew?: boolean
   photos: StaticImageData[]
 }
 
 export const DEMO_PRODUCTS: DemoProduct[] = [
-  { id: "slip-dress", category: "clothes", price: 250000, sizes: ["S", "M", "L"], colors: [], featured: true, photos: [slipDress, slipDress2] },
+  { id: "slip-dress", category: "clothes", price: 250000, sizes: ["S", "M", "L"], colors: ["Black"], featured: true, isNew: true, photos: [slipDress, slipDress2] },
   { id: "kente-shirt", category: "clothes", price: 320000, sizes: ["M", "L", "XL"], colors: [], photos: [kenteShirt] },
-  { id: "printed-top", category: "clothes", price: 180000, sizes: ["S", "M", "L"], colors: [], photos: [printedTop] },
+  { id: "printed-top", category: "clothes", price: 180000, sizes: ["S", "M", "L"], colors: ["Red", "White"], isNew: true, photos: [printedTop] },
   { id: "blue-heels", category: "shoes", price: 290000, sizes: ["37", "38", "39", "40"], colors: [], featured: true, fewLeft: true, photos: [blueHeels] },
   { id: "wax-print-shirt", category: "clothes", price: 220000, sizes: ["M", "L", "XL"], colors: [], photos: [waxPrintShirt] },
   { id: "wide-brim-hat", category: "accessories", price: 150000, sizes: [], colors: [], featured: true, photos: [wideBrimHat, wideBrimHat2] },

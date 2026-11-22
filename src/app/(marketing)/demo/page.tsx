@@ -40,6 +40,9 @@ export default async function DemoShopPage() {
     fewLeft: p.fewLeft ?? false,
     backInStock: p.backInStock ?? false,
     colors: p.colors,
+    sizes: p.sizes.slice(0, 4),
+    moreSizes: Math.max(0, p.sizes.length - 4),
+    isNew: p.isNew ?? false,
   }))
 
   return (
