@@ -7,7 +7,9 @@ import { formatMoney } from "../../../../convex/lib/money"
 import { getProductPage } from "@/features/public/data"
 import { OrderPanel } from "@/features/public/order-panel"
 import { ProductGallery } from "@/features/public/product-gallery"
+import { ProductSection } from "@/features/public/product-section"
 import { ShopHeader } from "@/features/public/shop-header"
+import { hasShopInfo, ShopInfoDetails } from "@/features/public/shop-info"
 import { ShopLookScope } from "@/features/shop-looks/look-scope"
 import { ShopLocaleProvider } from "@/features/public/shop-locale-provider"
 import { ShopUnavailable } from "@/features/public/shop-unavailable"
@@ -51,12 +53,15 @@ export default async function ProductPage({ params }: PageProps<"/[slug]/[produc
   const { shop, product } = page
   const t = await getTranslations({ locale: shop.language, namespace: "Public" })
   const tc = await getTranslations({ locale: shop.language, namespace: "Categories" })
+  // Shop info follows the look's About switch, like the shop page, and shows only when filled.
+  const info = { openingHours: shop.openingHours, deliveryAreas: shop.deliveryAreas, socials: shop.socials }
+  const showInfo = shop.look.sections.about && hasShopInfo(info)
 
   return (
     <ShopLocaleProvider language={shop.language}>
       <ShopLookScope look={shop.look} className="flex flex-1 flex-col">
         <header className="sticky top-0 z-20 border-b bg-background/95 backdrop-blur">
-          <div className="mx-auto flex h-14 max-w-5xl items-center gap-2 px-4">
+          <div className="mx-auto flex h-14 max-w-6xl items-center gap-2 px-4">
             <Link
               href={`/${shop.slug}`}
               aria-label={t("backToShop")}
@@ -67,9 +72,11 @@ export default async function ProductPage({ params }: PageProps<"/[slug]/[produc
             <ShopHeader shop={shop} profile={shop.look.profile} compact />
           </div>
         </header>
-        <main className="mx-auto grid w-full max-w-5xl flex-1 gap-6 px-4 pt-4 pb-28 md:grid-cols-2 md:gap-10 md:pt-8 md:pb-12">
+        {/* Phones: room at the bottom for the fixed order bar (OrderPanel). */}
+        <main className="mx-auto grid w-full max-w-6xl flex-1 gap-6 px-4 pt-4 pb-[calc(6.5rem+env(safe-area-inset-bottom))] md:grid-cols-2 md:gap-10 md:pt-8 md:pb-16 lg:gap-14">
           <ProductGallery images={product.imageUrls} name={product.name} />
-          <div className="flex flex-col gap-5">
+          {/* Desktop: the info stays in view while the photos scroll. */}
+          <div className="flex flex-col gap-6 md:sticky md:top-20 md:self-start">
             <div className="flex flex-col gap-2">
               <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{tc(product.category)}</p>
               <h1 className="font-heading text-2xl leading-tight font-bold tracking-tight text-balance md:text-3xl">{product.name}</h1>
@@ -84,17 +91,25 @@ export default async function ProductPage({ params }: PageProps<"/[slug]/[produc
               ) : null}
             </div>
             <OrderPanel
-                slug={shop.slug}
-                whatsappNumber={shop.whatsappNumber}
-                currency={shop.currency}
-                product={product}
-                label={shop.look.buttons.label}
-              />
-            {product.description ? (
-              <section className="flex flex-col gap-2 border-t pt-5">
-                <h2 className="text-sm font-medium">{t("description")}</h2>
-                <p className="whitespace-pre-line text-pretty text-muted-foreground">{product.description}</p>
-              </section>
+              slug={shop.slug}
+              whatsappNumber={shop.whatsappNumber}
+              currency={shop.currency}
+              product={product}
+              label={shop.look.buttons.label}
+            />
+            {product.description || showInfo ? (
+              <div>
+                {product.description ? (
+                  <ProductSection title={t("description")} open>
+                    <p className="whitespace-pre-line text-pretty text-muted-foreground">{product.description}</p>
+                  </ProductSection>
+                ) : null}
+                {showInfo ? (
+                  <ProductSection title={t("shopInfo")}>
+                    <ShopInfoDetails info={info} shopName={shop.name} />
+                  </ProductSection>
+                ) : null}
+              </div>
             ) : null}
           </div>
         </main>

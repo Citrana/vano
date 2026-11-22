@@ -1,7 +1,7 @@
 "use client"
 
 import { useMutation } from "convex/react"
-import { ImageIcon, MessageCircleIcon, Share2Icon } from "lucide-react"
+import { ImageIcon, MessageCircleIcon } from "lucide-react"
 import { useLocale, useTranslations } from "next-intl"
 import Link from "next/link"
 import type { CSSProperties } from "react"
@@ -14,7 +14,7 @@ import { productUrl } from "@/lib/site"
 import { orderHref } from "@/lib/whatsapp"
 import { useShopOrder } from "./order-context"
 import { SalePrice, SaleTags } from "./sale"
-import { useShare } from "./use-share"
+import { ShareButton } from "./share-button"
 import { colorSwatch } from "../../../convex/lib/colorSwatches"
 
 /** Small badge pills (shop button radius): filled, or outlined. */
@@ -176,42 +176,25 @@ export function ProductCard({
           <div className="min-w-0 flex-1">
             <OrderButton productId={productId} name={name} price={price} sale={sale} soldOut={soldOut} />
           </div>
-          <ShareButton productId={productId} name={name} />
+          <CardShareButton productId={productId} name={name} />
         </div>
       ) : null}
     </article>
   )
 }
 
-/** A square icon button with the Order button's 10px corners (44px on phones). */
-const SQUARE_BUTTON =
-  "flex size-11 shrink-0 items-center justify-center rounded-[0.625rem] border bg-card text-foreground md:size-10 [&_svg]:size-4"
-
 /** Shares the product's link (next to Order), on shop pages (`ShopOrderProvider`). */
-function ShareButton({ productId, name }: { productId: string; name: string }) {
-  const t = useTranslations("Public")
+function CardShareButton({ productId, name }: { productId: string; name: string }) {
   const order = useShopOrder()
-  const share = useShare()
   if (!order) return null
-  if (order.preview) {
-    return (
-      <span aria-hidden className={SQUARE_BUTTON}>
-        <Share2Icon />
-      </span>
-    )
-  }
-  // Read on tap (`window` doesn't exist while the page renders on the server).
-  const url = () => (order.demo ? `${window.location.origin}/demo/${productId}` : productUrl(order.slug, productId))
   return (
-    <button
-      type="button"
-      aria-label={t("shareProduct", { product: name })}
-      title={t("shareProduct", { product: name })}
-      onClick={() => void share({ title: name, url: url() })}
-      className={cn(SQUARE_BUTTON, "transition-colors hover:bg-muted focus-ring")}
-    >
-      <Share2Icon />
-    </button>
+    <ShareButton
+      name={name}
+      preview={order.preview}
+      url={() => (order.demo ? `${window.location.origin}/demo/${productId}` : productUrl(order.slug, productId))}
+      // The Order button's 10px corners, 44px on phones.
+      className="size-11 rounded-[0.625rem] md:size-10"
+    />
   )
 }
 
