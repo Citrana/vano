@@ -79,7 +79,7 @@ export function ProductCard({
   return (
     <article
       className={cn(
-        "@container group relative flex h-full flex-col rounded-[min(var(--radius-sm),0.5rem)] bg-muted p-4 md:p-6",
+        "@container group relative flex h-full flex-col rounded-[min(var(--radius-sm),0.5rem)] bg-muted p-3 md:p-4",
         "motion-safe:transition-colors hover:bg-[color-mix(in_srgb,var(--muted),var(--foreground)_4%)]",
         "has-[[data-card-link]:focus-visible]:outline-2 has-[[data-card-link]:focus-visible]:outline-offset-2 has-[[data-card-link]:focus-visible]:outline-ring",
       )}
@@ -101,7 +101,7 @@ export function ProductCard({
       </div>
 
       {/* The whole photo, never cropped or zoomed; white backgrounds melt into a light card. */}
-      <div className="my-3 aspect-square md:my-4">
+      <div className="my-2 aspect-square md:my-3">
         {coverUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- Convex storage URL
           <img
@@ -144,7 +144,7 @@ export function ProductCard({
       </div>
 
       {colors.length > 0 || sizes.length > 0 ? (
-        <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
           {colors.length > 0 ? (
             <ul aria-label={t("colorsLabel")} className="flex flex-wrap items-center gap-1.5">
               {colors.map((color) => {
@@ -177,7 +177,7 @@ export function ProductCard({
       ) : null}
 
       {productId ? (
-        <div className="relative z-10 mt-auto pt-4">
+        <div className="relative z-10 mt-auto pt-3">
           <OrderButton productId={productId} name={name} price={price} sale={sale} soldOut={soldOut} />
         </div>
       ) : null}
