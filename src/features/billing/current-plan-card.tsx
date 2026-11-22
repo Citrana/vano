@@ -62,7 +62,7 @@ export function CurrentPlanCard({ billing, now }: { billing: MyBilling; now: num
             <EyeOffIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
             {t("overLimit", { count: usage.overLimit })}
           </p>
-          <Link href="/dashboard" className={buttonVariants({ variant: "outline", size: "sm", className: "self-start" })}>
+          <Link href="/dashboard/products" className={buttonVariants({ variant: "outline", size: "sm", className: "self-start" })}>
             {t("manageProducts")}
           </Link>
         </div>

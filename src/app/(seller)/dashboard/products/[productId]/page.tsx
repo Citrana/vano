@@ -44,7 +44,7 @@ export default function EditProductPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <PageTitle title={t("editTitle")} backHref="/dashboard" backLabel={tc("back")} />
+      <PageTitle title={t("editTitle")} backHref="/dashboard/products" backLabel={tc("back")} />
       {product.hidden ? (
         <p role="status" className="mb-5 flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-sm">
           <EyeOffIcon className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden />
@@ -60,7 +60,7 @@ export default function EditProductPage() {
         onSubmit={async (values) => {
           await update({ productId: product._id, ...values })
           toast.success(t("saved"))
-          router.push("/dashboard")
+          router.push("/dashboard/products")
         }}
       />
     </div>

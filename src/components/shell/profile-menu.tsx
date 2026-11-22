@@ -1,7 +1,8 @@
 "use client"
 
-import { LogOutIcon } from "lucide-react"
+import { LogOutIcon, ShieldIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
+import { useRouter } from "next/navigation"
 import { cn } from "cn"
 import { LANGUAGES, type Language } from "../../../convex/lib/catalog"
 import {
@@ -18,8 +19,12 @@ import {
 import { useSignOut } from "@/features/auth/sign-out-button"
 import { useChangeLocale } from "@/features/i18n/language-switcher"
 
-/** Avatar button with the account email, language choice and sign out. */
-export function ProfileMenu({ email }: { email: string | null }) {
+/**
+ * Avatar button with the account email, the admin link (admins only; the
+ * server checks access), language choice and sign out.
+ */
+export function ProfileMenu({ email, isAdmin = false }: { email: string | null; isAdmin?: boolean }) {
+  const router = useRouter()
   const t = useTranslations("Seller")
   const tc = useTranslations("Common")
   const tl = useTranslations("Languages")
@@ -52,6 +57,15 @@ export function ProfileMenu({ email }: { email: string | null }) {
                 {email}
               </p>
             </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+          </>
+        ) : null}
+        {isAdmin ? (
+          <>
+            <DropdownMenuItem onClick={() => router.push("/admin")}>
+              <ShieldIcon />
+              {t("admin")}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
         ) : null}

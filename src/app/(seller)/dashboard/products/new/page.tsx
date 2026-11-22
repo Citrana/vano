@@ -32,7 +32,7 @@ export default function NewProductPage() {
   if (billing && limits && canShopDo(limits, { kind: "addProduct", products: billing.usage.products }) !== null) {
     return (
       <div className="mx-auto max-w-2xl">
-        <PageTitle title={t("newTitle")} backHref="/dashboard" backLabel={tc("back")} />
+        <PageTitle title={t("newTitle")} backHref="/dashboard/products" backLabel={tc("back")} />
         <EmptyState
           icon={<PackageIcon />}
           title={td("limitReached", { count: limits.products ?? 0 })}
@@ -48,14 +48,14 @@ export default function NewProductPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <PageTitle title={t("newTitle")} backHref="/dashboard" backLabel={tc("back")} />
+      <PageTitle title={t("newTitle")} backHref="/dashboard/products" backLabel={tc("back")} />
       <ProductForm
         shop={shop}
         maxImages={limits ? photoCap(limits) : undefined}
         onSubmit={async (values) => {
           await create(values)
           toast.success(t("created"))
-          router.push("/dashboard")
+          router.push("/dashboard/products")
         }}
       />
     </div>

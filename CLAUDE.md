@@ -456,12 +456,22 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   forms with several fields show `<RequiredFieldsHint />`.
 - Components are small and grouped by feature in `src/features/<feature>/`
   (`auth`, `shop`, `product`, `public`, `stats`, `i18n`, `marketing/*`,
-  `shop-looks`, `sales`, `billing`, `change-requests`, `notifications`, `admin/*`).
+  `shop-looks`, `sales`, `billing`, `change-requests`, `notifications`, `seller-nav`, `admin/*`).
   Generic primitives live in `src/components/ui/`.
 - Admin pages live under `src/app/admin/` and wrap their content in
   `<RequirePermission permission="…">`. Sidebar sections are defined only
   in `src/features/admin/shell/nav.ts` (flip `ready` when a page ships).
   Hiding a link or button is never security — the Convex function checks.
+- **Seller menu**: one list, `SELLER_NAV` (`src/features/seller-nav/seller-nav.ts`:
+  key, icon, link, group, permission, plan `feature`, `badge`, `mobile`, `ready`)
+  with labels in `Seller.nav.<key>`. The desktop sidebar, the phone bottom bar
+  and its "More" sheet all read it; adding a page = one line. `ready: false`
+  items never show; a `feature` the plan lacks shows a lock and still opens the
+  page (which explains the plan). Badges come from real tables
+  (`useSellerNavCounts`), never from notifications. Menus are drawn by the
+  shared `SideNav` (`src/components/shell/nav/`), also used by the admin
+  sidebar. Phones reserve the bottom bar with `--bottom-bar`: sticky footers
+  use `bottom-[var(--bottom-bar,0px)]`, never `bottom-0`.
 - **Admin lists** use the shared `DataTable` (`src/features/admin/data-table/`);
   a page only defines its columns, its pure URL spec (`table-spec.ts`:
   filter keys, options, defaults) and labels (`filterDefs`). Never build a

@@ -418,7 +418,7 @@ export function LookEditor({ mine, shop, products }: { mine: MineLook; shop: Sho
       {/* Sticky on phones: actions, the compact preview and the section tabs. */}
       <div
         ref={stickyTop}
-        className="sticky top-[6.75rem] z-20 -mx-4 -mt-5 flex flex-col gap-2 border-b bg-background px-4 pt-3 pb-2 sm:top-14"
+        className="sticky top-14 z-20 -mx-4 -mt-5 flex flex-col gap-2 border-b bg-background px-4 pt-3 pb-2"
       >
         <div ref={actionsRow} className="flex items-center justify-between gap-2">
           <div className="flex min-w-0 flex-col">

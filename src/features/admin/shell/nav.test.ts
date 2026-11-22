@@ -1,11 +1,14 @@
+import { LayoutDashboardIcon } from "lucide-react"
 import { describe, expect, test } from "vitest"
-import { ADMIN_NAV, firstAllowedAdminPath, isActive, visibleNav, type AdminNavItem } from "./nav"
+import { isNavActive } from "../../../components/shell/nav/nav-model"
+import { ADMIN_HOME, ADMIN_NAV, firstAllowedAdminPath, visibleNav, type AdminNavItem } from "./nav"
 
+const icon = LayoutDashboardIcon
 const nav: AdminNavItem[] = [
-  { key: "dashboard", href: "/admin", permission: "dashboard.view", ready: true },
-  { key: "users", href: "/admin/users", permission: "users.view", ready: true },
-  { key: "shops", href: "/admin/shops", permission: "shops.view", ready: false },
-  { key: "roles", href: "/admin/roles", permission: "roles.view", ready: true },
+  { key: "dashboard", href: "/admin", icon, permission: "dashboard.view", exact: true, ready: true },
+  { key: "users", href: "/admin/users", icon, permission: "users.view", ready: true },
+  { key: "shops", href: "/admin/shops", icon, permission: "shops.view", ready: false },
+  { key: "roles", href: "/admin/roles", icon, permission: "roles.view", ready: true },
 ]
 
 describe("admin nav", () => {
@@ -24,10 +27,12 @@ describe("admin nav", () => {
     expect(new Set(ADMIN_NAV.map((i) => i.key)).size).toBe(ADMIN_NAV.length)
   })
 
-  test("isActive: the home only matches itself", () => {
-    expect(isActive("/admin", "/admin")).toBe(true)
-    expect(isActive("/admin", "/admin/users")).toBe(false)
-    expect(isActive("/admin/users", "/admin/users/abc")).toBe(true)
-    expect(isActive("/admin/users", "/admin/usersx")).toBe(false)
+  test("the admin home only matches itself", () => {
+    const home = ADMIN_NAV.find((i) => i.href === ADMIN_HOME)!
+    const users = ADMIN_NAV.find((i) => i.key === "users")!
+    expect(isNavActive(home, "/admin")).toBe(true)
+    expect(isNavActive(home, "/admin/users")).toBe(false)
+    expect(isNavActive(users, "/admin/users/abc")).toBe(true)
+    expect(isNavActive(users, "/admin/usersx")).toBe(false)
   })
 })
