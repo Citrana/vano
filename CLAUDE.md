@@ -219,7 +219,8 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   `ShopLooks.*` / `LookEditor.*`. `classic` is the free look (square buttons, the default shape). Every preset
   must pass the contrast check with zero warnings (tested).
 - `resolveLook` (pure) turns a look into the semantic tokens; text colours
-  are derived, never picked. `ShopLookScope` applies them inline (no
+  are derived, never picked (one exception: the Promo bar's custom
+  colours, see below, always contrast-checked). `ShopLookScope` applies them inline (no
   flash); shop buttons use `shop-btn`, chips `shop-chip` (rules in
   `globals.css`). The WhatsApp order button keeps `--whatsapp`.
 - One row per shop in `shopLooks` (`draft`, `published`), written only by
@@ -303,7 +304,7 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 - The banner, the profile photo, the name and the product grid share one
   left edge: `SHOP_BANNER_EDGE` (`shop-banner.tsx`), no extra header padding.
 
-### Sections, layout, announcement bar, About and contact
+### Sections, layout, Promo bar, filters, About and contact
 
 - The optional `sections` facet (`convex/lib/looks/sections.ts`): the
   ordered section list (`sale`, `newArrivals`, `featured`, `backInStock`,
@@ -315,14 +316,16 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   repeats All products is skipped; never a blank shop), used by the
   public page, the previews and the demo through `ShopSections`
   (`src/features/public/shop-sections.tsx`). Layout classes live only in
-  `product-layout.ts` (phones: 2 columns max, 1 for big cards; cards keep
-  their normal size and stay left-aligned, however few products).
+  `product-layout.ts` (the default `grid2`: 2 columns on phones, 3 on
+  tablets, 4 on computers; phones never more than 2, 1 for big cards;
+  cards keep their size and stay left-aligned, however few products).
 - Product cards (`product-card.tsx`): a soft tinted card (`bg-muted` of the
   look, **no border, no shadow**: the one exception to the surface border
   rule, from the seller-facing reference design), a 4:5 photo area (the
-  whole photo fits, never cropped or zoomed; corners rounded like the card) with the badge pills on its
-  top-left corner (Sold out, sale, "New" for `NEW_BADGE_DAYS`, section
-  label, Few left), the name on one line with the prices right under it
+  whole photo fits, never cropped or zoomed; small corners, ≤ 6px) with
+  **one** badge on its top-left corner, the first that applies
+  (`cardBadge`: Sold out, sale "-N%" / "Sale", "New" for
+  `NEW_BADGE_DAYS` = 14, section label, Few left), the name on one line with the prices right under it
   (old price crossed out), colours as dots
   (`colorSwatch`, unknown names as chips) and sizes as chips in one row,
   no description; the compact Order button with a square share button
@@ -340,16 +343,45 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 - Free publishes `isFreeSections` only (All products in 2 columns, any
   About choice); the rest needs `featuredSections`. A downgrade shows
   `freeSectionsOf(saved)`; the choice is kept.
-- The optional `announcement` facet (`announcement.ts`): one line, an
-  optional link (`sale` while a sale runs, or an https URL cleaned by
-  `cleanAnnouncementUrl`), a tone from shop colours (text derived,
-  checked by `lookProblems`) and optional dates with the event banner
-  rules. Needs `announcementBar`; `shopLooks.announcementLive` is stored
-  by `publish` / `syncSchedules` like `promoLive`. Visitors close it for
-  the visit (session storage, wrapped in try/catch).
+- **Promo bar** (`PromoBar`, `src/features/public/promo-bar.tsx`): one
+  slim line under the shop header, the one place for the sale strip and
+  the seller's message. What it says is one pure rule,
+  `promoBarContent` (`announcement.ts`): a running sale wins (seller's
+  title or "Sale", the discount from `promoSaleSummary`, the countdown,
+  "View sale" → `?sale=1`), then the seller's text, else hidden. A
+  running sale shows even without a configured bar (plain card style;
+  sales are already paid); style, icon, title, countdown and close
+  switches apply only while the bar is live and entitled.
+- Its settings are the optional `announcement` facet (key kept, every
+  field added since optional, so stored bars keep working): text (may be
+  empty = sale-only), optional link (`sale`, or an https URL cleaned by
+  `cleanAnnouncementUrl`), a shop colour `tone` **or** custom
+  `colors` (background + text: the seller picks the text colour here;
+  `lookProblems` refuses < 4.5:1 on every stop, fix `announcementText`),
+  `style` (`solid | gradient | outline`; the gradient's second stop moves
+  away from the text, `promoGradientEnd`), `icon`, `title`, `countdown`,
+  `closable`, and optional dates with the event banner rules. Needs
+  `announcementBar`; `shopLooks.announcementLive` is stored by `publish`
+  / `syncSchedules` like `promoLive`. Visitors close it for the visit
+  when allowed (session storage, wrapped in try/catch). The editor's
+  "Preview as: During a sale" shows a sample sale (never saved).
+- **Filters** (`src/features/public/filters/`): search by name, category
+  chips, a Sale chip (only while a sale runs), sort (newest = the
+  page's order, price low → high / high → low on the price paid now),
+  then size, colour and price range in a popover (computers) / bottom
+  sheet (phones), mounted inside the look scope. Rules are pure in
+  `shop-filters.ts` (`parseShopFilters`, `shopFiltersToQuery`,
+  `applyShopFilters`, `filtersActive`); shops under
+  `FULL_FILTERS_MIN_PRODUCTS` (8) only get the Sale chip and the sort.
+  Filters live in the link (`q, cat, sale=1, sort, size, color, min, max`;
+  prices in major units through the money helpers): the page parses them
+  on the server, `useShopFilters` writes them back with
+  `history.replaceState`. While any filter is active, one results grid
+  (count, "Clear all", empty state) replaces the sections. Public
+  products carry every size and colour; the card shows `CARD_TAGS_MAX`.
 - `shownLook` gates each part on its own feature (`allLooks`,
   `salesPromotions`, `featuredSections`, `announcementBar`); a preset
-  change never drops the sections or the announcement (`ownParts`).
+  change never drops the sections or the Promo bar (`ownParts`).
 - About and contact data (opening hours, delivery areas, social handles)
   is shop data, edited in Shop settings (`shops.update`), cleaned by
   `convex/lib/shopInfo.ts` (handles stored, links built by `socialUrl`).
@@ -360,7 +392,7 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   Sold out is turned off (`lib/restock.ts`, `stockChange`) and cleared
   after `RESTOCK_DAYS` by `productJobs.endBackInStock` (idempotent on
   `restockedAt`). Sold out clears both.
-- Admin reset: "banner" also removes the announcement bar; "all" goes back
+- Admin reset: "banner" also removes the Promo bar; "all" goes back
   to `FREE_LOOK` (default sections and layout, no bar).
 
 ## Sales
@@ -395,7 +427,8 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   (`src/features/public/sale.tsx`): price in `--shop-price`, old price
   `--muted-foreground`, badge with the `--chip` tokens (`shop-btn`), label
   `shop-chip chip-selected`, so the look's buttons, decorations and
-  contrast check apply. The "Sale" filter and the event banner's sale link
+  contrast check apply (cards show one badge, `cardBadge`). The "Sale"
+  filter, the Promo bar's sale and the event banner's sale link
   (`promo.link = "sale"`) only exist while a sale runs.
 - Per-sale views / clicks go in `saleDailyStats` (bumped by
   `stats.record*` for the product's current best sale).
