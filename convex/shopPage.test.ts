@@ -56,7 +56,7 @@ describe("public.shopPrices", () => {
 });
 
 describe("card text", () => {
-  test("up to 4 colours and the count of the rest; never the description", async () => {
+  test("up to 4 colours and sizes, the count of the rest and createdAt; never the description", async () => {
     const t = newTest();
     const { userId } = await sellerWithShop(t);
     const long = "Belle robe en wax. ".repeat(30);
@@ -64,12 +64,16 @@ describe("card text", () => {
       ...(await productArgs(t)),
       description: long,
       colors: ["Rouge", "Bleu", "Vert", "Noir", "Blanc", "Or"],
+      sizes: ["S", "M", "L", "XL", "XXL"],
     });
     const page = await t.query(api.public.shopBySlug, { slug: "chez-amani" });
     if (!page || page.suspended) throw new Error("no page");
     const [card] = page.products;
     expect(card.colors).toEqual(["Rouge", "Bleu", "Vert", "Noir"]);
     expect(card.moreColors).toBe(2);
+    expect(card.sizes).toEqual(["S", "M", "L", "XL"]);
+    expect(card.moreSizes).toBe(1);
+    expect(typeof card.createdAt).toBe("number");
     expect(card).not.toHaveProperty("description");
     expect(JSON.stringify(page.products)).not.toContain("Belle robe");
     expect(JSON.stringify(page)).not.toContain(userId);

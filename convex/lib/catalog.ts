@@ -70,5 +70,5 @@ export function tagsProblem(tags: readonly string[]): "tooMany" | "tooLong" | nu
   return null;
 }
 
-/** Colour chips on a product card; the rest is "+N". */
-export const CARD_COLORS_MAX = 4;
+/** Colours (and sizes) shown on a product card; the rest is "+N". */
+export const CARD_TAGS_MAX = 4;

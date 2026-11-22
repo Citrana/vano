@@ -177,3 +177,14 @@ export function buildShopSections<P extends SectionProduct>(facet: SectionsFacet
 export function showsSection<P extends SectionProduct>(facet: SectionsFacet, products: readonly P[], id: SectionId): boolean {
   return buildShopSections(facet, products).some((s) => s.id === id);
 }
+
+/** A product shows a "New" badge for this many days after it was added. */
+export const NEW_BADGE_DAYS = 14;
+
+/**
+ * Whether a product is new at `now` (the "New" badge). Pure; the public
+ * page computes it on the server (Convex queries never read the clock).
+ */
+export function isNewProduct(createdAt: number, now: number): boolean {
+  return now - createdAt >= 0 && now - createdAt < NEW_BADGE_DAYS * 86_400_000;
+}

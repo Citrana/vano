@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import { query, type QueryCtx } from "./_generated/server";
-import { CARD_COLORS_MAX } from "./lib/catalog";
+import { CARD_TAGS_MAX } from "./lib/catalog";
 import { getEntitlements, shopProducts, visibleProductIds } from "./lib/entitlements";
 import { urlOf, urlsOf } from "./lib/images";
 import { publicLookFor } from "./lib/looks/store";
@@ -117,9 +117,13 @@ export const shopBySlug = query({
           featured: p.featured === true,
           fewLeft: p.fewLeft === true && !p.soldOut,
           backInStock: p.backInStock === true && !p.soldOut,
-          /** Up to CARD_COLORS_MAX colours for the card (the description is on the product page). */
-          colors: p.colors.slice(0, CARD_COLORS_MAX),
-          moreColors: Math.max(0, p.colors.length - CARD_COLORS_MAX),
+          /** Up to CARD_TAGS_MAX colours and sizes for the card (the description is on the product page). */
+          colors: p.colors.slice(0, CARD_TAGS_MAX),
+          moreColors: Math.max(0, p.colors.length - CARD_TAGS_MAX),
+          sizes: p.sizes.slice(0, CARD_TAGS_MAX),
+          moreSizes: Math.max(0, p.sizes.length - CARD_TAGS_MAX),
+          /** When it was added (the page shows "New" for NEW_BADGE_DAYS). */
+          createdAt: p._creationTime,
           coverUrl: await urlOf(ctx, p.imageIds[0]),
           sale: publicSale(bestSaleFor(p, sales, shop.currency)),
         })),
