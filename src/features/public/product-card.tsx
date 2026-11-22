@@ -26,11 +26,13 @@ const OUTLINED_PILL = `${PILL} border border-[var(--chip,var(--foreground))] bg-
 /**
  * A product card (CLAUDE.md "Shop looks"), after the reference design: a
  * soft tinted card (the look's muted colour, no border, no shadow) with
- * airy padding. Badge pills (Sold out, sale, New, section label, Few left)
- * top-left and share top-right; the whole photo, never cropped or zoomed;
- * the name and price on one line (old price crossed out on sale); colours
- * as dots and sizes as chips; then, on shop pages, a compact WhatsApp
- * Order button. The whole card opens the product (stretched link).
+ * compact padding. A 4:5 photo area (the whole photo fits, never cropped
+ * or zoomed) with the badge pills (Sold
+ * out, sale, New, section label, Few left) on its top-left corner; the
+ * name on one line with the prices right under it (old price crossed out
+ * on sale); colours as dots and sizes as chips in one row; then, on shop
+ * pages, a compact WhatsApp Order button with a square share button
+ * beside it. The whole card opens the product (stretched link).
  */
 export function ProductCard({
   productId,
@@ -84,24 +86,8 @@ export function ProductCard({
         "has-[[data-card-link]:focus-visible]:outline-2 has-[[data-card-link]:focus-visible]:outline-offset-2 has-[[data-card-link]:focus-visible]:outline-ring",
       )}
     >
-      {/* Pills left, share right. */}
-      <div className="flex min-h-11 items-start justify-between gap-2 md:min-h-9">
-        <div className="flex min-w-0 flex-wrap items-start gap-1.5 pt-1">
-          {soldOut ? <span className={INK_PILL}>{t("soldOut")}</span> : null}
-          <SaleTags sale={sale} size="sm" />
-          {isNew && !soldOut ? <span className={FILLED_PILL}>{t("newBadge")}</span> : null}
-          {highlight && !soldOut ? <span className={FILLED_PILL}>{highlight}</span> : null}
-          {fewLeft && !soldOut ? <span className={OUTLINED_PILL}>{t("fewLeft")}</span> : null}
-        </div>
-        {productId ? (
-          <div className="relative z-10">
-            <ShareButton productId={productId} name={name} />
-          </div>
-        ) : null}
-      </div>
-
-      {/* The whole photo, never cropped or zoomed; white backgrounds melt into a light card. */}
-      <div className="my-2 aspect-square md:my-3">
+      {/* The 4:5 photo area: the whole photo fits inside (never cropped or zoomed), badges on its top-left corner. */}
+      <div className="relative flex aspect-[4/5] items-center justify-center">
         {coverUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- Convex storage URL
           <img
@@ -110,43 +96,51 @@ export function ProductCard({
             loading="lazy"
             decoding="async"
             className={cn(
-              "size-full object-contain mix-blend-multiply [[data-look-dark]_&]:mix-blend-normal",
+              // max-* so the rounded corners are on the visible photo itself.
+              "max-h-full max-w-full rounded-[min(var(--radius-sm),0.5rem)] object-contain",
               soldOut && "opacity-60 grayscale",
             )}
           />
         ) : (
-          <div className="flex size-full items-center justify-center text-muted-foreground">
+          <div className="flex size-full items-center justify-center rounded-[min(var(--radius-sm),0.5rem)] bg-card text-muted-foreground">
             <ImageIcon className="size-8" aria-hidden />
           </div>
         )}
-      </div>
-
-      {/* Name and price on one line; the name link covers the whole card. */}
-      <div className="flex items-baseline justify-between gap-3">
-        <Link
-          href={href}
-          data-card-link=""
-          aria-label={`${name}, ${shownPrice}`}
-          className="min-w-0 outline-none after:absolute after:inset-0 after:content-['']"
-        >
-          <h3
-            className={cn(
-              "truncate font-heading leading-tight font-semibold tracking-tight",
-              size === "large" ? "text-lg md:text-2xl" : "text-base md:text-xl",
-            )}
-          >
-            {name}
-          </h3>
-        </Link>
-        <div className="shrink-0 text-end text-sm whitespace-nowrap [&_p]:justify-end">
-          <SalePrice price={price} sale={sale} currency={currency} />
+        <div className="pointer-events-none absolute top-2 left-2 flex flex-wrap items-start gap-1.5 pe-2">
+          {soldOut ? <span className={INK_PILL}>{t("soldOut")}</span> : null}
+          <SaleTags sale={sale} size="sm" />
+          {isNew && !soldOut ? <span className={FILLED_PILL}>{t("newBadge")}</span> : null}
+          {highlight && !soldOut ? <span className={FILLED_PILL}>{highlight}</span> : null}
+          {fewLeft && !soldOut ? <span className={OUTLINED_PILL}>{t("fewLeft")}</span> : null}
         </div>
       </div>
 
+      {/* The name on one line; its link covers the whole card. */}
+      <Link
+        href={href}
+        data-card-link=""
+        aria-label={`${name}, ${shownPrice}`}
+        className="mt-2 outline-none after:absolute after:inset-0 after:content-['']"
+      >
+        <h3
+          className={cn(
+            "truncate font-heading leading-snug font-medium",
+            size === "large" ? "text-base md:text-lg" : "text-sm md:text-base",
+          )}
+        >
+          {name}
+        </h3>
+      </Link>
+      {/* The prices right under it: the sale price, then the old price crossed out. */}
+      <div className="mt-0.5 text-sm">
+        <SalePrice price={price} sale={sale} currency={currency} />
+      </div>
+
       {colors.length > 0 || sizes.length > 0 ? (
-        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+        // One compact row that never grows: anything that doesn't fit is clipped at the card edge.
+        <div className="mt-1.5 flex items-center gap-2 overflow-hidden whitespace-nowrap">
           {colors.length > 0 ? (
-            <ul aria-label={t("colorsLabel")} className="flex flex-wrap items-center gap-1.5">
+            <ul aria-label={t("colorsLabel")} className="flex shrink-0 items-center gap-1">
               {colors.map((color) => {
                 const swatch = colorSwatch(color)
                 return swatch ? (
@@ -164,7 +158,7 @@ export function ProductCard({
             </ul>
           ) : null}
           {sizes.length > 0 ? (
-            <ul aria-label={t("sizesLabel")} className="flex flex-wrap items-center gap-1">
+            <ul aria-label={t("sizesLabel")} className="flex shrink-0 items-center gap-1">
               {sizes.map((s) => (
                 <li key={s} className="rounded-sm border bg-card px-1.5 text-[11px] leading-5 font-medium">
                   {s}
@@ -177,19 +171,23 @@ export function ProductCard({
       ) : null}
 
       {productId ? (
-        <div className="relative z-10 mt-auto pt-3">
-          <OrderButton productId={productId} name={name} price={price} sale={sale} soldOut={soldOut} />
+        // Order takes the width; share is a square icon button beside it.
+        <div className="relative z-10 mt-auto flex gap-2 pt-3">
+          <div className="min-w-0 flex-1">
+            <OrderButton productId={productId} name={name} price={price} sale={sale} soldOut={soldOut} />
+          </div>
+          <ShareButton productId={productId} name={name} />
         </div>
       ) : null}
     </article>
   )
 }
 
-/** Plain classes on purpose: `.shop-chip` sets `position: relative` in shop scopes. */
-const ROUND_BUTTON =
-  "flex size-11 shrink-0 items-center justify-center rounded-full border bg-card text-foreground md:size-9 [&_svg]:size-4"
+/** A square icon button with the Order button's 10px corners (44px on phones). */
+const SQUARE_BUTTON =
+  "flex size-11 shrink-0 items-center justify-center rounded-[0.625rem] border bg-card text-foreground md:size-10 [&_svg]:size-4"
 
-/** Shares the product's link (top right of the photo), on shop pages (`ShopOrderProvider`). */
+/** Shares the product's link (next to Order), on shop pages (`ShopOrderProvider`). */
 function ShareButton({ productId, name }: { productId: string; name: string }) {
   const t = useTranslations("Public")
   const order = useShopOrder()
@@ -197,7 +195,7 @@ function ShareButton({ productId, name }: { productId: string; name: string }) {
   if (!order) return null
   if (order.preview) {
     return (
-      <span aria-hidden className={ROUND_BUTTON}>
+      <span aria-hidden className={SQUARE_BUTTON}>
         <Share2Icon />
       </span>
     )
@@ -210,7 +208,7 @@ function ShareButton({ productId, name }: { productId: string; name: string }) {
       aria-label={t("shareProduct", { product: name })}
       title={t("shareProduct", { product: name })}
       onClick={() => void share({ title: name, url: url() })}
-      className={cn(ROUND_BUTTON, "transition-colors hover:bg-muted focus-ring")}
+      className={cn(SQUARE_BUTTON, "transition-colors hover:bg-muted focus-ring")}
     >
       <Share2Icon />
     </button>
