@@ -159,18 +159,37 @@
     "goToLogin": "I already have an account"
   },
   "Seller": {
-    "dashboard": "Dashboard",
     "settings": "Shop settings",
-    "settingsShort": "Settings",
     "viewShop": "View my shop",
     "menu": "Menu",
     "admin": "Admin",
-    "billing": "Plan",
     "profileMenu": "Account menu",
     "account": "Signed in as",
-    "look": "Look",
-    "sales": "Sales",
-    "dashboardShort": "Home"
+    "nav": {
+      "home": "Home",
+      "products": "Products",
+      "look": "Look",
+      "settings": "Shop settings",
+      "sales": "Sales",
+      "discountCodes": "Discount codes",
+      "orders": "Orders",
+      "customers": "Customers",
+      "stats": "Stats",
+      "plan": "Plan",
+      "team": "Team",
+      "more": "More"
+    },
+    "groups": {
+      "shop": "Shop",
+      "sell": "Sell",
+      "insights": "Insights",
+      "account": "Account"
+    },
+    "collapse": "Collapse menu",
+    "expand": "Expand menu",
+    "locked": "Available on {plan}",
+    "moreTitle": "More",
+    "badge": "{count} new"
   },
   "Onboarding": {
     "title": "Create your shop",
@@ -270,7 +289,8 @@
           "action": "Share link"
         }
       }
-    }
+    },
+    "manageProducts": "Manage products"
   },
   "Share": {
     "title": "Your shop link",

@@ -159,18 +159,37 @@
     "goToLogin": "J'ai déjà un compte"
   },
   "Seller": {
-    "dashboard": "Tableau de bord",
     "settings": "Paramètres de la boutique",
-    "settingsShort": "Réglages",
     "viewShop": "Voir ma boutique",
     "menu": "Menu",
     "admin": "Admin",
-    "billing": "Forfait",
     "profileMenu": "Menu du compte",
     "account": "Connecté en tant que",
-    "look": "Style",
-    "sales": "Promos",
-    "dashboardShort": "Accueil"
+    "nav": {
+      "home": "Accueil",
+      "products": "Produits",
+      "look": "Style",
+      "settings": "Paramètres de la boutique",
+      "sales": "Promos",
+      "discountCodes": "Codes promo",
+      "orders": "Commandes",
+      "customers": "Clients",
+      "stats": "Statistiques",
+      "plan": "Forfait",
+      "team": "Équipe",
+      "more": "Plus"
+    },
+    "groups": {
+      "shop": "Boutique",
+      "sell": "Vendre",
+      "insights": "Analyses",
+      "account": "Compte"
+    },
+    "collapse": "Réduire le menu",
+    "expand": "Agrandir le menu",
+    "locked": "Disponible avec {plan}",
+    "moreTitle": "Plus",
+    "badge": "{count} nouveau(x)"
   },
   "Onboarding": {
     "title": "Créez votre boutique",
@@ -270,7 +289,8 @@
           "action": "Partager le lien"
         }
       }
-    }
+    },
+    "manageProducts": "Gérer les produits"
   },
   "Share": {
     "title": "Le lien de votre boutique",
