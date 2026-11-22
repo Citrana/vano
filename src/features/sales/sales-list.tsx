@@ -15,6 +15,7 @@ import { buttonVariants } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { useUpgradePlanName } from "@/features/billing/use-plan-catalog"
 import { useNow } from "@/features/shop-looks/editor/schedule-fields"
+import { PromoBarEditor } from "./promo-bar-editor"
 import { SaleRow } from "./sale-row"
 
 type Filter = "all" | SaleStatus
@@ -40,10 +41,11 @@ export function SalesLockCard({ hasSales }: { hasSales: boolean }) {
 }
 
 /**
- * The seller's Sales page (CLAUDE.md "Sales"): status filter chips (in
- * the address, `?status=`), the list, an empty state and, without the plan
- * feature, the "Available on Pro" card (saved sales stay listed; they can
- * be paused or deleted).
+ * The seller's Sales page (CLAUDE.md "Sales"): the Promo bar editor on
+ * top, then small status filter chips (in the address, `?status=`) and
+ * the compact list, an empty state and, without the plan feature, the
+ * "Available on Pro" card (saved sales stay listed; they can be paused or
+ * deleted).
  */
 export function SalesList() {
   const t = useTranslations("Sales")
@@ -72,6 +74,7 @@ export function SalesList() {
   return (
     <div className="flex flex-col gap-5">
       <PageTitle title={t("title")} action={data.sales.length > 0 ? newButton : null} />
+      <PromoBarEditor />
       {locked ? <SalesLockCard hasSales={data.sales.length > 0} /> : null}
       {data.sales.length === 0 ? (
         locked ? null : (
@@ -79,7 +82,7 @@ export function SalesList() {
         )
       ) : (
         <>
-          <div role="toolbar" aria-label={t("filterLabel")} className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 py-1">
+          <div role="toolbar" aria-label={t("filterLabel")} className="no-scrollbar -mx-4 flex gap-1.5 overflow-x-auto px-4">
             {FILTERS.map((key) => (
               <button
                 key={key}
@@ -92,19 +95,24 @@ export function SalesList() {
                   const qs = next.toString()
                   router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
                 }}
-                className={cn(
-                  "min-h-11 shrink-0 rounded-full border px-4 text-sm font-medium whitespace-nowrap focus-ring",
-                  filter === key ? "chip-selected" : "bg-card hover:bg-muted",
-                )}
+                // A small chip inside a 44px tap target.
+                className="group flex min-h-11 shrink-0 items-center rounded-full focus-ring"
               >
-                {key === "all" ? t("filters.all") : t(`status.${key}`)}
+                <span
+                  className={cn(
+                    "flex h-8 items-center rounded-full border px-3 text-xs font-medium whitespace-nowrap transition-colors",
+                    filter === key ? "chip-selected" : "bg-card group-hover:bg-muted",
+                  )}
+                >
+                  {key === "all" ? t("filters.all") : t(`status.${key}`)}
+                </span>
               </button>
             ))}
           </div>
           {shown.length === 0 ? (
             <p className="py-10 text-center text-sm text-muted-foreground">{t("emptyFilter")}</p>
           ) : (
-            <ul className="flex flex-col gap-3">
+            <ul className="flex flex-col divide-y rounded-xl border bg-card">
               {shown.map((sale) => (
                 <SaleRow key={sale._id} sale={sale} currency={data.currency} now={now} locked={locked} />
               ))}

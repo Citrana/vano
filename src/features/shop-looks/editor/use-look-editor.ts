@@ -4,7 +4,7 @@ import { useMutation } from "convex/react"
 import type { FunctionReturnType } from "convex/server"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { api } from "../../../../convex/_generated/api"
-import { sameLook, shownLook, withoutPromo } from "../../../../convex/lib/looks/clean"
+import { sameLook, shownLook, withoutPromo, withPublishedBar } from "../../../../convex/lib/looks/clean"
 import { lookProblems, type LookProblem } from "../../../../convex/lib/looks/contrast"
 import { FREE_LOOK, presetLook } from "../../../../convex/lib/looks/presets"
 import { DEFAULT_PROFILE } from "../../../../convex/lib/looks/profile"
@@ -45,8 +45,6 @@ export function useLookEditor(mine: MineLook) {
   const [saveError, setSaveError] = useState<unknown>(null)
   /** Blob URLs for photos uploaded in this session (until the server URL arrives). */
   const [localUrls, setLocalUrls] = useState<Record<string, string>>({})
-  /** The Promo bar panel's "Preview as: Sale" switch (previews only, never saved). */
-  const [promoPreviewSale, setPromoPreviewSale] = useState(false)
 
   const pending = useRef<StoredLook | null>(null)
   const timer = useRef<number | undefined>(undefined)
@@ -148,11 +146,8 @@ export function useLookEditor(mine: MineLook) {
           const profile = current.overrides.profile ?? DEFAULT_PROFILE
           return { ...current, overrides: { ...current.overrides, profile: { ...profile, borderColor: { kind: "custom", hex: fix.value } } } }
         }
-        if (fix.field === "announcementText") {
-          const bar = current.overrides.announcement
-          if (!bar?.colors) return current
-          return { ...current, overrides: { ...current.overrides, announcement: { ...bar, colors: { ...bar.colors, foreground: fix.value } } } }
-        }
+        // The Promo bar's colours are fixed on the Sales page.
+        if (fix.field === "announcementText") return current
         const colors = resolveColors(current)
         const base = current.overrides.colors ?? { accent: colors.primary, background: colors.background }
         return { ...current, overrides: { ...current.overrides, colors: { ...base, [fix.field]: fix.value } } }
@@ -184,11 +179,17 @@ export function useLookEditor(mine: MineLook) {
     (look: StoredLook): ResolvedLook<string> => mapBannerImage(resolveLook(look), (id) => urls[id] ?? null),
     [urls],
   )
+  /** The draft with the saved Promo bar (it's edited on the Sales page, never here). */
+  const withBar = useMemo(() => withPublishedBar(draft, mine.published), [draft, mine.published])
   /** The draft with its normal banner (what shows when no promo is live). */
-  const resolved = useMemo(() => withUrls(withoutPromo(draft)), [withUrls, draft])
+  const resolved = useMemo(() => withUrls(withoutPromo(withBar)), [withUrls, withBar])
   /** The draft with its event & promo banner, if any. */
-  const full = useMemo(() => withUrls(draft), [withUrls, draft])
-  const problems = useMemo(() => lookProblems(full), [full])
+  const full = useMemo(() => withUrls(withBar), [withUrls, withBar])
+  // The Promo bar's own fix is applied on the Sales page, not here.
+  const problems = useMemo(
+    () => lookProblems(full).map((p) => (p.fix?.field === "announcementText" ? { ...p, fix: null } : p)),
+    [full],
+  )
   // The same rule as the public pages (`visibleLook`).
   const live = useMemo(
     () =>
@@ -210,7 +211,7 @@ export function useLookEditor(mine: MineLook) {
       mine.announcementEntitled,
     ],
   )
-  const unpublished = !sameLook(draft, mine.published ?? FREE_LOOK)
+  const unpublished = !sameLook(withBar, mine.published ?? FREE_LOOK)
 
   return {
     draft,
@@ -232,8 +233,6 @@ export function useLookEditor(mine: MineLook) {
     publish,
     discard,
     addLocalUrl,
-    promoPreviewSale,
-    setPromoPreviewSale,
   }
 }
 

@@ -1065,7 +1065,7 @@
       "sections": "Sections",
       "sectionsHint": "Ce que montre votre boutique, dans quel ordre, et la mise en page de vos produits.",
       "announcement": "Bandeau promo",
-      "announcementHint": "Une fine ligne en haut de votre boutique : votre promo quand elle a lieu, sinon votre message."
+      "announcementHint": "Se modifie maintenant sur la page Promos."
     },
     "status": {
       "saving": "Enregistrement du brouillon…",
@@ -1379,9 +1379,6 @@
       "urlHelp": "S’ouvre dans un nouvel onglet, par ex. instagram.com/votreboutique.",
       "urlInvalid": "Saisissez une adresse web, par ex. https://exemple.com.",
       "intro": "Pendant une promo, le bandeau l’affiche (titre, remise, compte à rebours et un lien « Voir la promo »). Sinon il affiche votre message. Sans l’un ni l’autre, il reste masqué.",
-      "previewAs": "Aperçu",
-      "previewText": "Message",
-      "previewSale": "Pendant une promo",
       "textHelp": "Affiché quand aucune promo n’a lieu. Laissez vide pour n’afficher le bandeau que pendant les promos.",
       "saleTitle": "Titre de la promo (facultatif)",
       "saleTitlePlaceholder": "Promo",
@@ -1406,7 +1403,10 @@
       "customColors": "Mes couleurs",
       "customColorsHelp": "Choisissez le fond et le texte. Le texte doit rester lisible (contraste 4,5:1) pour pouvoir publier.",
       "background": "Fond",
-      "textColor": "Texte"
+      "textColor": "Texte",
+      "movedTitle": "Le bandeau promo est maintenant dans Promos",
+      "movedBody": "Réglez ses couleurs, son style, son icône, son titre et son message à côté de vos promos, avec un aperçu en direct.",
+      "editInSales": "Modifier dans Promos"
     }
   },
   "Demo": {
@@ -2660,6 +2660,19 @@
       "keepEditing": "Continuer à modifier",
       "saveChanges": "Enregistrer",
       "publish": "Publier la promotion"
+    },
+    "promoBar": {
+      "title": "Bandeau promo",
+      "hint": "La fine ligne en haut de votre boutique : votre promo en cours, sinon votre message.",
+      "preview": "Aperçu (comme le voient les clients)",
+      "sampleSale": "Aperçu avec une promo d’exemple",
+      "off": "Le bandeau promo est désactivé.",
+      "hiddenNow": "Aucune promo en cours et pas de message : le bandeau est masqué pour l’instant.",
+      "hiddenByPlan": "Votre bandeau promo est enregistré, mais votre offre ne l’affiche pas. Passez à l’offre supérieure pour l’afficher, ou désactivez-le.",
+      "save": "Enregistrer",
+      "saving": "Enregistrement…",
+      "discard": "Annuler les modifications",
+      "saved": "Bandeau promo enregistré"
     }
   }
 }

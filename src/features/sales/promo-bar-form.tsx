@@ -16,18 +16,19 @@ import {
   type AnnouncementTone,
   type PromoIcon,
   type PromoStyle,
-} from "../../../../convex/lib/looks/announcement"
-import type { Hex } from "../../../../convex/lib/looks/color"
-import { ACCENT_SWATCHES } from "../../../../convex/lib/looks/presets"
-import { CREAM, INK, resolveAnnouncement, WHITE } from "../../../../convex/lib/looks/resolve"
+} from "../../../convex/lib/looks/announcement"
+import type { Hex } from "../../../convex/lib/looks/color"
+import { ACCENT_SWATCHES } from "../../../convex/lib/looks/presets"
+import { CREAM, INK, resolveAnnouncement, WHITE } from "../../../convex/lib/looks/resolve"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
-import { ChoiceGroup, radioKeyDown } from "./choice-group"
-import { ColorPicker } from "./colors-section"
-import { ContrastNotes } from "./contrast-notes"
-import { ProNote } from "./pro-note"
-import { ScheduleFields, useNow } from "./schedule-fields"
-import type { LookEditorState, MineLook } from "./use-look-editor"
+import { ChoiceGroup, radioKeyDown } from "@/features/shop-looks/editor/choice-group"
+import { ColorPicker } from "@/features/shop-looks/editor/colors-section"
+import { ContrastNotes } from "@/features/shop-looks/editor/contrast-notes"
+import { ProNote } from "@/features/shop-looks/editor/pro-note"
+import { ScheduleFields, useNow } from "@/features/shop-looks/editor/schedule-fields"
+import type { LookProblem } from "../../../convex/lib/looks/contrast"
+import type { ResolvedColors } from "../../../convex/lib/looks/resolve"
 
 type LinkChoice = "none" | "sale" | "url"
 type ColorChoice = AnnouncementTone | "custom"
@@ -36,32 +37,41 @@ const TEXT_SWATCHES: readonly Hex[] = [WHITE, CREAM, INK, "#000000"]
 const ICON_ART = { tag: TagIcon, sparkle: SparklesIcon, flower: FlowerIcon } as const
 
 /**
- * The Promo bar (CLAUDE.md "Shop looks"): one slim line under the shop
- * header that shows the running sale, else the seller's text. Its text
- * and link, the sale title, countdown and close switches, style, icon,
- * colours (shop colours, or the seller's background + text colours,
- * contrast checked) and optional dates. The `announcement` facet of the
- * draft; only valid values are written, so autosave never fails.
+ * The Promo bar's options (CLAUDE.md "Shop looks"), on the Sales page: its
+ * message and link, the sale title, countdown and close switches, style,
+ * icon, colours (shop colours, or the seller's background + text colours,
+ * contrast checked) and optional dates. Controlled: `value` is the
+ * `announcement` facet being edited (undefined = no bar); only valid
+ * values are written, and `promo-bar-editor.tsx` saves it.
  */
-export function AnnouncementSection({
-  editor,
-  mine,
+export function PromoBarForm({
+  value: facet,
+  onChange,
+  colors,
+  problems,
+  onFix,
+  saleLive,
+  entitled,
   disabled,
 }: {
-  editor: LookEditorState
-  mine: MineLook
+  value: AnnouncementFacet | undefined
+  onChange: (next: AnnouncementFacet | undefined) => void
+  /** The shop colours visitors see (tone samples). */
+  colors: ResolvedColors
+  /** The bar's contrast problems (`lookProblems`, announcement target). */
+  problems: readonly LookProblem[]
+  onFix: (fix: NonNullable<LookProblem["fix"]>) => void
+  saleLive: boolean
+  entitled: boolean
   disabled: boolean
 }) {
   const t = useTranslations("LookEditor.announcement")
   const id = useId()
   const now = useNow()
-  const facet = editor.draft.overrides.announcement
-  const set = (next: AnnouncementFacet | undefined) => editor.setOverride("announcement", next)
-  const patch = (next: Partial<AnnouncementFacet>) =>
-    editor.update((current) => {
-      const announcement = current.overrides.announcement
-      return announcement ? { ...current, overrides: { ...current.overrides, announcement: { ...announcement, ...next } } } : current
-    })
+  const set = onChange
+  const patch = (next: Partial<AnnouncementFacet>) => {
+    if (facet) onChange({ ...facet, ...next })
+  }
 
   const [text, setText] = useState(facet?.text ?? "")
   const [title, setTitle] = useState(facet?.title ?? "")
@@ -70,10 +80,7 @@ export function AnnouncementSection({
   const urlProblem = linkChoice === "url" && url.trim().length > 0 && cleanAnnouncementUrl(url) === null
 
   function turnOn(on: boolean) {
-    if (!on) {
-      editor.setPromoPreviewSale(false)
-      return set(undefined)
-    }
+    if (!on) return set(undefined)
     const value = text.trim().length > 0 ? text : t("defaultText")
     setText(value)
     setLinkChoice("none")
@@ -90,7 +97,6 @@ export function AnnouncementSection({
     }
   }
 
-  const colors = editor.resolved.colors
   const colorChoice: ColorChoice = facet?.colors ? "custom" : (facet?.tone ?? "accent")
 
   function chooseColors(choice: ColorChoice) {
@@ -101,7 +107,6 @@ export function AnnouncementSection({
     if (current) patch({ colors: { background: current.background, foreground: current.foreground } })
   }
 
-  const barProblems = editor.problems.filter((p) => p.target === "announcement")
   const colorChoices: ColorChoice[] = [...ANNOUNCEMENT_TONES, "custom"]
 
   return (
@@ -118,16 +123,6 @@ export function AnnouncementSection({
 
       {facet ? (
         <>
-          <ChoiceGroup<"text" | "sale">
-            label={t("previewAs")}
-            value={editor.promoPreviewSale ? "sale" : "text"}
-            onChange={(value) => editor.setPromoPreviewSale(value === "sale")}
-            options={[
-              { value: "text", label: t("previewText") },
-              { value: "sale", label: t("previewSale") },
-            ]}
-          />
-
           <div className="flex flex-col gap-2">
             <label htmlFor={`${id}-text`} className="text-sm font-medium">
               {t("text")}
@@ -163,7 +158,7 @@ export function AnnouncementSection({
               ]}
             />
             {linkChoice === "sale" ? (
-              <p className="text-xs text-muted-foreground">{mine.saleLive ? t("saleLinkLive") : t("saleLinkHelp")}</p>
+              <p className="text-xs text-muted-foreground">{saleLive ? t("saleLinkLive") : t("saleLinkHelp")}</p>
             ) : null}
             {linkChoice === "url" ? (
               <div className="flex flex-col gap-2">
@@ -310,7 +305,7 @@ export function AnnouncementSection({
                 />
               </div>
             ) : null}
-            <ContrastNotes problems={barProblems} onFix={editor.applyFix} disabled={disabled} />
+            <ContrastNotes problems={problems} onFix={onFix} disabled={disabled} />
           </div>
 
           <ScheduleFields
@@ -322,7 +317,7 @@ export function AnnouncementSection({
         </>
       ) : null}
 
-      {!mine.announcementEntitled && facet ? <ProNote feature="announcementBar" /> : null}
+      {!entitled && facet ? <ProNote feature="announcementBar" /> : null}
     </div>
   )
 }

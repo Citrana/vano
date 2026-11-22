@@ -1065,7 +1065,7 @@
       "sections": "Sections",
       "sectionsHint": "What your shop page shows, in which order, and how your products are laid out.",
       "announcement": "Promo bar",
-      "announcementHint": "One slim line at the top of your shop: your sale while one runs, otherwise your message."
+      "announcementHint": "Now edited on the Sales page."
     },
     "status": {
       "saving": "Saving draft…",
@@ -1379,9 +1379,6 @@
       "urlHelp": "Opens in a new tab, e.g. instagram.com/yourshop.",
       "urlInvalid": "Enter a web address, e.g. https://example.com.",
       "intro": "While a sale runs, the bar shows it (title, discount, countdown and a “View sale” link). Otherwise it shows your message. With neither, it stays hidden.",
-      "previewAs": "Preview as",
-      "previewText": "Message",
-      "previewSale": "During a sale",
       "textHelp": "Shown when no sale runs. Leave it empty to show the bar only during sales.",
       "saleTitle": "Sale title (optional)",
       "saleTitlePlaceholder": "Sale",
@@ -1406,7 +1403,10 @@
       "customColors": "My own colors",
       "customColorsHelp": "Pick the background and the text. The text must stay easy to read (contrast 4.5:1) before you can publish.",
       "background": "Background",
-      "textColor": "Text"
+      "textColor": "Text",
+      "movedTitle": "The Promo bar is now in Sales",
+      "movedBody": "Set its colors, style, icon, title and message next to your sales, with a live preview.",
+      "editInSales": "Edit in Sales"
     }
   },
   "Demo": {
@@ -2660,6 +2660,19 @@
       "keepEditing": "Keep editing",
       "saveChanges": "Save changes",
       "publish": "Publish sale"
+    },
+    "promoBar": {
+      "title": "Promo bar",
+      "hint": "The slim bar at the top of your shop: your running sale, otherwise your message.",
+      "preview": "Preview (as shoppers see it)",
+      "sampleSale": "Preview with a sample sale",
+      "off": "The Promo bar is off.",
+      "hiddenNow": "No sale is running and there's no message, so the bar is hidden right now.",
+      "hiddenByPlan": "Your Promo bar is saved, but your plan doesn't show it. Upgrade to show it again, or turn it off.",
+      "save": "Save",
+      "saving": "Saving…",
+      "discard": "Discard",
+      "saved": "Promo bar saved"
     }
   }
 }

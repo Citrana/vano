@@ -15,7 +15,7 @@ import type { ReactNode } from "react"
 import type { StaticImageData } from "next/image"
 import type { LookOverrides, StoredLook } from "../../../../convex/lib/looks/validators"
 import type { FeatureFlag } from "../../../../convex/lib/planFeatures"
-import { AnnouncementSection } from "./announcement-section"
+import { PromoBarMoved } from "./promo-bar-moved"
 import { BannerSection } from "./banner-section"
 import { ButtonsSection } from "./buttons-section"
 import { ColorsSection } from "./colors-section"
@@ -128,9 +128,10 @@ export const LOOK_SECTIONS = [
   {
     key: "announcement",
     icon: MegaphoneIcon,
-    Panel: ({ editor, mine, disabled }) => <AnnouncementSection editor={editor} mine={mine} disabled={disabled} />,
-    changed: facetChanged("announcement"),
-    locked: (mine) => !mine.announcementEntitled,
+    // Edited and saved on the Sales page now: just a link here.
+    Panel: () => <PromoBarMoved />,
+    changed: () => false,
+    locked: () => false,
     lockedBy: "announcementBar",
   },
 ] as const satisfies readonly LookSection[]
