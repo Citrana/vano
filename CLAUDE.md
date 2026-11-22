@@ -344,7 +344,8 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   About choice); the rest needs `featuredSections`. A downgrade shows
   `freeSectionsOf(saved)`; the choice is kept.
 - **Promo bar** (`PromoBar`, `src/features/public/promo-bar.tsx`): one
-  slim line under the shop header, the one place for the sale strip and
+  slim line, sticky at the top of the shop page and full width (edge to
+  edge, content aligned to the page column), the one place for the sale strip and
   the seller's message. What it says is one pure rule,
   `promoBarContent` (`announcement.ts`): a running sale wins (seller's
   title or "Sale", the discount from `promoSaleSummary`, the countdown,

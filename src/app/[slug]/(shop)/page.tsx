@@ -70,6 +70,7 @@ export default async function ShopPage({ params, searchParams }: PageProps<"/[sl
   return (
     <ShopLocaleProvider language={shop.language}>
       <ShopLookScope look={shop.look} className="flex flex-1 flex-col">
+        <PromoBar bar={announcement} sale={sale} slug={shop.slug} className="sticky top-0 z-30" />
         <main className={`mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 pb-10 ${hasBanner ? "md:pt-6" : "pt-6 md:pt-10"}`}>
           <div className="flex flex-col">
             {bannerLinksToSale ? (
@@ -81,8 +82,7 @@ export default async function ShopPage({ params, searchParams }: PageProps<"/[sl
             )}
             <ShopHeader shop={shop} profile={shop.look.profile} onBanner={hasBanner} />
           </div>
-          <PromoBar bar={announcement} sale={sale} slug={shop.slug} />
-          <div id="products" className="scroll-mt-4">
+          <div id="products" className="scroll-mt-16">
             <ShopSections
               // A link to other filters (e.g. "View sale") starts over from them.
               key={shopFiltersToQuery(filters)}

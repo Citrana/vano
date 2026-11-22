@@ -42,8 +42,8 @@ function barStyle(bar: ResolvedAnnouncement | null): CSSProperties | undefined {
 }
 
 /**
- * The Promo bar (CLAUDE.md "Shop looks"): one slim line under the shop
- * header. A running sale wins (title, discount, countdown, "View sale"),
+ * The Promo bar (CLAUDE.md "Shop looks"): one slim line, sticky at the top
+ * of the shop page and full width (its content aligned to the page column). A running sale wins (title, discount, countdown, "View sale"),
  * then the seller's text, else nothing (`promoBarContent`). `bar` is the
  * seller's Promo bar when live and in the plan (`shownLook`), else null:
  * a running sale still shows, in the plain card style (sales are already
@@ -143,13 +143,10 @@ export function PromoBar({
       role="region"
       aria-label={t("label")}
       style={barStyle(bar)}
-      className={cn(
-        "flex w-full items-center gap-2 rounded-sm border ps-3 text-[13px] leading-snug",
-        bar ? "" : "bg-card",
-        closable ? "pe-0" : "pe-3",
-        className,
-      )}
+      // Full width, edge to edge; the content lines up with the page column.
+      className={cn("w-full text-[13px] leading-snug", bar?.border ? "border-y" : "border-b", bar ? "" : "bg-card", className)}
     >
+      <div className={cn("mx-auto flex max-w-5xl items-center gap-2 ps-4", closable ? "pe-1" : "pe-4")}>
       {Icon ? (
         <Icon className={cn("size-4 shrink-0", bar ? "" : "text-[var(--shop-price,currentColor)]")} aria-hidden />
       ) : null}
@@ -171,6 +168,7 @@ export function PromoBar({
           </button>
         )
       ) : null}
+      </div>
     </div>
   )
 }

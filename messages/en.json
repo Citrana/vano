@@ -1065,7 +1065,7 @@
       "sections": "Sections",
       "sectionsHint": "What your shop page shows, in which order, and how your products are laid out.",
       "announcement": "Promo bar",
-      "announcementHint": "One slim line under your shop header: your sale while one runs, otherwise your message."
+      "announcementHint": "One slim line at the top of your shop: your sale while one runs, otherwise your message."
     },
     "status": {
       "saving": "Saving draft…",
@@ -2406,7 +2406,7 @@
     },
     "announcementBar": {
       "name": "Promo bar",
-      "description": "A slim bar under the shop header: the running sale with its countdown, or your message, in your own style."
+      "description": "A slim bar at the top of the shop: the running sale with its countdown, or your message, in your own style."
     }
   },
   "PlanAreas": {

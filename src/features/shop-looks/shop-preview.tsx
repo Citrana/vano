@@ -13,16 +13,20 @@ import { ShopBanner } from "./shop-banner"
 export function ShopPreview({
   look,
   zoomClassName,
+  top,
   children,
 }: {
   look: ResolvedLook<string>
   zoomClassName: string
+  /** Above the banner, full width (the Promo bar). */
+  top?: ReactNode
   children: ReactNode
 }) {
   const hasBanner = look.banner.kind !== "none"
   return (
     <ShopLookScope look={look} className="size-full overflow-hidden">
       <div inert aria-hidden className={cn("w-[375px]", zoomClassName)}>
+        {top}
         {hasBanner ? <ShopBanner banner={look.banner} sizing="phone" priority={false} /> : null}
         <div className={cn("flex flex-col gap-5 px-4 pb-6", !hasBanner && "pt-12")}>{children}</div>
       </div>

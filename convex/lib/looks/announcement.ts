@@ -1,8 +1,8 @@
 import { v, type Infer } from "convex/values";
 
 /**
- * The Promo bar (CLAUDE.md "Shop looks"): one slim line under the shop
- * header. It decides its own text (`promoBarContent`): a running sale
+ * The Promo bar (CLAUDE.md "Shop looks"): one slim line, sticky at the
+ * top of the shop page, full width. It decides its own text (`promoBarContent`): a running sale
  * (title, discount, countdown, "View sale"), else the seller's text, else
  * nothing. Stored as the optional `announcement` facet of the look (the
  * old announcement bar: every field added since is optional, so stored

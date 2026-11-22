@@ -1065,7 +1065,7 @@
       "sections": "Sections",
       "sectionsHint": "Ce que montre votre boutique, dans quel ordre, et la mise en page de vos produits.",
       "announcement": "Bandeau promo",
-      "announcementHint": "Une fine ligne sous l’en-tête de votre boutique : votre promo quand elle a lieu, sinon votre message."
+      "announcementHint": "Une fine ligne en haut de votre boutique : votre promo quand elle a lieu, sinon votre message."
     },
     "status": {
       "saving": "Enregistrement du brouillon…",
@@ -2406,7 +2406,7 @@
     },
     "announcementBar": {
       "name": "Bandeau promo",
-      "description": "Une fine ligne sous l’en-tête de la boutique : la promo en cours et son compte à rebours, ou votre message, à votre style."
+      "description": "Une fine ligne en haut de la boutique : la promo en cours et son compte à rebours, ou votre message, à votre style."
     }
   },
   "PlanAreas": {

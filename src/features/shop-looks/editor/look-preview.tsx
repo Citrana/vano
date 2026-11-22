@@ -45,7 +45,7 @@ export function LookPreview({
     shop.city && shop.country ? t("location", { city: shop.city, country: countryName(shop.country, shop.language) }) : null
 
   const page = (zoom: string) => (
-    <ShopPreview look={look} zoomClassName={zoom}>
+    <ShopPreview look={look} zoomClassName={zoom} top={<PreviewAnnouncement look={look} shop={shop} sale={promoSale} />}>
       <ShopHeaderView
         shop={shop}
         locationLabel={locationLabel}
@@ -54,7 +54,6 @@ export function LookPreview({
         onBanner={look.banner.kind !== "none"}
         sizing="phone"
       />
-      <PreviewAnnouncement look={look} shop={shop} sale={promoSale} />
       <PreviewBody look={look} shop={shop} currency={currency} products={products} columns="phone" />
     </ShopPreview>
   )
