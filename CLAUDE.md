@@ -101,6 +101,18 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   `(shop)` group / product segment so they never wrap a child's check.
 - Shop pages carry **no Vano badge or "Create your shop" footer, in any
   plan**. Don't add one back.
+- Product page (`/[slug]/[productId]`, shared by `/demo/[productId]`):
+  one main photo (swipeable) with prev / next arrows and small
+  thumbnails below it, on every screen size (`product-gallery.tsx`); every photo whole (`object-contain` on a
+  `bg-muted` 4:5 tile, never cropped or zoomed), tap → full size
+  (`product-lightbox.tsx`, prev / next, arrow keys). The info column is
+  sticky on desktop: category, name, Sold out / Few left, price and sale
+  (`sale.tsx`), size chips, colour dots, then Order on WhatsApp + share
+  (`OrderPanel`, `ShareButton`), a fixed bottom bar on phones (the page
+  leaves room for it). Description and Shop info are collapsible
+  `ProductSection`s, shown only when filled (Shop info also follows the
+  look's About switch). Photos, size chips and sections use 0–2px
+  corners; buttons follow the look's shape.
 
 ## Marketing site
 
@@ -204,7 +216,7 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   sheet and the preview all read it; never add a section by hand.
 - Presets, curated swatches, gradients and artworks live **only** in
   `convex/lib/looks/` (`presets.ts`, `banners.ts`); names in
-  `ShopLooks.*` / `LookEditor.*`. `classic` is the free look. Every preset
+  `ShopLooks.*` / `LookEditor.*`. `classic` is the free look (square buttons, the default shape). Every preset
   must pass the contrast check with zero warnings (tested).
 - `resolveLook` (pure) turns a look into the semantic tokens; text colours
   are derived, never picked. `ShopLookScope` applies them inline (no
@@ -232,7 +244,7 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   `data-btn-design` / `data-btn-deco`) on `shop-action` buttons and
   `shop-chip` chips; decorations are corner pseudo-elements reusing the
   sticker SVGs, animations only under `prefers-reduced-motion:
-  no-preference`. The WhatsApp button keeps `--whatsapp` and its icon; its
+  no-preference`. The WhatsApp button keeps `--whatsapp` and the WhatsApp icon (`WhatsAppIcon`); its
   label comes from `Public.orderLabels`. The Sticker offset shadow is a
   seller-chosen shop style, the one exception to "no shadows" (shop pages only).
 
