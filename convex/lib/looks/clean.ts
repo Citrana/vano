@@ -183,6 +183,17 @@ export function withoutAnnouncement(look: StoredLook): StoredLook {
   return { ...look, overrides };
 }
 
+/**
+ * `look` with the published look's Promo bar (CLAUDE.md "Shop looks"):
+ * the bar is saved from the Sales page (`shopLooks.savePromoBar`), so the
+ * Look editor's draft and publish never change it.
+ */
+export function withPublishedBar(look: StoredLook, published: StoredLook | null | undefined): StoredLook {
+  const bar = published?.overrides.announcement;
+  const without = withoutAnnouncement(look);
+  return bar ? { ...without, overrides: { ...without.overrides, announcement: bar } } : without;
+}
+
 /** The look without its profile decoration (what shows when the decoration isn't live). */
 export function withoutDecoration(look: StoredLook): StoredLook {
   const profile = look.overrides.profile;
@@ -243,5 +254,10 @@ export function shownLook(published: StoredLook | null | undefined, flags: Shown
 
 /** Same look, whatever the key order (stored docs don't keep it). */
 export function sameLook(a: StoredLook | null | undefined, b: StoredLook | null | undefined): boolean {
+  return JSON.stringify(canonical(a ?? null)) === JSON.stringify(canonical(b ?? null));
+}
+
+/** Whether two Promo bars are the same (the Sales page's unsaved-changes check). */
+export function samePromoBar(a: AnnouncementFacet | null | undefined, b: AnnouncementFacet | null | undefined): boolean {
   return JSON.stringify(canonical(a ?? null)) === JSON.stringify(canonical(b ?? null));
 }

@@ -1,8 +1,9 @@
 import { internal } from "../../_generated/api";
 import type { Doc, Id } from "../../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../../_generated/server";
-import { hasFeature } from "../entitlements";
-import { bestSaleFor, saleLiveAt, type AppliedSale } from "./active";
+import { getEntitlements, hasFeature, shopProducts, visibleProductIds } from "../entitlements";
+import { promoSaleSummary, type PromoSaleSummary } from "../looks/announcement";
+import { bestSaleFor, publicSale, saleLiveAt, type AppliedSale } from "./active";
 import { ENDING_SOON_MS, SALES_MAX } from "./rules";
 
 /**
@@ -31,6 +32,21 @@ export async function liveSalesFor(ctx: QueryCtx, shop: Doc<"shops">): Promise<D
     .take(SALES_MAX);
   if (live.length === 0) return [];
   return (await hasFeature(ctx, shop, "salesPromotions")) ? live : [];
+}
+
+/**
+ * What the Promo bar says about the running sale (biggest discount,
+ * soonest countdown end), over the products visitors see, or null.
+ * The same pieces as `public.shopBySlug`.
+ */
+export async function liveSaleSummary(ctx: QueryCtx, shop: Doc<"shops">): Promise<PromoSaleSummary | null> {
+  const sales = await liveSalesFor(ctx, shop);
+  if (sales.length === 0) return null;
+  const products = await shopProducts(ctx, shop._id);
+  const visible = visibleProductIds(products, (await getEntitlements(ctx, shop)).limits);
+  return promoSaleSummary(
+    products.filter((p) => visible.has(p._id)).map((p) => ({ sale: publicSale(bestSaleFor(p, sales, shop.currency)) })),
+  );
 }
 
 /** The sale a visitor gets on one product right now, or null. */

@@ -4,14 +4,15 @@ import type { Doc } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
 import { hasFeature, requireCan } from "./lib/entitlements";
 import { fail } from "./lib/errors";
-import { cleanLook, lookImageIds, sameLook, withoutPromo } from "./lib/looks/clean";
+import { announcementFacetValidator } from "./lib/looks/announcement";
+import { cleanAnnouncement, cleanLook, lookImageIds, sameLook, withoutPromo, withPublishedBar } from "./lib/looks/clean";
 import { hasBlockingProblem, lookProblems } from "./lib/looks/contrast";
 import { FREE_LOOK, isFreeLook } from "./lib/looks/presets";
 import { resolveLook } from "./lib/looks/resolve";
 import { liveFlags, lookBoundaries, scheduleProblem, type LiveFlags } from "./lib/looks/schedule";
 import { isFreeSections } from "./lib/looks/sections";
-import { bannerUrls, lookRow } from "./lib/looks/store";
-import { liveSalesFor } from "./lib/sales/store";
+import { bannerUrls, lookRow, publicLookFor } from "./lib/looks/store";
+import { liveSaleSummary, liveSalesFor } from "./lib/sales/store";
 import { storedLookValidator, type StoredLook } from "./lib/looks/validators";
 import { claimImages, deleteFilesNotIn, requireOwnShop, sellerMutation, sellerQuery } from "./lib/seller";
 
@@ -30,8 +31,13 @@ import { claimImages, deleteFilesNotIn, requireOwnShop, sellerMutation, sellerQu
  * scheduled at their start and end (lib/looks/schedule.ts).
  *
  * Sections other than "All products" and layouts other than 2 columns
- * need `featuredSections`; the announcement bar needs `announcementBar`
- * and, like the promo, is live only between its dates (`announcementLive`).
+ * need `featuredSections`.
+ *
+ * The Promo bar (`overrides.announcement`) is edited on the Sales page and
+ * saved straight away by `savePromoBar` (published and draft); the Look
+ * editor's `saveDraft` / `publish` keep the published one
+ * (`withPublishedBar`). It needs `announcementBar` and, like the promo, is
+ * live only between its dates (`announcementLive`).
  */
 
 /** Whether the published promo / decoration / announcement are live, and schedules the next changes. */
@@ -69,7 +75,7 @@ export const mine = sellerQuery({
       /** What the editor starts from. */
       editing: draft ?? published ?? FREE_LOOK,
       published,
-      hasUnpublishedChanges: draft !== null && !sameLook(draft, published ?? FREE_LOOK),
+      hasUnpublishedChanges: draft !== null && !sameLook(withPublishedBar(draft, published), published ?? FREE_LOOK),
       entitled,
       /** The seller's design is saved but the plan shows the free look instead. */
       hiddenByPlan: !entitled && published !== null && !isFreeLook(withoutPromo(published)),
@@ -104,9 +110,11 @@ export const saveDraft = sellerMutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     const shop = await requireOwnShop(ctx);
-    const look = cleanLook(args.look);
-    if (look === null) fail("LOOK_INVALID");
+    const cleaned = cleanLook(args.look);
+    if (cleaned === null) fail("LOOK_INVALID");
     const row = await lookRow(ctx, shop._id);
+    // The Promo bar is saved from the Sales page: keep the published one.
+    const look = withPublishedBar(cleaned, row?.published);
 
     const used = lookImageIds(look);
     await claimImages(ctx, used);
@@ -130,7 +138,8 @@ export const publish = sellerMutation({
     const shop = await requireOwnShop(ctx);
     const row = await lookRow(ctx, shop._id);
     if (!row?.draft) fail("LOOK_NO_DRAFT");
-    const draft = row.draft;
+    // The Promo bar is never changed by a publish (`savePromoBar` owns it).
+    const draft = withPublishedBar(row.draft, row.published);
     const now = Date.now();
     // Checks the normal banner and, if any, the event banner's text.
     if (hasBlockingProblem(lookProblems(resolveLook(draft)))) fail("LOOK_CONTRAST");
@@ -146,12 +155,6 @@ export const publish = sellerMutation({
     if (!isFreeSections(draft.overrides.sections)) {
       await requireCan(ctx, shop, { kind: "feature", feature: "featuredSections" });
     }
-    const announcement = draft.overrides.announcement;
-    if (announcement) {
-      await requireCan(ctx, shop, { kind: "feature", feature: "announcementBar" });
-      if (scheduleProblem(announcement, now) !== null) fail("ANNOUNCEMENT_SCHEDULE_INVALID");
-    }
-
     await deleteFilesNotIn(ctx, lookImageIds(row.published), lookImageIds(draft));
     await ctx.db.patch("shopLooks", row._id, {
       published: draft,
@@ -175,6 +178,79 @@ export const discardDraft = sellerMutation({
     if (!row?.draft) return null;
     await deleteFilesNotIn(ctx, lookImageIds(row.draft), lookImageIds(row.published));
     await ctx.db.patch("shopLooks", row._id, { draft: undefined, draftUpdatedAt: undefined });
+    return null;
+  },
+});
+
+/**
+ * The Sales page's Promo bar editor: the saved bar, the look visitors see
+ * (its colours for the preview), the running sale's summary (the bar's
+ * real sale text) and the plan state. Nothing personal, no storage ids.
+ */
+export const promoBar = sellerQuery({
+  permission: "ownShop.manage",
+  args: {},
+  handler: async (ctx) => {
+    const shop = await requireOwnShop(ctx);
+    const row = await lookRow(ctx, shop._id);
+    const entitled = await hasFeature(ctx, shop, "announcementBar");
+    const bar = row?.published?.overrides.announcement ?? null;
+    return {
+      slug: shop.slug,
+      bar,
+      entitled,
+      /** Saved, but the plan doesn't show it. */
+      hiddenByPlan: !entitled && bar !== null,
+      /** Between its dates now. */
+      live: row?.announcementLive === true,
+      look: await publicLookFor(ctx, shop),
+      sale: await liveSaleSummary(ctx, shop),
+    };
+  },
+});
+
+/**
+ * Saves the Promo bar from the Sales page, live at once (no publish): into
+ * the published look and the draft, so the Look editor never brings an
+ * old one back. Saving one needs `announcementBar`, valid dates and
+ * readable colours; removing it (null) works on every plan.
+ */
+export const savePromoBar = sellerMutation({
+  permission: "ownShop.manage",
+  args: { bar: v.union(announcementFacetValidator, v.null()) },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const shop = await requireOwnShop(ctx);
+    const row = await lookRow(ctx, shop._id);
+    const now = Date.now();
+    let bar = null;
+    if (args.bar !== null) {
+      bar = cleanAnnouncement(args.bar);
+      if (bar === null) fail("LOOK_INVALID");
+      await requireCan(ctx, shop, { kind: "feature", feature: "announcementBar" });
+      if (scheduleProblem(bar, now) !== null) fail("ANNOUNCEMENT_SCHEDULE_INVALID");
+    }
+    const withBar = (look: StoredLook): StoredLook => {
+      const overrides = { ...look.overrides };
+      if (bar) overrides.announcement = bar;
+      else delete overrides.announcement;
+      return { ...look, overrides };
+    };
+    const published = withBar(row?.published ?? FREE_LOOK);
+    if (bar && hasBlockingProblem(lookProblems(resolveLook(published)).filter((p) => p.target === "announcement"))) {
+      fail("LOOK_CONTRAST");
+    }
+    if (!row) {
+      const id = await ctx.db.insert("shopLooks", { shopId: shop._id, published, publishedAt: now });
+      const inserted = await ctx.db.get("shopLooks", id);
+      if (inserted) await ctx.db.patch("shopLooks", id, await syncLookSchedules(ctx, inserted, published, now));
+      return null;
+    }
+    await ctx.db.patch("shopLooks", row._id, {
+      published,
+      draft: row.draft ? withBar(row.draft) : undefined,
+      ...(await syncLookSchedules(ctx, row, published, now)),
+    });
     return null;
   },
 });

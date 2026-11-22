@@ -11,7 +11,7 @@ import {
   type SectionProduct,
   type SectionsFacet,
 } from "./sections";
-import { cleanAnnouncement, cleanLook, sameLook, shownLook } from "./clean";
+import { cleanAnnouncement, cleanLook, sameLook, samePromoBar, shownLook, withPublishedBar } from "./clean";
 import {
   ANNOUNCEMENT_TEXT_MAX,
   cleanAnnouncementUrl,
@@ -275,6 +275,24 @@ describe("Promo bar", () => {
       endsAt: 800,
     });
     expect(promoSaleSummary([sale(20, 900, false), sale(20, 800, false)])).toEqual({ percent: 20, uniform: true, endsAt: null });
+  });
+});
+
+describe("Promo bar saved from the Sales page", () => {
+  const bar = { text: "Hi", tone: "accent" as const };
+  const draft: StoredLook = { v: 1, preset: "noir", overrides: { announcement: { text: "Old", tone: "dark" } } };
+
+  test("withPublishedBar takes the published bar, or none", () => {
+    const published: StoredLook = { ...FREE_LOOK, overrides: { announcement: bar } };
+    expect(withPublishedBar(draft, published)).toEqual({ ...draft, overrides: { announcement: bar } });
+    expect(withPublishedBar(draft, FREE_LOOK).overrides.announcement).toBeUndefined();
+    expect(withPublishedBar(draft, null).preset).toBe("noir");
+  });
+
+  test("samePromoBar ignores key order", () => {
+    expect(samePromoBar({ tone: "accent", text: "Hi" }, bar)).toBe(true);
+    expect(samePromoBar(bar, { ...bar, icon: "tag" })).toBe(false);
+    expect(samePromoBar(undefined, null)).toBe(true);
   });
 });
 

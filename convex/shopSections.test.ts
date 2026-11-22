@@ -103,73 +103,13 @@ describe("sections and layout", () => {
   });
 });
 
-describe("announcement bar", () => {
+describe("Promo bar (saved from the Sales page)", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(Date.UTC(2026, 10, 22, 12));
   });
   afterEach(() => vi.useRealTimers());
 
-  test("no dates: shown from publish; the text is cleaned", async () => {
-    const t = newTest();
-    const { userId, shopId } = await sellerWithShop(t);
-    const seller = as(t, userId);
-    await seller.mutation(api.shopLooks.saveDraft, { look: withParts({ announcement: { ...bar, text: `  ${bar.text}\n` } }) });
-    expect((await publicLook(t)).announcement).toBeNull();
-    await seller.mutation(api.shopLooks.publish, {});
-    expect((await rowOf(t, shopId))?.announcementLive).toBe(true);
-    expect((await publicLook(t)).announcement).toMatchObject({ text: bar.text, tone: "accent", link: null });
-  });
-
-  test("scheduled: hidden until the start, shown until the end, by scheduled jobs", async () => {
-    const t = newTest();
-    const { userId, shopId } = await sellerWithShop(t);
-    const now = Date.now();
-    await as(t, userId).mutation(api.shopLooks.saveDraft, {
-      look: withParts({ announcement: { ...bar, startsAt: now + DAY_MS, endsAt: now + 3 * DAY_MS } }),
-    });
-    await as(t, userId).mutation(api.shopLooks.publish, {});
-    expect((await publicLook(t)).announcement).toBeNull();
-    vi.setSystemTime(now + DAY_MS);
-    await t.mutation(internal.shopLookJobs.syncSchedules, { shopId });
-    expect((await publicLook(t)).announcement?.text).toBe(bar.text);
-    vi.setSystemTime(now + 3 * DAY_MS);
-    await t.mutation(internal.shopLookJobs.syncSchedules, { shopId });
-    expect((await rowOf(t, shopId))?.announcementLive).toBe(false);
-    expect((await publicLook(t)).announcement).toBeNull();
-  });
-
-  test("publish checks the plan, the dates and the link", async () => {
-    const t = newTest();
-    const { userId, shopId } = await sellerWithShop(t);
-    const seller = as(t, userId);
-    const now = Date.now();
-    await seller.mutation(api.shopLooks.saveDraft, { look: withParts({ announcement: { ...bar, endsAt: now + 200 * DAY_MS } }) });
-    await expect(seller.mutation(api.shopLooks.publish, {})).rejects.toThrow(/ANNOUNCEMENT_SCHEDULE_INVALID/);
-    await expect(
-      seller.mutation(api.shopLooks.saveDraft, { look: withParts({ announcement: { ...bar, link: { kind: "url", url: "javascript:x" } } }) }),
-    ).rejects.toThrow(/LOOK_INVALID/);
-
-    await setSubscription(t, shopId, { plan: "free", status: "free" });
-    await seller.mutation(api.shopLooks.saveDraft, { look: withParts({ announcement: bar }) });
-    await expect(seller.mutation(api.shopLooks.publish, {})).rejects.toThrow(/PLAN_FEATURE_LOCKED/);
-  });
-
-  test("a downgrade hides it without deleting it", async () => {
-    const t = newTest();
-    const { userId, shopId } = await sellerWithShop(t);
-    const seller = as(t, userId);
-    await seller.mutation(api.shopLooks.saveDraft, { look: withParts({ announcement: bar }) });
-    await seller.mutation(api.shopLooks.publish, {});
-    await setSubscription(t, shopId, { plan: "free", status: "expired" });
-    expect((await publicLook(t)).announcement).toBeNull();
-    const mine = await seller.query(api.shopLooks.mine, {});
-    expect(mine).toMatchObject({ announcementEntitled: false, announcementHiddenByPlan: true });
-    expect(mine.published?.overrides.announcement?.text).toBe(bar.text);
-  });
-});
-
-describe("Promo bar", () => {
   const promo = {
     ...bar,
     style: "gradient" as const,
@@ -180,14 +120,18 @@ describe("Promo bar", () => {
     colors: { background: "#1D3557", foreground: "#ffffff" },
   };
 
-  test("publishes the style, icon, title, switches and custom colours, resolved", async () => {
+  test("live at once, cleaned, in the published look and the draft", async () => {
     const t = newTest();
-    const { userId } = await sellerWithShop(t);
+    const { userId, shopId } = await sellerWithShop(t);
     const seller = as(t, userId);
-    await seller.mutation(api.shopLooks.saveDraft, { look: withParts({ announcement: promo }) });
-    await seller.mutation(api.shopLooks.publish, {});
-    const look = await publicLook(t);
-    expect(look.announcement).toMatchObject({
+    await seller.mutation(api.shopLooks.saveDraft, { look: withParts({ sections: sections() }) });
+    await seller.mutation(api.shopLooks.savePromoBar, { bar: { ...promo, text: `  ${bar.text}\n` } });
+    const row = await rowOf(t, shopId);
+    expect(row?.announcementLive).toBe(true);
+    expect(row?.draft?.overrides.announcement).toEqual(row?.published?.overrides.announcement);
+    expect(row?.draft?.overrides.sections).toEqual(sections()); // the rest of the draft is untouched
+    expect((await publicLook(t)).announcement).toMatchObject({
+      text: bar.text,
       style: "gradient",
       icon: "sparkle",
       title: "Weekend sale",
@@ -195,39 +139,116 @@ describe("Promo bar", () => {
       closable: false,
       custom: true,
       background: "#1d3557",
-      foreground: "#ffffff",
     });
-    expect(look.announcement?.gradientTo).toMatch(/^#[0-9a-f]{6}$/);
   });
 
-  test("a bar without text (sale-only) publishes", async () => {
+  test("works without any saved look yet; null removes it", async () => {
     const t = newTest();
     const { userId, shopId } = await sellerWithShop(t);
-    await as(t, userId).mutation(api.shopLooks.saveDraft, { look: withParts({ announcement: { ...bar, text: " " } }) });
-    await as(t, userId).mutation(api.shopLooks.publish, {});
-    expect((await rowOf(t, shopId))?.announcementLive).toBe(true);
+    const seller = as(t, userId);
+    await seller.mutation(api.shopLooks.savePromoBar, { bar: { ...bar, text: " " } });
     expect((await publicLook(t)).announcement).toMatchObject({ text: "" });
+    await seller.mutation(api.shopLooks.savePromoBar, { bar: null });
+    expect((await publicLook(t)).announcement).toBeNull();
+    expect((await rowOf(t, shopId))?.announcementLive).toBe(false);
   });
 
-  test("custom colours below 4.5:1 can be saved but not published", async () => {
+  test("scheduled: hidden until the start, shown until the end, by scheduled jobs", async () => {
+    const t = newTest();
+    const { userId, shopId } = await sellerWithShop(t);
+    const now = Date.now();
+    await as(t, userId).mutation(api.shopLooks.savePromoBar, { bar: { ...bar, startsAt: now + DAY_MS, endsAt: now + 3 * DAY_MS } });
+    expect((await publicLook(t)).announcement).toBeNull();
+    vi.setSystemTime(now + DAY_MS);
+    await t.mutation(internal.shopLookJobs.syncSchedules, { shopId });
+    expect((await publicLook(t)).announcement?.text).toBe(bar.text);
+    vi.setSystemTime(now + 3 * DAY_MS);
+    await t.mutation(internal.shopLookJobs.syncSchedules, { shopId });
+    expect((await rowOf(t, shopId))?.announcementLive).toBe(false);
+    expect((await publicLook(t)).announcement).toBeNull();
+  });
+
+  test("checks the plan, the dates, the link and the contrast", async () => {
+    const t = newTest();
+    const { userId, shopId } = await sellerWithShop(t);
+    const seller = as(t, userId);
+    const now = Date.now();
+    await expect(seller.mutation(api.shopLooks.savePromoBar, { bar: { ...bar, endsAt: now + 200 * DAY_MS } })).rejects.toThrow(
+      /ANNOUNCEMENT_SCHEDULE_INVALID/,
+    );
+    await expect(
+      seller.mutation(api.shopLooks.savePromoBar, { bar: { ...bar, link: { kind: "url", url: "javascript:x" } } }),
+    ).rejects.toThrow(/LOOK_INVALID/);
+    await expect(
+      seller.mutation(api.shopLooks.savePromoBar, { bar: { ...bar, colors: { background: "#f4a3a3", foreground: "#ffffff" } } }),
+    ).rejects.toThrow(/LOOK_CONTRAST/);
+    await expect(
+      seller.mutation(api.shopLooks.savePromoBar, { bar: { ...bar, colors: { background: "pink", foreground: "#fff" } } }),
+    ).rejects.toThrow(/LOOK_INVALID/);
+
+    await setSubscription(t, shopId, { plan: "free", status: "free" });
+    await expect(seller.mutation(api.shopLooks.savePromoBar, { bar: promo })).rejects.toThrow(/PLAN_FEATURE_LOCKED/);
+    await seller.mutation(api.shopLooks.savePromoBar, { bar: null }); // turning it off works on every plan
+  });
+
+  test("own shop only; a suspended shop is read-only", async () => {
+    const t = newTest();
+    const { userId, shopId } = await sellerWithShop(t);
+    const other = await sellerWithShop(t, "other@shop.cd", { slug: "other-shop" });
+    await as(t, other.userId).mutation(api.shopLooks.savePromoBar, { bar });
+    expect((await publicLook(t)).announcement).toBeNull(); // Amani's shop is untouched
+    await t.run((ctx) => ctx.db.patch("shops", shopId, { status: "suspended" }));
+    await expect(as(t, userId).mutation(api.shopLooks.savePromoBar, { bar })).rejects.toThrow(/SHOP_SUSPENDED/);
+    await expect(t.mutation(api.shopLooks.savePromoBar, { bar })).rejects.toThrow(/NOT_AUTHENTICATED/);
+  });
+
+  test("the Look editor's draft and publish never change it", async () => {
     const t = newTest();
     const { userId } = await sellerWithShop(t);
     const seller = as(t, userId);
+    await seller.mutation(api.shopLooks.savePromoBar, { bar });
+    // An old draft copy (or none) doesn't change the saved bar.
     await seller.mutation(api.shopLooks.saveDraft, {
-      look: withParts({ announcement: { ...bar, colors: { background: "#f4a3a3", foreground: "#ffffff" } } }),
+      look: { v: 1, preset: "noir", overrides: { announcement: { text: "Old text", tone: "dark" } } },
     });
-    await expect(seller.mutation(api.shopLooks.publish, {})).rejects.toThrow(/LOOK_CONTRAST/);
-    await expect(
-      seller.mutation(api.shopLooks.saveDraft, { look: withParts({ announcement: { ...bar, colors: { background: "pink", foreground: "#fff" } } }) }),
-    ).rejects.toThrow(/LOOK_INVALID/);
+    expect((await seller.query(api.shopLooks.mine, {})).editing.overrides.announcement?.text).toBe(bar.text);
+    await seller.mutation(api.shopLooks.publish, {});
+    expect((await publicLook(t)).announcement?.text).toBe(bar.text);
+    expect((await publicLook(t)).preset).toBe("noir");
   });
 
-  test("the new options need the plan feature too", async () => {
+  test("a downgrade hides it without deleting it, and the look can still be published", async () => {
     const t = newTest();
     const { userId, shopId } = await sellerWithShop(t);
-    await setSubscription(t, shopId, { plan: "free", status: "free" });
-    await as(t, userId).mutation(api.shopLooks.saveDraft, { look: withParts({ announcement: promo }) });
-    await expect(as(t, userId).mutation(api.shopLooks.publish, {})).rejects.toThrow(/PLAN_FEATURE_LOCKED/);
+    const seller = as(t, userId);
+    await seller.mutation(api.shopLooks.savePromoBar, { bar });
+    await setSubscription(t, shopId, { plan: "free", status: "expired" });
+    expect((await publicLook(t)).announcement).toBeNull();
+    const data = await seller.query(api.shopLooks.promoBar, {});
+    expect(data).toMatchObject({ entitled: false, hiddenByPlan: true, bar: { text: bar.text } });
+    await seller.mutation(api.shopLooks.saveDraft, { look: withParts({}) });
+    await seller.mutation(api.shopLooks.publish, {});
+    expect((await rowOf(t, shopId))?.published?.overrides.announcement?.text).toBe(bar.text);
+  });
+
+  test("promoBar: the saved bar, the shop's look and the running sale's summary, nothing personal", async () => {
+    const t = newTest();
+    const { userId } = await sellerWithShop(t);
+    const seller = as(t, userId);
+    expect(await seller.query(api.shopLooks.promoBar, {})).toMatchObject({ bar: null, sale: null, entitled: true, slug: "chez-amani" });
+    await seller.mutation(api.products.create, await productArgs(t, { name: "Robe", price: 2500 }));
+    await seller.mutation(api.sales.create, {
+      name: "Black Friday",
+      discount: { kind: "percent", value: 30 },
+      target: { kind: "shop", excludedIds: [] },
+      endsAt: Date.now() + 2 * DAY_MS,
+      display: { countdown: true, badge: true, label: true },
+      steepConfirmed: false,
+    });
+    const data = await seller.query(api.shopLooks.promoBar, {});
+    expect(data.sale).toEqual({ percent: 30, uniform: true, endsAt: Date.now() + 2 * DAY_MS });
+    expect(data.look.colors).toBeDefined();
+    expect(JSON.stringify(data)).not.toContain(userId);
   });
 });
 
@@ -237,8 +258,9 @@ describe("admin reset", () => {
     const admin = await insertUserWithRole(t, "boss@vano.app", roles.super_admin);
     const seller = await sellerWithShop(t, "amani@shop.cd");
     const me = as(t, seller.userId);
-    await me.mutation(api.shopLooks.saveDraft, { look: { v: 1, preset: "noir", overrides: { sections: sections(), announcement: bar } } });
+    await me.mutation(api.shopLooks.saveDraft, { look: { v: 1, preset: "noir", overrides: { sections: sections() } } });
     await me.mutation(api.shopLooks.publish, {});
+    await me.mutation(api.shopLooks.savePromoBar, { bar });
     return { admin: as(t, admin), shopId: seller.shopId };
   }
 
