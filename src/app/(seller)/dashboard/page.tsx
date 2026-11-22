@@ -1,20 +1,18 @@
 "use client"
 
 import { useMutation, useQuery } from "convex/react"
-import { ExternalLinkIcon, EyeOffIcon, PackageIcon, PlusIcon } from "lucide-react"
+import { ArrowRightIcon, ExternalLinkIcon, PackageIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
 import Link from "next/link"
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 import { api } from "../../../../convex/_generated/api"
 import { utcDay } from "../../../../convex/lib/days"
-import { canShopDo } from "../../../../convex/lib/entitlements"
-import { toPlanLimits } from "../../../../convex/lib/planFeatures"
 import { EmptyState, LoadingState } from "@/components/states/states"
 import { buttonVariants } from "@/components/ui/button"
+import { Card, CardTitle } from "@/components/ui/card"
 import { LockedStatsCard } from "@/features/billing/locked-stats-card"
 import { PlanStatusBadge } from "@/features/billing/plan-status-badge"
-import { useMyBilling } from "@/features/billing/use-billing"
-import { ProductRow } from "@/features/product/product-row"
+import { AddProductButton, OverLimitNotice } from "@/features/product/products-section"
 import { OnboardingChecklist } from "@/features/shop/onboarding-checklist"
 import { ShareShopCard } from "@/features/shop/share-shop-card"
 import { ShopAvatar } from "@/features/shop/shop-avatar"
@@ -25,15 +23,10 @@ export default function DashboardPage() {
   const ts = useTranslations("Seller")
   const shop = useQuery(api.shops.myShop, {})
   const products = useQuery(api.products.listMine, {})
-  const billing = useMyBilling()
   // Queries can't read the clock, so the client passes "today" (UTC).
   const [today] = useState(() => utcDay(Date.now()))
   const result = useQuery(api.stats.summary, { today })
   const summary = result && !result.locked ? result : undefined
-  const perProduct = useMemo(
-    () => new Map(summary?.products.map((p) => [p.productId, p]) ?? []),
-    [summary],
-  )
   const markLinkShared = useMutation(api.shops.markLinkShared)
   const sharedSent = useRef(false)
   const alreadyShared = shop?.onboarding?.linkSharedAt !== undefined
@@ -51,21 +44,7 @@ export default function DashboardPage() {
 
   if (shop === undefined || products === undefined) return <LoadingState />
   if (shop === null) return null // SellerGate redirects to onboarding
-  // At the plan's product limit, the add button becomes an upgrade link.
-  const limits = billing ? toPlanLimits(billing.limits) : null
-  const atLimit = limits !== null && canShopDo(limits, { kind: "addProduct", products: products.length }) !== null
   const overLimitCount = products.filter((p) => p.overLimit).length
-
-  const addButton = atLimit ? (
-    <Link href="/dashboard/billing" className={buttonVariants({ variant: "outline" })}>
-      {t("upgrade")}
-    </Link>
-  ) : (
-    <Link href="/dashboard/products/new" className={buttonVariants()}>
-      <PlusIcon />
-      {t("addProduct")}
-    </Link>
-  )
 
   return (
     <div className="flex flex-col gap-6">
@@ -105,43 +84,30 @@ export default function DashboardPage() {
         <div className="flex min-w-0 flex-col gap-6 lg:col-start-1 lg:row-span-2 lg:row-start-1">
           <OnboardingChecklist shop={shop} productCount={products.length} canEdit={canEdit} />
 
-          <section className="flex flex-col gap-4" aria-labelledby="products-title">
-            <div className="flex items-center justify-between gap-2">
-              <h2 id="products-title" className="font-heading text-lg font-bold tracking-tight">
-                {t("products")}
-              </h2>
-              {products.length > 0 && canEdit ? addButton : null}
-            </div>
-            {atLimit && limits?.products != null ? (
-              <p className="text-sm text-muted-foreground">{t("limitReached", { count: limits.products })}</p>
-            ) : null}
-            {overLimitCount > 0 ? (
-              <p role="status" className="flex items-start gap-2 rounded-lg bg-secondary p-3 text-sm">
-                <EyeOffIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
-                {t("overLimitNotice", { count: overLimitCount })}
-              </p>
-            ) : null}
-            {products.length === 0 ? (
-              <EmptyState
-                icon={<PackageIcon />}
-                title={t("emptyTitle")}
-                body={t("emptyBody")}
-                action={canEdit ? addButton : undefined}
-              />
-            ) : (
-              <ul className="flex flex-col gap-3">
-                {products.map((product) => (
-                  <ProductRow
-                    key={product._id}
-                    product={product}
-                    currency={shop.currency}
-                    stats={summary ? (perProduct.get(product._id) ?? { views: 0, whatsappClicks: 0 }) : undefined}
-                    overLimitMode={overLimitCount > 0}
-                  />
-                ))}
-              </ul>
-            )}
-          </section>
+          {/* A short summary: the full list lives on the Products page. */}
+          {products.length === 0 ? (
+            <EmptyState
+              icon={<PackageIcon />}
+              title={t("emptyTitle")}
+              body={t("emptyBody")}
+              action={canEdit ? <AddProductButton productCount={0} /> : undefined}
+            />
+          ) : (
+            <Card>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <CardTitle>{t("products")}</CardTitle>
+                {canEdit ? <AddProductButton productCount={products.length} /> : null}
+              </div>
+              <OverLimitNotice count={overLimitCount} />
+              <Link
+                href="/dashboard/products"
+                className={buttonVariants({ variant: "outline", className: "self-start" })}
+              >
+                {t("manageProducts")}
+                <ArrowRightIcon />
+              </Link>
+            </Card>
+          )}
         </div>
 
         <div className="lg:col-start-2 lg:row-start-2">
