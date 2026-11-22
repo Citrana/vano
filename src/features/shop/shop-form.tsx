@@ -13,6 +13,7 @@ import { LANGUAGES, LIMITS } from "../../../convex/lib/catalog"
 import { errorCodeOf, type ErrorCode } from "../../../convex/lib/errors"
 import { CURRENCIES } from "../../../convex/lib/money"
 import { normalizeWhatsapp, splitWhatsapp } from "../../../convex/lib/phone"
+import { SHOP_INFO_LIMITS, socialHandle, type Socials } from "../../../convex/lib/shopInfo"
 import { slugify } from "../../../convex/lib/slug"
 import Link from "next/link"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -30,10 +31,27 @@ import { LogoField } from "./logo-field"
 import { shopSchema, type ShopFormValues } from "./schemas"
 import { SlugStatus } from "./slug-status"
 
+/** The form-only About and contact fields, sent as `openingHours`, `deliveryAreas` and `socials`. */
+type InfoFields = "openingHours" | "deliveryAreas" | "instagram" | "tiktok" | "facebook"
+
 /** What the form sends: `whatsappNumber` is full E.164 (dial code included). */
-export type ShopSubmit = Omit<ShopFormValues, "logoId" | "description" | "whatsappCountry"> & {
+export type ShopSubmit = Omit<ShopFormValues, "logoId" | "description" | "whatsappCountry" | InfoFields> & {
   description?: string
   logoId?: Id<"_storage">
+  openingHours?: string
+  deliveryAreas?: string
+  socials?: Socials
+}
+
+/** The form's initial values; About and contact are optional (onboarding doesn't ask for them). */
+export type ShopInitial = Omit<ShopFormValues, "whatsappCountry" | InfoFields> & Partial<Pick<ShopFormValues, InfoFields>>
+
+const EMPTY_INFO: Pick<ShopFormValues, InfoFields> = {
+  openingHours: "",
+  deliveryAreas: "",
+  instagram: "",
+  tiktok: "",
+  facebook: "",
 }
 
 /** Server error codes that belong to one field. */
@@ -48,6 +66,8 @@ const FIELD_OF: Partial<Record<ErrorCode, keyof ShopFormValues>> = {
   PHONE_INVALID: "whatsappNumber",
   CATEGORIES_REQUIRED: "categories",
   CATEGORY_IN_USE: "categories",
+  INFO_TOO_LONG: "openingHours",
+  SOCIAL_INVALID: "instagram",
 }
 
 /**
@@ -66,7 +86,7 @@ export function ShopForm({
 }: {
   mode: "create" | "edit"
   /** The stored shop; `whatsappNumber` is E.164 and is split for the form. */
-  initial?: Omit<ShopFormValues, "whatsappCountry">
+  initial?: ShopInitial
   initialLogoUrl?: string | null
   /** Edit mode: renders a protected field (name, link, WhatsApp). */
   protectedField?: (field: ProtectedField) => ReactNode
@@ -97,6 +117,7 @@ export function ShopForm({
       city: "",
       country: "CD",
       logoId: undefined,
+      ...EMPTY_INFO,
     },
   })
   const { register, control, formState, setValue, setError } = form
@@ -108,9 +129,9 @@ export function ShopForm({
   // The dial code follows the shop's country until the seller picks one (create only).
   const dialTouched = useRef(mode === "edit")
 
-  const [slug, description, whatsappCountry, currency] = useWatch({
+  const [slug, description, whatsappCountry, currency, openingHours, deliveryAreas] = useWatch({
     control,
-    name: ["slug", "description", "whatsappCountry", "currency"],
+    name: ["slug", "description", "whatsappCountry", "currency", "openingHours", "deliveryAreas"],
   })
   const locked = mode === "edit" && protectedField !== undefined
   const countries = useMemo(() => countryOptions(locale), [locale])
@@ -125,10 +146,18 @@ export function ShopForm({
     setValue("whatsappNumber", national, { shouldValidate: true })
   }
 
-  async function submit({ whatsappCountry: dial, ...values }: ShopFormValues) {
+  async function submit({ whatsappCountry: dial, openingHours, deliveryAreas, instagram, tiktok, facebook, ...values }: ShopFormValues) {
+    const socials: Socials = {}
+    for (const [network, raw] of [["instagram", instagram], ["tiktok", tiktok], ["facebook", facebook]] as const) {
+      const handle = socialHandle(network, raw)
+      if (handle) socials[network] = handle
+    }
     try {
       await onSubmit({
         ...values,
+        openingHours: openingHours || undefined,
+        deliveryAreas: deliveryAreas || undefined,
+        socials: Object.keys(socials).length > 0 ? socials : undefined,
         // Full E.164 so the server never guesses the country (schema checked it parses).
         whatsappNumber: normalizeWhatsapp(values.whatsappNumber, dial as CountryCode) ?? values.whatsappNumber,
         description: values.description || undefined,
@@ -372,6 +401,62 @@ export function ShopForm({
         )}
       </Card>
 
+      {mode === "edit" ? (
+        <Card className="gap-5">
+          <div className="flex flex-col gap-1">
+            <CardTitle id="about">{t("sectionAbout")}</CardTitle>
+            <p className="text-sm text-muted-foreground">{t("aboutHelp")}</p>
+          </div>
+          <Field
+            id="openingHours"
+            label={t("openingHours")}
+            error={errors.openingHours?.message}
+            help={t("charCount", { count: openingHours?.length ?? 0, max: SHOP_INFO_LIMITS.openingHoursMax })}
+          >
+            {(p) => (
+              <Input
+                {...p}
+                maxLength={SHOP_INFO_LIMITS.openingHoursMax}
+                placeholder={t("openingHoursPlaceholder")}
+                {...register("openingHours")}
+              />
+            )}
+          </Field>
+          <Field
+            id="deliveryAreas"
+            label={t("deliveryAreas")}
+            error={errors.deliveryAreas?.message}
+            help={t("charCount", { count: deliveryAreas?.length ?? 0, max: SHOP_INFO_LIMITS.deliveryAreasMax })}
+          >
+            {(p) => (
+              <Input
+                {...p}
+                maxLength={SHOP_INFO_LIMITS.deliveryAreasMax}
+                placeholder={t("deliveryAreasPlaceholder")}
+                {...register("deliveryAreas")}
+              />
+            )}
+          </Field>
+          <div className="grid gap-5 sm:grid-cols-3">
+            {(["instagram", "tiktok", "facebook"] as const).map((network) => (
+              <Field key={network} id={network} label={t(`socials.${network}`)} error={errors[network]?.message}>
+                {(p) => (
+                  <Input
+                    {...p}
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    placeholder={t("socialPlaceholder")}
+                    {...register(network)}
+                  />
+                )}
+              </Field>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">{t("socialsHelp")}</p>
+        </Card>
+      ) : null}
+
       <div className="sticky bottom-[var(--bottom-bar,0px)] -mx-4 border-t bg-background/95 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0">
         <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={isSubmitting || logoBusy}>
           {isSubmitting
@@ -388,7 +473,7 @@ export function ShopForm({
 }
 
 /** The stored E.164 number as a dial-code country + national number for the form. */
-function withSplitWhatsapp(initial: Omit<ShopFormValues, "whatsappCountry">): ShopFormValues {
+function withSplitWhatsapp(initial: ShopInitial): ShopFormValues {
   const { country, national } = splitWhatsapp(initial.whatsappNumber, initial.country as CountryCode)
-  return { ...initial, whatsappNumber: national, whatsappCountry: country }
+  return { ...EMPTY_INFO, ...initial, whatsappNumber: national, whatsappCountry: country }
 }

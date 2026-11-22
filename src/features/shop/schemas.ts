@@ -4,9 +4,14 @@ import type { CountryCode } from "libphonenumber-js"
 import { CATEGORY_KEYS, LANGUAGES, LIMITS } from "../../../convex/lib/catalog"
 import { CURRENCIES } from "../../../convex/lib/money"
 import { normalizeWhatsapp } from "../../../convex/lib/phone"
+import { SHOP_INFO_LIMITS, socialHandle, type SocialNetwork } from "../../../convex/lib/shopInfo"
 import { slugProblem } from "../../../convex/lib/slug"
 
 type TV = ReturnType<typeof useTranslations<"Validation">>
+
+/** A social handle field: empty, or a handle / profile link of that network (`socialHandle`). */
+const social = (tv: TV, network: SocialNetwork) =>
+  z.string().refine((value) => socialHandle(network, value) !== null, tv("socialInvalid"))
 
 /** Client mirror of `shops.create` / `shops.update` rules (same helpers). */
 export function shopSchema(tv: TV) {
@@ -33,6 +38,18 @@ export function shopSchema(tv: TV) {
       city: z.string().trim().min(1, tv("required")).max(LIMITS.cityMax, tv("tooLong", { max: LIMITS.cityMax })),
       country: z.string().min(2, tv("required")),
       logoId: z.string().optional(),
+      /** About and contact (lib/shopInfo.ts); all optional. */
+      openingHours: z
+        .string()
+        .trim()
+        .max(SHOP_INFO_LIMITS.openingHoursMax, tv("tooLong", { max: SHOP_INFO_LIMITS.openingHoursMax })),
+      deliveryAreas: z
+        .string()
+        .trim()
+        .max(SHOP_INFO_LIMITS.deliveryAreasMax, tv("tooLong", { max: SHOP_INFO_LIMITS.deliveryAreasMax })),
+      instagram: social(tv, "instagram"),
+      tiktok: social(tv, "tiktok"),
+      facebook: social(tv, "facebook"),
     })
     .superRefine((values, ctx) => {
       if (

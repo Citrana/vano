@@ -52,6 +52,11 @@ export default function SettingsPage() {
           city: shop.city,
           country: shop.country,
           logoId: shop.logoId,
+          openingHours: shop.openingHours ?? "",
+          deliveryAreas: shop.deliveryAreas ?? "",
+          instagram: shop.socials?.instagram ?? "",
+          tiktok: shop.socials?.tiktok ?? "",
+          facebook: shop.socials?.facebook ?? "",
         }}
         onSubmit={async (values) => {
           // Name, link and WhatsApp number only change through a request: not sent.
@@ -63,6 +68,9 @@ export default function SettingsPage() {
             city: values.city,
             country: values.country,
             logoId: values.logoId,
+            openingHours: values.openingHours,
+            deliveryAreas: values.deliveryAreas,
+            socials: values.socials,
           })
           toast.success(tf("saved"))
         }}
