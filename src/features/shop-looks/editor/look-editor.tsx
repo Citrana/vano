@@ -22,6 +22,7 @@ import type { api } from "../../../../convex/_generated/api"
 import { withoutPromo } from "../../../../convex/lib/looks/clean"
 import { hasBlockingProblem } from "../../../../convex/lib/looks/contrast"
 import { FREE_LOOK, isFreeLook } from "../../../../convex/lib/looks/presets"
+import { isFreeSections } from "../../../../convex/lib/looks/sections"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog"
 import { Drawer, DrawerBody, DrawerClose, DrawerContent, DrawerHandle, DrawerTitle } from "@/components/ui/drawer"
@@ -31,7 +32,7 @@ import { useErrorMessage } from "@/lib/use-error-message"
 import { ChoiceGroup } from "./choice-group"
 import { LookPreview, type PreviewProduct } from "./look-preview"
 import { SectionPanel } from "./section-panel"
-import { previewProducts } from "./section-state"
+import { PREVIEW_SECTIONS_MAX, previewProducts } from "./section-state"
 import { SectionTabs, type SectionFlags } from "./section-tabs"
 import { LOOK_SECTIONS, SECTION_KEYS, type SectionKey, type SectionProps } from "./sections"
 import { useIsDesktop } from "./use-is-desktop"
@@ -129,11 +130,17 @@ export function LookEditor({ mine, shop, products }: { mine: MineLook; shop: Sho
   const blocking = hasBlockingProblem(editor.problems)
   const hasWarnings = editor.problems.some((p) => p.level === "warn")
   const promoLocked = !mine.promoEntitled && editor.draft.overrides.promo !== undefined
-  const planLocked = (!mine.entitled && !isFreeLook(withoutPromo(editor.draft))) || promoLocked
+  const sectionsLocked = !mine.sectionsEntitled && !isFreeSections(editor.draft.overrides.sections)
+  const announcementLocked = !mine.announcementEntitled && editor.draft.overrides.announcement !== undefined
+  const planLocked = (!mine.entitled && !isFreeLook(withoutPromo(editor.draft))) || promoLocked || sectionsLocked || announcementLocked
   const canPublish = editor.unpublished && !blocking && !planLocked && !suspended && busy === null
   // "Live now" differs from the draft: unpublished edits, a hidden design, or a saved promo that isn't on.
   const showLiveToggle =
-    editor.unpublished || mine.hiddenByPlan || (mine.published?.overrides.promo !== undefined && !(mine.promoLive && mine.promoEntitled))
+    editor.unpublished ||
+    mine.hiddenByPlan ||
+    mine.sectionsHiddenByPlan ||
+    (mine.published?.overrides.promo !== undefined && !(mine.promoLive && mine.promoEntitled)) ||
+    (mine.published?.overrides.announcement !== undefined && !(mine.announcementLive && mine.announcementEntitled))
   const unsaved = editor.saveState === "dirty" || editor.saveState === "saving" || editor.saveState === "error"
   useLeaveGuard(unsaved, t("leave"))
 
@@ -142,7 +149,7 @@ export function LookEditor({ mine, shop, products }: { mine: MineLook; shop: Sho
     LOOK_SECTIONS.map((s) => [s.key, { changed: s.changed(editor.draft, live), locked: s.locked(mine) }]),
   ) as SectionFlags
 
-  // Preview data: 2 to 4 products, the seller's own first, samples to fill.
+  // Preview data: the seller's own products first, samples to fill (enough for the sections to show).
   const samples: PreviewProduct[] = useMemo(
     () =>
       DEMO_PRODUCTS.map((p) => ({
@@ -152,11 +159,14 @@ export function LookEditor({ mine, shop, products }: { mine: MineLook; shop: Sho
         category: p.category,
         soldOut: p.soldOut ?? false,
         coverUrl: p.photos[0].src,
+        featured: p.featured ?? false,
+        fewLeft: p.fewLeft ?? false,
+        backInStock: p.backInStock ?? false,
       })),
     [td],
   )
   const ownProducts: PreviewProduct[] = products.filter((p) => !p.hidden && !p.overLimit)
-  const preview = previewProducts(ownProducts, samples)
+  const preview = previewProducts(ownProducts, samples, PREVIEW_SECTIONS_MAX)
   const previewCurrency = ownProducts.length === 0 ? DEMO_CURRENCY : shop.currency
   const sampleNote = !preview.sample ? null : ownProducts.length === 0 ? t("preview.sample") : t("preview.sampleFill")
   const tiles = useMemo(() => {
@@ -171,6 +181,9 @@ export function LookEditor({ mine, shop, products }: { mine: MineLook; shop: Sho
     description: shop.description ?? null,
     city: shop.city,
     country: shop.country,
+    openingHours: shop.openingHours ?? null,
+    deliveryAreas: shop.deliveryAreas ?? null,
+    socials: shop.socials ?? {},
   }
 
   async function publish() {
@@ -315,6 +328,14 @@ export function LookEditor({ mine, shop, products }: { mine: MineLook; shop: Sho
       {mine.hiddenByPlan ? (
         <Notice tone="warn">
           <p>{t("notices.hiddenByPlan")}</p>
+          <Link href="/dashboard/billing" className={buttonVariants({ variant: "outline", size: "sm", className: "w-fit" })}>
+            {t("actions.upgrade")}
+          </Link>
+        </Notice>
+      ) : null}
+      {(mine.sectionsHiddenByPlan || mine.announcementHiddenByPlan) && !mine.hiddenByPlan ? (
+        <Notice tone="warn">
+          <p>{t("notices.sectionsHidden")}</p>
           <Link href="/dashboard/billing" className={buttonVariants({ variant: "outline", size: "sm", className: "w-fit" })}>
             {t("actions.upgrade")}
           </Link>

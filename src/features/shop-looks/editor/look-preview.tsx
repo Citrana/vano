@@ -1,27 +1,17 @@
 "use client"
 
-import { MessageCircleIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
-import type { Category } from "../../../../convex/lib/catalog"
 import type { Currency } from "../../../../convex/lib/money"
 import type { ResolvedLook } from "../../../../convex/lib/looks/resolve"
 import { cn } from "cn"
-import { buttonVariants } from "@/components/ui/button"
-import { ProductGrid } from "@/features/public/product-grid"
-import { ShopHeaderView, type HeaderShop } from "@/features/public/shop-header-view"
+import { ShopHeaderView } from "@/features/public/shop-header-view"
 import { countryName } from "@/features/shop/countries"
 import { profileLabelsFrom } from "../profile/labels"
 import { PhoneFrame } from "../phone-frame"
 import { ShopPreview } from "../shop-preview"
+import { PreviewAnnouncement, PreviewBody, type PreviewProduct, type PreviewShop } from "./preview-body"
 
-export type PreviewProduct = {
-  _id: string
-  name: string
-  price: number
-  category: Category
-  soldOut: boolean
-  coverUrl: string | null
-}
+export type { PreviewProduct } from "./preview-body"
 
 /**
  * The live phone preview: the real public header and grid, drawn in the
@@ -39,9 +29,9 @@ export function LookPreview({
   className,
 }: {
   look: ResolvedLook<string>
-  shop: HeaderShop
+  shop: PreviewShop
   currency: Currency
-  /** 2 to 4 (`previewProducts`). */
+  /** 2 to PREVIEW_SECTIONS_MAX (`previewProducts`). */
   products: PreviewProduct[]
   label: string
   compact?: boolean
@@ -52,7 +42,7 @@ export function LookPreview({
     shop.city && shop.country ? t("location", { city: shop.city, country: countryName(shop.country, shop.language) }) : null
 
   const page = (zoom: string) => (
-    <ShopPreview look={look} zoomClassName={zoom}>
+    <ShopPreview look={look} zoomClassName={zoom} top={<PreviewAnnouncement look={look} shop={shop} />}>
       <ShopHeaderView
         shop={shop}
         locationLabel={locationLabel}
@@ -61,11 +51,7 @@ export function LookPreview({
         onBanner={look.banner.kind !== "none"}
         sizing="phone"
       />
-      <ProductGrid slug={shop.slug} currency={currency} products={products.slice(0, 4)} columns="phone" />
-      <span className={buttonVariants({ size: "lg", variant: "whatsapp", className: "shop-btn shop-action w-full" })}>
-        <MessageCircleIcon />
-        {t(`orderLabels.${look.buttons.label}`)}
-      </span>
+      <PreviewBody look={look} shop={shop} currency={currency} products={products} columns="phone" />
     </ShopPreview>
   )
 

@@ -35,13 +35,29 @@ export function facetChanged(key: keyof LookOverrides) {
 
 export const PREVIEW_MIN = 2
 export const PREVIEW_MAX = 4
+/** Products handed to the preview: enough for the sections (each shows at most PREVIEW_MAX). */
+export const PREVIEW_SECTIONS_MAX = 12
 
 /**
- * 2 to 4 products for the preview: the shop's own first; samples top them
- * up when the shop has fewer than 2 (so the grid never shows one product
- * next to empty space). `sample` = at least one sample is shown.
+ * 2 to `max` products for the preview: the shop's own first; samples top
+ * them up when the shop has fewer than 2 (so the grid never shows one
+ * product next to empty space). `sample` = at least one sample is shown.
  */
-export function previewProducts<P>(own: readonly P[], samples: readonly P[]): { products: P[]; sample: boolean } {
-  if (own.length >= PREVIEW_MIN) return { products: own.slice(0, PREVIEW_MAX), sample: false }
-  return { products: [...own, ...samples].slice(0, PREVIEW_MAX), sample: true }
+export function previewProducts<P>(
+  own: readonly P[],
+  samples: readonly P[],
+  max: number = PREVIEW_MAX,
+): { products: P[]; sample: boolean } {
+  if (own.length >= PREVIEW_MIN) return { products: own.slice(0, max), sample: false }
+  return { products: [...own, ...samples].slice(0, max), sample: true }
+}
+
+/** The list with the item at `from` moved to `to` (both clamped). Pure, for drag and up / down. */
+export function moveItem<T>(items: readonly T[], from: number, to: number): T[] {
+  const next = [...items]
+  if (from < 0 || from >= next.length) return next
+  const target = Math.max(0, Math.min(next.length - 1, to))
+  const [item] = next.splice(from, 1)
+  next.splice(target, 0, item)
+  return next
 }

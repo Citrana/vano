@@ -1,16 +1,28 @@
 "use client"
 
-import { CircleUserRoundIcon, ImageIcon, LayoutTemplateIcon, PaletteIcon, SparklesIcon, SquareIcon, type LucideIcon } from "lucide-react"
+import {
+  CircleUserRoundIcon,
+  ImageIcon,
+  LayoutListIcon,
+  LayoutTemplateIcon,
+  MegaphoneIcon,
+  PaletteIcon,
+  SparklesIcon,
+  SquareIcon,
+  type LucideIcon,
+} from "lucide-react"
 import type { ReactNode } from "react"
 import type { StaticImageData } from "next/image"
 import type { LookOverrides, StoredLook } from "../../../../convex/lib/looks/validators"
 import type { FeatureFlag } from "../../../../convex/lib/planFeatures"
+import { AnnouncementSection } from "./announcement-section"
 import { BannerSection } from "./banner-section"
 import { ButtonsSection } from "./buttons-section"
 import { ColorsSection } from "./colors-section"
 import { LooksSection } from "./looks-section"
 import { ProfileSection, type ProfileShopInfo } from "./profile-section"
 import { PromoSection } from "./promo-section"
+import { SectionsSection } from "./sections-section"
 import { facetChanged, presetChanged } from "./section-state"
 import type { LookEditorState, MineLook } from "./use-look-editor"
 
@@ -103,6 +115,23 @@ export const LOOK_SECTIONS = [
     locked: (mine) => !mine.promoEntitled,
     lockedBy: "salesPromotions",
     previewBanner: "event",
+  },
+  {
+    key: "sections",
+    icon: LayoutListIcon,
+    Panel: ({ editor, mine, disabled }) => <SectionsSection editor={editor} mine={mine} disabled={disabled} />,
+    changed: facetChanged("sections"),
+    locked: (mine) => !mine.sectionsEntitled,
+    lockedBy: "featuredSections",
+    resets: "sections",
+  },
+  {
+    key: "announcement",
+    icon: MegaphoneIcon,
+    Panel: ({ editor, mine, disabled }) => <AnnouncementSection editor={editor} mine={mine} disabled={disabled} />,
+    changed: facetChanged("announcement"),
+    locked: (mine) => !mine.announcementEntitled,
+    lockedBy: "announcementBar",
   },
 ] as const satisfies readonly LookSection[]
 

@@ -18,6 +18,17 @@ export type SaveState = "idle" | "dirty" | "saving" | "saved" | "error"
 
 const AUTOSAVE_MS = 800
 
+/** The parts a preset never replaces: event banner, profile photo, sections, announcement bar. */
+function ownParts(look: StoredLook): LookOverrides {
+  const { promo, profile, sections, announcement } = look.overrides
+  return {
+    ...(promo ? { promo } : {}),
+    ...(profile ? { profile } : {}),
+    ...(sections ? { sections } : {}),
+    ...(announcement ? { announcement } : {}),
+  }
+}
+
 /**
  * The "Shop look" editor state (CLAUDE.md "Shop looks"). The draft lives
  * here, so the preview updates instantly; every change is autosaved
@@ -108,23 +119,22 @@ export function useLookEditor(mine: MineLook) {
   const applyPreset = useCallback(
     (preset: PresetId) =>
       update((current) => {
-        const { banner, promo, profile } = current.overrides
+        const { banner } = current.overrides
         return {
           v: 1,
           preset,
-          overrides: { ...(banner?.kind === "photo" ? { banner } : {}), ...(promo ? { promo } : {}), ...(profile ? { profile } : {}) },
+          overrides: { ...(banner?.kind === "photo" ? { banner } : {}), ...ownParts(current) },
         }
       }),
     [update],
   )
 
-  /** Back to the preset's look; the event & promo banner and the profile photo are their own things and stay. */
+  /**
+   * Back to the preset's look; the event & promo banner, the profile
+   * photo, the sections and the announcement bar are their own things and stay.
+   */
   const resetToPreset = useCallback(
-    () =>
-      update((current) => {
-        const { promo, profile } = current.overrides
-        return { ...presetLook(current.preset), overrides: { ...(promo ? { promo } : {}), ...(profile ? { profile } : {}) } }
-      }),
+    () => update((current) => ({ ...presetLook(current.preset), overrides: ownParts(current) })),
     [update],
   )
 
@@ -179,8 +189,19 @@ export function useLookEditor(mine: MineLook) {
         entitled: mine.entitled,
         promoShown: mine.promoLive && mine.promoEntitled,
         decorationShown: mine.decorationLive,
+        sectionsEntitled: mine.sectionsEntitled,
+        announcementShown: mine.announcementLive && mine.announcementEntitled,
       }),
-    [mine.entitled, mine.published, mine.promoLive, mine.promoEntitled, mine.decorationLive],
+    [
+      mine.entitled,
+      mine.published,
+      mine.promoLive,
+      mine.promoEntitled,
+      mine.decorationLive,
+      mine.sectionsEntitled,
+      mine.announcementLive,
+      mine.announcementEntitled,
+    ],
   )
   const unpublished = !sameLook(draft, mine.published ?? FREE_LOOK)
 

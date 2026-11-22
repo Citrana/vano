@@ -28,7 +28,13 @@ export function SalePreview({
   const mine = useQuery(api.shopLooks.mine, {})
   if (!product) return <p className="text-sm text-muted-foreground">{t("previewEmpty")}</p>
   const look = resolveLook(
-    shownLook(mine?.published, { entitled: mine?.entitled ?? false, promoShown: false, decorationShown: false }),
+    shownLook(mine?.published, {
+      entitled: mine?.entitled ?? false,
+      promoShown: false,
+      decorationShown: false,
+      sectionsEntitled: mine?.sectionsEntitled ?? false,
+      announcementShown: false,
+    }),
   )
   return (
     <ShopLookScope look={look} className="rounded-xl border bg-background p-4 text-foreground">
