@@ -65,6 +65,13 @@ describe("cleanSections", () => {
     expect(cleanSections({ order: Array.from({ length: 20 }, () => ({ id: "all" as const, on: true })), layout: "grid2", about: true })).toBeNull();
   });
 
+  test("keeps the filters choice, leaving the default out", () => {
+    const base = { order: [{ id: "all" as const, on: true }], layout: "grid2" as const, about: true };
+    expect(cleanSections({ ...base, filters: "off" })?.filters).toBe("off");
+    expect(cleanSections({ ...base, filters: "on" })?.filters).toBe("on");
+    expect(cleanSections({ ...base, filters: "auto" })).not.toHaveProperty("filters");
+  });
+
   test("the editor lists every built-in section", () => {
     const rows = sectionRows({ order: [{ id: "all", on: true }], layout: "grid2", about: true });
     expect(rows.map((r) => r.id)).toEqual(["all", "sale", "newArrivals", "featured", "backInStock"]);
@@ -87,6 +94,12 @@ describe("Free sections", () => {
   test("a downgrade shows the default and keeps the About choice", () => {
     const saved = facet(["featured", "all"], { layout: "large", about: false });
     expect(freeSectionsOf(saved)).toEqual({ ...DEFAULT_SECTIONS, about: false });
+  });
+
+  test("the filters setting is free and survives a downgrade", () => {
+    expect(isFreeSections({ ...DEFAULT_SECTIONS, filters: "off" })).toBe(true);
+    expect(isFreeSections({ ...DEFAULT_SECTIONS, filters: "on" })).toBe(true);
+    expect(freeSectionsOf({ ...facet(["featured", "all"]), filters: "on" }).filters).toBe("on");
   });
 });
 

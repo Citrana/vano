@@ -51,6 +51,7 @@ import type * as lib_looks_clean from "../lib/looks/clean.js";
 import type * as lib_looks_color from "../lib/looks/color.js";
 import type * as lib_looks_contrast from "../lib/looks/contrast.js";
 import type * as lib_looks_events from "../lib/looks/events.js";
+import type * as lib_looks_filters from "../lib/looks/filters.js";
 import type * as lib_looks_presets from "../lib/looks/presets.js";
 import type * as lib_looks_profile from "../lib/looks/profile.js";
 import type * as lib_looks_reset from "../lib/looks/reset.js";
@@ -171,6 +172,7 @@ declare const fullApi: ApiFromModules<{
   "lib/looks/color": typeof lib_looks_color;
   "lib/looks/contrast": typeof lib_looks_contrast;
   "lib/looks/events": typeof lib_looks_events;
+  "lib/looks/filters": typeof lib_looks_filters;
   "lib/looks/presets": typeof lib_looks_presets;
   "lib/looks/profile": typeof lib_looks_profile;
   "lib/looks/reset": typeof lib_looks_reset;
