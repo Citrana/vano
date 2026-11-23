@@ -12,10 +12,12 @@ import {
   NEW_ARRIVALS_COUNT,
   sectionKey,
   sectionRows,
+  type FilterMode,
   type ProductLayout,
   type SectionEntry,
   type SectionsFacet,
 } from "../../../../convex/lib/looks/sections"
+import { FULL_FILTERS_MIN_PRODUCTS } from "../../../../convex/lib/looks/filters"
 import { RESTOCK_DAYS } from "../../../../convex/lib/restock"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
@@ -31,8 +33,10 @@ import { useReorder } from "./use-reorder"
  * handle, or the up / down buttons on phones and with a keyboard), the
  * product layout and the About and contact block. All of it is the
  * `sections` facet of the draft (CLAUDE.md "Shop looks"). Free publishes
- * "All products" in 2 columns and the About switch; the rest is shown
- * with a lock and can be tried in the draft.
+ * "All products" in 2 columns, the About switch and the customer filters
+ * setting (Automatic / Always / Hidden); the rest is shown with a lock
+ * and can be tried in the draft. Which filters customers get also
+ * depends on the plan (`shopFilters`, Free: categories and sort).
  */
 export function SectionsSection({
   editor,
@@ -76,6 +80,19 @@ export function SectionsSection({
     [editor],
   )
   const { listRef, dragging, handleProps } = useReorder(move)
+
+  // "auto" is the default: stored as a missing field, like every default.
+  const setFilters = useCallback(
+    (mode: FilterMode) =>
+      editor.update((current) => {
+        const base = current.overrides.sections ?? DEFAULT_SECTIONS
+        const next: SectionsFacet = { ...base, order: sectionRows(base) }
+        if (mode === "auto") delete next.filters
+        else next.filters = mode
+        return { ...current, overrides: { ...current.overrides, sections: next } }
+      }),
+    [editor],
+  )
 
   function step(index: number, by: -1 | 1) {
     const to = index + by
@@ -255,6 +272,29 @@ export function SectionsSection({
           </span>
         </div>
         <Switch checked={facet.about} disabled={disabled} aria-label={t("about")} onCheckedChange={(about) => write({ about })} />
+      </div>
+
+      <div className="flex flex-col gap-2 rounded-lg border bg-card p-3">
+        <ChoiceGroup<FilterMode>
+          label={t("filters")}
+          value={facet.filters ?? "auto"}
+          disabled={disabled}
+          onChange={setFilters}
+          options={[
+            { value: "auto", label: t("filterModes.auto") },
+            { value: "on", label: t("filterModes.on") },
+            { value: "off", label: t("filterModes.off") },
+          ]}
+        />
+        <p className="text-xs text-pretty text-muted-foreground">
+          {t(`filterModesHelp.${facet.filters ?? "auto"}`, { count: FULL_FILTERS_MIN_PRODUCTS })}
+        </p>
+        {!mine.filtersEntitled && facet.filters !== "off" ? (
+          <>
+            <p className="text-xs text-pretty text-muted-foreground">{t("filtersFree")}</p>
+            <ProNote feature="shopFilters" />
+          </>
+        ) : null}
       </div>
     </div>
   )
