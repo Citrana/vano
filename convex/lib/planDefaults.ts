@@ -144,6 +144,14 @@ const FEATURES: Record<FeatureKey, Seed> = {
     values: PRO,
     pricing: tableOnly(215, "Promo bar at the top of your shop", "Bandeau promo en haut de votre boutique"),
   },
+  shopFilters: {
+    values: PRO,
+    pricing: tableOnly(
+      217,
+      "Full shop filters for customers (search, price, size, color, on sale, new)",
+      "Filtres complets pour vos clients (recherche, prix, taille, couleur, en promo, nouveautés)",
+    ),
+  },
   customDomain: { values: BUSINESS, pricing: tableOnly(220, "Custom domain", "Nom de domaine personnalisé") },
   customBranding: { values: ENTERPRISE, pricing: tableOnly(230, "Custom branding", "Image de marque sur mesure") },
   qrShareImages: {

@@ -6,11 +6,25 @@ providers, checkout, the scheduled jobs or billing admin updates this file
 in the same commit, with a dated entry in the change log below
 (see CLAUDE.md "Billing").
 
-**Last updated: 2026-11-22 12:39 CAT (UTC+02:00)**
+**Last updated: 2026-11-23 09:45 CAT (UTC+02:00)**
 
 ## Change log
 
 Newest first. Format: `YYYY-MM-DD HH:MM TZ — what changed (files)`.
+
+- **2026-11-23 09:45 CAT (UTC+02:00)**: new enforced flag `shopFilters`
+  (area `shopLook`, seed: Pro and up, pricing-table row 217) for the full
+  customer filters on the shop page (search, price, size, colour, On sale,
+  New and the Sale chip). Free shops keep category chips and the sort.
+  It is checked with `hasFeature` in `public.shopBySlug`, which returns
+  the shop's `FilterAccess` (`convex/lib/looks/filters.ts`: the look's
+  "Show filters" setting, the visible product count and the plan); the
+  page drops any other filter from the link on the server. The setting
+  itself saves and publishes on every plan (no `requireCan`). The trial
+  counts as Pro. Existing `planConfig` documents get the new key from
+  the seed (no migration). No change to prices, trials or payments
+  (`convex/lib/planFeatures.ts`, `convex/lib/planDefaults.ts`,
+  `convex/public.ts`, `convex/shopLooks.ts`).
 
 - **2026-11-22 12:39 CAT (UTC+02:00)**: two shop-look features are now
   **enforced** (CLAUDE.md "Shop looks"). `featuredSections` (was pricing
