@@ -1,7 +1,8 @@
 import { v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import { query, type QueryCtx } from "./_generated/server";
-import { getEntitlements, shopProducts, visibleProductIds } from "./lib/entitlements";
+import { getEntitlements, hasFeature, shopProducts, visibleProductIds } from "./lib/entitlements";
+import { filterAccess } from "./lib/looks/filters";
 import { urlOf, urlsOf } from "./lib/images";
 import { publicLookFor } from "./lib/looks/store";
 import { readSettings } from "./lib/settings";
@@ -102,11 +103,24 @@ export const shopBySlug = query({
     // Hidden by an admin or over the plan limit: never shown.
     const visible = visibleProductIds(products, limits);
     const sales = await liveSalesFor(ctx, shop);
+    const publicInfo = await publicShop(ctx, shop);
+    const shown = products.filter((p) => visible.has(p._id));
     return {
       suspended: false as const,
-      shop: await publicShop(ctx, shop),
+      shop: publicInfo,
+      /**
+       * Which customer filters the page offers (CLAUDE.md "Shop looks"):
+       * the look's setting, the visible product count and the
+       * `shopFilters` plan feature. The page drops any other filter from
+       * the link before rendering.
+       */
+      filters: filterAccess({
+        mode: publicInfo.look.sections.filters,
+        entitled: await hasFeature(ctx, shop, "shopFilters"),
+        productCount: shown.length,
+      }),
       products: await Promise.all(
-        products.filter((p) => visible.has(p._id)).map(async (p) => ({
+        shown.map(async (p) => ({
           _id: p._id,
           name: p.name,
           price: p.price,
