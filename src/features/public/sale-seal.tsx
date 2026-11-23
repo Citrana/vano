@@ -21,7 +21,7 @@ const SEAL_PATH = sealPath(14, 44)
 
 /**
  * The sale sticker on a product card (CLAUDE.md "Shop looks"): a
- * scalloped seal over the card's top-right corner, in the look's badge
+ * scalloped seal inside the card's top-right corner, in the look's badge
  * colours (`--chip` / `--chip-foreground`, covered by the contrast
  * check). Static (no animation). The shape is decorative; the label is
  * real text.
