@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
  * A panel that slides in from the left (mobile menus), the right (admin
  * details drawer) or the bottom (phone previews). Built on the same base-ui Dialog as `dialog.tsx`: focus
  * trap, Escape and backdrop close, focus returns to the opener.
+ * `container` mounts it elsewhere (e.g. inside a shop's look scope).
  */
 function Sheet(props: SheetPrimitive.Root.Props) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
@@ -31,11 +32,12 @@ function SheetContent({
   className,
   children,
   side = "left",
+  container,
   ...props
-}: SheetPrimitive.Popup.Props & { side?: keyof typeof SIDES }) {
+}: SheetPrimitive.Popup.Props & { side?: keyof typeof SIDES } & Pick<SheetPrimitive.Portal.Props, "container">) {
   const t = useTranslations("Common")
   return (
-    <SheetPrimitive.Portal>
+    <SheetPrimitive.Portal container={container}>
       <SheetPrimitive.Backdrop className="fixed inset-0 z-50 bg-black/30 duration-200 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards" />
       <SheetPrimitive.Popup
         data-slot="sheet-content"

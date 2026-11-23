@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { getLocale, getTranslations } from "next-intl/server"
 import { DemoLookBanner, DemoThemeSwitch } from "@/features/marketing/demo/demo-theme"
 import { DEMO_CURRENCY, DEMO_PRODUCTS, DEMO_SECTIONS, DEMO_SLUG } from "@/features/marketing/demo/demo-shop"
+import { filterAccess } from "../../../../convex/lib/looks/filters"
 import { NO_FILTERS } from "@/features/public/filters/shop-filters"
 import { ShopSections } from "@/features/public/shop-sections"
 import { ShopHeader } from "@/features/public/shop-header"
@@ -61,6 +62,8 @@ export default async function DemoShopPage() {
         products={products}
         // The same filter bar as shops (static page: not written to the link).
         filters={NO_FILTERS}
+        // What a Pro shop gets, with the same rule as real shops.
+        access={filterAccess({ mode: DEMO_SECTIONS.filters, entitled: true, productCount: products.length })}
         order={{ slug: DEMO_SLUG, currency: DEMO_CURRENCY, label: "order", demo: true }}
       />
     </div>
