@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { getLocale, getTranslations } from "next-intl/server"
 import { DemoLookBanner, DemoThemeSwitch } from "@/features/marketing/demo/demo-theme"
 import { DEMO_CURRENCY, DEMO_PRODUCTS, DEMO_SECTIONS, DEMO_SLUG } from "@/features/marketing/demo/demo-shop"
+import { NO_FILTERS } from "@/features/public/filters/shop-filters"
 import { ShopSections } from "@/features/public/shop-sections"
 import { ShopHeader } from "@/features/public/shop-header"
 import { SHOP_BANNER_EDGE } from "@/features/shop-looks/shop-banner"
@@ -40,8 +41,7 @@ export default async function DemoShopPage() {
     fewLeft: p.fewLeft ?? false,
     backInStock: p.backInStock ?? false,
     colors: p.colors,
-    sizes: p.sizes.slice(0, 4),
-    moreSizes: Math.max(0, p.sizes.length - 4),
+    sizes: p.sizes,
     isNew: p.isNew ?? false,
   }))
 
@@ -59,6 +59,8 @@ export default async function DemoShopPage() {
         slug={DEMO_SLUG}
         currency={DEMO_CURRENCY}
         products={products}
+        // The same filter bar as shops (static page: not written to the link).
+        filters={NO_FILTERS}
         order={{ slug: DEMO_SLUG, currency: DEMO_CURRENCY, label: "order", demo: true }}
       />
     </div>

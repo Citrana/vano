@@ -17,5 +17,6 @@ export function productListClasses(layout: ProductLayout, columns: GridColumns):
   if (layout === "grid3") {
     return { list: phone ? "grid grid-cols-2 gap-3" : "grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4", size: "default" }
   }
-  return { list: phone ? "grid grid-cols-2 gap-3" : "grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-4", size: "default" }
+  // The default: 2 columns on phones, 3 on tablets, 4 on computers (smaller cards).
+  return { list: phone ? "grid grid-cols-2 gap-2.5" : "grid grid-cols-2 gap-2.5 md:grid-cols-3 md:gap-4 lg:grid-cols-4", size: "default" }
 }

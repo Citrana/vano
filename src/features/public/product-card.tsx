@@ -13,23 +13,31 @@ import { buttonVariants } from "@/components/ui/button"
 import { productUrl } from "@/lib/site"
 import { orderHref } from "@/lib/whatsapp"
 import { useShopOrder } from "./order-context"
-import { SalePrice, SaleTags } from "./sale"
+import { cardBadge, type CardBadge } from "./card-badge"
+import { SaleSeal } from "./sale-seal"
+import { SalePrice } from "./sale"
 import { ShareButton } from "./share-button"
 import { WhatsAppIcon } from "./whatsapp-icon"
 import { colorSwatch } from "../../../convex/lib/colorSwatches"
+import { CARD_TAGS_MAX } from "../../../convex/lib/catalog"
 
-/** Small badge pills (shop button radius): filled, or outlined. */
+/** Small badge pills (shop button radius): filled, ink, or outlined. */
 const PILL = "shop-btn rounded-full px-2 py-0.5 text-[11px] font-semibold"
 const FILLED_PILL = `${PILL} bg-[var(--chip,var(--foreground))] text-[var(--chip-foreground,var(--background))]`
 const INK_PILL = `${PILL} bg-[var(--foreground)] text-[var(--background)]`
 const OUTLINED_PILL = `${PILL} border border-[var(--chip,var(--foreground))] bg-[var(--card)] text-[var(--foreground)]`
 
+/** The cards' corners: small, like the photos (CLAUDE.md "Shop looks"). */
+const CARD_RADIUS = "rounded-[min(var(--radius-sm),0.375rem)]"
+
 /**
  * A product card (CLAUDE.md "Shop looks"), after the reference design: a
  * soft tinted card (the look's muted colour, no border, no shadow) with
  * compact padding. A 4:5 photo area (the whole photo fits, never cropped
- * or zoomed) with the badge pills (Sold
- * out, sale, New, section label, Few left) on its top-left corner; the
+ * or zoomed) and one badge (`cardBadge`: Sold out, sale, New, section
+ * label, Few left; the first that applies): a sale is a scalloped seal
+ * over the card's top-right corner (`SaleSeal`), the others a pill on the
+ * photo's top-left; the
  * name on one line with the prices right under it (old price crossed out
  * on sale); colours as dots and sizes as chips in one row; then, on shop
  * pages, a compact WhatsApp Order button with a square share button
@@ -48,10 +56,8 @@ export function ProductCard({
   isNew = false,
   highlight = null,
   size = "default",
-  colors = [],
-  moreColors = 0,
-  sizes = [],
-  moreSizes = 0,
+  colors: allColors = [],
+  sizes: allSizes = [],
 }: {
   productId?: string
   href: string
@@ -70,23 +76,32 @@ export function ProductCard({
   highlight?: string | null
   /** "large": the big-card layout (larger name). */
   size?: "default" | "large"
-  /** Up to 4 colour names and sizes, and how many more there are. */
+  /** Every colour name and size; the card shows the first CARD_TAGS_MAX and "+N". */
   colors?: string[]
-  moreColors?: number
   sizes?: string[]
-  moreSizes?: number
 }) {
   const t = useTranslations("Public")
   const locale = useLocale()
   const shownPrice = formatMoney(sale ? sale.price : price, currency, locale)
+  const colors = allColors.slice(0, CARD_TAGS_MAX)
+  const moreColors = Math.max(0, allColors.length - CARD_TAGS_MAX)
+  const sizes = allSizes.slice(0, CARD_TAGS_MAX)
+  const moreSizes = Math.max(0, allSizes.length - CARD_TAGS_MAX)
+  const badge = cardBadge({ soldOut, sale, isNew, highlight, fewLeft })
+  // A sale is a seal over the card's top-right corner; any other badge a pill on the photo.
+  const sealLabel =
+    badge?.kind === "salePercent" ? t("saleBadge", { percent: badge.percent }) : badge?.kind === "saleLabel" ? t("saleLabel") : null
+  const pill = badge && badge.kind !== "salePercent" && badge.kind !== "saleLabel" ? badge : null
   return (
     <article
       className={cn(
-        "@container group relative flex h-full flex-col rounded-[min(var(--radius-sm),0.5rem)] bg-muted p-3 md:p-4",
+        "@container group relative flex h-full flex-col bg-muted p-2.5 md:p-3",
+        CARD_RADIUS,
         "motion-safe:transition-colors hover:bg-[color-mix(in_srgb,var(--muted),var(--foreground)_4%)]",
         "has-[[data-card-link]:focus-visible]:outline-2 has-[[data-card-link]:focus-visible]:outline-offset-2 has-[[data-card-link]:focus-visible]:outline-ring",
       )}
     >
+      {sealLabel ? <SaleSeal label={sealLabel} className="-top-2 -right-1.5 md:-top-3 md:-right-3" /> : null}
       {/* The 4:5 photo area: the whole photo fits inside (never cropped or zoomed), badges on its top-left corner. */}
       <div className="relative flex aspect-[4/5] items-center justify-center">
         {coverUrl ? (
@@ -98,22 +113,21 @@ export function ProductCard({
             decoding="async"
             className={cn(
               // max-* so the rounded corners are on the visible photo itself.
-              "max-h-full max-w-full rounded-[min(var(--radius-sm),0.5rem)] object-contain",
+              "max-h-full max-w-full object-contain",
+              CARD_RADIUS,
               soldOut && "opacity-60 grayscale",
             )}
           />
         ) : (
-          <div className="flex size-full items-center justify-center rounded-[min(var(--radius-sm),0.5rem)] bg-card text-muted-foreground">
+          <div className={cn("flex size-full items-center justify-center bg-card text-muted-foreground", CARD_RADIUS)}>
             <ImageIcon className="size-8" aria-hidden />
           </div>
         )}
-        <div className="pointer-events-none absolute top-2 left-2 flex flex-wrap items-start gap-1.5 pe-2">
-          {soldOut ? <span className={INK_PILL}>{t("soldOut")}</span> : null}
-          <SaleTags sale={sale} size="sm" />
-          {isNew && !soldOut ? <span className={FILLED_PILL}>{t("newBadge")}</span> : null}
-          {highlight && !soldOut ? <span className={FILLED_PILL}>{highlight}</span> : null}
-          {fewLeft && !soldOut ? <span className={OUTLINED_PILL}>{t("fewLeft")}</span> : null}
-        </div>
+        {pill ? (
+          <div className="pointer-events-none absolute top-1.5 left-1.5 flex pe-1.5">
+            <BadgePill badge={pill} />
+          </div>
+        ) : null}
       </div>
 
       {/* The name on one line; its link covers the whole card. */}
@@ -126,7 +140,7 @@ export function ProductCard({
         <h3
           className={cn(
             "truncate font-heading leading-snug font-medium",
-            size === "large" ? "text-base md:text-lg" : "text-sm md:text-base",
+            size === "large" ? "text-base md:text-lg" : "text-sm",
           )}
         >
           {name}
@@ -182,6 +196,21 @@ export function ProductCard({
       ) : null}
     </article>
   )
+}
+
+/** The card's one badge pill (not a sale: that's the corner seal). */
+function BadgePill({ badge }: { badge: Exclude<CardBadge, { kind: "salePercent" | "saleLabel" }> }) {
+  const t = useTranslations("Public")
+  switch (badge.kind) {
+    case "soldOut":
+      return <span className={INK_PILL}>{t("soldOut")}</span>
+    case "new":
+      return <span className={FILLED_PILL}>{t("newBadge")}</span>
+    case "highlight":
+      return <span className={FILLED_PILL}>{badge.label}</span>
+    case "fewLeft":
+      return <span className={OUTLINED_PILL}>{t("fewLeft")}</span>
+  }
 }
 
 /** Shares the product's link (next to Order), on shop pages (`ShopOrderProvider`). */

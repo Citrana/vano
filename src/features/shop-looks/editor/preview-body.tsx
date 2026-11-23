@@ -4,7 +4,7 @@ import type { Category } from "../../../../convex/lib/catalog"
 import type { Currency } from "../../../../convex/lib/money"
 import type { ResolvedLook } from "../../../../convex/lib/looks/resolve"
 import type { SocialNetwork } from "../../../../convex/lib/shopInfo"
-import { AnnouncementBar } from "@/features/public/announcement-bar"
+import { PromoBar } from "@/features/public/promo-bar"
 import type { HeaderShop } from "@/features/public/shop-header-view"
 import { ShopInfo } from "@/features/public/shop-info"
 import { ShopSections } from "@/features/public/shop-sections"
@@ -29,9 +29,9 @@ export type PreviewShop = HeaderShop & {
   socials?: Partial<Record<SocialNetwork, string | null | undefined>>
 }
 
-/** The draft's announcement bar, inert (the previews). */
+/** The saved Promo bar, inert (the previews; it's edited on the Sales page). */
 export function PreviewAnnouncement({ look, shop }: { look: ResolvedLook<string>; shop: PreviewShop }) {
-  return look.announcement ? <AnnouncementBar announcement={look.announcement} slug={shop.slug} saleLive={false} preview /> : null
+  return look.announcement ? <PromoBar bar={look.announcement} sale={null} slug={shop.slug} preview /> : null
 }
 
 /**

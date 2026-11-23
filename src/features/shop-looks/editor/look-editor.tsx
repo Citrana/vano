@@ -131,16 +131,14 @@ export function LookEditor({ mine, shop, products }: { mine: MineLook; shop: Sho
   const hasWarnings = editor.problems.some((p) => p.level === "warn")
   const promoLocked = !mine.promoEntitled && editor.draft.overrides.promo !== undefined
   const sectionsLocked = !mine.sectionsEntitled && !isFreeSections(editor.draft.overrides.sections)
-  const announcementLocked = !mine.announcementEntitled && editor.draft.overrides.announcement !== undefined
-  const planLocked = (!mine.entitled && !isFreeLook(withoutPromo(editor.draft))) || promoLocked || sectionsLocked || announcementLocked
+  const planLocked = (!mine.entitled && !isFreeLook(withoutPromo(editor.draft))) || promoLocked || sectionsLocked
   const canPublish = editor.unpublished && !blocking && !planLocked && !suspended && busy === null
   // "Live now" differs from the draft: unpublished edits, a hidden design, or a saved promo that isn't on.
   const showLiveToggle =
     editor.unpublished ||
     mine.hiddenByPlan ||
     mine.sectionsHiddenByPlan ||
-    (mine.published?.overrides.promo !== undefined && !(mine.promoLive && mine.promoEntitled)) ||
-    (mine.published?.overrides.announcement !== undefined && !(mine.announcementLive && mine.announcementEntitled))
+    (mine.published?.overrides.promo !== undefined && !(mine.promoLive && mine.promoEntitled))
   const unsaved = editor.saveState === "dirty" || editor.saveState === "saving" || editor.saveState === "error"
   useLeaveGuard(unsaved, t("leave"))
 
@@ -333,7 +331,7 @@ export function LookEditor({ mine, shop, products }: { mine: MineLook; shop: Sho
           </Link>
         </Notice>
       ) : null}
-      {(mine.sectionsHiddenByPlan || mine.announcementHiddenByPlan) && !mine.hiddenByPlan ? (
+      {mine.sectionsHiddenByPlan && !mine.hiddenByPlan ? (
         <Notice tone="warn">
           <p>{t("notices.sectionsHidden")}</p>
           <Link href="/dashboard/billing" className={buttonVariants({ variant: "outline", size: "sm", className: "w-fit" })}>

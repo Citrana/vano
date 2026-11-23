@@ -35,6 +35,8 @@ function announcementSummary(look: StoredLook | undefined, live: boolean) {
   if (!announcement) return null;
   return {
     text: announcement.text,
+    /** The Promo bar's sale title (seller text, reviewed like the message). */
+    title: announcement.title ?? null,
     startsAt: announcement.startsAt ?? null,
     endsAt: announcement.endsAt ?? null,
     live,

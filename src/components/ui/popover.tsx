@@ -19,10 +19,14 @@ function PopoverContent({
   className,
   align = "end",
   sideOffset = 6,
+  container,
   ...props
-}: PopoverPrimitive.Popup.Props & Pick<PopoverPrimitive.Positioner.Props, "align" | "sideOffset">) {
+}: PopoverPrimitive.Popup.Props &
+  Pick<PopoverPrimitive.Positioner.Props, "align" | "sideOffset"> &
+  /** Where the panel is mounted (e.g. inside a shop look scope, so it uses the shop's colours). */
+  Pick<PopoverPrimitive.Portal.Props, "container">) {
   return (
-    <PopoverPrimitive.Portal>
+    <PopoverPrimitive.Portal container={container}>
       <PopoverPrimitive.Positioner className="z-50 outline-none" align={align} sideOffset={sideOffset} collisionPadding={16}>
         <PopoverPrimitive.Popup
           data-slot="popover-content"

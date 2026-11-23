@@ -1,11 +1,16 @@
 "use client"
 
-import { TagIcon } from "lucide-react"
+import { SearchXIcon, TagIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
+import { useMemo } from "react"
 import type { Currency } from "../../../convex/lib/money"
 import { buildShopSections, type BuiltSection, type SectionsFacet } from "../../../convex/lib/looks/sections"
 import { EmptyState } from "@/components/states/states"
-import { ProductGrid, ProductList, type GridFilter, type GridItem } from "./product-grid"
+import { Button } from "@/components/ui/button"
+import { ShopFilterBar } from "./filters/shop-filter-bar"
+import { applyShopFilters, filterOptions, filtersActive, NO_FILTERS, type ShopFilters } from "./filters/shop-filters"
+import { useShopFilters } from "./filters/use-shop-filters"
+import { ProductList, type GridItem } from "./product-grid"
 import { ShopOrderProvider, type ShopOrder } from "./order-context"
 import type { GridColumns } from "./product-layout"
 import { SaleCountdown } from "./sale"
@@ -14,8 +19,10 @@ import { SaleCountdown } from "./sale"
  * The shop's products as the seller arranged them (CLAUDE.md "Shop
  * looks"): their sections in order (`buildShopSections`: off or empty
  * sections never show, the Sale section only while a sale runs), each in
- * the chosen layout. "All products" keeps its filter chips. The public
- * page, the look previews and the demo shop draw the same component.
+ * the chosen layout. With `filters` (shop pages, the demo) the filter bar
+ * sits on top; while a search, filter or sort is active one results grid
+ * replaces the sections. The public page, the look previews and the demo
+ * shop draw the same component.
  */
 export function ShopSections({
   sections,
@@ -23,7 +30,8 @@ export function ShopSections({
   slug,
   currency,
   columns = "responsive",
-  initialFilter = "all",
+  filters: initialFilters,
+  syncUrl = false,
   saleEndsAt = null,
   maxPerSection,
   order,
@@ -34,7 +42,10 @@ export function ShopSections({
   slug: string
   currency: Currency
   columns?: GridColumns
-  initialFilter?: GridFilter
+  /** The filters from the page link; missing = no filter bar (previews). */
+  filters?: ShopFilters
+  /** Write filter changes back to the page link (the public page). */
+  syncUrl?: boolean
   /** The running sale's end, when it shows a countdown (the Sale section's heading). */
   saleEndsAt?: number | null
   /** Previews: at most this many products per section. */
@@ -43,12 +54,33 @@ export function ShopSections({
   order?: ShopOrder
 }) {
   const t = useTranslations("Public")
+  const tf = useTranslations("Public.filters")
+  const { filters, update } = useShopFilters(initialFilters ?? NO_FILTERS, { syncUrl })
+  const options = useMemo(() => filterOptions(products), [products])
   const built = buildShopSections(sections, products)
   if (built.length === 0) return <EmptyState title={t("empty")} />
   // A lone "All products" list needs no heading (today's page).
   const headings = built.length > 1 || built[0].id !== "all"
+  const showBar = initialFilters !== undefined && products.length > 1
+  const filtering = showBar && filtersActive(filters, options)
+  const results = filtering ? applyShopFilters(products, filters, options) : products
 
-  const content = (
+  const list = filtering ? (
+    results.length > 0 ? (
+      <ProductList slug={slug} currency={currency} products={results} layout={sections.layout} columns={columns} />
+    ) : (
+      <EmptyState
+        icon={<SearchXIcon />}
+        title={tf("emptyTitle")}
+        body={tf("emptyBody")}
+        action={
+          <Button type="button" variant="outline" className="min-h-11 rounded-sm" onClick={() => update(NO_FILTERS)}>
+            {tf("clearAll")}
+          </Button>
+        }
+      />
+    )
+  ) : (
     <div className="flex flex-col gap-10">
       {built.map((section) => (
         <ShopSection
@@ -59,11 +91,18 @@ export function ShopSections({
           slug={slug}
           currency={currency}
           columns={columns}
-          initialFilter={initialFilter}
           saleEndsAt={saleEndsAt}
         />
       ))}
     </div>
+  )
+  const content = showBar ? (
+    <div className="flex flex-col gap-4">
+      <ShopFilterBar filters={filters} options={options} currency={currency} resultCount={results.length} onChange={update} />
+      {list}
+    </div>
+  ) : (
+    list
   )
   return order ? <ShopOrderProvider order={order}>{content}</ShopOrderProvider> : content
 }
@@ -75,7 +114,6 @@ function ShopSection({
   slug,
   currency,
   columns,
-  initialFilter,
   saleEndsAt,
 }: {
   section: BuiltSection<GridItem>
@@ -84,7 +122,6 @@ function ShopSection({
   slug: string
   currency: Currency
   columns: GridColumns
-  initialFilter: GridFilter
   saleEndsAt: number | null
 }) {
   const t = useTranslations("Public")
@@ -103,25 +140,14 @@ function ShopSection({
           {section.id === "sale" && saleEndsAt !== null ? <SaleCountdown endsAt={saleEndsAt} /> : null}
         </div>
       ) : null}
-      {section.id === "all" ? (
-        <ProductGrid
-          slug={slug}
-          currency={currency}
-          products={section.products}
-          layout={layout}
-          columns={columns}
-          initialFilter={initialFilter}
-        />
-      ) : (
-        <ProductList
-          slug={slug}
-          currency={currency}
-          products={section.products}
-          layout={layout}
-          columns={columns}
-          highlight={section.id === "backInStock" ? t("backInStock") : null}
-        />
-      )}
+      <ProductList
+        slug={slug}
+        currency={currency}
+        products={section.products}
+        layout={layout}
+        columns={columns}
+        highlight={section.id === "backInStock" ? t("backInStock") : null}
+      />
     </section>
   )
 }

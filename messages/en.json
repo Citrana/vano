@@ -377,7 +377,6 @@
     "all": "All",
     "filter": "Filter by category",
     "empty": "No products yet. Come back soon!",
-    "emptyCategory": "No products in this category.",
     "soldOut": "Sold out",
     "order": "Order on WhatsApp",
     "orderSoldOut": "Sold out",
@@ -423,7 +422,7 @@
     "saleFilter": "Sale",
     "saleEnded": "This sale has ended.",
     "saleEndsIn": "Ends in {time}",
-    "countdown": "{days, plural, =0 {} other {#d }}{hours}h {minutes}m",
+    "countdown": "{days, plural, =0 {} other {#d }}{hours}h {minutes}m {seconds}s",
     "saleEndsInSpoken": "Sale ends in {days, plural, =0 {} one {# day, } other {# days, }}{hours, plural, one {# hour} other {# hours}} and {minutes, plural, one {# minute} other {# minutes}}",
     "seeSaleItems": "See the items on sale",
     "fewLeft": "Few left",
@@ -435,10 +434,6 @@
       "backInStock": "Back in stock",
       "category": "Category",
       "all": "All products"
-    },
-    "announcement": {
-      "label": "Shop announcement",
-      "close": "Close the announcement"
     },
     "about": {
       "title": "About and contact",
@@ -461,7 +456,41 @@
     "newBadge": "New",
     "sizesLabel": "Sizes",
     "openPhoto": "Open photo {index} of {total} full size",
-    "shopInfo": "Shop info"
+    "shopInfo": "Shop info",
+    "promo": {
+      "label": "Shop promotion",
+      "close": "Close the promotion bar",
+      "saleTitle": "Sale",
+      "off": "{percent}% off",
+      "upToOff": "Up to {percent}% off",
+      "viewSale": "View sale",
+      "openLink": "Open the link"
+    },
+    "filters": {
+      "search": "Search products",
+      "sort": "Sort",
+      "sorts": {
+        "newest": "Newest",
+        "priceAsc": "Price: low to high",
+        "priceDesc": "Price: high to low"
+      },
+      "filters": "Filters",
+      "filtersCount": "Filters ({count})",
+      "close": "Close the filters",
+      "showResults": "{count, plural, =0 {No products} one {Show # product} other {Show # products}}",
+      "results": "{count, plural, =0 {No products} one {# product} other {# products}}",
+      "clearAll": "Clear all",
+      "clearPanel": "Clear these filters",
+      "emptyTitle": "Nothing matches",
+      "emptyBody": "Try another search or remove a filter.",
+      "size": "Size",
+      "color": "Color",
+      "price": "Price",
+      "min": "Min",
+      "max": "Max",
+      "priceRange": "Prices from {min} to {max}.",
+      "priceInvalid": "Enter prices like 25 or 25.50, the max above the min."
+    }
   },
   "NotFound": {
     "title": "Page not found",
@@ -752,8 +781,10 @@
       "draftPromo": "Event banner (draft)",
       "decoration": "Profile decoration",
       "draftDecoration": "Draft: {name}",
-      "announcement": "Announcement bar",
-      "draftAnnouncement": "Announcement bar (draft)"
+      "announcement": "Promo bar",
+      "draftAnnouncement": "Promo bar (draft)",
+      "promoBarNoText": "No message (sales only)",
+      "promoBarTitle": "Sale title: “{title}”"
     },
     "sales": {
       "title": "Sales",
@@ -1033,8 +1064,8 @@
       "eventsHint": "Sales, new arrivals, holidays: shown instead of your banner while it's on, and ready to share.",
       "sections": "Sections",
       "sectionsHint": "What your shop page shows, in which order, and how your products are laid out.",
-      "announcement": "Announcement",
-      "announcementHint": "One short line at the top of your shop, like “Free delivery in Nairobi this weekend”."
+      "announcement": "Promo bar",
+      "announcementHint": "Now edited on the Sales page."
     },
     "status": {
       "saving": "Saving draft…",
@@ -1118,13 +1149,14 @@
         "eventText": "Event banner text:",
         "buttonDesign": "Glow buttons and chips:",
         "profileBorder": "Profile photo border:",
-        "announcement": "Announcement bar:"
+        "announcement": "Promo bar:"
       },
       "blocking": "too hard to read ({ratio}:1). Publishing is blocked until it's fixed.",
       "warning": "may be hard to read ({ratio}:1).",
       "fixAccent": "Use accent {color}",
       "fixBackground": "Use background {color}",
-      "fixProfileBorder": "Use border {color}"
+      "fixProfileBorder": "Use border {color}",
+      "fixAnnouncementText": "Use text color {color}"
     },
     "buttons": {
       "shape": "Shape",
@@ -1324,17 +1356,16 @@
       "aboutLink": "Edit in Shop settings"
     },
     "announcement": {
-      "show": "Show an announcement bar",
+      "show": "Show the Promo bar",
       "text": "Message",
-      "textRequired": "Write a short message.",
       "textCount": "{count}/{max} characters",
       "defaultText": "Free delivery this weekend",
       "colors": "Colors",
-      "colorsHelp": "Your shop colors. The text color is picked for you so it stays easy to read.",
+      "colorsHelp": "Match my shop colors: the text color is picked for you so it stays easy to read.",
       "tones": {
-        "accent": "Accent",
-        "dark": "Dark",
-        "soft": "Soft"
+        "accent": "Shop accent",
+        "dark": "Shop dark",
+        "soft": "Shop soft"
       },
       "link": "Link",
       "links": {
@@ -1346,7 +1377,36 @@
       "saleLinkLive": "A sale is running: the bar links to its items.",
       "url": "Web address",
       "urlHelp": "Opens in a new tab, e.g. instagram.com/yourshop.",
-      "urlInvalid": "Enter a web address, e.g. https://example.com."
+      "urlInvalid": "Enter a web address, e.g. https://example.com.",
+      "intro": "While a sale runs, the bar shows it (title, discount, countdown and a “View sale” link). Otherwise it shows your message. With neither, it stays hidden.",
+      "textHelp": "Shown when no sale runs. Leave it empty to show the bar only during sales.",
+      "saleTitle": "Sale title (optional)",
+      "saleTitlePlaceholder": "Sale",
+      "saleTitleHelp": "Shown before the discount while a sale runs, e.g. “Weekend sale”.",
+      "countdown": "Countdown",
+      "countdownHint": "Show how long the sale has left.",
+      "closable": "Visitors can close it",
+      "closableHint": "It comes back on their next visit.",
+      "style": "Style",
+      "styles": {
+        "solid": "Solid",
+        "gradient": "Gradient",
+        "outline": "Outline"
+      },
+      "icon": "Icon",
+      "icons": {
+        "tag": "Tag",
+        "sparkle": "Sparkle",
+        "flower": "Flower",
+        "none": "None"
+      },
+      "customColors": "My own colors",
+      "customColorsHelp": "Pick the background and the text. The text must stay easy to read (contrast 4.5:1) before you can publish.",
+      "background": "Background",
+      "textColor": "Text",
+      "movedTitle": "The Promo bar is now in Sales",
+      "movedBody": "Set its colors, style, icon, title and message next to your sales, with a live preview.",
+      "editInSales": "Edit in Sales"
     }
   },
   "Demo": {
@@ -2345,8 +2405,8 @@
       "description": "Agreed service levels."
     },
     "announcementBar": {
-      "name": "Announcement bar",
-      "description": "One short line at the top of the shop, with a link and dates."
+      "name": "Promo bar",
+      "description": "A slim bar at the top of the shop: the running sale with its countdown, or your message, in your own style."
     }
   },
   "PlanAreas": {
@@ -2600,6 +2660,19 @@
       "keepEditing": "Keep editing",
       "saveChanges": "Save changes",
       "publish": "Publish sale"
+    },
+    "promoBar": {
+      "title": "Promo bar",
+      "hint": "The slim bar at the top of your shop: your running sale, otherwise your message.",
+      "preview": "Preview (as shoppers see it)",
+      "sampleSale": "Preview with a sample sale",
+      "off": "The Promo bar is off.",
+      "hiddenNow": "No sale is running and there's no message, so the bar is hidden right now.",
+      "hiddenByPlan": "Your Promo bar is saved, but your plan doesn't show it. Upgrade to show it again, or turn it off.",
+      "save": "Save",
+      "saving": "Saving…",
+      "discard": "Discard",
+      "saved": "Promo bar saved"
     }
   }
 }

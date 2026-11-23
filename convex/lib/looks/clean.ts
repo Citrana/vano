@@ -3,7 +3,7 @@ import { normalizeHex } from "./color";
 import { BANNER_TEXT_MAX, FOCUS_MAX, FOCUS_MIN, ZOOM_MAX, ZOOM_MIN } from "./banners";
 import { EVENT_TEMPLATES, PROMO_HEADLINE_MAX, PROMO_STICKERS_MAX, PROMO_SUBLINE_MAX } from "./events";
 import { FREE_LOOK } from "./presets";
-import { ANNOUNCEMENT_TEXT_MAX, cleanAnnouncementUrl, type AnnouncementFacet } from "./announcement";
+import { ANNOUNCEMENT_TEXT_MAX, cleanAnnouncementUrl, PROMO_TITLE_MAX, type AnnouncementFacet } from "./announcement";
 import { cleanProfile, freeProfileOf } from "./profile";
 import { scheduleShapeProblem } from "./schedule";
 import { cleanSections, freeSectionsOf } from "./sections";
@@ -57,10 +57,14 @@ export function cleanPromo(promo: PromoFacet): PromoFacet | null {
   };
 }
 
-/** Checks the announcement bar: one line of text, an https link, the schedule shape. */
+/**
+ * Checks the Promo bar: optional one-line text (empty = sale-only), an
+ * https link, the optional sale title, custom colours as hex, the
+ * schedule shape. Defaults are dropped so stored facets stay small.
+ */
 export function cleanAnnouncement(announcement: AnnouncementFacet): AnnouncementFacet | null {
   const text = cleanLine(announcement.text);
-  if (text.length === 0 || text.length > ANNOUNCEMENT_TEXT_MAX) return null;
+  if (text.length > ANNOUNCEMENT_TEXT_MAX) return null;
   let link: AnnouncementFacet["link"];
   if (announcement.link?.kind === "sale") link = { kind: "sale" };
   else if (announcement.link?.kind === "url") {
@@ -69,7 +73,23 @@ export function cleanAnnouncement(announcement: AnnouncementFacet): Announcement
     link = { kind: "url", url };
   }
   if (scheduleShapeProblem(announcement) !== null) return null;
-  return { text, link, tone: announcement.tone, startsAt: announcement.startsAt, endsAt: announcement.endsAt };
+  const cleaned: AnnouncementFacet = { text, link, tone: announcement.tone, startsAt: announcement.startsAt, endsAt: announcement.endsAt };
+  if (announcement.style && announcement.style !== "solid") cleaned.style = announcement.style;
+  if (announcement.colors) {
+    const background = normalizeHex(announcement.colors.background);
+    const foreground = normalizeHex(announcement.colors.foreground);
+    if (!background || !foreground) return null;
+    cleaned.colors = { background, foreground };
+  }
+  if (announcement.icon && announcement.icon !== "none") cleaned.icon = announcement.icon;
+  if (announcement.title !== undefined) {
+    const title = cleanLine(announcement.title);
+    if (title.length > PROMO_TITLE_MAX) return null;
+    if (title.length > 0) cleaned.title = title;
+  }
+  if (announcement.countdown === false) cleaned.countdown = false;
+  if (announcement.closable === false) cleaned.closable = false;
+  return cleaned;
 }
 
 const inRange = (n: number, min: number, max: number) => Number.isFinite(n) && n >= min && n <= max;
@@ -163,6 +183,17 @@ export function withoutAnnouncement(look: StoredLook): StoredLook {
   return { ...look, overrides };
 }
 
+/**
+ * `look` with the published look's Promo bar (CLAUDE.md "Shop looks"):
+ * the bar is saved from the Sales page (`shopLooks.savePromoBar`), so the
+ * Look editor's draft and publish never change it.
+ */
+export function withPublishedBar(look: StoredLook, published: StoredLook | null | undefined): StoredLook {
+  const bar = published?.overrides.announcement;
+  const without = withoutAnnouncement(look);
+  return bar ? { ...without, overrides: { ...without.overrides, announcement: bar } } : without;
+}
+
 /** The look without its profile decoration (what shows when the decoration isn't live). */
 export function withoutDecoration(look: StoredLook): StoredLook {
   const profile = look.overrides.profile;
@@ -223,5 +254,10 @@ export function shownLook(published: StoredLook | null | undefined, flags: Shown
 
 /** Same look, whatever the key order (stored docs don't keep it). */
 export function sameLook(a: StoredLook | null | undefined, b: StoredLook | null | undefined): boolean {
+  return JSON.stringify(canonical(a ?? null)) === JSON.stringify(canonical(b ?? null));
+}
+
+/** Whether two Promo bars are the same (the Sales page's unsaved-changes check). */
+export function samePromoBar(a: AnnouncementFacet | null | undefined, b: AnnouncementFacet | null | undefined): boolean {
   return JSON.stringify(canonical(a ?? null)) === JSON.stringify(canonical(b ?? null));
 }

@@ -133,12 +133,15 @@ export function ShopLookCard({
       .join(" · ")
   const announcementLine = (a: NonNullable<typeof look.announcement>) =>
     [
-      a.text,
+      a.text || t("promoBarNoText"),
+      a.title ? t("promoBarTitle", { title: a.title }) : null,
       t("promoDates", {
         start: a.startsAt ? date(a.startsAt) : t("promoNoStart"),
         end: a.endsAt ? date(a.endsAt) : t("promoNoEnd"),
       }),
-    ].join(" · ")
+    ]
+      .filter(Boolean)
+      .join(" · ")
 
   return (
     <Card>

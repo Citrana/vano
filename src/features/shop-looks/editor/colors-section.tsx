@@ -12,8 +12,8 @@ import { radioKeyDown } from "./choice-group"
 import { ContrastNotes } from "./contrast-notes"
 import type { LookEditorState } from "./use-look-editor"
 
-/** Swatches (radiogroup) + a custom colour (native picker and hex field). */
-function ColorPicker({
+/** Swatches (radiogroup) + a custom colour (native picker and hex field). Also used by the Promo bar. */
+export function ColorPicker({
   label,
   swatches,
   value,

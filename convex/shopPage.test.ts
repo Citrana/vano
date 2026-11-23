@@ -69,10 +69,10 @@ describe("card text", () => {
     const page = await t.query(api.public.shopBySlug, { slug: "chez-amani" });
     if (!page || page.suspended) throw new Error("no page");
     const [card] = page.products;
-    expect(card.colors).toEqual(["Rouge", "Bleu", "Vert", "Noir"]);
-    expect(card.moreColors).toBe(2);
-    expect(card.sizes).toEqual(["S", "M", "L", "XL"]);
-    expect(card.moreSizes).toBe(1);
+    // Every colour and size (the shop's filters); the card shows the first CARD_TAGS_MAX.
+    expect(card.colors).toEqual(["Rouge", "Bleu", "Vert", "Noir", "Blanc", "Or"]);
+    expect(card.sizes).toEqual(["S", "M", "L", "XL", "XXL"]);
+    expect(card).not.toHaveProperty("moreColors");
     expect(typeof card.createdAt).toBe("number");
     expect(card).not.toHaveProperty("description");
     expect(JSON.stringify(page.products)).not.toContain("Belle robe");

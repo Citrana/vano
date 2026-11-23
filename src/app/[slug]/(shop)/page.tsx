@@ -2,10 +2,10 @@ import type { Metadata } from "next"
 import { getTranslations } from "next-intl/server"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { showsSection } from "../../../../convex/lib/looks/sections"
-import { AnnouncementBar } from "@/features/public/announcement-bar"
+import { promoSaleSummary } from "../../../../convex/lib/looks/announcement"
 import { getShopPage, withNewBadges } from "@/features/public/data"
-import { SaleStrip } from "@/features/public/sale-strip"
+import { parseShopFilters, shopFiltersToQuery } from "@/features/public/filters/shop-filters"
+import { PromoBar } from "@/features/public/promo-bar"
 import { ShopHeader } from "@/features/public/shop-header"
 import { ShopInfo } from "@/features/public/shop-info"
 import { ShopSections } from "@/features/public/shop-sections"
@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: PageProps<"/[slug]">): Promis
 
 export default async function ShopPage({ params, searchParams }: PageProps<"/[slug]">) {
   const { slug } = await params
-  const { sale: saleParam } = await searchParams
+  const filters = parseShopFilters(await searchParams)
   const page = await getShopPage(slug)
   if (!page) notFound()
   // Layouts and pages render in parallel, so this page handles it too.
@@ -51,18 +51,16 @@ export default async function ShopPage({ params, searchParams }: PageProps<"/[sl
   const products = withNewBadges(page.products)
   const hasBanner = shop.look.banner.kind !== "none"
   const t = await getTranslations({ locale: shop.language, namespace: "Public" })
-  // CLAUDE.md "Sales": the "Sale" filter, the countdown strip and the
+  // CLAUDE.md "Sales": the "Sale" filter, the Promo bar's sale and the
   // event banner's link only exist while a sale is running.
   const onSale = products.filter((p) => p.sale)
+  const sale = promoSaleSummary(products)
   const banner = hasBanner ? <ShopBanner banner={shop.look.banner} className={SHOP_BANNER_EDGE.responsive} /> : null
   const bannerLinksToSale = shop.look.banner.kind === "event" && shop.look.banner.link === "sale" && onSale.length > 0
-  const countdownEnd = onSale.reduce<number | null>(
-    (soonest, p) => (p.sale?.countdown && (soonest === null || p.sale.endsAt < soonest) ? p.sale.endsAt : soonest),
-    null,
-  )
-  // CLAUDE.md "Shop looks": the seller's sections; a Sale section carries the countdown itself.
+  // CLAUDE.md "Shop looks": the Promo bar carries the sale's countdown; a
+  // Sale section's heading shows it only when the bar doesn't.
   const { sections, announcement } = shop.look
-  const saleSection = showsSection(sections, products, "sale")
+  const barCountdown = sale?.endsAt != null && (announcement?.countdown ?? true)
   const info = {
     openingHours: shop.openingHours,
     deliveryAreas: shop.deliveryAreas,
@@ -72,7 +70,7 @@ export default async function ShopPage({ params, searchParams }: PageProps<"/[sl
   return (
     <ShopLocaleProvider language={shop.language}>
       <ShopLookScope look={shop.look} className="flex flex-1 flex-col">
-        {announcement ? <AnnouncementBar announcement={announcement} slug={shop.slug} saleLive={onSale.length > 0} /> : null}
+        <PromoBar bar={announcement} sale={sale} slug={shop.slug} className="sticky top-0 z-30" />
         <main className={`mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 pb-10 ${hasBanner ? "md:pt-6" : "pt-6 md:pt-10"}`}>
           <div className="flex flex-col">
             {bannerLinksToSale ? (
@@ -84,16 +82,17 @@ export default async function ShopPage({ params, searchParams }: PageProps<"/[sl
             )}
             <ShopHeader shop={shop} profile={shop.look.profile} onBanner={hasBanner} />
           </div>
-          {countdownEnd !== null && !saleSection ? <SaleStrip endsAt={countdownEnd} /> : null}
-          <div id="products" className="scroll-mt-4">
+          <div id="products" className="scroll-mt-16">
             <ShopSections
-              key={saleParam === "1" ? "sale" : "all"}
+              // A link to other filters (e.g. "View sale") starts over from them.
+              key={shopFiltersToQuery(filters)}
               sections={sections}
               slug={shop.slug}
               currency={shop.currency}
               products={products}
-              initialFilter={saleParam === "1" && onSale.length > 0 ? "sale" : "all"}
-              saleEndsAt={countdownEnd}
+              filters={filters}
+              syncUrl
+              saleEndsAt={barCountdown ? null : (sale?.endsAt ?? null)}
               order={{ slug: shop.slug, currency: shop.currency, label: shop.look.buttons.label, whatsappNumber: shop.whatsappNumber }}
             />
           </div>

@@ -18,7 +18,7 @@ export function ShopPreview({
 }: {
   look: ResolvedLook<string>
   zoomClassName: string
-  /** Above the banner, full width (the announcement bar). */
+  /** Above the banner, full width (the Promo bar). */
   top?: ReactNode
   children: ReactNode
 }) {

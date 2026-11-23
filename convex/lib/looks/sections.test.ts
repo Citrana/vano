@@ -11,8 +11,16 @@ import {
   type SectionProduct,
   type SectionsFacet,
 } from "./sections";
-import { cleanAnnouncement, cleanLook, sameLook, shownLook } from "./clean";
-import { ANNOUNCEMENT_TEXT_MAX, cleanAnnouncementUrl } from "./announcement";
+import { cleanAnnouncement, cleanLook, sameLook, samePromoBar, shownLook, withPublishedBar } from "./clean";
+import {
+  ANNOUNCEMENT_TEXT_MAX,
+  cleanAnnouncementUrl,
+  PROMO_TITLE_MAX,
+  promoBarContent,
+  promoSaleSummary,
+  PROMO_STYLES,
+} from "./announcement";
+import { contrast } from "./color";
 import { lookProblems } from "./contrast";
 import { PRESET_IDS, presetLook, FREE_LOOK } from "./presets";
 import { resetLook } from "./reset";
@@ -141,7 +149,8 @@ describe("announcement bar", () => {
 
   test("one line of text, https links, schedule shape", () => {
     expect(cleanAnnouncement(bar)).toEqual({ text: "Free delivery this weekend", tone: "accent" });
-    expect(cleanAnnouncement({ ...bar, text: "   " })).toBeNull();
+    // Empty text: a sale-only Promo bar.
+    expect(cleanAnnouncement({ ...bar, text: "   " })).toEqual({ text: "", tone: "accent" });
     expect(cleanAnnouncement({ ...bar, text: "x".repeat(ANNOUNCEMENT_TEXT_MAX + 1) })).toBeNull();
     expect(cleanAnnouncement({ ...bar, link: { kind: "url", url: "example.com/sale" } })?.link).toEqual({
       kind: "url",
@@ -185,6 +194,105 @@ describe("announcement bar", () => {
     expect(liveFlags(look, 200).announcementLive).toBe(false);
     expect(lookBoundaries(look, 50)).toEqual([100, 200]);
     expect(lookBoundaries(look, 150)).toEqual([200]);
+  });
+});
+
+describe("Promo bar", () => {
+  const bar = { text: "Hi", tone: "accent" as const };
+
+  test("old bars stay valid; new fields are cleaned and defaults dropped", () => {
+    expect(cleanAnnouncement(bar)).toEqual(bar);
+    expect(
+      cleanAnnouncement({ ...bar, style: "solid", icon: "none", countdown: true, closable: true, title: "  " }),
+    ).toEqual(bar);
+    expect(
+      cleanAnnouncement({ ...bar, style: "gradient", icon: "flower", countdown: false, closable: false, title: " Weekend\nsale " }),
+    ).toMatchObject({ style: "gradient", icon: "flower", countdown: false, closable: false, title: "Weekend sale" });
+    expect(cleanAnnouncement({ ...bar, title: "x".repeat(PROMO_TITLE_MAX + 1) })).toBeNull();
+    expect(cleanAnnouncement({ ...bar, colors: { background: "#ABCDEF", foreground: "#000000" } })?.colors).toEqual({
+      background: "#abcdef",
+      foreground: "#000000",
+    });
+    expect(cleanAnnouncement({ ...bar, colors: { background: "red", foreground: "#000000" } })).toBeNull();
+  });
+
+  test("every preset × tone × style is readable", () => {
+    for (const preset of PRESET_IDS) {
+      for (const tone of ["accent", "dark", "soft"] as const) {
+        for (const style of PROMO_STYLES) {
+          const look = resolveLook({ ...presetLook(preset), overrides: { announcement: { text: "Hi", tone, style } } });
+          expect(lookProblems(look).filter((p) => p.target === "announcement"), `${preset} ${tone} ${style}`).toEqual([]);
+        }
+      }
+    }
+  });
+
+  test("outline draws on the page: the bar colour is the border", () => {
+    const look = resolveLook({ ...FREE_LOOK, overrides: { announcement: { ...bar, style: "outline" } } });
+    expect(look.announcement).toMatchObject({ background: look.colors.background, foreground: look.colors.foreground, border: look.colors.primary });
+  });
+
+  test("custom colours: refused below 4.5:1, with a text colour fix that passes", () => {
+    const pale = { ...bar, colors: { background: "#f4a3a3", foreground: "#ffffff" } };
+    for (const style of PROMO_STYLES) {
+      const look = resolveLook({ ...FREE_LOOK, overrides: { announcement: { ...pale, style } } });
+      const problem = lookProblems(look).find((p) => p.target === "announcement");
+      expect(problem?.level, style).toBe("block");
+      expect(problem?.fix?.field).toBe("announcementText");
+      const fixed = resolveLook({
+        ...FREE_LOOK,
+        overrides: { announcement: { ...pale, style, colors: { ...pale.colors, foreground: problem!.fix!.value } } },
+      });
+      expect(lookProblems(fixed).filter((p) => p.target === "announcement"), style).toEqual([]);
+    }
+    const good = resolveLook({ ...FREE_LOOK, overrides: { announcement: { ...bar, colors: { background: "#1d3557", foreground: "#ffffff" } } } });
+    expect(lookProblems(good).filter((p) => p.target === "announcement")).toEqual([]);
+  });
+
+  test("the gradient's second stop never lowers the contrast", () => {
+    const look = resolveLook({ ...FREE_LOOK, overrides: { announcement: { ...bar, style: "gradient", colors: { background: "#1d3557", foreground: "#ffffff" } } } });
+    const a = look.announcement!;
+    expect(contrast(a.foreground, a.gradientTo!)).toBeGreaterThanOrEqual(contrast(a.foreground, a.background));
+  });
+
+  test("a running sale wins, then the text, else nothing", () => {
+    const resolved = { text: "Free delivery", link: null, title: null, countdown: true };
+    const sale = { percent: 30, uniform: false, endsAt: 500 };
+    expect(promoBarContent(resolved, sale)).toEqual({ kind: "sale", title: null, percent: 30, uniform: false, endsAt: 500 });
+    expect(promoBarContent({ ...resolved, title: "Weekend", countdown: false }, sale)).toMatchObject({ title: "Weekend", endsAt: null });
+    expect(promoBarContent(null, sale)).toMatchObject({ kind: "sale", endsAt: 500 });
+    expect(promoBarContent(resolved, null)).toEqual({ kind: "announcement", text: "Free delivery", link: null });
+    expect(promoBarContent({ ...resolved, text: "" }, null)).toBeNull();
+    expect(promoBarContent(null, null)).toBeNull();
+  });
+
+  test("the sale summary: biggest discount, soonest countdown end", () => {
+    const sale = (percent: number, endsAt: number, countdown = true) => ({ sale: { percent, endsAt, countdown } });
+    expect(promoSaleSummary([{ sale: null }])).toBeNull();
+    expect(promoSaleSummary([sale(20, 900), { sale: null }, sale(35, 700, false), sale(20, 800)])).toEqual({
+      percent: 35,
+      uniform: false,
+      endsAt: 800,
+    });
+    expect(promoSaleSummary([sale(20, 900, false), sale(20, 800, false)])).toEqual({ percent: 20, uniform: true, endsAt: null });
+  });
+});
+
+describe("Promo bar saved from the Sales page", () => {
+  const bar = { text: "Hi", tone: "accent" as const };
+  const draft: StoredLook = { v: 1, preset: "noir", overrides: { announcement: { text: "Old", tone: "dark" } } };
+
+  test("withPublishedBar takes the published bar, or none", () => {
+    const published: StoredLook = { ...FREE_LOOK, overrides: { announcement: bar } };
+    expect(withPublishedBar(draft, published)).toEqual({ ...draft, overrides: { announcement: bar } });
+    expect(withPublishedBar(draft, FREE_LOOK).overrides.announcement).toBeUndefined();
+    expect(withPublishedBar(draft, null).preset).toBe("noir");
+  });
+
+  test("samePromoBar ignores key order", () => {
+    expect(samePromoBar({ tone: "accent", text: "Hi" }, bar)).toBe(true);
+    expect(samePromoBar(bar, { ...bar, icon: "tag" })).toBe(false);
+    expect(samePromoBar(undefined, null)).toBe(true);
   });
 });
 

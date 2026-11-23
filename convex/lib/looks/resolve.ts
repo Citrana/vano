@@ -2,7 +2,7 @@ import { bestOn, contrast, isDark, mix, type Hex } from "./color";
 import { gradientCss, GRADIENTS, type ArtworkId, type BannerAlign, type BannerHeight } from "./banners";
 import { DESIGN_DECORATION, type ButtonDecoration, type ButtonDesign, type OrderLabel } from "./buttonDesigns";
 import { EVENT_PALETTES, type EventFontId, type EventPalette, type EventPaletteId, type EventTemplateId } from "./events";
-import type { AnnouncementFacet, AnnouncementLink, AnnouncementTone } from "./announcement";
+import type { AnnouncementFacet, AnnouncementLink, AnnouncementTone, PromoIcon, PromoStyle } from "./announcement";
 import { PRESETS } from "./presets";
 import { sectionsOf, type SectionsFacet } from "./sections";
 import {
@@ -139,13 +139,27 @@ export type ResolvedProfile = {
   initialFg: Hex;
 };
 
-/** The announcement bar, ready to draw: its fill and derived text colour. */
+/**
+ * The Promo bar, ready to draw (announcement.ts). `background` is the
+ * fill (the page background for "outline"), `foreground` the text,
+ * `border` the outline, `gradientTo` the gradient's second stop. Every
+ * pair the bar draws is checked by `lookProblems`.
+ */
 export type ResolvedAnnouncement = {
   text: string;
   link: AnnouncementLink | null;
   tone: AnnouncementTone;
+  /** The seller picked the colours (not a shop colour tone). */
+  custom: boolean;
+  style: PromoStyle;
+  icon: PromoIcon;
+  title: string | null;
+  countdown: boolean;
+  closable: boolean;
   background: Hex;
   foreground: Hex;
+  border: Hex | null;
+  gradientTo: Hex | null;
 };
 
 export type ResolvedLook<Img> = {
@@ -162,16 +176,47 @@ export type ResolvedLook<Img> = {
   announcement: ResolvedAnnouncement | null;
 };
 
-/** The announcement bar's colours: shop colours only, the text colour derived. */
+/**
+ * The gradient's second stop: the fill moved away from the text colour,
+ * so the text contrasts at least as much there as on the first stop.
+ */
+export function promoGradientEnd(background: Hex, foreground: Hex): Hex {
+  return isDark(foreground) ? mix(background, WHITE, 0.4) : mix(background, "#000000", 0.28);
+}
+
+/**
+ * The Promo bar's colours. A tone uses shop colours with the derived text
+ * colour; custom colours are the seller's pair. "outline" draws on the
+ * page background: the bar colour becomes the border, the text is the
+ * page text (tone) or the seller's text colour (custom).
+ */
 export function resolveAnnouncement(announcement: AnnouncementFacet | undefined, colors: ResolvedColors): ResolvedAnnouncement | null {
   if (!announcement) return null;
-  const [background, foreground]: [Hex, Hex] =
-    announcement.tone === "accent"
+  const custom = announcement.colors !== undefined;
+  const [fill, text]: [Hex, Hex] = announcement.colors
+    ? [announcement.colors.background as Hex, announcement.colors.foreground as Hex]
+    : announcement.tone === "accent"
       ? [colors.primary, colors.primaryForeground]
       : announcement.tone === "dark"
         ? [colors.foreground, colors.background]
         : [colors.chipSoft, colors.chipSoftForeground];
-  return { text: announcement.text, link: announcement.link ?? null, tone: announcement.tone, background, foreground };
+  const style = announcement.style ?? "solid";
+  const outline = style === "outline";
+  return {
+    text: announcement.text,
+    link: announcement.link ?? null,
+    tone: announcement.tone,
+    custom,
+    style,
+    icon: announcement.icon ?? "none",
+    title: announcement.title ?? null,
+    countdown: announcement.countdown !== false,
+    closable: announcement.closable !== false,
+    background: outline ? colors.background : fill,
+    foreground: outline ? (custom ? text : colors.foreground) : text,
+    border: outline ? fill : null,
+    gradientTo: style === "gradient" ? promoGradientEnd(fill, text) : null,
+  };
 }
 
 /** A profile facet with the look's colours applied. Theme border colours follow the look. */

@@ -6,6 +6,13 @@ import { ratioLabel } from "../../../../convex/lib/looks/color"
 import type { LookProblem } from "../../../../convex/lib/looks/contrast"
 import { Button } from "@/components/ui/button"
 
+const FIX_LABELS = {
+  accent: "fixAccent",
+  background: "fixBackground",
+  profileBorder: "fixProfileBorder",
+  announcementText: "fixAnnouncementText",
+} as const satisfies Record<NonNullable<LookProblem["fix"]>["field"], string>
+
 /**
  * The contrast check's findings (CLAUDE.md "Shop looks"): what may be hard
  * to read, the measured ratio, and a one-tap fix. "block" problems stop
@@ -58,7 +65,7 @@ export function ContrastNotes({
                   aria-hidden
                 />
                 {t(
-                  problem.fix.field === "accent" ? "fixAccent" : problem.fix.field === "background" ? "fixBackground" : "fixProfileBorder",
+                  FIX_LABELS[problem.fix.field],
                   { color: problem.fix.value },
                 )}
               </Button>

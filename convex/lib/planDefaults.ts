@@ -142,7 +142,7 @@ const FEATURES: Record<FeatureKey, Seed> = {
   },
   announcementBar: {
     values: PRO,
-    pricing: tableOnly(215, "Announcement bar at the top of your shop", "Bandeau d'annonce en haut de votre boutique"),
+    pricing: tableOnly(215, "Promo bar at the top of your shop", "Bandeau promo en haut de votre boutique"),
   },
   customDomain: { values: BUSINESS, pricing: tableOnly(220, "Custom domain", "Nom de domaine personnalisé") },
   customBranding: { values: ENTERPRISE, pricing: tableOnly(230, "Custom branding", "Image de marque sur mesure") },
