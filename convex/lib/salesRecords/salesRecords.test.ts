@@ -4,7 +4,6 @@ import {
   cleanCustomerPhone,
   cleanOption,
   customerNameProblem,
-  defaultMarkSoldOut,
   finalPriceProblem,
   quantityProblem,
   soldAtProblem,
@@ -100,11 +99,5 @@ describe("recorded sales: rules", () => {
     expect(cleanCustomerPhone("", "CD")).toBeUndefined();
     expect(cleanCustomerPhone("0812 345 678", "CD")).toBe("+243812345678");
     expect(cleanCustomerPhone("123", "CD")).toBeNull();
-  });
-
-  test("sold out starts on only for a product without sizes or colours", () => {
-    expect(defaultMarkSoldOut({ sizes: [], colors: [] })).toBe(true);
-    expect(defaultMarkSoldOut({ sizes: ["M"], colors: [] })).toBe(false);
-    expect(defaultMarkSoldOut({ sizes: [], colors: ["Red"] })).toBe(false);
   });
 });

@@ -101,6 +101,7 @@ import type * as lib_settings from "../lib/settings.js";
 import type * as lib_shopChanges from "../lib/shopChanges.js";
 import type * as lib_shopInfo from "../lib/shopInfo.js";
 import type * as lib_slug from "../lib/slug.js";
+import type * as lib_stock from "../lib/stock.js";
 import type * as lib_subscriptions from "../lib/subscriptions.js";
 import type * as lib_timeZone from "../lib/timeZone.js";
 import type * as migrations from "../migrations.js";
@@ -238,6 +239,7 @@ declare const fullApi: ApiFromModules<{
   "lib/shopChanges": typeof lib_shopChanges;
   "lib/shopInfo": typeof lib_shopInfo;
   "lib/slug": typeof lib_slug;
+  "lib/stock": typeof lib_stock;
   "lib/subscriptions": typeof lib_subscriptions;
   "lib/timeZone": typeof lib_timeZone;
   migrations: typeof migrations;

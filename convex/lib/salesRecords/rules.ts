@@ -62,8 +62,3 @@ export function cleanCustomerPhone(phone: string | undefined, country: string): 
   if (text === "") return undefined;
   return normalizeWhatsapp(text, country as CountryCode);
 }
-
-/** "Mark this product as sold out" starts on for a product without sizes or colours. */
-export function defaultMarkSoldOut(product: { sizes: readonly string[]; colors: readonly string[] }): boolean {
-  return product.sizes.length === 0 && product.colors.length === 0;
-}

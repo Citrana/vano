@@ -50,7 +50,6 @@ export const recordInputFields = {
   customerName: v.optional(v.string()),
   customerPhone: v.optional(v.string()),
   soldAt: v.number(),
-  markSoldOut: v.boolean(),
   /** The browser's zone: saved on the shop if it has none yet. */
   timeZone: v.optional(v.string()),
 };

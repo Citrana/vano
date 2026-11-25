@@ -10,14 +10,14 @@ import type { CodeResult } from "./lib/discountCodes/validators";
 import { hasFeature, requireCan } from "./lib/entitlements";
 import { fail } from "./lib/errors";
 import { urlOf } from "./lib/images";
-import { applyStock, recordProductEvent } from "./lib/productStock";
+import { applyPieces, applyStock, notifySoldOut, piecesTracked, recordProductEvent } from "./lib/productStock";
+import { takePieces } from "./lib/stock";
 import { saleForProduct } from "./lib/sales/store";
 import { recordTotals, suggestedPrice, sumRecords } from "./lib/salesRecords/pricing";
 import {
   cleanCustomerPhone,
   cleanOption,
   customerNameProblem,
-  defaultMarkSoldOut,
   finalPriceProblem,
   HISTORY_MAX,
   LIST_MAX,
@@ -134,6 +134,7 @@ export const quote = sellerQuery({
     const sale = await saleForProduct(ctx, shop, product);
     const codeResult = await codeFor(ctx, shop, product, sale, code, now);
     const suggested = suggestedPrice({ normalPrice: product.price, sale, code: codeResult });
+    const tracked = product.pieces !== undefined && (await hasFeature(ctx, shop, "stockManagement"));
     return {
       locked: false as const,
       product: {
@@ -152,7 +153,8 @@ export const quote = sellerQuery({
       suggestedPrice: suggested.price,
       offer: suggested.offer,
       codeStatus: codeResult?.status ?? null,
-      defaultMarkSoldOut: defaultMarkSoldOut(product),
+      /** Pieces left when the count is tracked (a sale takes its quantity), else null. */
+      pieces: tracked ? (product.pieces ?? null) : null,
       canSeeCustomers: canSeeCustomers(ctx),
     };
   },
@@ -178,8 +180,9 @@ async function zoneFor(ctx: SellerMutationCtx, shop: Doc<"shops">, browserZone: 
 /**
  * Records a sale ("Confirm sale"). Everything is checked again here: the
  * options, the price, the date, the customer, and the offer is recomputed.
- * With `markSoldOut`, a product not sold out yet becomes sold out (in its
- * history, and the sale remembers it so reversing can undo it).
+ * A product whose pieces are tracked loses the quantity sold (never more
+ * than it has): "Few left" at 3 or fewer, "Sold out" at 0, and taking the
+ * last piece notifies the seller. Untracked products don't change.
  */
 export const record = sellerMutation({
   permission: PERMISSION,
@@ -198,6 +201,9 @@ export const record = sellerMutation({
     if (customerPhone === null) fail("SALES_RECORD_CUSTOMER");
     if (args.timeZone !== undefined && timeZoneProblem(args.timeZone) !== null) fail("TIME_ZONE_INVALID");
 
+    const tracked = await piecesTracked(ctx, shop, product);
+    const left = tracked ? takePieces(product.pieces ?? 0, args.quantity) : null;
+    if (left === "notEnough") fail("SALES_RECORD_STOCK");
     const zone = await zoneFor(ctx, shop, args.timeZone);
     const sale = await saleForProduct(ctx, shop, product);
     const codeResult = await codeFor(ctx, shop, product, sale, args.code, now);
@@ -234,8 +240,10 @@ export const record = sellerMutation({
     });
     const by = { byUserId: ctx.user._id, salesRecordId: recordId };
     await recordProductEvent(ctx, product, "sold", { at: now, ...by });
-    if (args.markSoldOut && (await applyStock(ctx, product, true, now, by))) {
-      await ctx.db.patch("salesRecords", recordId, { markedSoldOut: true });
+    if (left !== null) {
+      const soldOut = await applyPieces(ctx, product, left, now, by);
+      await ctx.db.patch("salesRecords", recordId, { piecesTaken: args.quantity, markedSoldOut: soldOut });
+      if (soldOut) await notifySoldOut(ctx, shop, product, now);
     }
     return recordId;
   },
@@ -259,10 +267,12 @@ export const update = sellerMutation({
     if (record.version !== expectedVersion) fail("SALES_RECORD_STALE");
     const now = Date.now();
     checkEdit(input, now);
+    const stock = await editStock(ctx, shop, record, input.quantity, now);
     const totals = recordTotals({ normalUnitPrice: record.normalUnitPrice, ...input });
     await ctx.db.patch("salesRecords", recordId, {
       ...input,
       ...totals,
+      ...stock,
       day: localDay(input.soldAt, shopTimeZone(shop)),
       updatedAt: now,
       version: record.version + 1,
@@ -276,26 +286,50 @@ export const update = sellerMutation({
   },
 });
 
+/** The record's product when it still exists in its shop, else null. */
+async function recordProduct(ctx: SellerMutationCtx, record: Doc<"salesRecords">) {
+  const product = await ctx.db.get("products", record.productId);
+  return product && product.shopId === record.shopId ? product : null;
+}
+
+/**
+ * A quantity change on a sale that took pieces: the difference is taken
+ * from (or given back to) the product's count, never more than it has.
+ * Nothing changes when the count isn't tracked anymore.
+ */
+async function editStock(
+  ctx: SellerMutationCtx,
+  shop: Doc<"shops">,
+  record: Doc<"salesRecords">,
+  quantity: number,
+  now: number,
+): Promise<{ piecesTaken?: number; markedSoldOut?: boolean }> {
+  if (record.piecesTaken === undefined || quantity === record.piecesTaken) return {};
+  const product = await recordProduct(ctx, record);
+  if (!product || !(await piecesTracked(ctx, shop, product))) return {};
+  const left = takePieces(product.pieces ?? 0, quantity - record.piecesTaken);
+  if (left === "notEnough") fail("SALES_RECORD_STOCK");
+  const soldOut = await applyPieces(ctx, product, left, now, { byUserId: ctx.user._id, salesRecordId: record._id });
+  if (soldOut) await notifySoldOut(ctx, shop, product, now);
+  return { piecesTaken: quantity, ...(soldOut ? { markedSoldOut: true } : {}) };
+}
+
 /** The product a record is about, for its history (it may be deleted). */
 function recordSubject(record: Doc<"salesRecords">) {
   return { _id: record.productId, shopId: record.shopId, name: record.productName };
 }
 
-/** A reversal may put the product back on sale only if this sale made it sold out and it still is. */
-function restockable(record: Doc<"salesRecords">, product: Doc<"products"> | null): product is Doc<"products"> {
-  return record.markedSoldOut && product !== null && product.shopId === record.shopId && product.soldOut;
-}
-
 /**
  * Reverses a sale: kept in the list (tagged), excluded from every total.
- * With `restock`, a product this sale marked sold out is put back on sale
- * (and "Back in stock" follows its usual rule).
+ * The pieces it took go back to a tracked product (no longer sold out
+ * once it has some again); an untracked product this sale marked sold out
+ * is put back on sale. "Back in stock" follows its usual rule.
  */
 export const reverse = sellerMutation({
   permission: PERMISSION,
-  args: { recordId: v.id("salesRecords"), expectedVersion: v.number(), restock: v.boolean() },
+  args: { recordId: v.id("salesRecords"), expectedVersion: v.number() },
   returns: v.null(),
-  handler: async (ctx, { recordId, expectedVersion, restock }) => {
+  handler: async (ctx, { recordId, expectedVersion }) => {
     const { shop, record } = await requireOwnRecord(ctx, recordId);
     await requireCan(ctx, shop, FEATURE);
     if (record.status === "reversed") fail("SALES_RECORD_REVERSED");
@@ -309,8 +343,13 @@ export const reverse = sellerMutation({
     });
     const by = { byUserId: ctx.user._id, salesRecordId: recordId };
     await recordProductEvent(ctx, recordSubject(record), "saleReversed", { at: now, ...by });
-    const product = await ctx.db.get("products", record.productId);
-    if (restock && restockable(record, product)) await applyStock(ctx, product, false, now, by);
+    const product = await recordProduct(ctx, record);
+    if (!product) return null;
+    if (record.piecesTaken !== undefined && (await piecesTracked(ctx, shop, product))) {
+      await applyPieces(ctx, product, (product.pieces ?? 0) + record.piecesTaken, now, by);
+    } else if (record.markedSoldOut && product.soldOut && !(await piecesTracked(ctx, shop, product))) {
+      await applyStock(ctx, product, false, now, by);
+    }
     return null;
   },
 });
@@ -414,7 +453,8 @@ export const get = sellerQuery({
       currency: record.currency,
       timeZone: shopTimeZone(shop),
       productExists: product !== null && product.shopId === shop._id,
-      canRestock: record.status === "recorded" && restockable(record, product),
+      /** Pieces a reversal gives back to the product's stock, or null. */
+      piecesTaken: record.piecesTaken ?? null,
     };
   },
 });

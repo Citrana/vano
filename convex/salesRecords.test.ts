@@ -37,13 +37,12 @@ function recordArgs(productId: Id<"products">, overrides: Record<string, unknown
     finalUnitPrice: 10_000,
     source: "whatsapp" as const,
     soldAt: NOW - HOUR,
-    markSoldOut: true,
     ...overrides,
   };
 }
 
 const dressSale = (productId: Id<"products">, overrides: Record<string, unknown> = {}) =>
-  recordArgs(productId, { size: "M", color: "Rouge", finalUnitPrice: 2500, markSoldOut: false, ...overrides });
+  recordArgs(productId, { size: "M", color: "Rouge", finalUnitPrice: 2500, ...overrides });
 
 const recordRow = (t: T, id: Id<"salesRecords">) => t.run((ctx) => ctx.db.get("salesRecords", id));
 const productRow = (t: T, id: Id<"products">) => t.run((ctx) => ctx.db.get("products", id));
@@ -109,7 +108,7 @@ describe("recorded sales: snapshot", () => {
     expect(page.rows[0]).toMatchObject({ productName: "Robe", total: 4000 });
     expect(page.rows[0].photoUrl).not.toBeNull();
     const details = await me.query(api.salesRecords.get, { recordId: id });
-    expect(details).toMatchObject({ productExists: false, canRestock: false });
+    expect(details).toMatchObject({ productExists: false, piecesTaken: null });
     expect(await events(t, dress)).toEqual(["sold", "deleted"]);
   });
 
@@ -125,7 +124,7 @@ describe("recorded sales: snapshot", () => {
       steepConfirmed: false,
     });
     const quote = await me.query(api.salesRecords.quote, { productId: bag, now: NOW });
-    expect(quote).toMatchObject({ locked: false, suggestedPrice: 8000, offer: { kind: "sale", percent: 20 }, defaultMarkSoldOut: true });
+    expect(quote).toMatchObject({ locked: false, suggestedPrice: 8000, offer: { kind: "sale", percent: 20 }, pieces: null });
 
     await me.mutation(api.discountCodes.create, {
       code: "vip40",
@@ -189,34 +188,119 @@ async function businessShopDress(t: T, shopId: Id<"shops">) {
   });
 }
 
-describe("recorded sales: the sold out switch", () => {
-  test("on: the product becomes sold out, in its history, and the sale remembers it", async () => {
+describe("recorded sales: pieces in stock", () => {
+  async function counted(t: T, me: Me, pieces: number, overrides: Record<string, unknown> = {}) {
+    return await me.mutation(
+      api.products.create,
+      { ...(await productArgs(t, { name: "Sandales", price: 5000, sizes: [], colors: [], ...overrides })), pieces },
+    );
+  }
+  const inbox = (t: T, userId: Id<"users">) => as(t, userId).query(api.notifications.inbox.latest, {});
+
+  test("each sale takes its quantity; Few left at 3 or fewer", async () => {
     const t = newTest();
-    const { me, bag } = await businessShop(t);
-    await me.mutation(api.products.setFewLeft, { productId: bag, fewLeft: true });
-    const id = await me.mutation(api.salesRecords.record, recordArgs(bag));
-    const product = (await productRow(t, bag))!;
-    expect(product.soldOut).toBe(true);
+    const { me, userId } = await businessShop(t);
+    const shoes = await counted(t, me, 6);
+    expect(await productRow(t, shoes)).toMatchObject({ pieces: 6, soldOut: false });
+    expect((await productRow(t, shoes))!.fewLeft).toBeUndefined();
+    const id = await me.mutation(api.salesRecords.record, recordArgs(shoes, { quantity: 3, finalUnitPrice: 5000 }));
+    expect(await productRow(t, shoes)).toMatchObject({ pieces: 3, fewLeft: true, soldOut: false });
+    expect(await recordRow(t, id)).toMatchObject({ piecesTaken: 3, markedSoldOut: false });
+    expect(await inbox(t, userId)).toEqual([]);
+  });
+
+  test("the last piece: Sold out, in the history, and the seller is told once", async () => {
+    const t = newTest();
+    const { me, userId } = await businessShop(t);
+    const shoes = await counted(t, me, 1);
+    expect(await me.query(api.salesRecords.quote, { productId: shoes, now: NOW })).toMatchObject({ pieces: 1 });
+    const id = await me.mutation(api.salesRecords.record, recordArgs(shoes, { finalUnitPrice: 5000 }));
+    const product = (await productRow(t, shoes))!;
+    expect(product).toMatchObject({ pieces: 0, soldOut: true });
     expect(product.fewLeft).toBeUndefined();
-    expect(await recordRow(t, id)).toMatchObject({ markedSoldOut: true });
-    expect(await events(t, bag)).toEqual(["sold", "soldOut"]);
+    expect(await recordRow(t, id)).toMatchObject({ piecesTaken: 1, markedSoldOut: true });
+    expect(await events(t, shoes)).toEqual(["sold", "soldOut"]);
+    const rows = await inbox(t, userId);
+    expect(rows.map((n) => n.data)).toEqual([{ type: "product.soldOut", productId: shoes, name: "Sandales" }]);
+    // Sold out: no more sales until pieces are added.
+    await expect(me.mutation(api.salesRecords.record, recordArgs(shoes, { finalUnitPrice: 5000 }))).rejects.toThrow(
+      /SALES_RECORD_STOCK/,
+    );
   });
 
-  test("off: the product stays on sale", async () => {
+  test("never more than what's left", async () => {
     const t = newTest();
-    const { me, dress } = await businessShop(t);
-    const id = await me.mutation(api.salesRecords.record, dressSale(dress));
-    expect((await productRow(t, dress))!.soldOut).toBe(false);
-    expect(await recordRow(t, id)).toMatchObject({ markedSoldOut: false });
+    const { me } = await businessShop(t);
+    const shoes = await counted(t, me, 2);
+    await expect(me.mutation(api.salesRecords.record, recordArgs(shoes, { quantity: 3 }))).rejects.toThrow(/SALES_RECORD_STOCK/);
+    expect((await productRow(t, shoes))!.pieces).toBe(2);
   });
 
-  test("already sold out: nothing changes and the sale didn't mark it", async () => {
+  test("an edit takes or gives back the difference", async () => {
+    const t = newTest();
+    const { me, userId } = await businessShop(t);
+    const shoes = await counted(t, me, 5);
+    const id = await me.mutation(api.salesRecords.record, recordArgs(shoes, { quantity: 2 }));
+    const edit = (version: number, quantity: number) =>
+      me.mutation(api.salesRecords.update, { recordId: id, expectedVersion: version, finalUnitPrice: 5000, quantity, soldAt: NOW - HOUR });
+    await edit(1, 1);
+    expect((await productRow(t, shoes))!.pieces).toBe(4);
+    await expect(edit(2, 6)).rejects.toThrow(/SALES_RECORD_STOCK/);
+    await edit(2, 5);
+    expect(await productRow(t, shoes)).toMatchObject({ pieces: 0, soldOut: true });
+    expect(await recordRow(t, id)).toMatchObject({ piecesTaken: 5, markedSoldOut: true });
+    expect((await inbox(t, userId)).map((n) => n.data.type)).toEqual(["product.soldOut"]);
+  });
+
+  test("reversing gives the pieces back and ends Sold out", async () => {
+    const t = newTest();
+    const { me } = await businessShop(t);
+    const shoes = await counted(t, me, 2);
+    const id = await me.mutation(api.salesRecords.record, recordArgs(shoes, { quantity: 2 }));
+    expect(await me.query(api.salesRecords.get, { recordId: id })).toMatchObject({ piecesTaken: 2 });
+    await me.mutation(api.salesRecords.reverse, { recordId: id, expectedVersion: 1 });
+    expect(await productRow(t, shoes)).toMatchObject({ pieces: 2, soldOut: false, fewLeft: true, backInStock: true, restockedAt: NOW });
+    expect(await events(t, shoes)).toEqual(["sold", "soldOut", "saleReversed", "backOnSale"]);
+  });
+
+  test("an untracked product doesn't change", async () => {
     const t = newTest();
     const { me, bag } = await businessShop(t);
-    await me.mutation(api.products.setSoldOut, { productId: bag, soldOut: true });
-    const id = await me.mutation(api.salesRecords.record, recordArgs(bag));
+    const id = await me.mutation(api.salesRecords.record, recordArgs(bag, { quantity: 5 }));
+    expect(await productRow(t, bag)).toMatchObject({ soldOut: false });
     expect(await recordRow(t, id)).toMatchObject({ markedSoldOut: false });
-    expect(await events(t, bag)).toEqual(["soldOut", "sold"]);
+    expect((await recordRow(t, id))!.piecesTaken).toBeUndefined();
+    expect(await me.query(api.salesRecords.quote, { productId: bag, now: NOW })).toMatchObject({ pieces: null });
+  });
+
+  test("without stockManagement the count is kept but ignored", async () => {
+    const t = newTest();
+    const { me, shopId } = await businessShop(t);
+    const shoes = await counted(t, me, 1);
+    // The admin takes stock management off Business (sales tracking stays).
+    await t.run(async (ctx) => {
+      const { readPlanConfig, writePlanConfig } = await import("./lib/planConfig");
+      const config = await readPlanConfig(ctx);
+      const stock = config.features.stockManagement;
+      await writePlanConfig(
+        ctx,
+        { plans: config.plans, features: { ...config.features, stockManagement: { ...stock, values: { ...stock.values, business: false, enterprise: false } } } },
+        config.version,
+        null,
+      );
+    });
+    await me.mutation(api.salesRecords.record, recordArgs(shoes, { finalUnitPrice: 5000 }));
+    expect(await productRow(t, shoes)).toMatchObject({ pieces: 1, soldOut: false });
+    // The manual switch works again.
+    await me.mutation(api.products.setSoldOut, { productId: shoes, soldOut: true });
+    expect((await productRow(t, shoes))!.soldOut).toBe(true);
+    // A count can't be changed without the feature; saving the form keeps it.
+    await expect(
+      me.mutation(api.products.update, { productId: shoes, ...(await productArgs(t, { name: "Sandales", sizes: [], colors: [] })), pieces: 9 }),
+    ).rejects.toThrow(/PLAN_FEATURE_LOCKED/);
+    await me.mutation(api.products.update, { productId: shoes, ...(await productArgs(t, { name: "Sandales", sizes: [], colors: [] })), pieces: 1 });
+    expect((await productRow(t, shoes))!.pieces).toBe(1);
+    expect(shopId).toBeTruthy();
   });
 });
 
@@ -255,47 +339,35 @@ describe("recorded sales: edit and reverse", () => {
     await expect(
       me.mutation(api.salesRecords.update, { recordId: id, expectedVersion: 2, finalUnitPrice: 1, quantity: 0, soldAt: NOW }),
     ).rejects.toThrow(/SALES_RECORD_QUANTITY/);
-    expect(await events(t, bag)).toEqual(["sold", "soldOut", "saleEdited"]);
+    expect(await events(t, bag)).toEqual(["sold", "saleEdited"]);
   });
 
-  test("reverse: kept and listed, out of the totals, product back on sale only if asked", async () => {
+  test("reverse: kept and listed, out of the totals, can't change again", async () => {
     const t = newTest();
     const { me, bag, dress } = await businessShop(t);
-    const keep = await me.mutation(api.salesRecords.record, dressSale(dress, { finalUnitPrice: 2000 }));
+    await me.mutation(api.salesRecords.record, dressSale(dress, { finalUnitPrice: 2000 }));
     const id = await me.mutation(api.salesRecords.record, recordArgs(bag));
-    expect(await me.query(api.salesRecords.get, { recordId: id })).toMatchObject({ canRestock: true });
-
-    await me.mutation(api.salesRecords.reverse, { recordId: id, expectedVersion: 1, restock: true });
+    await me.mutation(api.salesRecords.reverse, { recordId: id, expectedVersion: 1 });
     expect(await recordRow(t, id)).toMatchObject({ status: "reversed", reversedAt: NOW });
-    expect(await productRow(t, bag)).toMatchObject({ soldOut: false, backInStock: true, restockedAt: NOW });
-    expect(await events(t, bag)).toEqual(["sold", "soldOut", "saleReversed", "backOnSale"]);
 
     const page = await list(me);
     if (page.locked) throw new Error("locked");
     expect(page.rows.map((r) => r.status).sort()).toEqual(["recorded", "reversed"]);
     expect(page.totals).toEqual({ count: 1, items: 1, revenue: 2000, discounts: 500 });
 
-    await expect(me.mutation(api.salesRecords.reverse, { recordId: id, expectedVersion: 2, restock: false })).rejects.toThrow(
-      /SALES_RECORD_REVERSED/,
-    );
+    await expect(me.mutation(api.salesRecords.reverse, { recordId: id, expectedVersion: 2 })).rejects.toThrow(/SALES_RECORD_REVERSED/);
     await expect(
       me.mutation(api.salesRecords.update, { recordId: id, expectedVersion: 2, finalUnitPrice: 1, quantity: 1, soldAt: NOW }),
     ).rejects.toThrow(/SALES_RECORD_REVERSED/);
-    expect(keep).toBeTruthy();
   });
 
-  test("reverse without restock, or when the seller already put it back, leaves the product", async () => {
+  test("an older sale that marked an untracked product sold out puts it back on sale", async () => {
     const t = newTest();
     const { me, bag } = await businessShop(t);
-    const a = await me.mutation(api.salesRecords.record, recordArgs(bag));
-    await me.mutation(api.salesRecords.reverse, { recordId: a, expectedVersion: 1, restock: false });
-    expect((await productRow(t, bag))!.soldOut).toBe(true);
-
-    await me.mutation(api.products.setSoldOut, { productId: bag, soldOut: false });
-    const b = await me.mutation(api.salesRecords.record, recordArgs(bag));
-    await me.mutation(api.products.setSoldOut, { productId: bag, soldOut: false });
-    expect(await me.query(api.salesRecords.get, { recordId: b })).toMatchObject({ canRestock: false });
-    await me.mutation(api.salesRecords.reverse, { recordId: b, expectedVersion: 1, restock: true });
+    const id = await me.mutation(api.salesRecords.record, recordArgs(bag));
+    await me.mutation(api.products.setSoldOut, { productId: bag, soldOut: true });
+    await t.run((ctx) => ctx.db.patch("salesRecords", id, { markedSoldOut: true }));
+    await me.mutation(api.salesRecords.reverse, { recordId: id, expectedVersion: 1 });
     expect((await productRow(t, bag))!.soldOut).toBe(false);
   });
 });
@@ -304,7 +376,7 @@ describe("recorded sales: the list", () => {
   test("days in the shop's zone (either bound), source, status, product, search, sort", async () => {
     const t = newTest();
     const { me, bag, dress } = await businessShop(t);
-    await me.mutation(api.salesRecords.record, recordArgs(bag, { markSoldOut: false, source: "instagram", customerName: "Neema", soldAt: NOW - 2 * HOUR }));
+    await me.mutation(api.salesRecords.record, recordArgs(bag, { source: "instagram", customerName: "Neema", soldAt: NOW - 2 * HOUR }));
     await me.mutation(api.salesRecords.record, dressSale(dress, { source: "inPerson", soldAt: NOW - HOUR }));
     const old = await me.mutation(api.salesRecords.record, dressSale(dress, { soldAt: Date.UTC(2026, 9, 30, 12) }));
 
@@ -333,7 +405,7 @@ describe("recorded sales: the list", () => {
     expect((await rows({ productId: dress })).rows).toHaveLength(2);
     expect((await rows({ search: "nee" })).rows.map((r) => r.customerName)).toEqual(["Neema"]);
 
-    await me.mutation(api.salesRecords.reverse, { recordId: old, expectedVersion: 1, restock: false });
+    await me.mutation(api.salesRecords.reverse, { recordId: old, expectedVersion: 1 });
     expect((await rows({ status: "reversed" })).rows.map((r) => r._id)).toEqual([old]);
     const recorded = await rows({ status: "recorded" });
     expect(recorded.rows).toHaveLength(2);
@@ -348,7 +420,7 @@ describe("recorded sales: plan", () => {
   test("Free, Pro and the trial can't record, edit or reverse; sales are kept and come back", async () => {
     const t = newTest();
     const { me, shopId, bag } = await businessShop(t);
-    const id = await me.mutation(api.salesRecords.record, recordArgs(bag, { markSoldOut: false }));
+    const id = await me.mutation(api.salesRecords.record, recordArgs(bag));
     for (const state of [
       { plan: "pro", status: "trialing" },
       { plan: "pro", status: "active" },
@@ -359,7 +431,7 @@ describe("recorded sales: plan", () => {
       await expect(
         me.mutation(api.salesRecords.update, { recordId: id, expectedVersion: 1, finalUnitPrice: 1, quantity: 1, soldAt: NOW }),
       ).rejects.toThrow(/PLAN_FEATURE_LOCKED/);
-      await expect(me.mutation(api.salesRecords.reverse, { recordId: id, expectedVersion: 1, restock: false })).rejects.toThrow(
+      await expect(me.mutation(api.salesRecords.reverse, { recordId: id, expectedVersion: 1 })).rejects.toThrow(
         /PLAN_FEATURE_LOCKED/,
       );
       expect(await list(me)).toEqual({ locked: true, kept: 1 });
@@ -384,7 +456,7 @@ describe("recorded sales: ownership and permissions", () => {
     await expect(
       bea.me.mutation(api.salesRecords.update, { recordId: id, expectedVersion: 1, finalUnitPrice: 1, quantity: 1, soldAt: NOW }),
     ).rejects.toThrow(/NOT_FOUND/);
-    await expect(bea.me.mutation(api.salesRecords.reverse, { recordId: id, expectedVersion: 1, restock: true })).rejects.toThrow(/NOT_FOUND/);
+    await expect(bea.me.mutation(api.salesRecords.reverse, { recordId: id, expectedVersion: 1 })).rejects.toThrow(/NOT_FOUND/);
     expect(await bea.me.query(api.salesRecords.get, { recordId: id })).toBeNull();
     await expect(bea.me.query(api.salesRecords.quote, { productId: amani.bag, now: NOW })).rejects.toThrow(/NOT_FOUND/);
     const beaList = await list(bea.me);

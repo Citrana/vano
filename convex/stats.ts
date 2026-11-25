@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { mutation, type MutationCtx } from "./_generated/server";
-import { hasFeature } from "./lib/entitlements";
+import { hasFeature, hiddenFromShop } from "./lib/entitlements";
 import { addDays, isDay, utcDay } from "./lib/days";
 import { LIMITS } from "./lib/catalog";
 import { onShopDayStatsWritten } from "./lib/platformStats";
@@ -85,7 +85,9 @@ async function recordForProduct(
 ): Promise<boolean> {
   const productId = ctx.db.normalizeId("products", rawId);
   const product = productId ? await ctx.db.get("products", productId) : null;
-  if (!product || product.hidden) return false;
+  if (!product || hiddenFromShop(product)) return false;
+  // A sold-out product can't be ordered: its WhatsApp click isn't counted.
+  if (productField === "whatsappClicks" && product.soldOut) return false;
   // A suspended shop, or a deleted one whose products are being purged.
   const shop = await ctx.db.get("shops", product.shopId);
   if (!shop || shop.status === "suspended") return false;

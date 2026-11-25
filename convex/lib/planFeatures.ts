@@ -33,7 +33,7 @@ export const FEATURES = {
   photosPerProduct: { kind: "limit", area: "products", enforced: true, max: LIMITS.maxImages, unlimited: false },
   categoriesSizesColors: { kind: "flag", area: "products", enforced: false },
   stockLabels: { kind: "flag", area: "products", enforced: false },
-  stockManagement: { kind: "flag", area: "products", enforced: false },
+  stockManagement: { kind: "flag", area: "products", enforced: true },
   bulkUpload: { kind: "flag", area: "products", enforced: false },
   // Shop look
   shopLink: { kind: "flag", area: "shopLook", enforced: false },

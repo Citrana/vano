@@ -218,7 +218,7 @@ describe("discount codes: product page", () => {
     await me.mutation(api.discountCodes.create, codeArgs());
     const result = JSON.stringify(await check(t, dress, "WELCOME10"));
     expect(result).not.toMatch(/ownerId|shopId/);
-    expect(Object.keys((await t.query(api.public.productPrice, { productId: dress }))!).sort()).toEqual(["codeField", "price", "sale"]);
+    expect(Object.keys((await t.query(api.public.productPrice, { productId: dress }))!).sort()).toEqual(["codeField", "price", "sale", "soldOut"]);
   });
 
   test("scheduled, paused and ended codes", async () => {

@@ -1,14 +1,17 @@
 import { internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
+import { getEntitlements } from "./entitlements";
+import { notify } from "./notify";
 import { RESTOCK_MS, stockChange } from "./restock";
+import { isTracked, stockFlags } from "./stock";
 import type { ProductEventKind } from "./salesRecords/validators";
 
 /**
- * The one writer of a product's "Sold out" state and its history
- * (CLAUDE.md "Sales tracking"): `products.setSoldOut`, `products.update`,
- * `salesRecords.record` and `salesRecords.reverse` all go through
- * `applyStock`, so every change lands in `productEvents`.
+ * The one writer of a product's "Sold out" state, its pieces in stock and
+ * its history (CLAUDE.md "Sales tracking"): `products.setSoldOut`,
+ * `products.update` and recorded sales go through `applyStock` /
+ * `stockUpdate` / `applyPieces`, so every change lands in `productEvents`.
  */
 
 /** Adds a row to the product's history. */
@@ -67,4 +70,38 @@ export async function applyStock(
   const fields = await stockUpdate(ctx, product, soldOut, now, by);
   await ctx.db.patch("products", product._id, { ...fields, updatedAt: now });
   return true;
+}
+
+/** Whether the product's pieces drive its labels now (count set, plan has `stockManagement`). */
+export async function piecesTracked(ctx: MutationCtx, shop: Doc<"shops">, product: Pick<Doc<"products">, "pieces">) {
+  if (product.pieces === undefined) return false;
+  const { limits } = await getEntitlements(ctx, shop, Date.now());
+  return isTracked(product, limits);
+}
+
+/**
+ * Sets a tracked product's pieces: "Few left" at 3 or fewer, "Sold out" at
+ * 0 (with its history row; coming back from 0 marks it back in stock).
+ * Returns whether this change sold the product out.
+ */
+export async function applyPieces(
+  ctx: MutationCtx,
+  product: Doc<"products">,
+  pieces: number,
+  now: number,
+  by: { byUserId?: Id<"users">; salesRecordId?: Id<"salesRecords"> },
+): Promise<boolean> {
+  const flags = stockFlags(pieces);
+  const fields = await stockUpdate(ctx, product, flags.soldOut, now, by);
+  await ctx.db.patch("products", product._id, { ...fields, fewLeft: flags.fewLeft || undefined, pieces, updatedAt: now });
+  return flags.soldOut && !product.soldOut;
+}
+
+/** "<product> is sold out" for the seller, when a sale took the last piece. */
+export async function notifySoldOut(ctx: MutationCtx, shop: Doc<"shops">, product: Doc<"products">, now: number) {
+  await notify(ctx, {
+    data: { type: "product.soldOut", productId: product._id, name: product.name },
+    to: { userId: shop.ownerId },
+    dedupeKey: `product.soldOut:${product._id}:${now}`,
+  });
 }

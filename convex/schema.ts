@@ -197,6 +197,13 @@ export default defineSchema({
      * `productJobs.endBackInStock` after RESTOCK_DAYS or when sold out again.
      */
     backInStock: v.optional(v.boolean()),
+    /**
+     * Pieces in stock (lib/stock.ts); missing = not tracked. While the plan
+     * has `stockManagement`, it drives `fewLeft` / `soldOut`.
+     */
+    pieces: v.optional(v.number()),
+    /** Hidden from the shop by its seller (they can show it again; `hidden` is the admin's). */
+    hiddenBySeller: v.optional(v.boolean()),
   })
     .index("by_shopId", ["shopId"])
     .index("by_shopId_and_category", ["shopId", "category"])
@@ -241,6 +248,8 @@ export default defineSchema({
     day: v.string(),
     /** This sale turned the product sold out (reversing it may put it back). */
     markedSoldOut: v.boolean(),
+    /** Pieces this sale took from the product's stock (edits and reverses give them back). */
+    piecesTaken: v.optional(v.number()),
     status: recordStatusValidator,
     reversedAt: v.optional(v.number()),
     createdBy: v.id("users"),

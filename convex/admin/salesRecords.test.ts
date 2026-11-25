@@ -31,7 +31,6 @@ async function world(t: T) {
     finalUnitPrice: 9000,
     source: "whatsapp",
     soldAt: NOW - DAY,
-    markSoldOut: true,
     customerName: "Neema",
     customerPhone: "+243812345678",
   });

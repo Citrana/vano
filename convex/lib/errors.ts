@@ -98,6 +98,9 @@ export const ERROR_CODES = [
   "SALES_RECORD_STALE",
   "SALES_RECORD_REVERSED",
   "TIME_ZONE_INVALID",
+  "SALES_RECORD_STOCK",
+  "STOCK_INVALID",
+  "STOCK_TRACKED",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
