@@ -5,7 +5,7 @@ import { Hero } from "@/features/marketing/home/hero"
 import { HeroPhone } from "@/features/marketing/home/hero-phone"
 import { LegacyAnchorRedirect } from "@/features/marketing/home/legacy-anchor-redirect"
 import { PricingTeaser } from "@/features/marketing/home/pricing-teaser"
-import { WhyStrip } from "@/features/marketing/home/why-strip"
+import { WhyVano } from "@/features/marketing/home/why-vano"
 import { getPlanTexts } from "@/features/marketing/pricing/data"
 import { CtaBand } from "@/features/marketing/shared/cta-band"
 
@@ -27,8 +27,8 @@ export default function HomePage() {
     <>
       <LegacyAnchorRedirect />
       <Hero />
+      <WhyVano />
       <HeroPhone />
-      <WhyStrip />
       <DemoTeaser />
       <PricingTeaser />
       <CtaBand />
