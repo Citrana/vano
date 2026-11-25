@@ -1,14 +1,12 @@
 import { v, type Infer } from "convex/values";
-import { internal } from "./_generated/api";
-import type { Doc, Id } from "./_generated/dataModel";
-import type { MutationCtx } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
 import { categoryValidator, cleanTags, LIMITS, tagsProblem } from "./lib/catalog";
 import { fail } from "./lib/errors";
 import { urlOf } from "./lib/images";
 import { priceProblem } from "./lib/money";
 import { onProductCreated } from "./lib/platformStats";
 import { deleteProduct } from "./lib/productWrites";
-import { RESTOCK_MS, stockChange } from "./lib/restock";
+import { applyStock, stockUpdate } from "./lib/productStock";
 import { getEntitlements, requireCan, shopProducts, visibleProductIds } from "./lib/entitlements";
 import {
   claimImages,
@@ -62,11 +60,6 @@ function cleanProductInput(shop: Doc<"shops">, input: ProductInput): ProductInpu
     imageIds,
     soldOut: input.soldOut,
   };
-}
-
-/** Schedules the end of "Back in stock" for a restock (lib/restock.ts). */
-async function scheduleRestockEnd(ctx: MutationCtx, productId: Id<"products">, restockedAt: number) {
-  await ctx.scheduler.runAt(restockedAt + RESTOCK_MS, internal.productJobs.endBackInStock, { productId, restockedAt });
 }
 
 /**
@@ -169,17 +162,16 @@ export const update = sellerMutation({
     // actions) aren't form fields; carry them over or `replace` would drop
     // them. Turning "Sold out" off here also marks it back in stock.
     const now = Date.now();
-    const stock = stockChange(product, input.soldOut, now);
+    const stock = await stockUpdate(ctx, product, input.soldOut, now, { byUserId: ctx.user._id });
     await ctx.db.replace("products", productId, {
       ...input,
-      ...stock.fields,
+      ...stock,
       shopId: shop._id,
       hidden: product.hidden,
       pinnedAt: product.pinnedAt,
       featured: product.featured,
       updatedAt: now,
     });
-    if (stock.restocked) await scheduleRestockEnd(ctx, productId, now);
     return null;
   },
 });
@@ -190,11 +182,7 @@ export const setSoldOut = sellerMutation({
   returns: v.null(),
   handler: async (ctx, { productId, soldOut }) => {
     const { product } = await requireOwnProduct(ctx, productId);
-    if (product.soldOut === soldOut) return null;
-    const now = Date.now();
-    const stock = stockChange(product, soldOut, now);
-    await ctx.db.patch("products", productId, { ...stock.fields, updatedAt: now });
-    if (stock.restocked) await scheduleRestockEnd(ctx, productId, now);
+    await applyStock(ctx, product, soldOut, Date.now(), { byUserId: ctx.user._id });
     return null;
   },
 });
@@ -253,7 +241,7 @@ export const remove = sellerMutation({
   returns: v.null(),
   handler: async (ctx, { productId }) => {
     const { product } = await requireOwnProduct(ctx, productId);
-    await deleteProduct(ctx, product);
+    await deleteProduct(ctx, product, ctx.user._id);
     return null;
   },
 });

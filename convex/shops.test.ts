@@ -29,7 +29,7 @@ describe("users.viewer", () => {
       // Not migrated yet (no role): treated as a seller.
       roleKey: "seller",
       roleName: "Seller",
-      permissions: ["ownShop.manage", "ownProducts.manage", "ownStats.view", "ownBilling.manage"],
+      permissions: ["ownShop.manage", "ownProducts.manage", "ownStats.view", "ownBilling.manage", "ownSales.manage", "ownCustomers.view"],
       isAdmin: false,
       announcement: null,
     });
@@ -60,7 +60,7 @@ describe("users.viewer", () => {
 
     expect(await as(t, seller).query(api.users.viewer, {})).toMatchObject({
       roleKey: "seller",
-      permissions: ["ownShop.manage", "ownProducts.manage", "ownStats.view", "ownBilling.manage"],
+      permissions: ["ownShop.manage", "ownProducts.manage", "ownStats.view", "ownBilling.manage", "ownSales.manage", "ownCustomers.view"],
       isAdmin: false,
     });
     const sa = await as(t, admin).query(api.users.viewer, {});

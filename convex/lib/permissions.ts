@@ -16,8 +16,10 @@ export const PERMISSION_GROUPS = {
    * resetLook: reset a shop's look (banner photo / text, or all) to a safe default.
    * manageSales: pause or delete a shop's sale, with a reason.
    * manageDiscountCodes: pause or delete a shop's discount code, with a reason.
+   * viewCustomers: see the customer names and phone numbers of a shop's
+   * recorded sales, with a reason (logged in the activity history).
    */
-  shops: ["view", "suspend", "delete", "resetLook", "manageSales", "manageDiscountCodes"],
+  shops: ["view", "suspend", "delete", "resetLook", "manageSales", "manageDiscountCodes", "viewCustomers"],
   products: ["view", "hide", "delete"],
   roles: ["view", "manage"],
   audit: ["view"],
@@ -34,6 +36,10 @@ export const PERMISSION_GROUPS = {
   ownStats: ["view"],
   /** Their own shop's plan, checkout and payment history. */
   ownBilling: ["manage"],
+  /** Record, edit and reverse their own shop's sales (CLAUDE.md "Sales tracking"). */
+  ownSales: ["manage"],
+  /** See the customer name and phone of their own shop's sales (a future team role may lack it). */
+  ownCustomers: ["view"],
 } as const satisfies Record<string, readonly string[]>;
 
 type Groups = typeof PERMISSION_GROUPS;
@@ -48,7 +54,14 @@ export const ALL_PERMISSIONS: readonly Permission[] = PERMISSION_AREAS.flatMap((
   PERMISSION_GROUPS[area].map((action) => `${area}.${action}` as Permission),
 );
 
-const SELLER_AREAS: readonly PermissionArea[] = ["ownShop", "ownProducts", "ownStats", "ownBilling"];
+const SELLER_AREAS: readonly PermissionArea[] = [
+  "ownShop",
+  "ownProducts",
+  "ownStats",
+  "ownBilling",
+  "ownSales",
+  "ownCustomers",
+];
 
 /** Areas of the seller's own shop; everything else is an admin area. */
 export function isSellerArea(area: PermissionArea): boolean {

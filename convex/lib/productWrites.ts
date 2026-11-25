@@ -1,8 +1,9 @@
-import type { Doc } from "../_generated/dataModel";
+import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx } from "../_generated/server";
 import { onProductDeleted } from "./platformStats";
 import { forgetProductInSales } from "./sales/store";
 import { forgetProductInCodes } from "./discountCodes/store";
+import { recordProductEvent } from "./productStock";
 import { deleteFilesNotIn } from "./seller";
 
 /**
@@ -11,8 +12,12 @@ import { deleteFilesNotIn } from "./seller";
  * product. Used by the seller
  * (`products.remove`) and the admin (`admin.products.remove`), so both
  * clean up exactly the same way. Callers check permission / ownership.
+ * Recorded sales are never deleted (CLAUDE.md "Sales tracking"): they keep
+ * their snapshot, and `deleteFilesNotIn` keeps a photo a sale still uses.
+ * The product's history gets a "deleted" row.
  */
-export async function deleteProduct(ctx: MutationCtx, product: Doc<"products">): Promise<void> {
+export async function deleteProduct(ctx: MutationCtx, product: Doc<"products">, byUserId?: Id<"users">): Promise<void> {
+  await recordProductEvent(ctx, product, "deleted", { at: Date.now(), byUserId });
   await deleteFilesNotIn(ctx, product.imageIds, []);
   for await (const row of ctx.db
     .query("productDailyStats")

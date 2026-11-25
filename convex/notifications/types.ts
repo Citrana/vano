@@ -232,10 +232,10 @@ export function notificationHref(data: NotificationData): string {
     case "sale.started":
     case "sale.endingSoon":
     case "sale.adminPaused":
-      return `/dashboard/sales/${data.saleId}`;
+      return `/dashboard/offers/${data.saleId}`;
     case "sale.ended":
     case "sale.adminDeleted":
-      return "/dashboard/sales";
+      return "/dashboard/offers";
     case "discountCode.adminPaused":
       return `/dashboard/discount-codes/${data.codeId}`;
     case "discountCode.adminDeleted":

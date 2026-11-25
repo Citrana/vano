@@ -52,7 +52,7 @@ export const FEATURES = {
   orderTracking: { kind: "flag", area: "sales", enforced: true },
   customerList: { kind: "flag", area: "sales", enforced: false },
   shopStats: { kind: "flag", area: "sales", enforced: true },
-  salesReports: { kind: "flag", area: "sales", enforced: false },
+  salesReports: { kind: "flag", area: "sales", enforced: true },
   advancedStats: { kind: "flag", area: "sales", enforced: false },
   // Team
   teamMembers: { kind: "limit", area: "team", enforced: true, max: 100, unlimited: false },

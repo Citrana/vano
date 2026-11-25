@@ -96,7 +96,11 @@ export async function claimImages(
   }
 }
 
-/** Deletes files (and their ownership rows) that `after` no longer uses. */
+/**
+ * Deletes files (and their ownership rows) that `after` no longer uses.
+ * A photo still used by a recorded sale's snapshot is kept (CLAUDE.md
+ * "Sales tracking"); it goes when the shop is purged.
+ */
 export async function deleteFilesNotIn(
   ctx: MutationCtx,
   before: readonly Id<"_storage">[],
@@ -105,6 +109,11 @@ export async function deleteFilesNotIn(
   const kept = new Set<string>(after);
   for (const storageId of before) {
     if (kept.has(storageId)) continue;
+    const inSale = await ctx.db
+      .query("salesRecords")
+      .withIndex("by_photoId", (q) => q.eq("photoId", storageId))
+      .first();
+    if (inSale) continue;
     const upload = await ctx.db
       .query("uploads")
       .withIndex("by_storageId", (q) => q.eq("storageId", storageId))

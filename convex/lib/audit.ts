@@ -55,6 +55,7 @@ export const AUDIT_ACTIONS = [
   "sale.adminDeleted",
   "discountCode.adminPaused",
   "discountCode.adminDeleted",
+  "salesRecord.customersViewed",
 ] as const;
 
 export const auditActionValidator = v.union(
@@ -102,6 +103,7 @@ export const auditActionValidator = v.union(
   v.literal("sale.adminDeleted"),
   v.literal("discountCode.adminPaused"),
   v.literal("discountCode.adminDeleted"),
+  v.literal("salesRecord.customersViewed"),
 );
 export type AuditAction = Infer<typeof auditActionValidator>;
 

@@ -277,7 +277,8 @@ const SALES_PER_BATCH = 5;
 
 /**
  * Background clean-up after `remove`: products (photos, upload rows,
- * counter), then sales (and their stats), then product stats, then shop
+ * counter), then recorded sales (and the photos they kept), product
+ * history, then sales (and their stats), then product stats, then shop
  * stats (and the clicks counter).
  * One small batch per run; reschedules itself until nothing is left.
  */
@@ -297,6 +298,31 @@ export const purgeShop = internalMutation({
         await onProductDeleted(ctx, product);
         await ctx.db.delete("products", product._id);
       }
+      await again();
+      return null;
+    }
+
+    // Recorded sales go after the products, so the photos they kept
+    // (`deleteFilesNotIn` skips a photo a sale uses) are freed with them.
+    const records = await ctx.db
+      .query("salesRecords")
+      .withIndex("by_shopId_and_soldAt", (q) => q.eq("shopId", shopId))
+      .take(STATS_PER_BATCH);
+    if (records.length > 0) {
+      for (const record of records) {
+        await ctx.db.delete("salesRecords", record._id);
+        if (record.photoId) await deleteFilesNotIn(ctx, [record.photoId], []);
+      }
+      await again();
+      return null;
+    }
+
+    const events = await ctx.db
+      .query("productEvents")
+      .withIndex("by_shopId", (q) => q.eq("shopId", shopId))
+      .take(STATS_PER_BATCH);
+    if (events.length > 0) {
+      for (const event of events) await ctx.db.delete("productEvents", event._id);
       await again();
       return null;
     }

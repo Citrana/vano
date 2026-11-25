@@ -1,0 +1,448 @@
+import { v } from "convex/values";
+import type { Doc, Id } from "./_generated/dataModel";
+import type { QueryCtx } from "./_generated/server";
+import { hasPermission } from "./lib/access";
+import { isDay } from "./lib/days";
+import { normalizeCode, codeTextProblem } from "./lib/discountCodes/code";
+import { evaluateCode } from "./lib/discountCodes/active";
+import { codeByText } from "./lib/discountCodes/store";
+import type { CodeResult } from "./lib/discountCodes/validators";
+import { hasFeature, requireCan } from "./lib/entitlements";
+import { fail } from "./lib/errors";
+import { urlOf } from "./lib/images";
+import { applyStock, recordProductEvent } from "./lib/productStock";
+import { saleForProduct } from "./lib/sales/store";
+import { recordTotals, suggestedPrice, sumRecords } from "./lib/salesRecords/pricing";
+import {
+  cleanCustomerPhone,
+  cleanOption,
+  customerNameProblem,
+  defaultMarkSoldOut,
+  finalPriceProblem,
+  HISTORY_MAX,
+  LIST_MAX,
+  quantityProblem,
+  soldAtProblem,
+} from "./lib/salesRecords/rules";
+import { recordInputFields, recordStatusValidator, saleSourceValidator } from "./lib/salesRecords/validators";
+import { sortOrderValidator } from "./lib/listOrder";
+import {
+  requireOwnProduct,
+  requireOwnShop,
+  sellerMutation,
+  sellerQuery,
+  type SellerMutationCtx,
+  type SellerQueryCtx,
+} from "./lib/seller";
+import { localDay, shopTimeZone, timeZoneProblem } from "./lib/timeZone";
+
+/**
+ * Recorded sales (CLAUDE.md "Sales tracking"): a seller marks a product
+ * as sold; the row keeps a snapshot so reports stay right whatever happens
+ * to the product later. Business only (`salesReports`): without it the
+ * page is locked and every write refused, but nothing is ever deleted.
+ * Not to be confused with `sales.ts` (promotions, shown as "Offers").
+ */
+
+const PERMISSION = "ownSales.manage" as const;
+const FEATURE = { kind: "feature", feature: "salesReports" } as const;
+
+/** Customer name / phone are personal data: owner and permitted team only. */
+function canSeeCustomers(ctx: SellerQueryCtx): boolean {
+  return hasPermission(ctx.access, "ownCustomers.view");
+}
+
+/** One of the caller's recorded sales; another shop's is NOT_FOUND. */
+async function requireOwnRecord(
+  ctx: SellerQueryCtx,
+  recordId: Id<"salesRecords">,
+): Promise<{ shop: Doc<"shops">; record: Doc<"salesRecords"> }> {
+  const shop = await requireOwnShop(ctx);
+  const record = await ctx.db.get("salesRecords", recordId);
+  if (!record || record.shopId !== shop._id) fail("NOT_FOUND");
+  return { shop, record };
+}
+
+/** The record as the seller UI shows it (customer only with permission). */
+async function recordView(
+  ctx: QueryCtx,
+  record: Doc<"salesRecords">,
+  withCustomer: boolean,
+  urls: Map<string, string | null> = new Map(),
+) {
+  let photoUrl: string | null = null;
+  if (record.photoId) {
+    if (!urls.has(record.photoId)) urls.set(record.photoId, await urlOf(ctx, record.photoId));
+    photoUrl = urls.get(record.photoId) ?? null;
+  }
+  return {
+    _id: record._id,
+    productId: record.productId,
+    productName: record.productName,
+    photoUrl,
+    category: record.category,
+    size: record.size ?? null,
+    color: record.color ?? null,
+    normalUnitPrice: record.normalUnitPrice,
+    finalUnitPrice: record.finalUnitPrice,
+    quantity: record.quantity,
+    total: record.total,
+    discount: record.discount,
+    offer: record.offer ?? null,
+    source: record.source,
+    customerName: withCustomer ? (record.customerName ?? null) : null,
+    customerPhone: withCustomer ? (record.customerPhone ?? null) : null,
+    soldAt: record.soldAt,
+    day: record.day,
+    markedSoldOut: record.markedSoldOut,
+    status: record.status,
+    reversedAt: record.reversedAt ?? null,
+    version: record.version,
+  };
+}
+
+/** What a code gives on this product right now (the seller's own code; uses aren't counted). */
+async function codeFor(
+  ctx: QueryCtx,
+  shop: Doc<"shops">,
+  product: Doc<"products">,
+  sale: { price: number } | null,
+  text: string | undefined,
+  now: number,
+): Promise<CodeResult | null> {
+  if (text === undefined || text.trim() === "") return null;
+  const normalized = normalizeCode(text);
+  const entitled = codeTextProblem(normalized) === null && (await hasFeature(ctx, shop, "discountCodes"));
+  const code = entitled ? await codeByText(ctx, shop._id, normalized) : null;
+  // The customer's Order tap already counted the use: a used-up code still
+  // describes the price they got.
+  return evaluateCode({ code, product, sale, currency: shop.currency, now, alreadyUsed: true });
+}
+
+/**
+ * What the "Mark as sold" dialog shows for a product: the snapshot, the
+ * price to prefill (running sale or a valid code, best for the customer)
+ * and the sold-out default. `now` comes from the browser (queries never
+ * read the clock); `record` checks everything again.
+ */
+export const quote = sellerQuery({
+  permission: PERMISSION,
+  args: { productId: v.id("products"), code: v.optional(v.string()), now: v.number() },
+  handler: async (ctx, { productId, code, now }) => {
+    const { shop, product } = await requireOwnProduct(ctx, productId);
+    if (!(await hasFeature(ctx, shop, "salesReports"))) return { locked: true as const };
+    const sale = await saleForProduct(ctx, shop, product);
+    const codeResult = await codeFor(ctx, shop, product, sale, code, now);
+    const suggested = suggestedPrice({ normalPrice: product.price, sale, code: codeResult });
+    return {
+      locked: false as const,
+      product: {
+        _id: product._id,
+        name: product.name,
+        coverUrl: await urlOf(ctx, product.imageIds[0]),
+        sizes: product.sizes,
+        colors: product.colors,
+        price: product.price,
+        soldOut: product.soldOut,
+      },
+      currency: shop.currency,
+      country: shop.country,
+      timeZone: shopTimeZone(shop),
+      hasTimeZone: shop.timeZone !== undefined,
+      suggestedPrice: suggested.price,
+      offer: suggested.offer,
+      codeStatus: codeResult?.status ?? null,
+      defaultMarkSoldOut: defaultMarkSoldOut(product),
+      canSeeCustomers: canSeeCustomers(ctx),
+    };
+  },
+});
+
+type CleanEdit = { finalUnitPrice: number; quantity: number; soldAt: number };
+
+function checkEdit(input: CleanEdit, now: number): void {
+  if (quantityProblem(input.quantity) !== null) fail("SALES_RECORD_QUANTITY");
+  if (finalPriceProblem(input.finalUnitPrice) !== null) fail("SALES_RECORD_PRICE");
+  if (soldAtProblem(input.soldAt, now) !== null) fail("SALES_RECORD_DATE");
+}
+
+/** The shop's zone, saving the browser's on the first sale of a shop without one. */
+async function zoneFor(ctx: SellerMutationCtx, shop: Doc<"shops">, browserZone: string | undefined): Promise<string> {
+  if (shop.timeZone === undefined && browserZone !== undefined && timeZoneProblem(browserZone) === null) {
+    await ctx.db.patch("shops", shop._id, { timeZone: browserZone });
+    return browserZone;
+  }
+  return shopTimeZone(shop);
+}
+
+/**
+ * Records a sale ("Confirm sale"). Everything is checked again here: the
+ * options, the price, the date, the customer, and the offer is recomputed.
+ * With `markSoldOut`, a product not sold out yet becomes sold out (in its
+ * history, and the sale remembers it so reversing can undo it).
+ */
+export const record = sellerMutation({
+  permission: PERMISSION,
+  args: recordInputFields,
+  returns: v.id("salesRecords"),
+  handler: async (ctx, args) => {
+    const { shop, product } = await requireOwnProduct(ctx, args.productId);
+    await requireCan(ctx, shop, FEATURE);
+    const now = Date.now();
+    checkEdit(args, now);
+    const size = cleanOption(args.size, product.sizes);
+    const color = cleanOption(args.color, product.colors);
+    if (!size.ok || !color.ok) fail("SALES_RECORD_OPTION");
+    if (customerNameProblem(args.customerName) !== null) fail("SALES_RECORD_CUSTOMER");
+    const customerPhone = cleanCustomerPhone(args.customerPhone, shop.country);
+    if (customerPhone === null) fail("SALES_RECORD_CUSTOMER");
+    if (args.timeZone !== undefined && timeZoneProblem(args.timeZone) !== null) fail("TIME_ZONE_INVALID");
+
+    const zone = await zoneFor(ctx, shop, args.timeZone);
+    const sale = await saleForProduct(ctx, shop, product);
+    const codeResult = await codeFor(ctx, shop, product, sale, args.code, now);
+    const { offer } = suggestedPrice({ normalPrice: product.price, sale, code: codeResult });
+    const totals = recordTotals({
+      normalUnitPrice: product.price,
+      finalUnitPrice: args.finalUnitPrice,
+      quantity: args.quantity,
+    });
+    const recordId = await ctx.db.insert("salesRecords", {
+      shopId: shop._id,
+      productId: product._id,
+      productName: product.name,
+      photoId: product.imageIds[0],
+      category: product.category,
+      size: size.value,
+      color: color.value,
+      currency: shop.currency,
+      normalUnitPrice: product.price,
+      finalUnitPrice: args.finalUnitPrice,
+      quantity: args.quantity,
+      ...totals,
+      offer: offer ?? undefined,
+      source: args.source,
+      customerName: args.customerName?.trim() || undefined,
+      customerPhone,
+      soldAt: args.soldAt,
+      day: localDay(args.soldAt, zone),
+      markedSoldOut: false,
+      status: "recorded",
+      createdBy: ctx.user._id,
+      updatedAt: now,
+      version: 1,
+    });
+    const by = { byUserId: ctx.user._id, salesRecordId: recordId };
+    await recordProductEvent(ctx, product, "sold", { at: now, ...by });
+    if (args.markSoldOut && (await applyStock(ctx, product, true, now, by))) {
+      await ctx.db.patch("salesRecords", recordId, { markedSoldOut: true });
+    }
+    return recordId;
+  },
+});
+
+/** Changes a sale's price, quantity or date (`expectedVersion` guards against a stale edit). */
+export const update = sellerMutation({
+  permission: PERMISSION,
+  args: {
+    recordId: v.id("salesRecords"),
+    expectedVersion: v.number(),
+    finalUnitPrice: v.number(),
+    quantity: v.number(),
+    soldAt: v.number(),
+  },
+  returns: v.null(),
+  handler: async (ctx, { recordId, expectedVersion, ...input }) => {
+    const { shop, record } = await requireOwnRecord(ctx, recordId);
+    await requireCan(ctx, shop, FEATURE);
+    if (record.status === "reversed") fail("SALES_RECORD_REVERSED");
+    if (record.version !== expectedVersion) fail("SALES_RECORD_STALE");
+    const now = Date.now();
+    checkEdit(input, now);
+    const totals = recordTotals({ normalUnitPrice: record.normalUnitPrice, ...input });
+    await ctx.db.patch("salesRecords", recordId, {
+      ...input,
+      ...totals,
+      day: localDay(input.soldAt, shopTimeZone(shop)),
+      updatedAt: now,
+      version: record.version + 1,
+    });
+    await recordProductEvent(ctx, recordSubject(record), "saleEdited", {
+      at: now,
+      byUserId: ctx.user._id,
+      salesRecordId: recordId,
+    });
+    return null;
+  },
+});
+
+/** The product a record is about, for its history (it may be deleted). */
+function recordSubject(record: Doc<"salesRecords">) {
+  return { _id: record.productId, shopId: record.shopId, name: record.productName };
+}
+
+/** A reversal may put the product back on sale only if this sale made it sold out and it still is. */
+function restockable(record: Doc<"salesRecords">, product: Doc<"products"> | null): product is Doc<"products"> {
+  return record.markedSoldOut && product !== null && product.shopId === record.shopId && product.soldOut;
+}
+
+/**
+ * Reverses a sale: kept in the list (tagged), excluded from every total.
+ * With `restock`, a product this sale marked sold out is put back on sale
+ * (and "Back in stock" follows its usual rule).
+ */
+export const reverse = sellerMutation({
+  permission: PERMISSION,
+  args: { recordId: v.id("salesRecords"), expectedVersion: v.number(), restock: v.boolean() },
+  returns: v.null(),
+  handler: async (ctx, { recordId, expectedVersion, restock }) => {
+    const { shop, record } = await requireOwnRecord(ctx, recordId);
+    await requireCan(ctx, shop, FEATURE);
+    if (record.status === "reversed") fail("SALES_RECORD_REVERSED");
+    if (record.version !== expectedVersion) fail("SALES_RECORD_STALE");
+    const now = Date.now();
+    await ctx.db.patch("salesRecords", recordId, {
+      status: "reversed",
+      reversedAt: now,
+      updatedAt: now,
+      version: record.version + 1,
+    });
+    const by = { byUserId: ctx.user._id, salesRecordId: recordId };
+    await recordProductEvent(ctx, recordSubject(record), "saleReversed", { at: now, ...by });
+    const product = await ctx.db.get("products", record.productId);
+    if (restock && restockable(record, product)) await applyStock(ctx, product, false, now, by);
+    return null;
+  },
+});
+
+/**
+ * The Sales page (the shared list, CLAUDE.md "UI"): the latest sales, or
+ * those between two days of the shop's zone (either bound alone works),
+ * newest first unless `order` says otherwise; filtered by source, status,
+ * product and search (product name, and the customer name when allowed).
+ * Totals cover the filtered list (reversed sales listed, never counted).
+ * At most LIST_MAX rows are read (`truncated` beyond). Locked without the
+ * plan feature: only how many sales are kept.
+ */
+export const listMine = sellerQuery({
+  permission: PERMISSION,
+  args: {
+    from: v.optional(v.string()),
+    to: v.optional(v.string()),
+    source: v.optional(saleSourceValidator),
+    status: v.optional(recordStatusValidator),
+    productId: v.optional(v.string()),
+    search: v.optional(v.string()),
+    order: v.optional(sortOrderValidator),
+  },
+  handler: async (ctx, args) => {
+    const shop = await requireOwnShop(ctx);
+    if (!(await hasFeature(ctx, shop, "salesReports"))) {
+      const kept = await ctx.db
+        .query("salesRecords")
+        .withIndex("by_shopId_and_soldAt", (q) => q.eq("shopId", shop._id))
+        .take(LIST_MAX);
+      return { locked: true as const, kept: kept.length };
+    }
+    const { from, to } = args;
+    if ((from !== undefined && !isDay(from)) || (to !== undefined && !isDay(to)) || (from && to && from > to)) {
+      fail("SALES_RECORD_INVALID");
+    }
+    const loaded =
+      from === undefined && to === undefined
+        ? await ctx.db
+            .query("salesRecords")
+            .withIndex("by_shopId_and_soldAt", (q) => q.eq("shopId", shop._id))
+            .order("desc")
+            .take(LIST_MAX + 1)
+        : await ctx.db
+            .query("salesRecords")
+            .withIndex("by_shopId_and_day", (q) => {
+              const shopRange = q.eq("shopId", shop._id);
+              if (from !== undefined && to !== undefined) return shopRange.gte("day", from).lte("day", to);
+              if (from !== undefined) return shopRange.gte("day", from);
+              return shopRange.lte("day", to!);
+            })
+            .order("desc")
+            .take(LIST_MAX + 1);
+    const truncated = loaded.length > LIST_MAX;
+    const direction = args.order === "asc" ? 1 : -1;
+    const records = loaded.slice(0, LIST_MAX).sort((a, b) => direction * (a.soldAt - b.soldAt));
+
+    const withCustomer = canSeeCustomers(ctx);
+    const search = args.search?.trim().toLowerCase() ?? "";
+    const shown = records.filter(
+      (r) =>
+        (args.source === undefined || r.source === args.source) &&
+        (args.status === undefined || r.status === args.status) &&
+        (args.productId === undefined || r.productId === args.productId) &&
+        (search === "" ||
+          r.productName.toLowerCase().includes(search) ||
+          (withCustomer && (r.customerName ?? "").toLowerCase().includes(search))),
+    );
+    // Products of the loaded sales (deleted ones included), for the filter.
+    const products = new Map<string, string>();
+    for (const r of records) if (!products.has(r.productId)) products.set(r.productId, r.productName);
+
+    const urls = new Map<string, string | null>();
+    return {
+      locked: false as const,
+      rows: await Promise.all(shown.map((r) => recordView(ctx, r, withCustomer, urls))),
+      totals: sumRecords(shown),
+      products: [...products].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name)),
+      truncated,
+      currency: shop.currency,
+      timeZone: shopTimeZone(shop),
+      canSeeCustomers: withCustomer,
+    };
+  },
+});
+
+/** One sale for the details drawer, or null (bad id / another shop's / locked). */
+export const get = sellerQuery({
+  permission: PERMISSION,
+  args: { recordId: v.string() },
+  handler: async (ctx, { recordId }) => {
+    const shop = await requireOwnShop(ctx);
+    const id = ctx.db.normalizeId("salesRecords", recordId);
+    const record = id ? await ctx.db.get("salesRecords", id) : null;
+    if (!record || record.shopId !== shop._id) return null;
+    if (!(await hasFeature(ctx, shop, "salesReports"))) return null;
+    const product = await ctx.db.get("products", record.productId);
+    return {
+      ...(await recordView(ctx, record, canSeeCustomers(ctx))),
+      currency: record.currency,
+      timeZone: shopTimeZone(shop),
+      productExists: product !== null && product.shopId === shop._id,
+      canRestock: record.status === "recorded" && restockable(record, product),
+    };
+  },
+});
+
+/** A product's last sales and history rows (the product page card). */
+export const productHistory = sellerQuery({
+  permission: PERMISSION,
+  args: { productId: v.id("products") },
+  handler: async (ctx, { productId }) => {
+    const { shop } = await requireOwnProduct(ctx, productId);
+    if (!(await hasFeature(ctx, shop, "salesReports"))) return { locked: true as const };
+    const records = await ctx.db
+      .query("salesRecords")
+      .withIndex("by_productId", (q) => q.eq("productId", productId))
+      .order("desc")
+      .take(HISTORY_MAX);
+    const events = await ctx.db
+      .query("productEvents")
+      .withIndex("by_productId_and_at", (q) => q.eq("productId", productId))
+      .order("desc")
+      .take(HISTORY_MAX);
+    const withCustomer = canSeeCustomers(ctx);
+    return {
+      locked: false as const,
+      currency: shop.currency,
+      timeZone: shopTimeZone(shop),
+      sales: await Promise.all(records.map((r) => recordView(ctx, r, withCustomer))),
+      events: events.map((e) => ({ _id: e._id, kind: e.kind, at: e.at, salesRecordId: e.salesRecordId ?? null })),
+    };
+  },
+});

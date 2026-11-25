@@ -22,6 +22,7 @@ import { lookRow } from "./lib/looks/store";
 import { slugHolder } from "./lib/shopChanges";
 import { cleanShopInfo, socialsValidator } from "./lib/shopInfo";
 import { slugProblem } from "./lib/slug";
+import { timeZoneProblem } from "./lib/timeZone";
 import { startFree, startTrial } from "./lib/subscriptions";
 
 /** Settings the seller edits directly, any time. */
@@ -37,6 +38,8 @@ const settingsInput = v.object({
   openingHours: v.optional(v.string()),
   deliveryAreas: v.optional(v.string()),
   socials: v.optional(socialsValidator),
+  /** IANA zone (lib/timeZone.ts). Not sent = kept as it is. */
+  timeZone: v.optional(v.string()),
 });
 type SettingsInput = Infer<typeof settingsInput>;
 
@@ -71,6 +74,9 @@ function cleanSettings(input: SettingsInput): SettingsInput {
   const info = cleanShopInfo(input);
   if (!info.ok) fail(info.problem === "tooLong" ? "INFO_TOO_LONG" : "SOCIAL_INVALID");
 
+  const timeZone = input.timeZone?.trim() || undefined;
+  if (timeZone !== undefined && timeZoneProblem(timeZone) !== null) fail("TIME_ZONE_INVALID");
+
   return {
     ...info.value,
     currency: input.currency,
@@ -80,6 +86,7 @@ function cleanSettings(input: SettingsInput): SettingsInput {
     city,
     country,
     logoId: input.logoId,
+    timeZone,
   };
 }
 
@@ -219,7 +226,8 @@ export const update = sellerMutation({
 
     // A patch: only these keys change (undefined clears an optional one),
     // so protected fields, status and onboarding progress are untouched.
-    await ctx.db.patch("shops", shop._id, input);
+    // The time zone is never cleared: not sent = kept.
+    await ctx.db.patch("shops", shop._id, { ...input, timeZone: input.timeZone ?? shop.timeZone });
     return null;
   },
 });
