@@ -39,7 +39,7 @@ export async function WhyVano() {
   ]
 
   return (
-    <section aria-labelledby="why-vano-title" className="border-y bg-blush/40 px-4 py-14 md:py-20">
+    <section aria-labelledby="why-vano-title" className="border-b bg-blush/40 px-4 py-14 md:py-20">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 md:gap-12">
         <Reveal className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center">
           <p className="text-sm font-semibold tracking-wide text-plum uppercase">{t("highlightsEyebrow")}</p>

@@ -21,6 +21,15 @@ export async function Hero() {
         <div className="absolute -top-28 -left-32 size-[24rem] rounded-full bg-coral/20 blur-3xl md:size-[30rem]" />
         <div className="absolute top-10 -right-40 size-[22rem] rounded-full bg-blush blur-3xl md:size-[28rem]" />
       </div>
+      {/*
+        Fades the hero (and its glow) into the Why Vano band below, ending on
+        the band's exact colour: its bg-blush/40 over the cream page, mixed
+        opaque here so the glow can't tint the seam.
+      */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[120px] bg-linear-to-b from-transparent to-[color-mix(in_srgb,var(--blush)_40%,var(--cream))]"
+      />
 
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-5 text-center">
         <Badge variant="brand">{t("badge")}</Badge>
