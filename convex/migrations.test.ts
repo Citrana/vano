@@ -221,3 +221,36 @@ describe("migrations:plansV1", () => {
     expect((await t2.run((ctx) => ctx.db.query("planConfig").collect()))[0].version).toBe(7);
   });
 });
+
+describe("migrations:trialProOnlyV1", () => {
+  test("notes trial shops with Business features once; plans and exceptions are untouched", async () => {
+    const t = newTest();
+    const withException = await sellerWithShop(t, "a@x.com", { slug: "shop-a" });
+    const plain = await sellerWithShop(t, "b@x.com", { slug: "shop-b" });
+    const admin = await insertUserWithRole(t, "admin@x.com", (await builtInRoles(t)).super_admin);
+    const ends = Date.now() + 10 * 86_400_000;
+    await t.run((ctx) =>
+      ctx.db.insert("planExceptions", {
+        shopId: withException.shopId,
+        feature: "discountCodes",
+        value: true,
+        endsAt: ends,
+        reason: "Partner",
+        createdBy: admin,
+        active: true,
+      }),
+    );
+    const before = await t.run((ctx) => ctx.db.query("subscriptions").collect());
+
+    expect(await t.mutation(internal.migrations.trialProOnlyV1, {})).toBe("started");
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
+    expect(await t.query(internal.migrations.trialProOnlyV1Status, {})).toMatchObject({ status: "done" });
+    expect(await t.mutation(internal.migrations.trialProOnlyV1, {})).toBe("already_done");
+
+    const notes = await t.run((ctx) => ctx.db.query("notifications").collect());
+    expect(notes.map((n) => [n.userId, n.data.type])).toEqual([[withException.userId, "plan.trialProOnly"]]);
+    expect(notes.some((n) => n.userId === plain.userId)).toBe(false);
+    expect(await t.run((ctx) => ctx.db.query("subscriptions").collect())).toEqual(before);
+    expect(await t.run((ctx) => ctx.db.query("planExceptions").collect())).toMatchObject([{ active: true, feature: "discountCodes" }]);
+  });
+});
