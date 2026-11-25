@@ -3,6 +3,7 @@ import { fetchQuery } from "convex/nextjs"
 import { cache } from "react"
 import { api } from "../../../../convex/_generated/api"
 import { planNameIn, type PlanCatalog } from "../../../../convex/lib/planCatalog"
+import { PERIOD_DAYS } from "../../../../convex/lib/plans"
 
 /**
  * The plan catalogue for server-rendered marketing pages (pricing, home,
@@ -14,11 +15,20 @@ export const getPlanCatalog = cache(async (): Promise<PlanCatalog> => {
   return (await fetchQuery(api.plans.catalog, {})) as PlanCatalog
 })
 
+export type PlanTexts = { months: number; plan: string; free: string; business: string; days: number }
+
 /**
- * The free trial offer for marketing text: its length and the plan it's
- * on ("2 months free on Pro"; the trial is never on every plan).
+ * Values for marketing text about plans, never written into the text: the
+ * trial length and the plan it's on ("2 months free on Pro"; the trial is
+ * never on every plan), the Free and Business names, and the paid period.
  */
-export async function getTrialOffer(locale: string): Promise<{ months: number; plan: string }> {
+export async function getPlanTexts(locale: string): Promise<PlanTexts> {
   const catalog = await getPlanCatalog()
-  return { months: catalog.trialMonths, plan: planNameIn(catalog, catalog.trialPlan, locale) }
+  return {
+    months: catalog.trialMonths,
+    plan: planNameIn(catalog, catalog.trialPlan, locale),
+    free: planNameIn(catalog, "free", locale),
+    business: planNameIn(catalog, "business", locale),
+    days: PERIOD_DAYS,
+  }
 }

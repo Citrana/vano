@@ -5,13 +5,13 @@ import { Hero } from "@/features/marketing/home/hero"
 import { LegacyAnchorRedirect } from "@/features/marketing/home/legacy-anchor-redirect"
 import { PricingTeaser } from "@/features/marketing/home/pricing-teaser"
 import { WhyStrip } from "@/features/marketing/home/why-strip"
-import { getTrialOffer } from "@/features/marketing/pricing/data"
+import { getPlanTexts } from "@/features/marketing/pricing/data"
 import { CtaBand } from "@/features/marketing/shared/cta-band"
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Home")
   const title = t("metaTitle")
-  const description = t("metaDescription", await getTrialOffer(await getLocale()))
+  const description = t("metaDescription", await getPlanTexts(await getLocale()))
   return {
     title: { absolute: title },
     description,

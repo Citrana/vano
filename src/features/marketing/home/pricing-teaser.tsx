@@ -2,7 +2,7 @@ import { ArrowRightIcon, CheckIcon, GiftIcon } from "lucide-react"
 import { getLocale, getTranslations } from "next-intl/server"
 import Link from "next/link"
 import { buttonVariants } from "@/components/ui/button"
-import { getPlanCatalog, getTrialOffer } from "@/features/marketing/pricing/data"
+import { getPlanCatalog, getPlanTexts } from "@/features/marketing/pricing/data"
 import { formatPlanPrice, startingPriceMinor } from "@/features/marketing/pricing/plans"
 import { Reveal } from "@/features/marketing/shared/reveal"
 
@@ -12,7 +12,7 @@ export async function PricingTeaser() {
   const locale = await getLocale()
   const catalog = await getPlanCatalog()
   const price = startingPriceMinor(catalog) ?? 0
-  const offer = await getTrialOffer(locale)
+  const offer = await getPlanTexts(locale)
   return (
     <section aria-labelledby="pricing-teaser-title" className="px-4 pb-24 md:pb-32">
       <Reveal className="mx-auto flex w-full max-w-4xl flex-col items-center gap-4 rounded-xl bg-blush px-6 py-10 text-center md:px-12">

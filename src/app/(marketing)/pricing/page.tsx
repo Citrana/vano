@@ -4,9 +4,10 @@ import { getLocale, getTranslations } from "next-intl/server"
 import { cn } from "cn"
 import { CompareTable } from "@/features/marketing/pricing/compare-table"
 import { PlanCard } from "@/features/marketing/pricing/plan-card"
-import { getPlanCatalog, getTrialOffer } from "@/features/marketing/pricing/data"
+import { getPlanCatalog, getPlanTexts } from "@/features/marketing/pricing/data"
 import { buildComparison, buildPlanCards } from "@/features/marketing/pricing/plans"
 import { planNameIn } from "../../../../convex/lib/planCatalog"
+import { PERIOD_DAYS } from "../../../../convex/lib/plans"
 import { CtaBand } from "@/features/marketing/shared/cta-band"
 import { FaqList } from "@/features/marketing/shared/faq-list"
 import { PageIntro } from "@/features/marketing/shared/page-intro"
@@ -15,7 +16,7 @@ import { Section } from "@/features/marketing/shared/section"
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Pricing")
   const title = t("metaTitle")
-  const description = t("metaDescription", await getTrialOffer(await getLocale()))
+  const description = t("metaDescription", await getPlanTexts(await getLocale()))
   return {
     title: { absolute: title },
     description,
@@ -46,7 +47,7 @@ export default async function PricingPage() {
       }),
     },
     { id: "q2", question: t("faq.q2"), answer: t("faq.a2", { plan: trialPlan, business }) },
-    { id: "q3", question: t("faq.q3"), answer: t("faq.a3") },
+    { id: "q3", question: t("faq.q3"), answer: t("faq.a3", { days: PERIOD_DAYS }) },
   ]
 
   return (

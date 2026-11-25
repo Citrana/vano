@@ -33,7 +33,7 @@ export function CurrentPlanCard({ billing, now }: { billing: MyBilling; now: num
 
       {running && periodEnd <= now ? (
         <p role="status" className="rounded-lg bg-secondary p-3">
-          {t("graceUntil", { end: date(periodEnd), date: date(periodEnd + GRACE_MS) })}
+          {t("graceUntil", { end: date(periodEnd), date: date(periodEnd + GRACE_MS), free: planName("free") })}
         </p>
       ) : running ? (
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">

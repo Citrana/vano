@@ -59,6 +59,7 @@ export function useNotificationText(): (data: NotificationData, now: number) => 
           plan: planName(data.plan),
           trial: String(data.trial),
           days: daysLeft(data.graceEnd, now),
+          free: planName("free"),
         })
       case "plan.trialProOnly":
         return t("types.plan.trialProOnly", { plan: planName("pro"), business: planName("business") })

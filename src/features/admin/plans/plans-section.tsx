@@ -103,7 +103,7 @@ export function PlansSection() {
         <div className="flex flex-col gap-1">
           <h2 id="features-title" className="font-heading text-lg font-bold tracking-tight">{t("featuresTitle")}</h2>
           <p className="text-sm text-muted-foreground">{t("featuresHelp")}</p>
-          <p className="text-sm text-muted-foreground">{t("trialTagHelp", { plan: planName(TRIAL_PLAN) })}</p>
+          <p className="text-sm text-muted-foreground">{t("trialTagHelp", { plan: planName(TRIAL_PLAN), business: planName("business") })}</p>
         </div>
         <TableToolbar table={table} filters={filters} search={{ label: t("search"), placeholder: t("searchPlaceholder") }} />
         <TableBoundary>

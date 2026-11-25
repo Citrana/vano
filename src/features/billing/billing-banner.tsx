@@ -46,7 +46,7 @@ export function BillingBanner() {
     const graceLeft = periodEnd <= now ? daysLeft(periodEnd + GRACE_MS, now) : null
     const text =
       graceLeft !== null
-        ? t("bannerGrace", { plan: status === "trialing" ? "trial" : "paid", name: plan, count: graceLeft })
+        ? t("bannerGrace", { plan: status === "trialing" ? "trial" : "paid", name: plan, count: graceLeft, free: planName("free") })
         : status === "trialing"
           ? t("bannerTrialEnding", { count: left, plan })
           : t("bannerPlanEnding", { count: left, plan })

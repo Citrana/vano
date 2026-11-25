@@ -16,11 +16,11 @@ import { OrderBadge } from "@/features/marketing/home/order-badge"
 import { LivePhone } from "@/features/marketing/home/live-phone"
 import { PhoneThemeControls } from "@/features/marketing/home/phone-theme"
 import { DEMO_PRODUCTS } from "@/features/marketing/demo/demo-shop"
-import { getTrialOffer } from "@/features/marketing/pricing/data"
+import { getPlanTexts } from "@/features/marketing/pricing/data"
 
 export async function Hero() {
   const t = await getTranslations("Home")
-  const offer = await getTrialOffer(await getLocale())
+  const offer = await getPlanTexts(await getLocale())
 
   const iconChip = (children: ReactNode, className: string) => (
     <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-full lg:size-10", className)}>{children}</span>

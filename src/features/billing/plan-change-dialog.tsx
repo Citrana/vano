@@ -10,7 +10,7 @@ import { cn } from "cn"
 import { api } from "../../../convex/_generated/api"
 import { hasImpact, type DowngradeImpact } from "../../../convex/lib/downgradeImpact"
 import type { PlanCatalog } from "../../../convex/lib/planCatalog"
-import { PERIOD_DAYS, isPaidPlan, type PlanId } from "../../../convex/lib/plans"
+import { GRACE_DAYS, PERIOD_DAYS, isPaidPlan, type PlanId } from "../../../convex/lib/plans"
 import {
   effectivePlan,
   graceEndOf,
@@ -140,7 +140,7 @@ function PurchaseBody({
   return (
     <>
       <DialogTitle>{isRenew ? t("renewTitle", { plan: name, days: PERIOD_DAYS }) : t("upgradeTitle", { plan: name })}</DialogTitle>
-      <DialogDescription>{isRenew ? t("renewBody", { plan: name }) : t(`benefit.${target}`)}</DialogDescription>
+      <DialogDescription>{isRenew ? t("renewBody", { plan: name, days: PERIOD_DAYS }) : t(`benefit.${target}`)}</DialogDescription>
 
       {unlocks.length > 0 ? (
         <section aria-labelledby="unlocks-title" className="flex flex-col gap-2">
@@ -245,10 +245,12 @@ function DowngradeBody({
       />
       <p className="text-muted-foreground">
         {target === "free"
-          ? t("downgradeFreeNote", { plan: current, date: date(end), free: planName("free") })
+          ? t("downgradeFreeNote", { plan: current, date: date(end), free: planName("free"), days: GRACE_DAYS })
           : t("downgradePaidNote", {
               plan: current,
               target: name,
+              free: planName("free"),
+              days: PERIOD_DAYS,
               price: price === null ? "—" : formatPlanPrice(price, locale),
             })}
       </p>
