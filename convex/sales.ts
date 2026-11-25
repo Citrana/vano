@@ -1,7 +1,7 @@
 import { v, type Infer } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import { categoryValidator } from "./lib/catalog";
-import { hasFeature, requireCan, shopProducts } from "./lib/entitlements";
+import { hasFeature, hiddenFromShop, requireCan, shopProducts } from "./lib/entitlements";
 import { fail } from "./lib/errors";
 import { currencyValidator } from "./lib/money";
 import { affectedProducts, overlappingSales } from "./lib/sales/active";
@@ -90,7 +90,7 @@ export const listMine = sellerQuery({
   handler: async (ctx) => {
     const shop = await requireOwnShop(ctx);
     const sales = await shopSales(ctx, shop._id);
-    const products = (await shopProducts(ctx, shop._id)).filter((p) => !p.hidden);
+    const products = (await shopProducts(ctx, shop._id)).filter((p) => !hiddenFromShop(p));
     const rows = [];
     for (const sale of sales) {
       const totals = await saleTotals(ctx, sale._id);
@@ -185,7 +185,7 @@ function cleanSaleInput(
     fail("SALE_SCHEDULE_INVALID");
   }
 
-  const shown = products.filter((p) => !p.hidden);
+  const shown = products.filter((p) => !hiddenFromShop(p));
   const affected = affectedProducts({ discount: input.discount, target }, shown, shop.currency);
   if (target.kind === "products") {
     // Every chosen product must get a lower price (else the seller typed a wrong amount).

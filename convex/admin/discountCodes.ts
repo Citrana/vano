@@ -4,7 +4,7 @@ import { adminMutation, adminQuery, type AdminMutationCtx } from "../lib/access"
 import { logAdminAction } from "../lib/audit";
 import { deleteCode, shopCodes, writeCodeLiveAndSchedule } from "../lib/discountCodes/store";
 import { codeDiscountValidator } from "../lib/discountCodes/validators";
-import { shopProducts } from "../lib/entitlements";
+import { hiddenFromShop, shopProducts } from "../lib/entitlements";
 import { fail } from "../lib/errors";
 import { assertNotOwnShop } from "../lib/guards";
 import { resetReasonProblem } from "../lib/looks/reset";
@@ -48,7 +48,7 @@ export const listForShop = adminQuery({
     const shopId = ctx.db.normalizeId("shops", args.shopId);
     const shop = shopId ? await ctx.db.get("shops", shopId) : null;
     if (!shop) return null;
-    const products = (await shopProducts(ctx, shop._id)).filter((p) => !p.hidden);
+    const products = (await shopProducts(ctx, shop._id)).filter((p) => !hiddenFromShop(p));
     const codes = (await shopCodes(ctx, shop._id)).map((code) => ({
       _id: code._id,
       code: code.code,

@@ -4,7 +4,7 @@ import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
 import { downgradeImpactOf } from "./lib/downgradeImpact";
-import { getEntitlements, shopProducts, visibleProductIds } from "./lib/entitlements";
+import { getEntitlements, hiddenFromShop, shopProducts, visibleProductIds } from "./lib/entitlements";
 import { fail } from "./lib/errors";
 import { CODES_MAX } from "./lib/discountCodes/rules";
 import { lookRow } from "./lib/looks/store";
@@ -109,7 +109,7 @@ export const mine = sellerQuery({
     const { plan, status, limits, state } = await getEntitlements(ctx, shop);
     const products = await shopProducts(ctx, shop._id);
     const visible = visibleProductIds(products, limits);
-    const listed = products.filter((p) => !p.hidden);
+    const listed = products.filter((p) => !hiddenFromShop(p));
     const open = await openPayments(ctx, shop._id);
     return {
       plan: state.plan,

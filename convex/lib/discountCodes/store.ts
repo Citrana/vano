@@ -1,7 +1,7 @@
 import { internal } from "../../_generated/api";
 import type { Doc, Id } from "../../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../../_generated/server";
-import { getEntitlements, hasFeature, shopProducts, visibleProductIds } from "../entitlements";
+import { getEntitlements, hasFeature, hiddenFromShop, shopProducts, visibleProductIds } from "../entitlements";
 import { codeLiveAt } from "./active";
 import { CODES_MAX } from "./rules";
 
@@ -55,7 +55,7 @@ export async function visibleProduct(
 ): Promise<{ shop: Doc<"shops">; product: Doc<"products"> } | null> {
   const id = ctx.db.normalizeId("products", productId);
   const product = id ? await ctx.db.get("products", id) : null;
-  if (!product || product.hidden) return null;
+  if (!product || hiddenFromShop(product)) return null;
   const shop = await ctx.db.get("shops", product.shopId);
   if (!shop || shop.status === "suspended") return null;
   const { limits } = await getEntitlements(ctx, shop);
