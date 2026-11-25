@@ -1,7 +1,7 @@
 import { cronJobs } from "convex/server";
 import { internal } from "./_generated/api";
 
-/** Recurring jobs (CLAUDE.md "Billing", "Protected shop changes", "Notifications", "Sales", "Discount codes"). */
+/** Recurring jobs (CLAUDE.md "Billing", "Protected shop changes", "Notifications", "Sales", "Discount codes", "Sales tracking"). */
 const crons = cronJobs();
 
 // Trials and paid plans that ended move to Free.
@@ -24,6 +24,10 @@ crons.interval("clean up change requests", { hours: 24 }, internal.changeRequest
 
 // Sellers whose trial / plan ends soon are warned; billing admins get a summary.
 crons.interval("warn about ending plans", { hours: 24 }, internal.notificationJobs.endingSoon, {});
+
+// On each shop's local 1st of the month, last month's report is announced. A fixed UTC
+// hour (not a 24 h interval) maps every run to exactly one local date, DST days included.
+crons.daily("announce monthly reports", { hourUTC: 6, minuteUTC: 0 }, internal.reportJobs.monthly, {});
 
 // Old notifications are deleted (retention in convex/notifications/config.ts).
 crons.interval("clean up notifications", { hours: 24 }, internal.notificationJobs.cleanup, {});
