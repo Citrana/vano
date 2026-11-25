@@ -149,9 +149,20 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   and refresh its "Last updated" line. Never ship a payment change without it.
 - One `subscriptions` row per shop (`trialing | active | expired | free`),
   written only through `convex/lib/subscriptions.ts` (`writeSubscription`,
-  which also logs the change). New shops start a Pro trial in
-  `shops.create`, as long as the trial plan's `trialMonths` in the config. Nothing renews automatically; the hourly cron
-  `billingJobs.expireDue` moves ended periods to Free.
+  which also logs the change). New shops start a **Pro-only** trial in
+  `shops.create` (no payment method), as long as the trial plan's
+  `trialMonths` in the config; a "Get Business" sign-up
+  (`startPlan: "business"`) gets no trial and starts on Free. Nothing
+  renews automatically; a trial or plan keeps its features `GRACE_DAYS`
+  (3) after its end, then the hourly cron `billingJobs.expireDue` moves it
+  to Free.
+- Prices and new periods come **only** from `quotePurchase`
+  (`subscriptions.ts`), used by the plan dialog, `startCheckout` and
+  `applyEvent`: same plan = +30 days after the end (trial → Pro: after the
+  trial); a higher plan or from Free = today + 30 days (the trial ends); paid
+  Pro → Business pays the price minus `upgradeCreditMinor` (paid days only,
+  ≤ 30); downgrades are never charged and change nothing now. Every plan
+  dialog shows the amount and the new end date (`plan-change-dialog.tsx`).
 - **Every plan limit goes through `convex/lib/entitlements.ts`**:
   `requireCan(ctx, shop, action)` in mutations, `hasFeature` in queries,
   the pure `canShopDo` in the UI with the resolved `limits` from

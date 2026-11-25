@@ -6,11 +6,52 @@ providers, checkout, the scheduled jobs or billing admin updates this file
 in the same commit, with a dated entry in the change log below
 (see CLAUDE.md "Billing").
 
-**Last updated: 2026-11-25 09:30 CAT (UTC+02:00)**
+**Last updated: 2026-11-25 12:17 CAT (UTC+02:00)**
 
 ## Change log
 
 Newest first. Format: `YYYY-MM-DD HH:MM TZ — what changed (files)`.
+
+- **2026-11-25 12:17 CAT (UTC+02:00)**: subscription rules rewritten
+  (CLAUDE.md "Billing"). One pure module holds them all:
+  `quotePurchase` / `applyPurchase` / `planChangeKind` /
+  `upgradeCreditMinor` / `paidDaysLeft` in `convex/lib/subscriptions.ts`,
+  used by the plan dialog (preview), `billing.startCheckout` (amount) and
+  `payments/core.applyEvent` (new period).
+  - **Trial**: Pro only, 2 months, no payment method (unchanged in
+    entitlements: Business-only features were already locked). The admin
+    page shows the trial as the Pro column.
+  - **"Get Business"** (pricing page) → `/signup?plan=business` →
+    `shops.create({ startPlan: "business" })`: **no trial**, the shop starts
+    on Free (`startFree`) and lands on the Business payment dialog.
+  - **Trial → Pro**: 299; the 30 paid days start when the trial ends
+    (unchanged). **Trial → Business**: full price, the trial ends, Business
+    today + 30 days (was: trial days kept).
+  - **Paid Pro → Business**: money credit `round(299 × paidDaysLeft / 30)`
+    in whole shillings (paid days only, never trial or admin days, at most
+    30); the seller pays the Business price minus it; Business today + 30
+    days. Replaces the old price-ratio day conversion. At least 1 KSh is
+    always paid.
+  - **Downgrades** (Business → Pro, any → Free) are never charged and change
+    nothing now: the plan runs to its end (`startCheckout` refuses them,
+    `PLAN_INVALID`). A payment that lands as a downgrade (state changed
+    while pending) gives the current plan 30 days.
+  - **Grace**: `GRACE_DAYS = 3`. A trial or plan keeps its features until
+    `periodEnd + 3 days`; `expireIfDue`, `getEntitlements(…, now)` and
+    `billingJobs.expireDue` move it to Free only after that.
+    `notificationJobs.endingSoon` sends `plan.inGrace` once per period.
+  - Schema: `subscriptions.paidStart` / `paidEnd` (optional; older paid rows
+    count their last 30 days as paid), `payments.creditMinor` (optional).
+    An open checkout is reused only while its amount still matches today's
+    quote. New seller query `billing.downgradeImpact`.
+  - Migration `migrations:trialProOnlyV1`: trial shops with Business
+    features enabled (an active exception for one, or saved discount codes)
+    get one `plan.trialProOnly` note; nothing else changes.
+  No change to plan prices or limits (`convex/lib/plans.ts`,
+  `convex/lib/subscriptions.ts`, `convex/lib/downgradeImpact.ts`,
+  `convex/lib/planCatalog.ts`, `convex/billing.ts`, `convex/billingJobs.ts`,
+  `convex/notificationJobs.ts`, `convex/shops.ts`, `convex/migrations.ts`,
+  `convex/schema.ts`, `src/features/billing/`, `messages/*.json`).
 
 - **2026-11-25 09:30 CAT (UTC+02:00)**: the `discountCodes` flag (area
   `sales`, already `enforced: true`, seed: Business and Enterprise) now
@@ -250,8 +291,9 @@ with the feature (`useUpgradePlanName`).
 |---|---|
 | `shopId`, `shopName` | The shop; `shopName` is a copy for admin search, synced by `shops.update` |
 | `plan` | `free \| pro \| business \| enterprise` |
-| `status` | `trialing` (trial plan until `periodEnd`), `active` (paid or granted until `periodEnd`), `expired` (a paid plan lapsed → Free limits), `free` (trial ended without payment → Free limits) |
+| `status` | `trialing` (trial plan until `periodEnd` + 3 grace days), `active` (paid or granted until `periodEnd` + 3 grace days), `expired` (a paid plan lapsed → Free limits), `free` (trial ended without payment, or a "Get Business" shop that hasn't paid yet → Free limits) |
 | `periodStart`, `periodEnd` | `periodEnd` is absent on Free |
+| `paidStart`, `paidEnd` | The paid days inside the period (optional). Only the upgrade credit reads them. Trial and admin days are never paid days. A row without them and `source: "payment"` counts its last 30 days as paid |
 | `source` | `trial \| payment \| admin \| system` (who set the current state) |
 
 A shop without a row (created before `billingV1` ran) is treated as a trial
@@ -262,7 +304,8 @@ counted from its creation date.
 | Field | Meaning |
 |---|---|
 | `shopId`, `shopName` (snapshot), `userId` (payer) | Who paid |
-| `plan`, `amountMinor`, `currency` | Always from the plan config's monthly price / `PLAN_CURRENCY`, never from the client |
+| `plan`, `amountMinor`, `currency` | From the plan config's monthly price minus `creditMinor` (`quotePurchase`) / `PLAN_CURRENCY`, never from the client |
+| `creditMinor` | Credit for paid days left on a lower plan (Pro → Business), when there was one |
 | `provider`, `providerRef` | Which provider, and its id for this payment |
 | `next` | What the buyer does next (`mockCheckout`, `awaitPhoneConfirmation`, `redirect`) |
 | `status` | `created` → `pending` → one final state: `succeeded`, `failed`, `cancelled`, `expired` |
@@ -288,23 +331,34 @@ its plan's product limit.
 
 1. **Trial**: `shops.create` calls `startTrial`, which gives Pro until
    `addMonths(now, trialMonths)` (the trial plan's `trialMonths` in the
-   config; changing it affects new shops only). Not logged in the activity history (opening a shop
-   isn't a plan change).
-2. **Purchase**: a successful payment runs `applyPurchase(current, plan, now, prices)` (monthly prices from the config):
-   - same plan, still active: **+30 days** on the current end;
-   - during the trial: the plan starts now, and the **remaining trial days
-     are kept** (end = trial end + 30 days);
-   - another plan, still active: the plan starts now for 30 days, **plus
-     unused days converted at the price ratio** (10 Pro days × 299/1000 ≈
-     3 Business days; downgrading converts the other way, giving more
-     days). A custom-priced plan (Enterprise) converts one for one;
-   - free / expired / an already-ended period: the plan starts now for 30 days.
-3. **Expiry**: the hourly cron `billingJobs.expireDue` finds `trialing` /
-   `active` rows with `periodEnd ≤ now` (index `by_status_and_periodEnd`),
-   moving trialing → `free` and active → `expired`. It works in batches
-   of 100 and reschedules itself while more are due. Mutations also treat
-   a past `periodEnd` as Free right away (`getEntitlements(ctx, shop, now)`),
-   so the cron's lag never gives extra days.
+   config; changing it affects new shops only). The trial is **Pro only**
+   and needs no payment method. A "Get Business" sign-up
+   (`startPlan: "business"`) calls `startFree` instead: no trial, Free
+   until it pays. Neither is logged in the activity history (opening a
+   shop isn't a plan change).
+2. **Purchase**: `quotePurchase(current, plan, now, prices)` gives the
+   amount and the new period; a successful payment applies it
+   (`applyPurchase`):
+
+   | From → to | Pays | New period |
+   |---|---|---|
+   | Trial → Pro (renew) | 299 | Pro until trial end + 30 days; paid days = those 30 |
+   | Trial → Business | 1,000 | Business today → today + 30 (trial days lost) |
+   | Free / expired → Pro or Business | full price | today → today + 30 |
+   | Paid Pro → Business | 1,000 − round(299 × paidDaysLeft / 30) | today → today + 30 |
+   | Same plan (also in grace) | full price | old end + 30 days |
+   | Business → Pro, any → Free | nothing | no change; the plan runs to its end |
+
+   `paidDaysLeft` counts whole paid days only, at most 30. The credit is
+   capped so at least 1 KSh is paid.
+3. **Expiry**: after `periodEnd` the shop keeps its plan for
+   `GRACE_DAYS` (3) days (time to pay; `plan.inGrace` notification). The
+   hourly cron `billingJobs.expireDue` finds `trialing` / `active` rows with
+   `periodEnd ≤ now − 3 days` (index `by_status_and_periodEnd`), moving
+   trialing → `free` and active → `expired`. It works in batches of 100 and
+   reschedules itself while more are due. Mutations also treat a period
+   past its grace days as Free right away (`getEntitlements(ctx, shop, now)`),
+   so the cron's lag never gives extra days. Data is never deleted.
 4. **Admin grant**: `plan` from now for N days (1–366), with a required
    reason (5–500 characters).
 5. **Admin extend**: +N days on the current trial or plan (from now if it
@@ -318,13 +372,13 @@ in the same transaction.
 
 ```
 Seller picks a plan (/dashboard/billing)
-  │  confirm dialog shows the new end date (applyPurchase preview)
+  │  plan change dialog shows the amount and the new end date (quotePurchase preview)
   ▼
 billing.startCheckout({ plan })                 [seller mutation]
   · provider = activeProvider()  → none? PAYMENTS_UNAVAILABLE
-  · reuses an open payment for the same plan; cancels one for another plan
-  · plan hidden on the Plans & features page → PLAN_INVALID
-  · inserts payment { status: "created", amount = config monthly price }
+  · plan hidden on the Plans & features page, or a downgrade → PLAN_INVALID
+  · reuses an open payment for the same plan and amount; cancels any other
+  · inserts payment { status: "created", amount = quotePurchase amount, creditMinor }
   · logs payment.started (actor = seller)
   · schedules ↓
 payments.core.startWithProvider                 [internal action]
@@ -550,12 +604,17 @@ npx convex run migrations:plansV1Status
 npx convex run migrations:billingV1          # add --prod for production
 npx convex run migrations:billingV1Status
 
-# Test an ending trial / plan: set a subscription's periodEnd in the past
-# (Convex dashboard), then:
+# Once per deployment: note for trial shops using Business-only features
+# (the trial is Pro only); changes no plan, trial or exception
+npx convex run migrations:trialProOnlyV1     # add --prod for production
+npx convex run migrations:trialProOnlyV1Status
+
+# Test an ending trial / plan: set a subscription's periodEnd more than
+# 3 days in the past (grace days) in the Convex dashboard, then:
 npx convex run billingJobs:expireDue
 ```
 
-Production checklist: run `billingV1 --prod` once; make sure
+Production checklist: run `billingV1 --prod` and `trialProOnlyV1 --prod` once; make sure
 `PAYMENTS_MOCK_ENABLED` is **not** set; set `PAYMENTS_PROVIDER` only once a
 real provider is implemented.
 

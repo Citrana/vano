@@ -43,8 +43,14 @@ export const TRIAL_PLAN: PlanId = "pro";
 export const PERIOD_DAYS = 30;
 /** The dashboard warns this many days before a trial or plan ends. */
 export const EXPIRY_WARNING_DAYS = 7;
+/**
+ * After a trial or plan ends, the shop keeps its plan this many more days
+ * (time to pay) before it moves to Free.
+ */
+export const GRACE_DAYS = 3;
 
 export const DAY_MS = 86_400_000;
+export const GRACE_MS = GRACE_DAYS * DAY_MS;
 
 /** free < pro < business < enterprise. */
 export function planRank(plan: PlanId): number {
@@ -52,9 +58,10 @@ export function planRank(plan: PlanId): number {
 }
 
 /**
- * trialing: trial plan until periodEnd. active: paid or admin-granted plan
- * until periodEnd. expired: a paid plan lapsed. free: the trial ended
- * without payment. expired and free both get Free limits.
+ * trialing: trial plan until periodEnd (+ grace). active: paid or
+ * admin-granted plan until periodEnd (+ grace). expired: a paid plan
+ * lapsed. free: the trial ended without payment, or the shop never had
+ * one ("Get Business" sign-up). expired and free both get Free limits.
  */
 export const SUBSCRIPTION_STATUSES = ["trialing", "active", "expired", "free"] as const;
 export const subscriptionStatusValidator = v.union(

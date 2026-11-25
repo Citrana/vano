@@ -288,9 +288,23 @@ describe("billing events", () => {
   test("an ended trial tells the seller (trial: true)", async () => {
     const t = newTest();
     const w = await world(t);
-    await setSubscription(t, w.amani.shopId, { plan: "pro", status: "trialing", periodEnd: NOW - 1 });
+    await setSubscription(t, w.amani.shopId, { plan: "pro", status: "trialing", periodEnd: NOW - 3 * DAY_MS - 1 });
     await t.mutation(internal.billingJobs.expireDue, {});
     expect((await rowsOf(t, w.amani.userId)).map((r) => r.data)).toEqual([{ type: "plan.expired", plan: "pro", trial: true }]);
+  });
+
+  test("a plan in its grace days tells the seller once (plan.inGrace)", async () => {
+    const t = newTest();
+    const w = await world(t);
+    const end = NOW - DAY_MS;
+    await setSubscription(t, w.amani.shopId, { plan: "business", status: "active", periodEnd: end });
+    await t.mutation(internal.notificationJobs.endingSoon, {});
+    await t.mutation(internal.notificationJobs.endingSoon, {});
+    expect((await rowsOf(t, w.amani.userId)).map((r) => r.data)).toEqual([
+      { type: "plan.inGrace", plan: "business", trial: false, graceEnd: end + 3 * DAY_MS },
+    ]);
+    // Still in grace: the expiry job leaves it alone.
+    expect(await t.mutation(internal.billingJobs.expireDue, {})).toBe(0);
   });
 });
 

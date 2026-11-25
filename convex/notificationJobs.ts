@@ -3,7 +3,7 @@ import { internal } from "./_generated/api";
 import { internalMutation } from "./_generated/server";
 import { utcDay } from "./lib/days";
 import { notify } from "./lib/notify";
-import { DAY_MS, EXPIRY_WARNING_DAYS } from "./lib/plans";
+import { DAY_MS, EXPIRY_WARNING_DAYS, GRACE_MS } from "./lib/plans";
 import { COUNT_CAP, NOTIFICATION_RETENTION_DAYS } from "./notifications/config";
 
 /**
@@ -15,8 +15,10 @@ const ENDING_BATCH = 500;
 
 /**
  * Daily: warns each seller whose trial or plan ends within
- * `EXPIRY_WARNING_DAYS` (once per period, deduped on its end), and sends
- * billing admins one summary per day when any are ending.
+ * `EXPIRY_WARNING_DAYS` (once per period, deduped on its end), tells
+ * those whose period has just ended that they're in the grace days
+ * (`plan.inGrace`, once per period), and sends billing admins one summary
+ * per day when any are ending.
  */
 export const endingSoon = internalMutation({
   args: {},
@@ -39,6 +41,20 @@ export const endingSoon = internalMutation({
           data: { type: "plan.endingSoon", plan: sub.plan, trial: status === "trialing", periodEnd: sub.periodEnd },
           to: { userId: shop.ownerId },
           dedupeKey: `plan.endingSoon:${shop._id}:${sub.periodEnd}`,
+        });
+      }
+      const inGrace = await ctx.db
+        .query("subscriptions")
+        .withIndex("by_status_and_periodEnd", (q) => q.eq("status", status).gt("periodEnd", now - GRACE_MS).lte("periodEnd", now))
+        .take(ENDING_BATCH);
+      for (const sub of inGrace) {
+        if (sub.periodEnd === undefined) continue;
+        const shop = await ctx.db.get("shops", sub.shopId);
+        if (!shop) continue;
+        await notify(ctx, {
+          data: { type: "plan.inGrace", plan: sub.plan, trial: status === "trialing", graceEnd: sub.periodEnd + GRACE_MS },
+          to: { userId: shop.ownerId },
+          dedupeKey: `plan.inGrace:${shop._id}:${sub.periodEnd}`,
         });
       }
     }

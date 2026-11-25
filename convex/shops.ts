@@ -22,7 +22,7 @@ import { lookRow } from "./lib/looks/store";
 import { slugHolder } from "./lib/shopChanges";
 import { cleanShopInfo, socialsValidator } from "./lib/shopInfo";
 import { slugProblem } from "./lib/slug";
-import { startTrial } from "./lib/subscriptions";
+import { startFree, startTrial } from "./lib/subscriptions";
 
 /** Settings the seller edits directly, any time. */
 const settingsInput = v.object({
@@ -149,11 +149,17 @@ export const myShop = sellerQuery({
   },
 });
 
+/**
+ * Opens the caller's shop. `startPlan: "business"` (the pricing page's
+ * "Get Business") skips the Pro trial: the shop starts on Free and pays for
+ * Business right away. The flag can only remove the trial, never add
+ * anything, so it's safe to take from the client.
+ */
 export const create = sellerMutation({
   permission: "ownShop.manage",
-  args: shopInput.fields,
+  args: { ...shopInput.fields, startPlan: v.optional(v.literal("business")) },
   returns: v.id("shops"),
-  handler: async (ctx, args) => {
+  handler: async (ctx, { startPlan, ...args }) => {
     if (await findShopByOwner(ctx, ctx.user._id)) fail("SHOP_EXISTS");
     const input = cleanShopInput(args);
     if ((await slugHolder(ctx, input.slug)) !== null) fail("SLUG_TAKEN");
@@ -161,8 +167,9 @@ export const create = sellerMutation({
     const shopId = await ctx.db.insert("shops", { ...input, ownerId: ctx.user._id });
     const shop = (await ctx.db.get("shops", shopId))!;
     await onShopCreated(ctx, shop);
-    // Every new shop starts the free trial (CLAUDE.md "Billing").
-    await startTrial(ctx, shop);
+    // New shops start the Pro trial, except "Get Business" (CLAUDE.md "Billing").
+    if (startPlan === "business") await startFree(ctx, shop);
+    else await startTrial(ctx, shop);
     return shopId;
   },
 });

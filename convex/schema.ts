@@ -270,6 +270,9 @@ export default defineSchema({
     status: subscriptionStatusValidator,
     periodStart: v.number(),
     periodEnd: v.optional(v.number()),
+    /** The paid days inside the period (the upgrade credit counts only these). */
+    paidStart: v.optional(v.number()),
+    paidEnd: v.optional(v.number()),
     source: subscriptionSourceValidator,
     updatedAt: v.number(),
   })
@@ -281,8 +284,8 @@ export default defineSchema({
     .searchIndex("search_shopName", { searchField: "shopName", filterFields: ["plan", "status"] }),
 
   /**
-   * Plan payments. The amount comes from convex/lib/plans.ts, never from
-   * the client. Results from the provider are applied only by
+   * Plan payments. The amount comes from the plan config and
+   * `quotePurchase` (convex/lib/subscriptions.ts), never from the client. Results from the provider are applied only by
    * `payments/core.applyResult`; `appliedAt` is set in the same transaction
    * that extends the plan, so a payment can never extend it twice.
    * `shopName` is a snapshot taken when the payment started.
@@ -292,7 +295,10 @@ export default defineSchema({
     shopName: v.string(),
     userId: v.id("users"),
     plan: planIdValidator,
+    /** What the seller pays: the plan price minus `creditMinor`. */
     amountMinor: v.number(),
+    /** Credit for paid days left on a lower plan (Pro → Business). */
+    creditMinor: v.optional(v.number()),
     currency: currencyValidator,
     provider: providerIdValidator,
     providerRef: v.optional(v.string()),

@@ -7,8 +7,10 @@ import { readPlanConfig } from "./planConfig";
 import type { PlanConfigData } from "./planFeatures";
 import {
   DAY_MS,
+  GRACE_MS,
   PERIOD_DAYS,
   TRIAL_PLAN,
+  planRank,
   type PaidPlanId,
   type PlanId,
   type SubscriptionSource,
@@ -17,8 +19,10 @@ import {
 
 /**
  * Subscriptions (CLAUDE.md "Billing"). Every write to the `subscriptions`
- * table goes through this file. The pure helpers (`applyPurchase`,
- * `expireIfDue`, `effectivePlan`) hold the rules and are unit-tested.
+ * table goes through this file. The pure helpers (`quotePurchase`,
+ * `applyPurchase`, `expireIfDue`, `effectivePlan`) hold the rules and are
+ * unit-tested; the plan dialogs, `billing.startCheckout` (the amount) and
+ * `payments/core.applyEvent` (the new period) all call them.
  */
 
 export type SubscriptionState = {
@@ -27,6 +31,12 @@ export type SubscriptionState = {
   periodStart: number;
   /** null on Free. */
   periodEnd: number | null;
+  /**
+   * The days actually paid for, inside the period (trial and admin-granted
+   * days never count). Only used for the upgrade credit. Absent = none.
+   */
+  paidStart?: number | null;
+  paidEnd?: number | null;
 };
 
 /** The trial length comes from the plan config (`trialMonths` of TRIAL_PLAN). */
@@ -37,6 +47,11 @@ export function trialState(now: number, months: number): SubscriptionState {
     periodStart: now,
     periodEnd: addMonths(now, months),
   };
+}
+
+/** A shop with no trial ("Get Business" sign-up): Free until it pays. */
+export function freeState(now: number): SubscriptionState {
+  return { plan: "free", status: "free", periodStart: now, periodEnd: null };
 }
 
 export function trialMonthsOf(config: PlanConfigData): number {
@@ -55,22 +70,42 @@ export function pricesOf(config: PlanConfigData): PlanPrices {
   };
 }
 
-/** The plan whose limits apply: Free once the trial / paid plan has ended. */
-export function effectivePlan(state: SubscriptionState): PlanId {
-  return state.status === "trialing" || state.status === "active" ? state.plan : "free";
+function running(state: SubscriptionState): boolean {
+  return state.status === "trialing" || state.status === "active";
 }
 
 /**
- * The state after the period ended, or null when it isn't due yet (or
- * there's nothing to end). trialing → free, active → expired.
+ * The plan whose limits apply: the trial / paid plan until its end plus
+ * the grace days (`stateAt` / the expiry job move it to Free after that),
+ * else Free.
+ */
+export function effectivePlan(state: SubscriptionState): PlanId {
+  return running(state) ? state.plan : "free";
+}
+
+/** When the shop moves to Free (period end + grace); null when nothing ends. */
+export function graceEndOf(state: SubscriptionState): number | null {
+  return running(state) && state.periodEnd !== null ? state.periodEnd + GRACE_MS : null;
+}
+
+/** The period has ended but the grace days haven't: time to pay. */
+export function inGrace(state: SubscriptionState, now: number): boolean {
+  const graceEnd = graceEndOf(state);
+  return graceEnd !== null && state.periodEnd !== null && state.periodEnd <= now && now < graceEnd;
+}
+
+/**
+ * The state once the period and its grace days are over, or null when it
+ * isn't due yet (or there's nothing to end). trialing → free, active →
+ * expired. Data is never touched.
  */
 export function expireIfDue(state: SubscriptionState, now: number): SubscriptionState | null {
-  if (state.status !== "trialing" && state.status !== "active") return null;
-  if (state.periodEnd === null || state.periodEnd > now) return null;
+  const graceEnd = graceEndOf(state);
+  if (graceEnd === null || graceEnd > now) return null;
   return {
     plan: "free",
     status: state.status === "trialing" ? "free" : "expired",
-    periodStart: state.periodEnd,
+    periodStart: graceEnd,
     periodEnd: null,
   };
 }
@@ -83,14 +118,114 @@ export function stateAt(state: SubscriptionState, now: number): SubscriptionStat
 const PERIOD_MS = PERIOD_DAYS * DAY_MS;
 
 /**
- * The state after a successful payment for `plan` (one period):
- * - same plan, still active: the period is added to the current end;
- * - during the trial: the plan starts now, and the remaining trial days
- *   are kept (end = trial end + one period);
- * - another plan, still active: the plan starts now for one period, plus
- *   the unused days converted at the price ratio (10 Pro days ≈ 3 Business
- *   days, 3 Business days ≈ 10 Pro days);
- * - free / expired: the plan starts now for one period.
+ * Whole paid days left on an active plan, never more than one period:
+ * only the paid window counts (trial and admin days never do), from now
+ * or from where the paid days start, to where they (or the period) end.
+ */
+export function paidDaysLeft(state: SubscriptionState, now: number): number {
+  if (state.status !== "active" || state.periodEnd === null) return 0;
+  if (state.paidStart == null || state.paidEnd == null) return 0;
+  const end = Math.min(state.paidEnd, state.periodEnd);
+  const start = Math.max(now, state.paidStart);
+  return Math.min(PERIOD_DAYS, Math.max(0, Math.floor((end - start) / DAY_MS)));
+}
+
+/**
+ * The money credit when an active paid plan moves up (Pro → Business):
+ * round(old monthly price × paid days left / 30), in whole units of the
+ * currency (10 Pro days at 299 → 100). Capped so at least one unit is
+ * still paid. 0 for anything else.
+ */
+export function upgradeCreditMinor(
+  state: SubscriptionState,
+  plan: PaidPlanId,
+  now: number,
+  prices: PlanPrices,
+): number {
+  if (state.status !== "active" || planRank(plan) <= planRank(state.plan)) return 0;
+  const oldPrice = prices[state.plan];
+  const newPrice = prices[plan];
+  if (oldPrice === null || oldPrice <= 0 || newPrice === null || newPrice <= 0) return 0;
+  const days = paidDaysLeft(state, now);
+  const credit = Math.round(((oldPrice / 100) * days) / PERIOD_DAYS) * 100;
+  return Math.max(0, Math.min(credit, newPrice - 100));
+}
+
+/** What a seller choosing `target` is doing, from where they are now. */
+export type PlanChangeKind = "current" | "upgrade" | "renew" | "downgrade";
+
+export function planChangeKind(current: SubscriptionState, target: PlanId, now: number): PlanChangeKind {
+  const state = stateAt(current, now);
+  const from = effectivePlan(state);
+  if (target === "free") return from === "free" ? "current" : "downgrade";
+  if (!running(state)) return "upgrade";
+  if (target === state.plan) return "renew";
+  return planRank(target) > planRank(state.plan) ? "upgrade" : "downgrade";
+}
+
+export type PurchaseQuote = {
+  kind: Exclude<PlanChangeKind, "current">;
+  /** What the seller pays now (0 for a downgrade: nothing is charged). */
+  amountMinor: number;
+  creditMinor: number;
+  /** The state after paying (unchanged for a downgrade). */
+  next: SubscriptionState;
+};
+
+/**
+ * The price and the new period for buying one period of `plan`:
+ * - same plan (renew, also during the Pro trial or the grace days): 30
+ *   days after the current end, full price. During the trial the paid days
+ *   start when it ends;
+ * - a higher plan, or from Free / expired: starts today for 30 days; the
+ *   trial ends (its days are lost); an active paid lower plan gives a money
+ *   credit for its paid days left (`upgradeCreditMinor`);
+ * - a lower plan while one runs (downgrade): nothing is charged and
+ *   nothing changes now; the current plan runs to its end.
+ */
+export function quotePurchase(
+  current: SubscriptionState,
+  plan: PaidPlanId,
+  now: number,
+  prices: PlanPrices,
+): PurchaseQuote {
+  const state = stateAt(current, now);
+  const price = prices[plan] ?? 0;
+  const kind = planChangeKind(state, plan, now);
+  if (kind === "downgrade" || kind === "current") {
+    return { kind: "downgrade", amountMinor: 0, creditMinor: 0, next: state };
+  }
+  if (kind === "renew" && state.periodEnd !== null) {
+    const end = state.periodEnd;
+    const contiguous = state.status === "active" && state.paidEnd != null && state.paidStart != null && state.paidEnd >= end;
+    return {
+      kind,
+      amountMinor: price,
+      creditMinor: 0,
+      next: {
+        plan,
+        status: "active",
+        periodStart: state.status === "trialing" ? now : state.periodStart,
+        periodEnd: end + PERIOD_MS,
+        paidStart: contiguous ? state.paidStart : end,
+        paidEnd: end + PERIOD_MS,
+      },
+    };
+  }
+  const creditMinor = upgradeCreditMinor(state, plan, now, prices);
+  return {
+    kind: "upgrade",
+    amountMinor: price - creditMinor,
+    creditMinor,
+    next: { plan, status: "active", periodStart: now, periodEnd: now + PERIOD_MS, paidStart: now, paidEnd: now + PERIOD_MS },
+  };
+}
+
+/**
+ * The state after a successful payment for `plan` (`quotePurchase`). A
+ * payment never buys nothing: if the shop moved to a higher plan while it
+ * was pending (a downgrade by the time it lands), the current plan gets
+ * the 30 days instead.
  */
 export function applyPurchase(
   current: SubscriptionState,
@@ -98,39 +233,26 @@ export function applyPurchase(
   now: number,
   prices: PlanPrices,
 ): SubscriptionState {
-  const state = stateAt(current, now);
-  const remaining = state.periodEnd === null ? 0 : Math.max(0, state.periodEnd - now);
-
-  if (state.status === "active" && state.plan === plan && state.periodEnd !== null) {
-    return { ...state, periodEnd: state.periodEnd + PERIOD_MS };
-  }
-  if (state.status === "trialing") {
-    return { plan, status: "active", periodStart: now, periodEnd: now + remaining + PERIOD_MS };
-  }
-  if (state.status === "active") {
-    const oldPrice = prices[state.plan];
-    const newPrice = prices[plan] ?? 0;
-    // A custom-priced plan (Enterprise) keeps its days one for one.
-    const credit =
-      oldPrice === null || newPrice <= 0 ? remaining : Math.floor((remaining * oldPrice) / newPrice);
-    return { plan, status: "active", periodStart: now, periodEnd: now + PERIOD_MS + credit };
-  }
-  return { plan, status: "active", periodStart: now, periodEnd: now + PERIOD_MS };
+  const quote = quotePurchase(current, plan, now, prices);
+  if (quote.kind !== "downgrade") return quote.next;
+  const state = quote.next;
+  const end = Math.max(now, state.periodEnd ?? now);
+  return { ...state, periodEnd: end + PERIOD_MS };
 }
 
-/** An admin grant: `plan` from now for `days`. */
+/** An admin grant: `plan` from now for `days` (not paid days). */
 export function grantState(plan: PlanId, days: number, now: number): SubscriptionState {
   return { plan, status: "active", periodStart: now, periodEnd: now + days * DAY_MS };
 }
 
-/** An admin extension: `days` more on the current plan (must have one). */
+/** An admin extension: `days` more on the current plan (must have one); paid days are kept as they were. */
 export function extendState(
   current: SubscriptionState,
   days: number,
   now: number,
 ): SubscriptionState | null {
   const state = stateAt(current, now);
-  if (state.status !== "trialing" && state.status !== "active") return null;
+  if (!running(state)) return null;
   const end = Math.max(now, state.periodEnd ?? now);
   return { ...state, periodEnd: end + days * DAY_MS };
 }
@@ -148,12 +270,20 @@ export async function subscriptionDoc(
     .unique();
 }
 
+/**
+ * Rows written before the paid window was stored: a paid plan's last 30
+ * days are its paid days (the credit never counts more than 30 anyway).
+ */
 export function stateOf(doc: Doc<"subscriptions">): SubscriptionState {
+  const periodEnd = doc.periodEnd ?? null;
+  const legacyPaid = doc.paidEnd === undefined && doc.source === "payment" && periodEnd !== null;
   return {
     plan: doc.plan,
     status: doc.status,
     periodStart: doc.periodStart,
-    periodEnd: doc.periodEnd ?? null,
+    periodEnd,
+    paidStart: legacyPaid ? periodEnd - PERIOD_MS : (doc.paidStart ?? null),
+    paidEnd: legacyPaid ? periodEnd : (doc.paidEnd ?? null),
   };
 }
 
@@ -200,6 +330,8 @@ export async function writeSubscription(
     status: next.status,
     periodStart: next.periodStart,
     periodEnd: next.periodEnd ?? undefined,
+    paidStart: next.paidStart ?? undefined,
+    paidEnd: next.paidEnd ?? undefined,
     source: log.source,
     updatedAt: Date.now(),
   };
@@ -251,7 +383,11 @@ async function notifyPlanChange(
   }
 }
 
-/** Every new shop starts on the trial (called from `shops.create`); its length is read from the plan config. */
+/**
+ * A new shop starts on the trial (called from `shops.create`); its length
+ * is read from the plan config. A "Get Business" sign-up starts on Free
+ * instead (`startFree`) and pays for Business right away.
+ */
 export async function startTrial(
   ctx: MutationCtx,
   shop: Doc<"shops">,
@@ -260,6 +396,19 @@ export async function startTrial(
   const months = trialMonthsOf(await readPlanConfig(ctx));
   await writeSubscription(ctx, shop, trialState(now, months), {
     source: "trial",
+    action: null,
+    actor: null,
+  });
+}
+
+/** A new shop with no trial ("Get Business" sign-up): Free until it pays. */
+export async function startFree(
+  ctx: MutationCtx,
+  shop: Doc<"shops">,
+  now = Date.now(),
+): Promise<void> {
+  await writeSubscription(ctx, shop, freeState(now), {
+    source: "system",
     action: null,
     actor: null,
   });
