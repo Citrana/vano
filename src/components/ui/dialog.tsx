@@ -15,12 +15,22 @@ function DialogClose(props: DialogPrimitive.Close.Props) {
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />
 }
 
-function DialogContent({ className, children, ...props }: DialogPrimitive.Popup.Props) {
+/**
+ * Opened by keyboard, focus goes to the first control (with its ring);
+ * opened by mouse or touch, focus goes to the popup itself, which has no
+ * outline, so no stray focus ring shows after a click (`focus-ring` is
+ * `:focus-visible` only). A dialog can still pass its own `initialFocus`.
+ */
+function DialogContent({ className, children, initialFocus, ...props }: DialogPrimitive.Popup.Props) {
   const t = useTranslations("Common")
+  const popupRef = React.useRef<HTMLDivElement>(null)
+  const focus = initialFocus ?? ((type: string) => (type === "keyboard" ? true : popupRef.current))
   return (
     <DialogPrimitive.Portal>
       <DialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-black/30 duration-100 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards" />
       <DialogPrimitive.Popup
+        ref={popupRef}
+        initialFocus={focus}
         data-slot="dialog-content"
         className={cn(
           "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl border bg-popover p-5 text-sm text-popover-foreground shadow-float duration-100 outline-none sm:max-w-md data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 data-closed:fill-mode-forwards",
