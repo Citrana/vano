@@ -3,7 +3,7 @@
 import { EyeOffIcon } from "lucide-react"
 import { useFormatter, useTranslations } from "next-intl"
 import Link from "next/link"
-import { daysLeft } from "../../../convex/lib/plans"
+import { GRACE_MS, daysLeft } from "../../../convex/lib/plans"
 import { buttonVariants } from "@/components/ui/button"
 import { Card, CardTitle } from "@/components/ui/card"
 import { SubscriptionStatusBadge } from "./subscription-status-badge"
@@ -31,7 +31,11 @@ export function CurrentPlanCard({ billing, now }: { billing: MyBilling; now: num
         <SubscriptionStatusBadge status={status} />
       </div>
 
-      {running ? (
+      {running && periodEnd <= now ? (
+        <p role="status" className="rounded-lg bg-secondary p-3">
+          {t("graceUntil", { end: date(periodEnd), date: date(periodEnd + GRACE_MS), free: planName("free") })}
+        </p>
+      ) : running ? (
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
           <p>{status === "trialing" ? t("trialEnds", { date: date(periodEnd) }) : t("activeUntil", { date: date(periodEnd) })}</p>
           <p className="font-semibold tabular-nums">{t("daysLeft", { count: daysLeft(periodEnd, now) })}</p>

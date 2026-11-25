@@ -7,6 +7,7 @@ import Link from "next/link"
 import { cn } from "cn"
 import { api } from "../../../../convex/_generated/api"
 import { buttonVariants } from "@/components/ui/button"
+import { BUSINESS_CHECKOUT_HREF } from "@/features/billing/start-plan"
 
 /**
  * The main "Open my shop for free" button. Server-renders as a link to
@@ -20,6 +21,7 @@ export function OpenShopCta({
   hideWhenClosed = false,
   variant = "default",
   label,
+  plan,
   className,
 }: {
   compact?: boolean
@@ -29,6 +31,12 @@ export function OpenShopCta({
   hideWhenClosed?: boolean
   /** Replaces the sign-up label (e.g. "Start free trial" on plan cards). */
   label?: string
+  /**
+   * "business" (the pricing page's "Get Business"): sign-up skips the Pro
+   * trial and opens the Business payment; signed-in sellers go straight to
+   * it. The label stays the same when signed in.
+   */
+  plan?: "business"
   className?: string
 }) {
   const t = useTranslations("Marketing")
@@ -36,6 +44,14 @@ export function OpenShopCta({
   const signupOpen = useQuery(api.public.signupOpen, isLoading || isAuthenticated ? "skip" : {})
 
   const size = compact ? "default" : "lg"
+
+  if (isAuthenticated && plan) {
+    return (
+      <Link href={BUSINESS_CHECKOUT_HREF} className={cn(buttonVariants({ size, variant }), className)}>
+        {label ?? t("ctaDashboard")}
+      </Link>
+    )
+  }
 
   if (isAuthenticated) {
     return (
@@ -70,7 +86,7 @@ export function OpenShopCta({
   }
 
   return (
-    <Link href="/signup" className={cn(buttonVariants({ size, variant }), className)}>
+    <Link href={plan ? `/signup?plan=${plan}` : "/signup"} className={cn(buttonVariants({ size, variant }), className)}>
       {label ?? (compact ? t("ctaShort") : t("cta"))}
       {compact ? null : <ArrowRightIcon aria-hidden />}
     </Link>

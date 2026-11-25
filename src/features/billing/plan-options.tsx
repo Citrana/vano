@@ -1,53 +1,54 @@
 "use client"
 
-import { useMutation } from "convex/react"
 import { CheckIcon, MessageCircleIcon } from "lucide-react"
-import { useFormatter, useLocale, useTranslations } from "next-intl"
-import { useRouter } from "next/navigation"
+import { useLocale, useTranslations } from "next-intl"
 import { useState } from "react"
-import { toast } from "sonner"
 import { cn } from "cn"
-import { api } from "../../../convex/_generated/api"
-import {
-  EXPIRY_WARNING_DAYS,
-  daysLeft,
-  isPaidPlan,
-  planRank,
-  type PaidPlanId,
-  type PlanId,
-} from "../../../convex/lib/plans"
-import { applyPurchase, type PlanPrices, type SubscriptionState } from "../../../convex/lib/subscriptions"
-import type { PlanCatalog } from "../../../convex/lib/planCatalog"
+import { EXPIRY_WARNING_DAYS, daysLeft, isPaidPlan, type PlanId } from "../../../convex/lib/plans"
+import { planChangeKind } from "../../../convex/lib/subscriptions"
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog"
 import { buildPlanCards, formatPlanPrice, type Plan } from "@/features/marketing/pricing/plans"
 import { talkHref } from "@/features/marketing/shared/site-config"
-import { useErrorMessage } from "@/lib/use-error-message"
+import { PlanChangeDialog, billingState } from "./plan-change-dialog"
 import type { MyBilling } from "./use-billing"
 import { usePlanCatalog, usePlanName } from "./use-plan-catalog"
 
 type Action =
   | { kind: "current" }
-  | { kind: "buy"; plan: PaidPlanId; label: string }
-  | { kind: "free" }
+  | { kind: "change"; plan: PlanId; label: string; tone: "buy" | "quiet" }
   | { kind: "talk" }
 
 /**
  * The plans (from the live plan catalogue; hidden plans are left out,
- * except the seller's current one) with what the seller can do on each: buy / renew a paid
- * plan (opens a confirmation with the new end date, then checkout), see
- * how moving to Free works, or talk to us (Enterprise, or when online
- * payments are off). One coral button: the most useful next step.
+ * except the seller's current one) with what the seller can do on each:
+ * upgrade, extend or switch (all open the plan change dialog, which shows
+ * the amount and the new end date from the shared rules), or talk to us
+ * (Enterprise, or a purchase while online payments are off). One coral
+ * button: the most useful next step. `initialPlan` opens the dialog for
+ * that plan on load ("Get Business" → `?upgrade=business`).
  */
-export function PlanOptions({ billing, shopName, now }: { billing: MyBilling; shopName: string; now: number }) {
+export function PlanOptions({
+  billing,
+  shopName,
+  now,
+  initialPlan,
+}: {
+  billing: MyBilling
+  shopName: string
+  now: number
+  initialPlan?: PlanId | null
+}) {
   const t = useTranslations("Billing")
   const tp = useTranslations("Pricing")
   const locale = useLocale()
   const catalog = usePlanCatalog()
   const planName = usePlanName()
-  const [buying, setBuying] = useState<PaidPlanId | null>(null)
-  const [freeOpen, setFreeOpen] = useState(false)
+  const state = billingState(billing)
+  // "Get Business" opens the dialog only when it's really an upgrade to pay for.
+  const [target, setTarget] = useState<PlanId | null>(() =>
+    initialPlan && billing.payments.available && planChangeKind(state, initialPlan, now) === "upgrade" ? initialPlan : null,
+  )
 
   const current = billing.effectivePlan
   const running = billing.status === "trialing" || billing.status === "active"
@@ -56,21 +57,20 @@ export function PlanOptions({ billing, shopName, now }: { billing: MyBilling; sh
   const plans = buildPlanCards(shown, locale, (plan) => tp("everythingIn", { plan }))
 
   function actionFor(id: PlanId): Action {
-    if (id === "enterprise") return current === "enterprise" ? { kind: "current" } : { kind: "talk" }
-    if (id === "free") return current === "free" ? { kind: "current" } : { kind: "free" }
-    if (!isPaidPlan(id)) return { kind: "talk" }
-    if (!billing.payments.available) return id === current ? { kind: "current" } : { kind: "talk" }
-    if (id === current && billing.status === "active") return { kind: "buy", plan: id, label: t("renew") }
-    if (id === current) return { kind: "buy", plan: id, label: t("keep", { plan: planName(id) }) }
-    return {
-      kind: "buy",
-      plan: id,
-      label: planRank(id) > planRank(current) ? t("upgrade", { plan: planName(id) }) : t("switchTo", { plan: planName(id) }),
+    const kind = planChangeKind(state, id, now)
+    if (kind === "current" || (id === current && (kind !== "renew" || !isPaidPlan(id)))) return { kind: "current" }
+    // Moving down never charges anything, so it works without payments.
+    if (kind === "downgrade") return { kind: "change", plan: id, label: t("switchTo", { plan: planName(id) }), tone: "quiet" }
+    if (!isPaidPlan(id) || !billing.payments.available) return { kind: "talk" }
+    if (kind === "renew") {
+      const label = billing.status === "trialing" ? t("keep", { plan: planName(id) }) : t("extend", { plan: planName(id) })
+      return { kind: "change", plan: id, label, tone: "buy" }
     }
+    return { kind: "change", plan: id, label: t("upgrade", { plan: planName(id) }), tone: "buy" }
   }
 
   // The one coral button: keep the trial plan, pick Pro when on Free, or
-  // renew a plan that's about to end.
+  // extend a plan that's about to end (or in its grace days).
   const primary: PlanId | null = !billing.payments.available
     ? null
     : billing.status === "trialing"
@@ -80,6 +80,12 @@ export function PlanOptions({ billing, shopName, now }: { billing: MyBilling; sh
         : billing.periodEnd !== null && daysLeft(billing.periodEnd, now) <= EXPIRY_WARNING_DAYS
           ? current
           : null
+
+  function close() {
+    setTarget(null)
+    // Drop `?upgrade=` so a reload doesn't open the dialog again.
+    if (initialPlan) window.history.replaceState(null, "", "/dashboard/billing")
+  }
 
   return (
     <section aria-labelledby="plans-title" className="flex flex-col gap-3">
@@ -101,14 +107,12 @@ export function PlanOptions({ billing, shopName, now }: { billing: MyBilling; sh
             isCurrent={plan.id === current}
             primary={plan.id === primary}
             talkLink={talkHref(t("talkMessage", { plan: planName(plan.id), shop: shopName }))}
-            onBuy={setBuying}
-            onFree={() => setFreeOpen(true)}
+            onChange={setTarget}
           />
         ))}
       </ul>
 
-      <ConfirmPurchaseDialog billing={billing} catalog={catalog} plan={buying} now={now} onClose={() => setBuying(null)} />
-      <FreeDialog billing={billing} open={freeOpen} onOpenChange={setFreeOpen} />
+      <PlanChangeDialog billing={billing} catalog={catalog} target={target} now={now} onClose={close} />
     </section>
   )
 }
@@ -120,8 +124,7 @@ function PlanOption({
   isCurrent,
   primary,
   talkLink,
-  onBuy,
-  onFree,
+  onChange,
 }: {
   plan: Plan
   locale: string
@@ -129,11 +132,9 @@ function PlanOption({
   isCurrent: boolean
   primary: boolean
   talkLink: string
-  onBuy: (plan: PaidPlanId) => void
-  onFree: () => void
+  onChange: (plan: PlanId) => void
 }) {
   const t = useTranslations("Billing")
-  const planName = usePlanName()
   const headingId = `billing-plan-${plan.id}`
 
   return (
@@ -169,8 +170,12 @@ function PlanOption({
         ))}
       </ul>
       <div className="mt-auto pt-1">
-        {action.kind === "buy" ? (
-          <Button variant={primary ? "default" : "outline"} className="w-full" onClick={() => onBuy(action.plan)}>
+        {action.kind === "change" ? (
+          <Button
+            variant={action.tone === "quiet" ? "ghost" : primary ? "default" : "outline"}
+            className="w-full"
+            onClick={() => onChange(action.plan)}
+          >
             {action.label}
           </Button>
         ) : action.kind === "talk" ? (
@@ -183,124 +188,8 @@ function PlanOption({
             <MessageCircleIcon aria-hidden />
             {t("talk")}
           </a>
-        ) : action.kind === "free" ? (
-          <Button variant="ghost" className="w-full" onClick={onFree}>
-            {t("switchTo", { plan: planName("free") })}
-          </Button>
         ) : null}
       </div>
     </li>
-  )
-}
-
-function stateOf(billing: MyBilling): SubscriptionState {
-  return { plan: billing.plan, status: billing.status, periodStart: billing.periodStart, periodEnd: billing.periodEnd }
-}
-
-/** What paying changes (new end date), then starts checkout. */
-function pricesFrom(catalog: PlanCatalog): PlanPrices {
-  return Object.fromEntries(catalog.plans.map((p) => [p.id, p.monthlyMinor])) as PlanPrices
-}
-
-function ConfirmPurchaseDialog({
-  billing,
-  catalog,
-  plan,
-  now,
-  onClose,
-}: {
-  billing: MyBilling
-  catalog: PlanCatalog
-  plan: PaidPlanId | null
-  now: number
-  onClose: () => void
-}) {
-  const t = useTranslations("Billing")
-  const planName = usePlanName()
-  const tc = useTranslations("Common")
-  const locale = useLocale()
-  const format = useFormatter()
-  const router = useRouter()
-  const errorMessage = useErrorMessage()
-  const startCheckout = useMutation(api.billing.startCheckout)
-  const [pending, setPending] = useState(false)
-
-  const shown = plan ?? "pro"
-  const state = stateOf(billing)
-  const prices = pricesFrom(catalog)
-  const next = applyPurchase(state, shown, now, prices)
-  const price = prices[shown] ?? 0
-  const running = billing.status === "trialing" || billing.status === "active"
-  const note =
-    billing.status === "trialing"
-      ? t("confirmTrialKept")
-      : running && billing.plan === shown
-        ? t("confirmRenew")
-        : running
-          ? t("confirmCredit", { plan: planName(shown) })
-          : null
-
-  async function confirm() {
-    if (!plan) return
-    setPending(true)
-    try {
-      const paymentId = await startCheckout({ plan })
-      router.push(`/dashboard/billing/checkout/${paymentId}`)
-    } catch (error) {
-      toast.error(errorMessage(error))
-      setPending(false)
-    }
-  }
-
-  return (
-    <Dialog open={plan !== null} onOpenChange={(open) => (open ? null : onClose())}>
-      <DialogContent>
-        <DialogTitle>{t("confirmTitle", { plan: planName(shown) })}</DialogTitle>
-        <DialogDescription>{t("confirmAmount", { amount: formatPlanPrice(price, locale) })}</DialogDescription>
-        <div className="flex flex-col gap-2 text-sm">
-          {next.periodEnd !== null ? (
-            <p className="font-medium">{t("confirmNewEnd", { date: format.dateTime(new Date(next.periodEnd), { dateStyle: "long" }) })}</p>
-          ) : null}
-          {note ? <p className="text-muted-foreground">{note}</p> : null}
-        </div>
-        <DialogFooter>
-          <DialogClose render={<Button variant="outline" />}>{tc("cancel")}</DialogClose>
-          <Button onClick={confirm} disabled={pending}>
-            {pending ? t("starting") : t("continue")}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
-
-/** Moving to Free needs no action: the plan simply runs out. */
-function FreeDialog({
-  billing,
-  open,
-  onOpenChange,
-}: {
-  billing: MyBilling
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}) {
-  const t = useTranslations("Billing")
-  const planName = usePlanName()
-  const format = useFormatter()
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogTitle>{t("freeTitle")}</DialogTitle>
-        <DialogDescription>
-          {t("freeBody", {
-            plan: planName(billing.effectivePlan),
-            date: billing.periodEnd === null ? "—" : format.dateTime(new Date(billing.periodEnd), { dateStyle: "long" }),
-          })}
-        </DialogDescription>
-        <DialogFooter>
-          <DialogClose render={<Button />}>{t("freeOk")}</DialogClose>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   )
 }

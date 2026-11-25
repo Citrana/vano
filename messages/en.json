@@ -1535,12 +1535,12 @@
   },
   "Home": {
     "metaTitle": "Vano · Design your shop, share one link, get orders on WhatsApp",
-    "metaDescription": "Pick your colors and style, add your products and share one link. Customers order straight on your WhatsApp. 2 months free, no payment method needed.",
+    "metaDescription": "Pick your colors and style, add your products and share one link. Customers order straight on your WhatsApp. {months, plural, one {# month} other {# months}} free on {plan}, no payment method needed.",
     "badge": "Made for fashion sellers",
     "heroTitle": "Design your shop. Share one link. Get <hl>orders</hl>.",
     "heroSubtitle": "Pick your colors and style, add your products, and share one link. Customers order straight on your WhatsApp.",
     "seeDemo": "See a demo shop",
-    "trustTrial": "{months, plural, one {# month free} other {# months free}}",
+    "trustTrial": "{months, plural, one {# month} other {# months}} free on {plan}",
     "trustNoPayment": "No payment method needed",
     "trustFast": "Ready in 2 minutes",
     "mockupLabel": "Example of a Vano shop on a phone, changing between looks",
@@ -1559,7 +1559,7 @@
     "chatTime": "10:24",
     "linkCardLabel": "Your shop link",
     "copyLink": "Copy link",
-    "pricingTitle": "Start free for {months, plural, one {# month} other {# months}}, then from {price}/month",
+    "pricingTitle": "{months, plural, one {# month} other {# months}} free on {plan}, then from {price}/month",
     "cancelAnytime": "Cancel anytime",
     "pricingLink": "See pricing",
     "whyHeading": "Made for selling on WhatsApp",
@@ -1607,7 +1607,7 @@
     "canDescription": "Description",
     "canColors": "Colors and style",
     "canBanner": "Banner",
-    "canLooksNote": "Looks, colors and banner are on Pro and Business (and the free trial). Free shops get the Classic look.",
+    "canLooksNote": "Looks, colors and banner come with {plan} and higher plans (and the free {trial} trial). {free} shops get the Classic look.",
     "whatsappDetail": "Each product page has an order button. The chat opens with the item, the size and the price written for the customer, so you only need to reply.",
     "whatsappBullet1": "Item, size and price written for them",
     "whatsappBullet2": "You agree on delivery and payment in the chat",
@@ -1640,7 +1640,7 @@
     "noHosting": "No hosting",
     "noCode": "No code",
     "readyFirstProduct": "Ready with your first product",
-    "ctaPricing": "Start free for {months, plural, one {# month} other {# months}}",
+    "ctaPricing": "{months, plural, one {# month} other {# months}} free on {plan}",
     "ctaDemo": "See it in action",
     "groupSetUp": "Set up your shop",
     "groupSell": "Sell on WhatsApp",
@@ -1653,10 +1653,10 @@
   },
   "Pricing": {
     "metaTitle": "Pricing · Vano",
-    "metaDescription": "Simple pricing in KSh. Start free for 2 months with all Pro features. No payment method needed, cancel anytime.",
+    "metaDescription": "Simple pricing in KSh. {months, plural, one {# month} other {# months}} free on {plan}, no payment method needed. {business} is paid when you choose it. Cancel anytime.",
     "eyebrow": "Pricing",
-    "title": "Simple pricing. Start free for {months, plural, one {# month} other {# months}}.",
-    "subtitle": "No payment method needed to start. Cancel anytime.",
+    "title": "Simple pricing. {months, plural, one {# month} other {# months}} free on {plan}.",
+    "subtitle": "No payment method needed for the {plan} trial. Cancel anytime.",
     "perMonth": "/month",
     "customPrice": "Custom",
     "mostPopular": "Most popular",
@@ -1695,13 +1695,15 @@
     "faqTitle": "Pricing questions",
     "faq": {
       "q1": "What happens after the trial?",
-      "a1": "After your {months, plural, one {free month} other {# free months}} you choose a plan. If you don't pick one, your shop moves to {free} and stays online with up to {count} products.",
+      "a1": "Your first {months, plural, one {# month} other {# months}} on {plan} are free. After that you choose a plan. If you don't pick one, your shop moves to {free} and stays online with up to {count} products.",
       "q2": "Can I change plans?",
-      "a2": "Yes. You'll be able to move up or down between plans at any time, from your dashboard.",
+      "a2": "Yes, from your dashboard. The free trial is on {plan} only. {business} has no trial: choosing it ends your trial and starts {business} the same day. Moving down never deletes anything.",
       "q3": "How do I pay?",
-      "a3": "Nothing to pay during your trial. Payment methods will be announced before the trial ends; M-Pesa is planned."
+      "a3": "With M-Pesa, from your dashboard. You pay for {days} days at a time and nothing renews by itself."
     },
-    "everythingIn": "Everything in {plan}"
+    "everythingIn": "Everything in {plan}",
+    "ctaBuy": "Get {plan}",
+    "buyNote": "Pay when you're ready. Cancel anytime."
   },
   "Help": {
     "metaTitle": "Help · Vano",
@@ -1759,11 +1761,11 @@
       "pricing": {
         "title": "Pricing and trial",
         "q1": "Is Vano free?",
-        "a1": "Your first 2 months are free with all Pro features, and no payment method is needed. After that you can pick a plan or stay on Free.",
+        "a1": "Your first {months, plural, one {# month} other {# months}} are free on {plan}, and no payment method is needed. {business} has no free trial: you pay when you choose it. After the trial you can pick a plan or stay on {free}.",
         "q2": "What do the plans include?",
-        "a2": "Free: up to 10 products. Pro: up to 50 products, full design options and shop stats. Business: unlimited products and team accounts. See the Pricing page for details.",
+        "a2": "{free} gets you started with a few products. {plan} adds more products, every shop look, sales and shop stats. {business} adds unlimited products, discount codes and team accounts. See the Pricing page for the exact limits.",
         "q3": "How will I pay for a plan?",
-        "a3": "Payment methods will be announced before your trial ends. M-Pesa is planned."
+        "a3": "With M-Pesa, from your dashboard. You pay for {days} days at a time; nothing renews by itself."
       },
       "account": {
         "title": "Account",
@@ -1803,23 +1805,11 @@
     "currentBadge": "Current plan",
     "upgrade": "Upgrade to {plan}",
     "switchTo": "Switch to {plan}",
-    "renew": "Add 30 days",
     "talk": "Talk to us",
     "talkMessage": "Hello Vano! I'd like to talk about the {plan} plan for my shop {shop}.",
     "paymentsOff": "Online payments aren't available yet. Talk to us to change your plan.",
     "openPayment": "You have a payment in progress.",
     "openPaymentLink": "Continue",
-    "confirmTitle": "{plan} for 30 days",
-    "confirmAmount": "Amount: {amount}",
-    "confirmNewEnd": "Your plan will run until {date}.",
-    "confirmTrialKept": "You keep the rest of your free trial: the 30 days start after it.",
-    "confirmCredit": "Unused days on your current plan are converted into {plan} days.",
-    "confirmRenew": "30 days are added to your current plan.",
-    "continue": "Continue to payment",
-    "starting": "Starting…",
-    "freeTitle": "Switch to Free",
-    "freeBody": "Plans never renew by themselves. Your {plan} plan stays until {date}, then your shop moves to Free. Products over the Free limit are hidden, never deleted.",
-    "freeOk": "Got it",
     "historyTitle": "Payment history",
     "historyEmptyTitle": "No payments yet",
     "historyEmptyBody": "Your plan payments will show here.",
@@ -1844,7 +1834,58 @@
     "lockedStatsAction": "See plans",
     "keep": "Keep {plan}",
     "trialBadge": "Free trial: {count, plural, one {# day} other {# days}} left",
-    "planBadge": "{plan} plan"
+    "planBadge": "{plan} plan",
+    "extend": "Extend {plan}",
+    "bannerGrace": "{plan, select, trial {Your free trial has ended.} other {Your {name} plan has ended.}} {count, plural, =0 {Pay today to keep your {name} features.} one {Pay within # day to keep your {name} features.} other {Pay within # days to keep your {name} features.}} Then your shop moves to {free}.",
+    "graceUntil": "Ended on {end}. Your features stay until {date}, then your shop moves to {free}.",
+    "change": {
+      "upgradeTitle": "Upgrade to {plan}",
+      "renewTitle": "Extend {plan} for {days} days",
+      "renewBody": "Keep everything in {plan} for {days} more days.",
+      "benefit": {
+        "pro": "Sell more with every shop look, sales and your shop stats.",
+        "business": "Run a bigger shop with unlimited products, discount codes and your team."
+      },
+      "unlocksTitle": "What you unlock",
+      "includes": "{plan} already includes everything in {current}.",
+      "trialEnds": "Your free trial ends today and {plan} starts now.",
+      "price": "Price",
+      "pricePer": "{price} for {days} days",
+      "credit": "Credit for {count, plural, one {# paid {plan} day} other {# paid {plan} days}} left",
+      "starts": "Starts",
+      "today": "Today",
+      "added": "Added",
+      "length": "Length",
+      "days": "{count, plural, one {# day} other {# days}}",
+      "newEnd": "New end date",
+      "total": "You pay",
+      "reassurance": "No contract, cancel anytime. You keep your shop and all your products. Pay with M-Pesa.",
+      "pay": "Pay {amount} with M-Pesa",
+      "starting": "Starting…",
+      "notNow": "Not now",
+      "downgradeTitle": "Switch to {plan}?",
+      "keepShop": "You'll keep your shop and all your products.",
+      "nothingNow": "{amount} now",
+      "stays": "{plan} stays until",
+      "movesFree": "Your shop moves to {plan} on",
+      "downgradeFreeNote": "Nothing changes today and nothing is charged. {plan} runs until {date}, then your shop moves to {free} after {days, plural, one {# more day} other {# more days}}.",
+      "downgradePaidNote": "Nothing changes today and nothing is charged. {plan} runs until its end date, then your shop moves to {free}. Get {target} ({price} for {days} days) whenever you're ready.",
+      "pausesTitle": "What will pause",
+      "pauses": {
+        "nothing": "Nothing you use right now will pause.",
+        "sales": "{count, plural, one {# running sale stops} other {# running sales stop}} (normal prices come back)",
+        "discountCodes": "{count, plural, one {# discount code stops} other {# discount codes stop}} working",
+        "productsHidden": "{count, plural, one {# product is} other {# products are}} hidden from your shop (over the limit)",
+        "look": "Your shop look goes back to Classic",
+        "sections": "Your sections and layout go back to the simple grid",
+        "eventBanner": "Your event banner stops showing",
+        "promoBar": "Your Promo bar stops showing"
+      },
+      "comesBack": "Nothing is deleted. Everything comes back when you upgrade again.",
+      "keep": "Keep {plan}",
+      "switchTo": "Switch to {plan}",
+      "switchDone": "Done. Nothing changes until {date}: your {plan} plan runs until then."
+    }
   },
   "Checkout": {
     "title": "Checkout",
@@ -1877,7 +1918,8 @@
     "notFoundBody": "This payment doesn't exist or isn't yours.",
     "unavailableTitle": "Test payments are off",
     "unavailableBody": "The test checkout is turned off on this server.",
-    "backToBilling": "Back to my plan"
+    "backToBilling": "Back to my plan",
+    "credit": "Credit for your paid days left: −{amount}"
   },
   "AdminBilling": {
     "subscriptionsTitle": "Subscriptions",
@@ -2028,7 +2070,9 @@
       "plan": {
         "activated": "Your {plan} plan is active until {date}",
         "expired": "{trial, select, true {Your free trial ended} other {Your {plan} plan ended}}. Your shop is now on Free",
-        "endingSoon": "{trial, select, true {Your free trial} other {Your {plan} plan}} {days, plural, =0 {ends today} one {ends in # day} other {ends in # days}}"
+        "endingSoon": "{trial, select, true {Your free trial} other {Your {plan} plan}} {days, plural, =0 {ends today} one {ends in # day} other {ends in # days}}",
+        "inGrace": "{trial, select, true {Your free trial ended} other {Your {plan} plan ended}}. {days, plural, =0 {Pay today to keep it} one {Pay within # day to keep it} other {Pay within # days to keep it}}, then your shop moves to {free}",
+        "trialProOnly": "Your free trial includes {plan} features. {business} features like discount codes need the {business} plan. Your saved settings are kept"
       },
       "look": {
         "resetBanner": "An admin removed your shop banner’s photo or text, or your announcement bar. Reason: {reason}",
@@ -2518,7 +2562,7 @@
     "monthlyFreeHelp": "Free always costs 0.",
     "monthlyCustomHelp": "Leave empty for a custom price (\"Talk to us\").",
     "trialMonths": "Free trial (months)",
-    "trialHelp": "For new shops. Trials already running keep their end date.",
+    "trialHelp": "A free trial of this plan for new shops, with no payment method. Other plans have no trial ({business} is paid right away). Trials already running keep their end date.",
     "featuresTitle": "Features",
     "featuresHelp": "Switch a feature on or off, or set a limit. A plan always includes everything in the plans below it.",
     "feature": "Feature",
@@ -2584,7 +2628,9 @@
       "dataKept": "Nobody's data is deleted: products, photos and looks stay. A locked feature just stops working until the shop's plan includes it again.",
       "confirm": "Yes, save",
       "confirmReset": "Yes, reset"
-    }
+    },
+    "trialTagHelp": "Shops on the free trial get exactly the {plan} column. {business}-only features stay locked during the trial.",
+    "trialHeader": "{plan} (and free trial)"
   },
   "PlanExceptions": {
     "title": "Plan exceptions",

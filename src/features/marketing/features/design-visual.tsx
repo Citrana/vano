@@ -1,10 +1,17 @@
 import { CheckIcon } from "lucide-react"
-import { getTranslations } from "next-intl/server"
+import { getLocale, getTranslations } from "next-intl/server"
+import { lowestPlanFor, planNameIn } from "../../../../convex/lib/planCatalog"
 import { ThemePreviews } from "@/features/marketing/features/theme-previews"
+import { getPlanCatalog, getPlanTexts } from "@/features/marketing/pricing/data"
 
 /** The preset looks + what sellers can change. */
 export async function DesignVisual() {
   const t = await getTranslations("Features")
+  const locale = await getLocale()
+  const catalog = await getPlanCatalog()
+  const plans = await getPlanTexts(locale)
+  // The cheapest plan with every look (Pro today), from the plan config.
+  const looksPlan = planNameIn(catalog, lowestPlanFor(catalog, "allLooks") ?? catalog.trialPlan, locale)
   const available = [t("canShopName"), t("canLogo"), t("canDescription"), t("canColors"), t("canBanner")]
   return (
     <div className="flex flex-col gap-5">
@@ -19,7 +26,7 @@ export async function DesignVisual() {
             </li>
           ))}
         </ul>
-        <p className="text-sm text-muted-foreground">{t("canLooksNote")}</p>
+        <p className="text-sm text-muted-foreground">{t("canLooksNote", { plan: looksPlan, trial: plans.plan, free: plans.free })}</p>
       </div>
     </div>
   )

@@ -3,11 +3,17 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
+import { downgradeImpactOf } from "./lib/downgradeImpact";
 import { getEntitlements, shopProducts, visibleProductIds } from "./lib/entitlements";
 import { fail } from "./lib/errors";
+import { CODES_MAX } from "./lib/discountCodes/rules";
+import { lookRow } from "./lib/looks/store";
+import { SALES_MAX } from "./lib/sales/rules";
 import { currencyValidator } from "./lib/money";
-import { readPlanConfig } from "./lib/planConfig";
+import { activeExceptions, readPlanConfig } from "./lib/planConfig";
+import { applyExceptions, resolvePlanLimits } from "./lib/planFeatures";
 import { limitsValidator, toLimitsResult } from "./lib/planValidators";
+import { pricesOf, quotePurchase, subscriptionOf } from "./lib/subscriptions";
 import {
   PLAN_CURRENCY,
   paidPlanValidator,
@@ -40,6 +46,7 @@ const paymentRow = v.object({
   createdAt: v.number(),
   plan: planIdValidator,
   amountMinor: v.number(),
+  creditMinor: v.number(),
   currency: currencyValidator,
   status: paymentStatusValidator,
   provider: providerIdValidator,
@@ -54,6 +61,7 @@ function toRow(p: Doc<"payments">) {
     createdAt: p._creationTime,
     plan: p.plan,
     amountMinor: p.amountMinor,
+    creditMinor: p.creditMinor ?? 0,
     currency: p.currency,
     status: p.status,
     provider: p.provider,
@@ -87,6 +95,9 @@ export const mine = sellerQuery({
     status: subscriptionStatusValidator,
     periodStart: v.number(),
     periodEnd: v.union(v.number(), v.null()),
+    /** The paid days inside the period (for the upgrade credit preview). */
+    paidStart: v.union(v.number(), v.null()),
+    paidEnd: v.union(v.number(), v.null()),
     /** The resolved limits (plan config + exceptions), for `canShopDo` in the UI. */
     limits: limitsValidator,
     usage: v.object({ products: v.number(), overLimit: v.number(), pinned: v.number() }),
@@ -106,6 +117,8 @@ export const mine = sellerQuery({
       status,
       periodStart: state.periodStart,
       periodEnd: state.periodEnd,
+      paidStart: state.paidStart ?? null,
+      paidEnd: state.paidEnd ?? null,
       limits: toLimitsResult(limits),
       usage: {
         products: products.length,
@@ -160,8 +173,11 @@ export const payment = sellerQuery({
 
 /**
  * Starts paying for a plan. The amount comes from the plan config (the
- * admin "Plans & features" page); a plan hidden there can't be bought. An
- * open checkout for the same plan is reused; one for another plan is
+ * admin "Plans & features" page) and `quotePurchase`: full price, minus
+ * the credit for paid days left when moving up from a paid plan. A hidden
+ * plan can't be bought, and a downgrade is never charged (the current plan
+ * just runs to its end). An open checkout for the same plan and amount is
+ * reused; any other (another plan, or a credit that has changed since) is
  * cancelled first, so a shop has at most one open payment.
  */
 export const startCheckout = sellerMutation({
@@ -172,12 +188,14 @@ export const startCheckout = sellerMutation({
     const shop = await requireOwnShop(ctx);
     const provider = activeProvider();
     if (provider === null) fail("PAYMENTS_UNAVAILABLE");
-    const { plans } = await readPlanConfig(ctx);
-    const amountMinor = plans[plan].monthlyMinor;
-    if (!plans[plan].visible || amountMinor === null || amountMinor <= 0) fail("PLAN_INVALID");
+    const config = await readPlanConfig(ctx);
+    const price = config.plans[plan].monthlyMinor;
+    if (!config.plans[plan].visible || price === null || price <= 0) fail("PLAN_INVALID");
+    const quote = quotePurchase(await subscriptionOf(ctx, shop, config), plan, Date.now(), pricesOf(config));
+    if (quote.kind === "downgrade" || quote.amountMinor <= 0) fail("PLAN_INVALID");
 
     for (const open of await openPayments(ctx, shop._id)) {
-      if (open.plan === plan && open.provider === provider.id) return open._id;
+      if (open.plan === plan && open.provider === provider.id && open.amountMinor === quote.amountMinor) return open._id;
       await cancelOpenPayment(ctx, open);
     }
 
@@ -186,7 +204,8 @@ export const startCheckout = sellerMutation({
       shopName: shop.name,
       userId: ctx.user._id,
       plan,
-      amountMinor,
+      amountMinor: quote.amountMinor,
+      creditMinor: quote.creditMinor > 0 ? quote.creditMinor : undefined,
       currency: PLAN_CURRENCY,
       provider: provider.id,
       status: "created",
@@ -194,6 +213,49 @@ export const startCheckout = sellerMutation({
     await logPayment(ctx, (await ctx.db.get("payments", paymentId))!, "payment.started", ctx.user);
     await ctx.scheduler.runAfter(0, internal.payments.core.startWithProvider, { paymentId });
     return paymentId;
+  },
+});
+
+/**
+ * What would pause if the caller's shop moved to `plan` (the downgrade
+ * dialog): running sales, live discount codes, products over the new
+ * limit and the look parts the plan doesn't include, from the shop's real
+ * data. Nothing is deleted by a downgrade; this only explains it.
+ */
+export const downgradeImpact = sellerQuery({
+  permission: PERMISSION,
+  args: { plan: planIdValidator },
+  returns: v.object({
+    sales: v.number(),
+    discountCodes: v.number(),
+    productsHidden: v.number(),
+    look: v.boolean(),
+    sections: v.boolean(),
+    eventBanner: v.boolean(),
+    promoBar: v.boolean(),
+  }),
+  handler: async (ctx, { plan }) => {
+    const shop = await requireOwnShop(ctx);
+    const config = await readPlanConfig(ctx);
+    const { limits: current } = await getEntitlements(ctx, shop);
+    const target = applyExceptions(resolvePlanLimits(config, plan), await activeExceptions(ctx, shop._id));
+    const products = await shopProducts(ctx, shop._id);
+    const liveSales = await ctx.db
+      .query("sales")
+      .withIndex("by_shopId_and_live", (q) => q.eq("shopId", shop._id).eq("live", true))
+      .take(SALES_MAX);
+    const liveCodes = await ctx.db
+      .query("discountCodes")
+      .withIndex("by_shopId_and_live", (q) => q.eq("shopId", shop._id).eq("live", true))
+      .take(CODES_MAX);
+    return downgradeImpactOf({
+      current,
+      target,
+      liveSales: liveSales.length,
+      liveCodes: liveCodes.length,
+      visibleProducts: visibleProductIds(products, current).size,
+      published: (await lookRow(ctx, shop._id))?.published ?? null,
+    });
   },
 });
 

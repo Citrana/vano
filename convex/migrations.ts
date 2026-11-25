@@ -8,7 +8,9 @@ import { ensureBuiltInRoles } from "./lib/roles";
 import { presetLook } from "./lib/looks/presets";
 import type { PresetId } from "./lib/looks/validators";
 import { loggedValue } from "./lib/shopChanges";
-import { seedPlanConfig } from "./lib/planConfig";
+import { notify } from "./lib/notify";
+import { readPlanConfig, seedPlanConfig } from "./lib/planConfig";
+import { gainedFeatures } from "./lib/planFeatures";
 import { startTrial, subscriptionDoc } from "./lib/subscriptions";
 
 /**
@@ -46,6 +48,16 @@ import { startTrial, subscriptionDoc } from "./lib/subscriptions";
  *
  *   npx convex run migrations:plansV1
  *   npx convex run migrations:plansV1Status
+ *
+ *   npx convex run migrations:trialProOnlyV1
+ *   npx convex run migrations:trialProOnlyV1Status
+ *
+ * trialProOnlyV1: the free trial is Pro only (CLAUDE.md "Billing"). Trial
+ * shops already had Pro limits, so nothing about their plan changes:
+ * subscriptions, trial end dates and admin exceptions are never touched.
+ * Trial shops that have Business-only features turned on (an active shop
+ * exception for one, or saved discount codes) get one notification
+ * (`plan.trialProOnly`) explaining that those need Business.
  *
  * plansV1: stores the plan configuration seed (`planDefaults.ts`, the
  * plans as they were in code) in `planConfig`, so admins can edit it. An
@@ -394,6 +406,74 @@ export const plansV1Status = internalQuery({
   }),
   handler: async (ctx) => {
     const run = await findRun(ctx, PLANS_V1);
+    return { status: run?.status ?? ("not_started" as const), doneAt: run?.doneAt ?? null };
+  },
+});
+
+// ---------------------------------------------------------------------------
+// trialProOnlyV1: a note for trial shops using Business-only features.
+
+const TRIAL_PRO_ONLY_V1 = "trialProOnlyV1";
+
+export const trialProOnlyV1 = internalMutation({
+  args: {},
+  returns: v.union(v.literal("started"), v.literal("already_running"), v.literal("already_done")),
+  handler: async (ctx) => {
+    const run = await findRun(ctx, TRIAL_PRO_ONLY_V1);
+    if (run?.status === "done") return "already_done" as const;
+    if (run?.status === "running") return "already_running" as const;
+    await ctx.db.insert("migrations", { name: TRIAL_PRO_ONLY_V1, status: "running", startedAt: Date.now() });
+    await ctx.scheduler.runAfter(0, internal.migrations.trialProOnlyV1Step, { cursor: null });
+    return "started" as const;
+  },
+});
+
+export const trialProOnlyV1Step = internalMutation({
+  args: { cursor: v.union(v.string(), v.null()) },
+  returns: v.null(),
+  handler: async (ctx, { cursor }) => {
+    const businessOnly = new Set<string>(gainedFeatures(await readPlanConfig(ctx), "pro", "business"));
+    const page = await ctx.db
+      .query("subscriptions")
+      .withIndex("by_status_and_periodEnd", (q) => q.eq("status", "trialing"))
+      .paginate({ numItems: BATCH, cursor });
+    for (const sub of page.page) {
+      const shop = await ctx.db.get("shops", sub.shopId);
+      if (!shop) continue;
+      const exceptions = await ctx.db
+        .query("planExceptions")
+        .withIndex("by_shopId_and_active", (q) => q.eq("shopId", shop._id).eq("active", true))
+        .take(20);
+      const codes = await ctx.db
+        .query("discountCodes")
+        .withIndex("by_shopId", (q) => q.eq("shopId", shop._id))
+        .take(1);
+      const usesBusiness = codes.length > 0 || exceptions.some((e) => businessOnly.has(e.feature));
+      if (!usesBusiness) continue;
+      await notify(ctx, {
+        data: { type: "plan.trialProOnly" },
+        to: { userId: shop.ownerId },
+        dedupeKey: `plan.trialProOnly:${shop._id}`,
+      });
+    }
+    if (!page.isDone) {
+      await ctx.scheduler.runAfter(0, internal.migrations.trialProOnlyV1Step, { cursor: page.continueCursor });
+      return null;
+    }
+    const run = await findRun(ctx, TRIAL_PRO_ONLY_V1);
+    if (run) await ctx.db.patch("migrations", run._id, { status: "done", doneAt: Date.now() });
+    return null;
+  },
+});
+
+export const trialProOnlyV1Status = internalQuery({
+  args: {},
+  returns: v.object({
+    status: v.union(v.literal("not_started"), v.literal("running"), v.literal("done")),
+    doneAt: v.union(v.number(), v.null()),
+  }),
+  handler: async (ctx) => {
+    const run = await findRun(ctx, TRIAL_PRO_ONLY_V1);
     return { status: run?.status ?? ("not_started" as const), doneAt: run?.doneAt ?? null };
   },
 });

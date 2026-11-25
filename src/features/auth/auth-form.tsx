@@ -14,8 +14,11 @@ import { Input } from "@/components/ui/input"
 import { classifyAuthError } from "./auth-error"
 import { credentialsSchema, type Credentials } from "./schemas"
 
-/** Email + password form for both /login and /signup. */
-export function AuthForm({ flow }: { flow: "signIn" | "signUp" }) {
+/**
+ * Email + password form for both /login and /signup. `startPlan` (from
+ * "Get Business" on the pricing page) is passed on to onboarding.
+ */
+export function AuthForm({ flow, startPlan }: { flow: "signIn" | "signUp"; startPlan?: "business" }) {
   const t = useTranslations("Auth")
   const tv = useTranslations("Validation")
   const te = useTranslations("Errors")
@@ -35,7 +38,7 @@ export function AuthForm({ flow }: { flow: "signIn" | "signUp" }) {
       await signIn("password", { ...values, flow })
       // New accounts are always sellers. After a sign-in, the page's guest
       // gate sends admins to /admin and sellers to /dashboard.
-      if (isSignUp) router.replace("/onboarding")
+      if (isSignUp) router.replace(startPlan ? `/onboarding?plan=${startPlan}` : "/onboarding")
     } catch (error) {
       const result = classifyAuthError(error, flow)
       setServerError(

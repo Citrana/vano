@@ -6,6 +6,7 @@ import {
   FEATURE_KEYS,
   applyExceptions,
   featureValueProblem,
+  gainedFeatures,
   inheritedFrom,
   isLower,
   loweredFeatures,
@@ -151,5 +152,24 @@ describe("validation (shared by the admin form and the server)", () => {
   });
   test("every enforced flag is a real feature", () => {
     for (const f of FEATURE_FLAGS) expect(FEATURE_KEYS).toContain(f);
+  });
+});
+
+describe("the free trial is Pro only", () => {
+  test("Pro → Business gains exactly the Business-only features", () => {
+    expect(gainedFeatures(SEED, "pro", "business")).toEqual(
+      expect.arrayContaining(["discountCodes", "teamRoles", "orderTracking", "salesReports", "customDomain", "stockManagement"]),
+    );
+    expect(gainedFeatures(SEED, "pro", "business")).not.toContain("salesPromotions");
+    expect(gainedFeatures(SEED, "business", "pro")).toEqual([]);
+  });
+  test("the trial plan's limits never include a Business-only flag", () => {
+    const trial = resolvePlanLimits(SEED, "pro").features as readonly string[];
+    for (const key of gainedFeatures(SEED, "pro", "business")) expect(trial).not.toContain(key);
+  });
+  test("only the trial plan can have trial months", () => {
+    expect(planSettingsProblem("business", { ...SEED.plans.business, trialMonths: 2 })).toBe("trialMonths");
+    expect(planSettingsProblem("enterprise", { ...SEED.plans.enterprise, trialMonths: 1 })).toBe("trialMonths");
+    expect(planSettingsProblem("pro", SEED.plans.pro)).toBeNull();
   });
 });

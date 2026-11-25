@@ -173,6 +173,15 @@ export function inheritedFrom(config: PlanConfigData, key: FeatureKey, plan: Pla
   return null;
 }
 
+/**
+ * Features `to` gives more of than `from` (a flag on, a higher limit),
+ * inheritance included, in catalogue key order. E.g. `pro → business` =
+ * the Business-only features (which the Pro trial never includes).
+ */
+export function gainedFeatures(config: PlanConfigData, from: PlanId, to: PlanId): FeatureKey[] {
+  return FEATURE_KEYS.filter((key) => isLower(resolvedValue(config, key, to), resolvedValue(config, key, from)));
+}
+
 /** The cheapest plan that includes a flag (for "Available on <plan>"). */
 export function lowestPlanWith(config: PlanConfigData, key: FeatureKey): PlanId | null {
   return PLAN_IDS.find((id) => resolvedValue(config, key, id) === true) ?? null;

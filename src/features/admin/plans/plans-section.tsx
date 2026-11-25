@@ -7,10 +7,11 @@ import { useMemo } from "react"
 import { toast } from "sonner"
 import { api } from "../../../../convex/_generated/api"
 import { PLAN_AREAS } from "../../../../convex/lib/planFeatures"
-import { PLAN_IDS } from "../../../../convex/lib/plans"
+import { PLAN_IDS, TRIAL_PLAN } from "../../../../convex/lib/plans"
 import { PageTitle } from "@/components/shell/page-title"
 import { LoadingState } from "@/components/states/states"
 import { Button } from "@/components/ui/button"
+import { usePlanName } from "@/features/billing/use-plan-catalog"
 import { useErrorMessage } from "@/lib/use-error-message"
 import { TableBoundary } from "../data-table/data-table"
 import { DetailsDrawer } from "../data-table/details-drawer"
@@ -33,6 +34,7 @@ import { useAdminPlanConfig, useFeatureChange } from "./use-plan-config"
 export function PlansSection() {
   const t = useTranslations("AdminPlans")
   const ta = useTranslations("PlanAreas")
+  const planName = usePlanName()
   const format = useFormatter()
   const config = useAdminPlanConfig()
   const table = useTableState(PLAN_FEATURES_SPEC)
@@ -101,6 +103,7 @@ export function PlansSection() {
         <div className="flex flex-col gap-1">
           <h2 id="features-title" className="font-heading text-lg font-bold tracking-tight">{t("featuresTitle")}</h2>
           <p className="text-sm text-muted-foreground">{t("featuresHelp")}</p>
+          <p className="text-sm text-muted-foreground">{t("trialTagHelp", { plan: planName(TRIAL_PLAN), business: planName("business") })}</p>
         </div>
         <TableToolbar table={table} filters={filters} search={{ label: t("search"), placeholder: t("searchPlaceholder") }} />
         <TableBoundary>

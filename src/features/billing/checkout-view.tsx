@@ -75,6 +75,11 @@ function Summary({ payment }: { payment: Payment }) {
           {formatMoney(payment.amountMinor, payment.currency, locale)}
         </p>
       </div>
+      {payment.creditMinor > 0 ? (
+        <p className="text-sm text-muted-foreground">
+          {t("credit", { amount: formatMoney(payment.creditMinor, payment.currency, locale) })}
+        </p>
+      ) : null}
     </Card>
   )
 }

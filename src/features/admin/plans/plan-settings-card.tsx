@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input"
 import { RequiredFieldsHint } from "@/components/ui/required-fields-hint"
 import { MoneyInput } from "@/components/ui/money-input"
 import { Switch } from "@/components/ui/switch"
+import { usePlanName } from "@/features/billing/use-plan-catalog"
 import { useErrorMessage } from "@/lib/use-error-message"
 import { planFormValues, planSchema, toPlanSettings, type PlanFormValues } from "./schemas"
 
@@ -37,6 +38,7 @@ export function PlanSettingsCard({
   disabled: boolean
 }) {
   const t = useTranslations("AdminPlans")
+  const planName = usePlanName()
   const tc = useTranslations("Common")
   const updatePlan = useMutation(api.admin.plans.updatePlan)
   const errorMessage = useErrorMessage()
@@ -104,7 +106,7 @@ export function PlanSettingsCard({
             {(p) => <MoneyInput {...p} currency={PLAN_CURRENCY} disabled={plan === "free"} {...form.register("yearly")} />}
           </Field>
           {plan === TRIAL_PLAN ? (
-            <Field id={id("trial")} label={t("trialMonths")} help={t("trialHelp")} error={errors.trialMonths?.message}>
+            <Field id={id("trial")} label={t("trialMonths")} help={t("trialHelp", { business: planName("business") })} error={errors.trialMonths?.message}>
               {(p) => <Input {...p} inputMode="numeric" {...form.register("trialMonths")} />}
             </Field>
           ) : null}

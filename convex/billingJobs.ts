@@ -1,13 +1,15 @@
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { internalMutation } from "./_generated/server";
+import { GRACE_DAYS, GRACE_MS } from "./lib/plans";
 import { expireIfDue, stateOf, writeSubscription } from "./lib/subscriptions";
 
 /**
  * Scheduled billing work (convex/crons.ts, CLAUDE.md "Billing").
  *
- * expireDue: trials and paid plans whose period has ended move to Free
- * (trialing → free, active → expired). Data is never touched: limits are
+ * expireDue: trials and paid plans whose period ended more than
+ * GRACE_DAYS ago move to Free (trialing → free, active → expired). During
+ * the grace days the shop keeps its plan (time to pay). Data is never touched: limits are
  * computed from the plan, so extra products are simply hidden. Processes
  * one batch per run and reschedules itself while more are due.
  */
@@ -25,7 +27,7 @@ export const expireDue = internalMutation({
       const due = await ctx.db
         .query("subscriptions")
         .withIndex("by_status_and_periodEnd", (q) =>
-          q.eq("status", status).gte("periodEnd", 0).lte("periodEnd", now),
+          q.eq("status", status).gte("periodEnd", 0).lte("periodEnd", now - GRACE_MS),
         )
         .take(BATCH - processed);
       for (const sub of due) {
@@ -42,7 +44,7 @@ export const expireDue = internalMutation({
           source: "system",
           action: sub.status === "trialing" ? "subscription.trialEnded" : "subscription.expired",
           actor: null,
-          details: { previousPlan: sub.plan },
+          details: { previousPlan: sub.plan, graceDays: GRACE_DAYS },
         });
       }
       if (processed >= BATCH) break;

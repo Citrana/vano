@@ -15,11 +15,21 @@ import { NoAccess } from "./no-access"
  * proxy.ts. The real boundary is server-side, in every Convex function.
  * The rules live in `sellerGateTarget` (gate-target.ts).
  */
-export function SellerGate({ need, children }: { need: GateNeed; children: ReactNode }) {
+export function SellerGate({
+  need,
+  doneHref,
+  children,
+}: {
+  need: GateNeed
+  /** Onboarding: where a seller who now has a shop goes (default: the dashboard). */
+  doneHref?: string
+  children: ReactNode
+}) {
   const { isLoading, isAuthenticated } = useConvexAuth()
   const viewer = useQuery(api.users.viewer, isAuthenticated ? {} : "skip")
   const router = useRouter()
-  const target = sellerGateTarget({ need, isLoading, isAuthenticated, viewer })
+  const gate = sellerGateTarget({ need, isLoading, isAuthenticated, viewer })
+  const target = need === "noShop" && gate === "/dashboard" && doneHref ? doneHref : gate
 
   useEffect(() => {
     if (target.startsWith("/")) router.replace(target)

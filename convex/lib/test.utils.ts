@@ -161,6 +161,10 @@ export async function setSubscription(
     plan: "free" | "pro" | "business" | "enterprise";
     status: "trialing" | "active" | "expired" | "free";
     periodEnd?: number;
+    /** The paid days inside the period (the upgrade credit counts only these). */
+    paidStart?: number;
+    paidEnd?: number;
+    source?: "trial" | "payment" | "admin" | "system";
   },
 ): Promise<void> {
   await t.run(async (ctx) => {
@@ -173,6 +177,9 @@ export async function setSubscription(
       plan: state.plan,
       status: state.status,
       periodEnd: state.periodEnd,
+      paidStart: state.paidStart,
+      paidEnd: state.paidEnd,
+      ...(state.source ? { source: state.source } : {}),
     });
   });
 }

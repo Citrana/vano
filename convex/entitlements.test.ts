@@ -77,12 +77,20 @@ describe("products under plan limits", () => {
     await expect(me.mutation(api.products.create, await productArgs(t))).resolves.toBeTruthy();
   });
 
-  test("a period past its end counts as Free before the expiry job runs", async () => {
+  test("a period past its end and its grace days counts as Free before the expiry job runs", async () => {
     const t = newTest();
     const { me, shopId } = await freeShop(t);
-    await setSubscription(t, shopId, { plan: "pro", status: "trialing", periodEnd: Date.now() - 1000 });
+    await setSubscription(t, shopId, { plan: "pro", status: "trialing", periodEnd: Date.now() - 3 * 86_400_000 - 1000 });
     const four = await Promise.all([1, 2, 3, 4].map(() => storeFile(t)));
     await expect(me.mutation(api.products.create, await productArgs(t, { imageIds: four }))).rejects.toThrow(/PLAN_LIMIT_PHOTOS/);
+  });
+
+  test("during the grace days the shop keeps its plan", async () => {
+    const t = newTest();
+    const { me, shopId } = await freeShop(t);
+    await setSubscription(t, shopId, { plan: "pro", status: "trialing", periodEnd: Date.now() - 86_400_000 });
+    const four = await Promise.all([1, 2, 3, 4].map(() => storeFile(t)));
+    await expect(me.mutation(api.products.create, await productArgs(t, { imageIds: four }))).resolves.toBeDefined();
   });
 
   test("Free: 3 photos on new products; an over-limit product keeps its photos but gains none", async () => {

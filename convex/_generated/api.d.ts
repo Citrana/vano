@@ -47,6 +47,7 @@ import type * as lib_discountCodes_code from "../lib/discountCodes/code.js";
 import type * as lib_discountCodes_rules from "../lib/discountCodes/rules.js";
 import type * as lib_discountCodes_store from "../lib/discountCodes/store.js";
 import type * as lib_discountCodes_validators from "../lib/discountCodes/validators.js";
+import type * as lib_downgradeImpact from "../lib/downgradeImpact.js";
 import type * as lib_entitlements from "../lib/entitlements.js";
 import type * as lib_errors from "../lib/errors.js";
 import type * as lib_guards from "../lib/guards.js";
@@ -176,6 +177,7 @@ declare const fullApi: ApiFromModules<{
   "lib/discountCodes/rules": typeof lib_discountCodes_rules;
   "lib/discountCodes/store": typeof lib_discountCodes_store;
   "lib/discountCodes/validators": typeof lib_discountCodes_validators;
+  "lib/downgradeImpact": typeof lib_downgradeImpact;
   "lib/entitlements": typeof lib_entitlements;
   "lib/errors": typeof lib_errors;
   "lib/guards": typeof lib_guards;

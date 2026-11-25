@@ -89,6 +89,17 @@ const planEndingSoon = v.object({
   periodEnd: v.number(),
 });
 
+/** The trial / plan ended; the shop keeps it until `graceEnd`, then moves to Free. */
+const planInGrace = v.object({
+  type: v.literal("plan.inGrace"),
+  plan: planIdValidator,
+  trial: v.boolean(),
+  graceEnd: v.number(),
+});
+
+/** One-time note (migrations:trialProOnlyV1): the free trial includes Pro features only. */
+const planTrialProOnly = v.object({ type: v.literal("plan.trialProOnly") });
+
 /** Daily summary for billing admins. `day` is the UTC day it was counted. */
 const adminEndingSoon = v.object({
   type: v.literal("admin.endingSoon"),
@@ -146,6 +157,8 @@ export const notificationDataValidator = v.union(
   planActivated,
   planExpired,
   planEndingSoon,
+  planInGrace,
+  planTrialProOnly,
   adminEndingSoon,
   lookReset,
   saleStarted,
@@ -178,6 +191,8 @@ export const NOTIFICATION_TYPES: Record<NotificationType, TypeInfo> = {
   "plan.activated": { category: "billing", audience: "user" },
   "plan.expired": { category: "billing", audience: "user" },
   "plan.endingSoon": { category: "billing", audience: "user" },
+  "plan.inGrace": { category: "billing", audience: "user" },
+  "plan.trialProOnly": { category: "billing", audience: "user" },
   "admin.endingSoon": { category: "billing", audience: "billing.view" },
   "look.reset": { category: "shop", audience: "user" },
   "sale.started": { category: "shop", audience: "user" },
@@ -209,6 +224,8 @@ export function notificationHref(data: NotificationData): string {
     case "plan.activated":
     case "plan.expired":
     case "plan.endingSoon":
+    case "plan.inGrace":
+    case "plan.trialProOnly":
       return "/dashboard/billing";
     case "look.reset":
       return "/dashboard/look";

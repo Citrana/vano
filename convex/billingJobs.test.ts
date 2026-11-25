@@ -11,22 +11,28 @@ const subOf = (t: T, shopId: Id<"shops">) =>
   t.run((ctx) => ctx.db.query("subscriptions").withIndex("by_shopId", (q) => q.eq("shopId", shopId)).unique());
 const logs = (t: T) => t.run((ctx) => ctx.db.query("auditLogs").collect());
 
+const GRACE = 3 * DAY;
+
 describe("billingJobs.expireDue", () => {
-  test("ended trials move to free, ended paid plans to expired; running ones stay", async () => {
+  test("trials and paid plans move to Free once the grace days are over; others stay", async () => {
     const t = newTest();
     const trial = await sellerWithShop(t, "a@x.com", { slug: "shop-a" });
     const paid = await sellerWithShop(t, "b@x.com", { slug: "shop-b" });
     const running = await sellerWithShop(t, "c@x.com", { slug: "shop-c" });
+    const grace = await sellerWithShop(t, "d@x.com", { slug: "shop-d" });
     const now = Date.now();
-    await setSubscription(t, trial.shopId, { plan: "pro", status: "trialing", periodEnd: now - 1 });
-    await setSubscription(t, paid.shopId, { plan: "business", status: "active", periodEnd: now - DAY });
+    await setSubscription(t, trial.shopId, { plan: "pro", status: "trialing", periodEnd: now - GRACE - 1 });
+    await setSubscription(t, paid.shopId, { plan: "business", status: "active", periodEnd: now - GRACE - DAY });
     await setSubscription(t, running.shopId, { plan: "pro", status: "active", periodEnd: now + DAY });
+    // Ended two days ago: still in the grace days, keeps Business.
+    await setSubscription(t, grace.shopId, { plan: "business", status: "active", periodEnd: now - 2 * DAY });
 
     expect(await t.mutation(internal.billingJobs.expireDue, {})).toBe(2);
     expect(await subOf(t, trial.shopId)).toMatchObject({ plan: "free", status: "free", source: "system" });
     expect((await subOf(t, trial.shopId))?.periodEnd).toBeUndefined();
     expect(await subOf(t, paid.shopId)).toMatchObject({ plan: "free", status: "expired" });
     expect(await subOf(t, running.shopId)).toMatchObject({ plan: "pro", status: "active" });
+    expect(await subOf(t, grace.shopId)).toMatchObject({ plan: "business", status: "active" });
 
     const entries = await logs(t);
     expect(entries.map((e) => [e.action, e.actorEmail, e.details?.previousPlan]).sort()).toEqual([
@@ -38,15 +44,19 @@ describe("billingJobs.expireDue", () => {
     expect(await logs(t)).toHaveLength(2);
   });
 
-  test("a new shop's trial ends after two months", async () => {
+  test("a new shop's trial ends after two months, then 3 grace days", async () => {
     const t = newTest();
     vi.setSystemTime(new Date("2026-01-10T12:00:00Z"));
     const { shopId } = await sellerWithShop(t);
-    vi.setSystemTime(new Date("2026-03-10T11:00:00Z"));
-    expect(await t.mutation(internal.billingJobs.expireDue, {})).toBe(0);
     vi.setSystemTime(new Date("2026-03-10T12:00:00Z"));
+    expect(await t.mutation(internal.billingJobs.expireDue, {})).toBe(0);
+    vi.setSystemTime(new Date("2026-03-13T11:00:00Z"));
+    expect(await t.mutation(internal.billingJobs.expireDue, {})).toBe(0);
+    expect((await subOf(t, shopId))?.status).toBe("trialing");
+    vi.setSystemTime(new Date("2026-03-13T12:00:00Z"));
     expect(await t.mutation(internal.billingJobs.expireDue, {})).toBe(1);
-    expect((await subOf(t, shopId))?.status).toBe("free");
+    // Free starts when the grace days end; data is never touched.
+    expect(await subOf(t, shopId)).toMatchObject({ status: "free", periodStart: Date.parse("2026-03-13T12:00:00Z") });
   });
 });
 

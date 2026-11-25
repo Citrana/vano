@@ -9,7 +9,7 @@ import {
   type FeatureValue,
   type PlanConfigData,
 } from "../../../../convex/lib/planFeatures"
-import { PLAN_IDS, type PlanId } from "../../../../convex/lib/plans"
+import { PLAN_IDS, TRIAL_PLAN, type PlanId } from "../../../../convex/lib/plans"
 import { Badge } from "@/components/ui/badge"
 import { usePlanName } from "@/features/billing/use-plan-catalog"
 import { DataTable } from "../data-table/data-table"
@@ -76,7 +76,8 @@ export function FeaturesTable({
     ...PLAN_IDS.map(
       (plan): Column<Row> => ({
         id: plan,
-        header: planName(plan),
+        // Trial shops get exactly the trial plan's column (Pro), never more.
+        header: plan === TRIAL_PLAN ? t("trialHeader", { plan: planName(plan) }) : planName(plan),
         cell: (r) => (
           <FeatureValueControl
             config={config}

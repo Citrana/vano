@@ -34,6 +34,8 @@ const ICONS: Record<NotificationType, { icon: LucideIcon; tone: string }> = {
   "plan.activated": { icon: SparklesIcon, tone: "text-success" },
   "plan.expired": { icon: CreditCardIcon, tone: "text-muted-foreground" },
   "plan.endingSoon": { icon: ClockIcon, tone: "text-muted-foreground" },
+  "plan.inGrace": { icon: ClockIcon, tone: "text-muted-foreground" },
+  "plan.trialProOnly": { icon: CreditCardIcon, tone: "text-muted-foreground" },
   "admin.endingSoon": { icon: ClockIcon, tone: "text-muted-foreground" },
   "look.reset": { icon: PaletteIcon, tone: "text-destructive" },
   "sale.started": { icon: TagIcon, tone: "text-success" },

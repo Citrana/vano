@@ -67,6 +67,11 @@ export async function PlanCard({ plan, locale }: { plan: Plan; locale: string })
             <MessageCircleIcon aria-hidden />
             {t("ctaTalk")}
           </a>
+        ) : plan.cta === "buy" ? (
+          <div className="flex flex-col gap-2">
+            <OpenShopCta variant="outline" plan={plan.id === "business" ? "business" : undefined} label={t("ctaBuy", { plan: plan.name })} className="w-full" />
+            <p className="text-center text-sm text-muted-foreground">{t("buyNote")}</p>
+          </div>
         ) : (
           <OpenShopCta
             variant={highlight ? "default" : "outline"}
