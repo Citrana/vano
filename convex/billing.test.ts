@@ -3,7 +3,7 @@ import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { DAY_MS } from "./lib/plans";
 import { DEFAULT_PLAN_CONFIG } from "./lib/planDefaults";
-import { as, builtInRoles, insertUser, insertUserWithRole, newTest, sellerWithShop, setSubscription, type T } from "./lib/test.utils";
+import { as, builtInRoles, insertProducts, insertUser, insertUserWithRole, newTest, sellerWithShop, setSubscription, type T } from "./lib/test.utils";
 import { mockEvent, mockRef } from "./payments/mock";
 
 beforeEach(() => {
@@ -94,6 +94,125 @@ describe("startCheckout", () => {
     const { userId, shopId } = await sellerWithShop(t);
     await t.run((ctx) => ctx.db.patch("shops", shopId, { status: "suspended" }));
     await expect(as(t, userId).mutation(api.billing.startCheckout, { plan: "pro" })).rejects.toThrow(/SHOP_SUSPENDED/);
+  });
+});
+
+describe("plan changes: amounts and new periods", () => {
+  const pay = async (t: T, me: ReturnType<typeof as>, plan: "pro" | "business") => {
+    const paymentId = await me.mutation(api.billing.startCheckout, { plan });
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
+    return paymentId;
+  };
+
+  test("trial → Business: full 1,000, the trial ends, Business today + 30 days", async () => {
+    const t = newTest();
+    const seller = await sellerWithShop(t);
+    const me = as(t, seller.userId);
+    const paymentId = await pay(t, me, "business");
+    expect(await paymentOf(t, paymentId)).toMatchObject({ amountMinor: 100000 });
+    expect((await paymentOf(t, paymentId))?.creditMinor).toBeUndefined();
+    await me.mutation(api.billing.mockSimulate, { paymentId, outcome: "succeeded" });
+    expect(await subOf(t, seller.shopId)).toMatchObject({
+      plan: "business",
+      status: "active",
+      periodStart: Date.now(),
+      periodEnd: Date.now() + 30 * DAY_MS,
+      paidStart: Date.now(),
+      paidEnd: Date.now() + 30 * DAY_MS,
+    });
+  });
+
+  test("trial → Pro: 299, the 30 paid days start when the trial ends", async () => {
+    const t = newTest();
+    const seller = await sellerWithShop(t);
+    const trialEnd = (await subOf(t, seller.shopId))!.periodEnd!;
+    const me = as(t, seller.userId);
+    const paymentId = await pay(t, me, "pro");
+    expect(await paymentOf(t, paymentId)).toMatchObject({ amountMinor: 29900 });
+    await me.mutation(api.billing.mockSimulate, { paymentId, outcome: "succeeded" });
+    expect(await subOf(t, seller.shopId)).toMatchObject({
+      plan: "pro",
+      status: "active",
+      periodEnd: trialEnd + 30 * DAY_MS,
+      paidStart: trialEnd,
+      paidEnd: trialEnd + 30 * DAY_MS,
+    });
+  });
+
+  test("paid Pro → Business with 10 paid days left: credit 100, pay 900, Business today + 30", async () => {
+    const t = newTest();
+    const seller = await sellerWithShop(t);
+    const end = Date.now() + 10 * DAY_MS;
+    await setSubscription(t, seller.shopId, { plan: "pro", status: "active", periodEnd: end, paidStart: end - 30 * DAY_MS, paidEnd: end, source: "payment" });
+    const me = as(t, seller.userId);
+    const paymentId = await pay(t, me, "business");
+    expect(await paymentOf(t, paymentId)).toMatchObject({ amountMinor: 90000, creditMinor: 10000 });
+    expect(await me.query(api.billing.payment, { paymentId })).toMatchObject({ amountMinor: 90000, creditMinor: 10000 });
+    await me.mutation(api.billing.mockSimulate, { paymentId, outcome: "succeeded" });
+    expect(await subOf(t, seller.shopId)).toMatchObject({ plan: "business", periodEnd: Date.now() + 30 * DAY_MS });
+  });
+
+  test("admin-granted Pro days give no credit", async () => {
+    const t = newTest();
+    const seller = await sellerWithShop(t);
+    await setSubscription(t, seller.shopId, { plan: "pro", status: "active", periodEnd: Date.now() + 10 * DAY_MS, source: "admin" });
+    const paymentId = await pay(t, as(t, seller.userId), "business");
+    expect(await paymentOf(t, paymentId)).toMatchObject({ amountMinor: 100000 });
+  });
+
+  test("an open checkout whose credit changed since is replaced at today's amount", async () => {
+    const t = newTest();
+    const seller = await sellerWithShop(t);
+    const end = Date.now() + 10 * DAY_MS;
+    await setSubscription(t, seller.shopId, { plan: "pro", status: "active", periodEnd: end, paidStart: end - 30 * DAY_MS, paidEnd: end, source: "payment" });
+    const me = as(t, seller.userId);
+    const first = await pay(t, me, "business");
+    expect(await pay(t, me, "business")).toBe(first);
+    vi.advanceTimersByTime(3 * DAY_MS);
+    const second = await pay(t, me, "business");
+    expect(second).not.toBe(first);
+    expect((await paymentOf(t, first))?.status).toBe("cancelled");
+    // 7 paid days left: round(299 × 7 / 30) = 70.
+    expect(await paymentOf(t, second)).toMatchObject({ amountMinor: 93000, creditMinor: 7000 });
+  });
+
+  test("a downgrade is never charged (the current plan runs to its end)", async () => {
+    const t = newTest();
+    const seller = await sellerWithShop(t);
+    await setSubscription(t, seller.shopId, { plan: "business", status: "active", periodEnd: Date.now() + 10 * DAY_MS });
+    await expect(as(t, seller.userId).mutation(api.billing.startCheckout, { plan: "pro" })).rejects.toThrow(/PLAN_INVALID/);
+  });
+
+  test("renewing during the grace days adds 30 days after the old end", async () => {
+    const t = newTest();
+    const seller = await sellerWithShop(t);
+    const end = Date.now() - DAY_MS;
+    await setSubscription(t, seller.shopId, { plan: "pro", status: "active", periodEnd: end });
+    const me = as(t, seller.userId);
+    expect((await me.query(api.billing.mine, {})).effectivePlan).toBe("pro");
+    const paymentId = await pay(t, me, "pro");
+    await me.mutation(api.billing.mockSimulate, { paymentId, outcome: "succeeded" });
+    expect((await subOf(t, seller.shopId))!.periodEnd).toBe(end + 30 * DAY_MS);
+  });
+});
+
+describe("downgradeImpact", () => {
+  test("lists what would pause from the shop's real data; nothing is changed", async () => {
+    const t = newTest();
+    const seller = await sellerWithShop(t);
+    await setSubscription(t, seller.shopId, { plan: "business", status: "active", periodEnd: Date.now() + 10 * DAY_MS });
+    await insertProducts(t, seller.shopId, 12);
+    const me = as(t, seller.userId);
+    expect(await me.query(api.billing.downgradeImpact, { plan: "free" })).toMatchObject({ productsHidden: 2, sales: 0, discountCodes: 0, look: false });
+    expect(await me.query(api.billing.downgradeImpact, { plan: "pro" })).toMatchObject({ productsHidden: 0 });
+    expect(await subOf(t, seller.shopId)).toMatchObject({ plan: "business", status: "active" });
+  });
+
+  test("own shop only; signed-out callers are refused", async () => {
+    const t = newTest();
+    await expect(t.query(api.billing.downgradeImpact, { plan: "free" })).rejects.toThrow(/NOT_AUTHENTICATED/);
+    const noShop = await insertUser(t, "noshop@x.com");
+    await expect(as(t, noShop).query(api.billing.downgradeImpact, { plan: "free" })).rejects.toThrow(/NOT_FOUND|NO_SHOP/);
   });
 });
 
