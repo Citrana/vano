@@ -592,6 +592,18 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   phones need `shops.viewCustomers` and a reason, never on their own
   shop, through the `admin/salesRecords.revealCustomers` mutation, which
   logs `salesRecord.customersViewed` in the same transaction.
+- **Reports** (`/dashboard/reports`, `convex/reports.ts`, Business via
+  `salesReports`): one month ("YYYY-MM") in the shop's time zone — a day
+  range on each sale's stored `day`, so zone maths is never redone. Rules
+  only in `convex/lib/salesRecords/report.ts` (`buildReport`, `change`,
+  `monthRange`, `previousMonth`, `currentMonth`): confirmed sales only,
+  from the snapshot, compared with the previous month. WhatsApp taps come
+  from `shopDailyStats` (UTC days) and are shown as taps, never revenue.
+  The CSV reuses `salesRecords.listMine` (`src/features/reports/csv.ts`);
+  Print shows a print-only summary (`print:` + `data-print-hide` on the
+  seller shell). `reportJobs.monthly` (daily cron at a fixed UTC hour)
+  sends `report.ready` on each shop's local 1st, only with the plan and
+  at least one confirmed sale, deduped per shop and month.
 - "Mark as sold" is one dialog (`RecordSaleDialog`) opened from the
   product list menu, the product page and the Sales page ("Record a
   sale" → `PickProductDialog`). The Sales page keeps its filters in the
@@ -709,6 +721,10 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   headline. Selected chips / toggles use `chip-selected` (ink), badges
   plum. Button fills use `--coral-strong` and WhatsApp `--whatsapp` so
   white text passes WCAG AA; plain `--coral` text only at >= 24px.
+- **Charts** (seller Reports): one hue, `--chart` (`bg-chart`, checked
+  for 3:1 on cards), thin bars with 4px rounded ends on the baseline, a
+  hidden table with the same numbers, growth only under `motion-safe:`.
+  Number tiles use the shared `StatTile` (`src/components/stats/`).
 - **Surfaces**: one radius scale (`rounded-sm` 6px tags/badges,
   `rounded-md` 10px buttons/inputs, `rounded-lg` 12px tiles, `rounded-xl`
   16px cards; `rounded-full` only for chips, avatars, dots, switches, the
