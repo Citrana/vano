@@ -1535,12 +1535,12 @@
   },
   "Home": {
     "metaTitle": "Vano · Créez votre boutique, partagez un lien, recevez vos commandes sur WhatsApp",
-    "metaDescription": "Choisissez vos couleurs et votre style, ajoutez vos produits et partagez un seul lien. Vos clients commandent directement sur votre WhatsApp. 2 mois offerts, sans moyen de paiement.",
+    "metaDescription": "Choisissez vos couleurs et votre style, ajoutez vos produits et partagez un seul lien. Vos clients commandent directement sur votre WhatsApp. {months, plural, one {# mois} other {# mois}} offerts sur {plan}, sans moyen de paiement.",
     "badge": "Conçu pour les vendeurs de mode",
     "heroTitle": "Créez votre boutique. Partagez un lien. Recevez des <hl>commandes</hl>.",
     "heroSubtitle": "Choisissez vos couleurs et votre style, ajoutez vos produits et partagez un seul lien. Vos clients commandent directement sur votre WhatsApp.",
     "seeDemo": "Voir une boutique démo",
-    "trustTrial": "{months, plural, one {# mois offert} other {# mois offerts}}",
+    "trustTrial": "{months, plural, one {# mois offert} other {# mois offerts}} sur {plan}",
     "trustNoPayment": "Aucun moyen de paiement requis",
     "trustFast": "Prête en 2 minutes",
     "mockupLabel": "Exemple de boutique Vano sur un téléphone, qui change de style",
@@ -1559,7 +1559,7 @@
     "chatTime": "10:24",
     "linkCardLabel": "Le lien de votre boutique",
     "copyLink": "Copier le lien",
-    "pricingTitle": "Gratuit pendant {months, plural, one {# mois} other {# mois}}, puis à partir de {price}/mois",
+    "pricingTitle": "{months, plural, one {# mois offert} other {# mois offerts}} sur {plan}, puis à partir de {price}/mois",
     "cancelAnytime": "Résiliable à tout moment",
     "pricingLink": "Voir les tarifs",
     "whyHeading": "Pensé pour vendre sur WhatsApp",
@@ -1607,7 +1607,7 @@
     "canDescription": "Description",
     "canColors": "Couleurs et style",
     "canBanner": "Bannière",
-    "canLooksNote": "Les styles, couleurs et la bannière sont inclus dans Pro et Business (et l'essai gratuit). Les boutiques gratuites ont le style Classique.",
+    "canLooksNote": "Les styles, couleurs et la bannière sont inclus dans Pro et Business (et l'essai gratuit Pro). Les boutiques gratuites ont le style Classique.",
     "whatsappDetail": "Chaque fiche produit a un bouton de commande. La discussion s'ouvre avec l'article, la taille et le prix déjà écrits pour le client : il ne vous reste qu'à répondre.",
     "whatsappBullet1": "Article, taille et prix écrits pour eux",
     "whatsappBullet2": "Vous convenez de la livraison et du paiement dans la discussion",
@@ -1640,7 +1640,7 @@
     "noHosting": "Pas d'hébergement",
     "noCode": "Pas de code",
     "readyFirstProduct": "Prête dès votre premier produit",
-    "ctaPricing": "Gratuit pendant {months, plural, one {# mois} other {# mois}}",
+    "ctaPricing": "{months, plural, one {# mois offert} other {# mois offerts}} sur {plan}",
     "ctaDemo": "Voir en action",
     "groupSetUp": "Créez votre boutique",
     "groupSell": "Vendez sur WhatsApp",
@@ -1653,10 +1653,10 @@
   },
   "Pricing": {
     "metaTitle": "Tarifs · Vano",
-    "metaDescription": "Des tarifs simples en KSh. Commencez gratuitement pendant 2 mois avec toutes les fonctions Pro. Aucun moyen de paiement requis, résiliable à tout moment.",
+    "metaDescription": "Des tarifs simples en KSh. {months, plural, one {# mois} other {# mois}} offerts sur {plan}, sans moyen de paiement. Business se paie quand vous le choisissez. Résiliable à tout moment.",
     "eyebrow": "Tarifs",
-    "title": "Des tarifs simples. Gratuit pendant {months, plural, one {# mois} other {# mois}}.",
-    "subtitle": "Aucun moyen de paiement pour commencer. Résiliable à tout moment.",
+    "title": "Des tarifs simples. {months, plural, one {# mois offert} other {# mois offerts}} sur {plan}.",
+    "subtitle": "Aucun moyen de paiement pour l'essai {plan}. Résiliable à tout moment.",
     "perMonth": "/mois",
     "customPrice": "Sur mesure",
     "mostPopular": "Le plus choisi",
@@ -1695,13 +1695,15 @@
     "faqTitle": "Questions sur les tarifs",
     "faq": {
       "q1": "Que se passe-t-il après l'essai ?",
-      "a1": "Après {months, plural, one {votre mois gratuit} other {vos # mois gratuits}}, vous choisissez une formule. Sinon, votre boutique passe en {free} et reste en ligne avec jusqu'à {count} produits.",
+      "a1": "{months, plural, one {Votre premier mois} other {Vos # premiers mois}} sur {plan} sont gratuits. Ensuite, vous choisissez une formule. Sinon, votre boutique passe en {free} et reste en ligne avec jusqu'à {count} produits.",
       "q2": "Puis-je changer de formule ?",
-      "a2": "Oui. Vous pourrez passer à une formule supérieure ou inférieure à tout moment, depuis votre tableau de bord.",
+      "a2": "Oui, depuis votre tableau de bord. L'essai gratuit concerne {plan} uniquement. {business} n'a pas d'essai : le choisir met fin à votre essai et démarre {business} le jour même. Descendre de formule ne supprime jamais rien.",
       "q3": "Comment payer ?",
-      "a3": "Rien à payer pendant l'essai. Les moyens de paiement seront annoncés avant la fin de l'essai ; M-Pesa est prévu."
+      "a3": "Avec M-Pesa, depuis votre tableau de bord. Vous payez 30 jours à la fois et rien ne se renouvelle tout seul."
     },
-    "everythingIn": "Tout ce qu'inclut {plan}"
+    "everythingIn": "Tout ce qu'inclut {plan}",
+    "ctaBuy": "Choisir {plan}",
+    "buyNote": "Payez quand vous êtes prêt. Résiliable à tout moment."
   },
   "Help": {
     "metaTitle": "Aide · Vano",
@@ -1759,11 +1761,11 @@
       "pricing": {
         "title": "Tarifs et essai",
         "q1": "Vano est-il gratuit ?",
-        "a1": "Vos 2 premiers mois sont gratuits avec toutes les fonctions Pro, sans moyen de paiement. Ensuite, vous choisissez une formule ou restez sur Gratuit.",
+        "a1": "{months, plural, one {Votre premier mois est gratuit} other {Vos # premiers mois sont gratuits}} sur {plan}, sans moyen de paiement. {business} n'a pas d'essai gratuit : vous payez quand vous le choisissez. Après l'essai, vous pouvez choisir une formule ou rester en {free}.",
         "q2": "Que comprennent les formules ?",
-        "a2": "Gratuit : jusqu'à 10 produits. Pro : jusqu'à 50 produits, toutes les options de style et les statistiques. Business : produits illimités et comptes d'équipe. Détails sur la page Tarifs.",
+        "a2": "{free} vous permet de commencer avec quelques produits. {plan} ajoute plus de produits, tous les styles de boutique, les soldes et les statistiques. {business} ajoute les produits illimités, les codes promo et les comptes d'équipe. Consultez la page Tarifs pour les limites exactes.",
         "q3": "Comment paierai-je une formule ?",
-        "a3": "Les moyens de paiement seront annoncés avant la fin de votre essai. M-Pesa est prévu."
+        "a3": "Avec M-Pesa, depuis votre tableau de bord. Vous payez 30 jours à la fois ; rien ne se renouvelle tout seul."
       },
       "account": {
         "title": "Compte",
@@ -1803,23 +1805,11 @@
     "currentBadge": "Forfait actuel",
     "upgrade": "Passer à {plan}",
     "switchTo": "Passer à {plan}",
-    "renew": "Ajouter 30 jours",
     "talk": "Nous contacter",
     "talkMessage": "Bonjour Vano ! J'aimerais parler du forfait {plan} pour ma boutique {shop}.",
     "paymentsOff": "Les paiements en ligne ne sont pas encore disponibles. Contactez-nous pour changer de forfait.",
     "openPayment": "Vous avez un paiement en cours.",
     "openPaymentLink": "Continuer",
-    "confirmTitle": "{plan} pour 30 jours",
-    "confirmAmount": "Montant : {amount}",
-    "confirmNewEnd": "Votre forfait sera actif jusqu'au {date}.",
-    "confirmTrialKept": "Vous gardez le reste de votre essai gratuit : les 30 jours commencent après.",
-    "confirmCredit": "Les jours non utilisés de votre forfait actuel sont convertis en jours {plan}.",
-    "confirmRenew": "30 jours sont ajoutés à votre forfait actuel.",
-    "continue": "Continuer vers le paiement",
-    "starting": "Démarrage…",
-    "freeTitle": "Passer au forfait Gratuit",
-    "freeBody": "Les forfaits ne se renouvellent jamais tout seuls. Votre forfait {plan} reste actif jusqu'au {date}, puis votre boutique passe au forfait Gratuit. Les produits au-delà de la limite sont masqués, jamais supprimés.",
-    "freeOk": "Compris",
     "historyTitle": "Historique des paiements",
     "historyEmptyTitle": "Aucun paiement",
     "historyEmptyBody": "Les paiements de votre forfait s'afficheront ici.",
@@ -1844,7 +1834,58 @@
     "lockedStatsAction": "Voir les forfaits",
     "keep": "Garder {plan}",
     "trialBadge": "Essai gratuit : {count, plural, one {# jour restant} other {# jours restants}}",
-    "planBadge": "Forfait {plan}"
+    "planBadge": "Forfait {plan}",
+    "extend": "Prolonger {plan}",
+    "bannerGrace": "{plan, select, trial {Votre essai gratuit est terminé.} other {Votre forfait {name} est terminé.}} {count, plural, =0 {Payez aujourd'hui pour garder les fonctionnalités {name}.} one {Payez dans # jour pour garder les fonctionnalités {name}.} other {Payez dans les # jours pour garder les fonctionnalités {name}.}} Ensuite, votre boutique passe au forfait Gratuit.",
+    "graceUntil": "Terminé le {end}. Vos fonctionnalités restent jusqu'au {date}, puis votre boutique passe au forfait Gratuit.",
+    "change": {
+      "upgradeTitle": "Passer à {plan}",
+      "renewTitle": "Prolonger {plan} de {days} jours",
+      "renewBody": "Gardez tout ce qu'inclut {plan} pendant 30 jours de plus.",
+      "benefit": {
+        "pro": "Vendez plus avec tous les styles de boutique, les soldes et vos statistiques.",
+        "business": "Gérez une plus grande boutique avec des produits illimités, des codes promo et votre équipe."
+      },
+      "unlocksTitle": "Ce que vous débloquez",
+      "includes": "{plan} inclut déjà tout ce qu'inclut {current}.",
+      "trialEnds": "Votre essai gratuit se termine aujourd'hui et {plan} commence maintenant.",
+      "price": "Prix",
+      "pricePer": "{price} pour {days} jours",
+      "credit": "Crédit pour {count, plural, one {# jour {plan} payé} other {# jours {plan} payés}} restants",
+      "starts": "Début",
+      "today": "Aujourd'hui",
+      "added": "Ajout",
+      "length": "Durée",
+      "days": "{count, plural, one {# jour} other {# jours}}",
+      "newEnd": "Nouvelle date de fin",
+      "total": "Vous payez",
+      "reassurance": "Sans engagement, résiliable à tout moment. Vous gardez votre boutique et tous vos produits. Paiement avec M-Pesa.",
+      "pay": "Payer {amount} avec M-Pesa",
+      "starting": "Démarrage…",
+      "notNow": "Pas maintenant",
+      "downgradeTitle": "Passer à {plan} ?",
+      "keepShop": "Vous gardez votre boutique et tous vos produits.",
+      "nothingNow": "{amount} maintenant",
+      "stays": "{plan} reste actif jusqu'au",
+      "movesFree": "Votre boutique passe en {plan} le",
+      "downgradeFreeNote": "Rien ne change aujourd'hui et rien n'est facturé. {plan} reste actif jusqu'au {date}, puis votre boutique passe en {free} après 3 jours de plus.",
+      "downgradePaidNote": "Rien ne change aujourd'hui et rien n'est facturé. {plan} reste actif jusqu'à sa date de fin, puis votre boutique passe au forfait Gratuit. Prenez {target} ({price} pour 30 jours) quand vous êtes prêt.",
+      "pausesTitle": "Ce qui sera mis en pause",
+      "pauses": {
+        "nothing": "Rien de ce que vous utilisez en ce moment ne sera mis en pause.",
+        "sales": "{count, plural, one {# solde en cours s'arrête} other {# soldes en cours s'arrêtent}} (les prix normaux reviennent)",
+        "discountCodes": "{count, plural, one {# code promo cesse} other {# codes promo cessent}} de fonctionner",
+        "productsHidden": "{count, plural, one {# produit est masqué} other {# produits sont masqués}} dans votre boutique (au-delà de la limite)",
+        "look": "Le style de votre boutique revient à Classique",
+        "sections": "Vos sections et votre mise en page reviennent à la grille simple",
+        "eventBanner": "Votre bannière d'événement ne s'affiche plus",
+        "promoBar": "Votre barre promo ne s'affiche plus"
+      },
+      "comesBack": "Rien n'est supprimé. Tout revient quand vous repassez à une formule supérieure.",
+      "keep": "Garder {plan}",
+      "switchTo": "Passer à {plan}",
+      "switchDone": "C'est noté. Rien ne change avant le {date} : votre forfait {plan} reste actif jusque-là."
+    }
   },
   "Checkout": {
     "title": "Paiement",
@@ -1877,7 +1918,8 @@
     "notFoundBody": "Ce paiement n'existe pas ou ne vous appartient pas.",
     "unavailableTitle": "Les paiements de test sont désactivés",
     "unavailableBody": "Le paiement de test est désactivé sur ce serveur.",
-    "backToBilling": "Retour à mon forfait"
+    "backToBilling": "Retour à mon forfait",
+    "credit": "Crédit pour vos jours payés restants : −{amount}"
   },
   "AdminBilling": {
     "subscriptionsTitle": "Abonnements",
@@ -2028,7 +2070,9 @@
       "plan": {
         "activated": "Votre forfait {plan} est actif jusqu'au {date}",
         "expired": "{trial, select, true {Votre essai gratuit est terminé} other {Votre forfait {plan} est terminé}}. Votre boutique est passée au forfait Gratuit",
-        "endingSoon": "{trial, select, true {Votre essai gratuit} other {Votre forfait {plan}}} {days, plural, =0 {se termine aujourd'hui} one {se termine dans # jour} other {se termine dans # jours}}"
+        "endingSoon": "{trial, select, true {Votre essai gratuit} other {Votre forfait {plan}}} {days, plural, =0 {se termine aujourd'hui} one {se termine dans # jour} other {se termine dans # jours}}",
+        "inGrace": "{trial, select, true {Votre essai gratuit est terminé} other {Votre forfait {plan} est terminé}}. {days, plural, =0 {Payez aujourd'hui pour le garder} one {Payez dans # jour pour le garder} other {Payez dans les # jours pour le garder}}, puis votre boutique passe au forfait Gratuit",
+        "trialProOnly": "Votre essai gratuit inclut les fonctionnalités {plan}. Les fonctionnalités Business comme les codes promo nécessitent le forfait {business}. Vos réglages enregistrés sont conservés"
       },
       "look": {
         "resetBanner": "Un administrateur a retiré la photo ou le texte de la bannière de votre boutique, ou votre bandeau d’annonce. Raison : {reason}",
@@ -2518,7 +2562,7 @@
     "monthlyFreeHelp": "Gratuit coûte toujours 0.",
     "monthlyCustomHelp": "Laissez vide pour un prix sur mesure (« Parlons-en »).",
     "trialMonths": "Essai gratuit (mois)",
-    "trialHelp": "Pour les nouvelles boutiques. Les essais en cours gardent leur date de fin.",
+    "trialHelp": "Essai gratuit de ce forfait pour les nouvelles boutiques, sans moyen de paiement. Les autres forfaits n'ont pas d'essai (Business se paie tout de suite). Les essais en cours gardent leur date de fin.",
     "featuresTitle": "Fonctionnalités",
     "featuresHelp": "Activez ou désactivez une fonctionnalité, ou fixez une limite. Une formule inclut toujours tout ce qu'ont les formules en dessous.",
     "feature": "Fonctionnalité",
@@ -2584,7 +2628,9 @@
       "dataKept": "Aucune donnée n'est supprimée : produits, photos et styles restent. Une fonctionnalité verrouillée cesse simplement de fonctionner jusqu'à ce que la formule de la boutique l'inclue de nouveau.",
       "confirm": "Oui, enregistrer",
       "confirmReset": "Oui, rétablir"
-    }
+    },
+    "trialTagHelp": "Les boutiques en essai gratuit ont exactement la colonne {plan}. Les fonctionnalités réservées à Business restent verrouillées pendant l'essai.",
+    "trialHeader": "{plan} (et essai gratuit)"
   },
   "PlanExceptions": {
     "title": "Exceptions de formule",

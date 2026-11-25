@@ -54,6 +54,14 @@ export function useNotificationText(): (data: NotificationData, now: number) => 
           trial: String(data.trial),
           days: daysLeft(data.periodEnd, now),
         })
+      case "plan.inGrace":
+        return t("types.plan.inGrace", {
+          plan: planName(data.plan),
+          trial: String(data.trial),
+          days: daysLeft(data.graceEnd, now),
+        })
+      case "plan.trialProOnly":
+        return t("types.plan.trialProOnly", { plan: planName("pro"), business: planName("business") })
       case "admin.endingSoon":
         return t("types.admin.endingSoon", { count: data.count, capped: String(data.capped) })
       case "look.reset":

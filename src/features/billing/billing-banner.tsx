@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState, type ReactNode } from "react"
-import { EXPIRY_WARNING_DAYS, daysLeft } from "../../../convex/lib/plans"
+import { EXPIRY_WARNING_DAYS, GRACE_MS, daysLeft } from "../../../convex/lib/plans"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { useMyBilling, useNow } from "./use-billing"
 import { usePlanName } from "@/features/billing/use-plan-catalog"
@@ -22,7 +22,8 @@ function readDismissed(): string | null {
 
 /**
  * Strip under the seller header: a warning in the last days of a trial or
- * plan, and a one-time notice after moving to Free (dismissed per period,
+ * plan, the grace days after it ended (pay to keep it), and a one-time
+ * notice after moving to Free (dismissed per period,
  * remembered in this browser only).
  */
 export function BillingBanner() {
@@ -42,10 +43,17 @@ export function BillingBanner() {
     const left = daysLeft(periodEnd, now)
     if (left > EXPIRY_WARNING_DAYS) return null
     const plan = planName(billing.plan)
+    const graceLeft = periodEnd <= now ? daysLeft(periodEnd + GRACE_MS, now) : null
+    const text =
+      graceLeft !== null
+        ? t("bannerGrace", { plan: status === "trialing" ? "trial" : "paid", name: plan, count: graceLeft })
+        : status === "trialing"
+          ? t("bannerTrialEnding", { count: left, plan })
+          : t("bannerPlanEnding", { count: left, plan })
     return (
       <Strip
         icon={<ClockIcon className="mt-0.5 size-4 shrink-0" aria-hidden />}
-        text={status === "trialing" ? t("bannerTrialEnding", { count: left, plan }) : t("bannerPlanEnding", { count: left, plan })}
+        text={text}
         actions={
           onBillingPage ? null : (
             <Link href="/dashboard/billing" className={buttonVariants({ variant: "outline", size: "sm" })}>
