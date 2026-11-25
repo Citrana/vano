@@ -18,6 +18,7 @@ import { useAdminViewer } from "../shell/use-admin-viewer"
 import { DeleteShopDialog } from "./delete-shop-dialog"
 import { ShopLookCard } from "./shop-look-card"
 import { ShopSalesCard } from "./shop-sales-card"
+import { ShopDiscountCodesCard } from "./shop-discount-codes-card"
 import { ShopProducts } from "./shop-products"
 import { SuspendShopDialog } from "./suspend-shop-dialog"
 
@@ -107,6 +108,12 @@ export function ShopDetails({ shopId }: { shopId: string }) {
       <ShopSalesCard
         shopId={shop._id}
         canManage={can("shops.manageSales")}
+        isOwnShop={viewer.email !== null && shop.owner.email === viewer.email}
+      />
+
+      <ShopDiscountCodesCard
+        shopId={shop._id}
+        canManage={can("shops.manageDiscountCodes")}
         isOwnShop={viewer.email !== null && shop.owner.email === viewer.email}
       />
 

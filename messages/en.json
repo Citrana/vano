@@ -836,6 +836,18 @@
       "pause": "Pause",
       "reason": "Reason (sent to the seller)",
       "reasonHelp": "{min} to {max} characters."
+    },
+    "discountCodes": {
+      "title": "Discount codes",
+      "empty": "This shop has no discount codes.",
+      "pauseTitle": "Pause {code}?",
+      "pauseBody": "The code stops working at once. The seller is told why and can resume it after fixing it.",
+      "deleteTitle": "Delete {code}?",
+      "deleteBody": "The code is deleted and stops working. Products don't change. The seller is told why.",
+      "pausedDone": "Code paused",
+      "deletedDone": "Code deleted",
+      "pausedBecause": "Paused by an admin: {reason}",
+      "ownShop": "This is your own shop: another admin has to moderate its codes."
     }
   },
   "ShopStatus": {

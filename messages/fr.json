@@ -836,6 +836,18 @@
       "pause": "Mettre en pause",
       "reason": "Motif (envoyé au vendeur)",
       "reasonHelp": "{min} à {max} caractères."
+    },
+    "discountCodes": {
+      "title": "Codes de réduction",
+      "empty": "Cette boutique n'a aucun code de réduction.",
+      "pauseTitle": "Mettre {code} en pause ?",
+      "pauseBody": "Le code cesse de fonctionner immédiatement. Le vendeur est informé du motif et peut le reprendre après correction.",
+      "deleteTitle": "Supprimer {code} ?",
+      "deleteBody": "Le code est supprimé et cesse de fonctionner. Les produits ne changent pas. Le vendeur est informé du motif.",
+      "pausedDone": "Code mis en pause",
+      "deletedDone": "Code supprimé",
+      "pausedBecause": "Mis en pause par un administrateur : {reason}",
+      "ownShop": "C'est votre propre boutique : un autre administrateur doit modérer ses codes."
     }
   },
   "ShopStatus": {
