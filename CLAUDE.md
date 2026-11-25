@@ -422,7 +422,10 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   `ShopInfo` shows only the filled parts, and only when there's something
   the header doesn't show (hours, delivery areas or a social link).
 - Product flags: `featured` and `fewLeft` are seller switches
-  (`products.setFeatured` / `setFewLeft`); "Back in stock" is set when
+  (`products.setFeatured` / `setFewLeft`) — except that a product whose
+  pieces are tracked gets `fewLeft` / `soldOut` from its count (see
+  "Sales tracking"; the switches are refused with `STOCK_TRACKED`).
+  "Back in stock" is set when
   Sold out is turned off (`lib/restock.ts`, `stockChange`) and cleared
   after `RESTOCK_DAYS` by `productJobs.endBackInStock` (idempotent on
   `restockedAt`). Sold out clears both.
@@ -543,14 +546,32 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   product has them, customer name / phone) live only in
   `convex/lib/salesRecords/rules.ts`, used by the Zod schemas and the
   server. Codes don't count a use (the customer's Order tap did).
-- **Sold out** changes only through `lib/productStock.ts`
-  (`applyStock` / `stockUpdate`), used by `products.setSoldOut`,
-  `products.update` and recorded sales, so every change lands in
-  `productEvents` (the product's history: sold out, back on sale, sold,
-  sale edited / reversed, deleted). "Mark this product as sold out" is on
-  by default only for a product without sizes or colours; the sale
-  remembers it (`markedSoldOut`) so reversing can put the product back on
-  sale (`canRestock`: only if it is still sold out).
+- **Sold out** and the pieces count change only through
+  `lib/productStock.ts` (`applyStock` / `stockUpdate` / `applyPieces`),
+  used by `products.setSoldOut`, `products.update` and recorded sales, so
+  every change lands in `productEvents` (the product's history: sold out,
+  back on sale, sold, sale edited / reversed, deleted).
+- **Pieces in stock**: optional `products.pieces` (missing = not
+  counted), rules only in `convex/lib/stock.ts` (`stockFlags`,
+  `takePieces`, `FEW_LEFT_MAX` = 3, `isTracked`). Tracked = a count and
+  the `stockManagement` plan feature (`requireCan` to set one; after a
+  downgrade the count is kept but ignored and the manual switches work).
+  While tracked: "Few left" at 3 or fewer, "Sold out" at 0, each recorded
+  sale takes its quantity (never more: `SALES_RECORD_STOCK`) and stores
+  `piecesTaken`; an edit takes or gives back the difference; a reverse
+  gives the pieces back (no longer sold out). Taking the last piece sets
+  `markedSoldOut` and notifies the seller (`product.soldOut`, with "Hide
+  product"). The sale modal has no sold-out switch; untracked products
+  don't change when sold.
+- A sold-out product can't be ordered: `public.productPrice` /
+  `shopPrices` return `soldOut` live (the Order buttons turn off on an
+  open page), `redeemDiscountCode` / `checkDiscountCode` return
+  `soldOut` (no use counted) and WhatsApp clicks aren't counted.
+- **Hidden by the seller**: `products.hiddenBySeller`
+  (`products.setHiddenBySeller`, any plan; the seller can show it
+  again), separate from the admin's `hidden` (the seller can't undo it).
+  Every customer-facing check uses `hiddenFromShop` (`entitlements.ts`);
+  admin screens read `hidden`.
 - Deleting a product never deletes its sales or history.
   `deleteFilesNotIn` keeps a photo still used by a recorded sale; it goes
   when the shop is purged.
@@ -646,6 +667,9 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   (`NOTIFICATION_RETENTION_DAYS`, `COUNT_CAP`, …). The daily cron
   `notificationJobs.cleanup` deletes old rows; `notificationJobs.endingSoon`
   sends the ending-soon warnings.
+- A type may have one action of its own (e.g. "Hide product" on
+  `product.soldOut`), drawn by `notification-action.tsx` beside the row's
+  link (never inside it) on the inbox page and in the bell.
 - Outside delivery (WhatsApp, email) implements `NotificationChannel`
   (`convex/notifications/channel.ts`), registered in `registry.ts` and
   enabled by `NOTIFY_CHANNELS`; `notify` schedules it. Features don't change.

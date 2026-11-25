@@ -6,12 +6,21 @@ providers, checkout, the scheduled jobs or billing admin updates this file
 in the same commit, with a dated entry in the change log below
 (see CLAUDE.md "Billing").
 
-**Last updated: 2026-11-25 15:32 CAT (UTC+02:00)**
+**Last updated: 2026-11-25 16:06 CAT (UTC+02:00)**
 
 ## Change log
 
 Newest first. Format: `YYYY-MM-DD HH:MM TZ — what changed (files)`.
 
+- **2026-11-25 16:06 CAT (UTC+02:00)**: the `stockManagement` flag (area
+  `products`, seed: Business and Enterprise, unchanged) is now
+  `enforced: true` for pieces in stock (CLAUDE.md "Sales tracking"):
+  setting a count on a product needs it (`requireCan` in
+  `products.create` / `update`); while the plan has it the count drives
+  "Few left" / "Sold out" and recorded sales take their quantity. A
+  downgrade keeps the count but ignores it (manual switches again).
+  Files: `convex/lib/planFeatures.ts`, `convex/lib/stock.ts`,
+  `convex/lib/productStock.ts`, `convex/products.ts`.
 - **2026-11-25 15:32 CAT (UTC+02:00)**: the `salesReports` flag (area
   `sales`, seed: Business and Enterprise, unchanged) is now
   `enforced: true` for sales tracking (CLAUDE.md "Sales tracking"):
