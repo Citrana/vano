@@ -59,7 +59,7 @@ export function SalesList() {
   const newButton = locked ? null : full ? (
     <span className="text-xs text-muted-foreground">{t("full")}</span>
   ) : (
-    <Link href="/dashboard/sales/new" className={buttonVariants()}>
+    <Link href="/dashboard/offers/new" className={buttonVariants()}>
       <PlusIcon />
       {t("new")}
     </Link>

@@ -38,10 +38,10 @@ describe("seller nav", () => {
     expect(visibleNav([], SELLER_NAV)).toEqual([])
   })
 
-  test("phones: Home, Products, Look and Sales tabs, the rest in More", () => {
+  test("phones: Home, Products, Look and Offers tabs, the rest in More", () => {
     const { tabs, more } = splitForMobile(ready)
-    expect(tabs.map((i) => i.key).sort()).toEqual(["home", "look", "products", "sales"])
-    expect(more.map((i) => i.key)).toEqual(["settings", "discountCodes", "stats", "plan"])
+    expect(tabs.map((i) => i.key).sort()).toEqual(["home", "look", "offers", "products"])
+    expect(more.map((i) => i.key)).toEqual(["settings", "discountCodes", "sales", "stats", "plan"])
   })
 
   test("the current page is highlighted, sub-pages included", () => {
@@ -50,7 +50,8 @@ describe("seller nav", () => {
     expect(active("/dashboard/products")).toEqual(["products"])
     expect(active("/dashboard/products/new")).toEqual(["products"])
     expect(active("/dashboard/products/abc")).toEqual(["products"])
-    expect(active("/dashboard/sales/xyz")).toEqual(["sales"])
+    expect(active("/dashboard/offers/xyz")).toEqual(["offers"])
+    expect(active("/dashboard/sales")).toEqual(["sales"])
     expect(active("/dashboard/billing/checkout/p1")).toEqual(["plan"])
     expect(active("/dashboard/look")).toEqual(["look"])
     expect(active("/dashboard/settings")).toEqual(["settings"])
@@ -59,7 +60,8 @@ describe("seller nav", () => {
   })
 
   test("locked pages name a plan feature", () => {
-    expect(find("sales").feature).toBe("salesPromotions")
+    expect(find("offers").feature).toBe("salesPromotions")
+    expect(find("sales").feature).toBe("salesReports")
     expect(find("stats").feature).toBe("shopStats")
     expect(find("look").feature).toBeUndefined()
   })

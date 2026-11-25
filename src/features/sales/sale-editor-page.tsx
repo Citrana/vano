@@ -31,7 +31,7 @@ function EditorPage({ saleId }: { saleId?: string }) {
   const update = useMutation(api.sales.update)
 
   const title = saleId ? t("editTitle") : t("newTitle")
-  const header = <PageTitle title={title} backHref="/dashboard/sales" backLabel={tc("back")} />
+  const header = <PageTitle title={title} backHref="/dashboard/offers" backLabel={tc("back")} />
   if (data === undefined) return <LoadingState />
   if (saleId && data.sale === null) {
     return (
@@ -41,7 +41,7 @@ function EditorPage({ saleId }: { saleId?: string }) {
           icon={<TagIcon />}
           title={t("notFound")}
           action={
-            <Link href="/dashboard/sales" className={buttonVariants({ variant: "outline" })}>
+            <Link href="/dashboard/offers" className={buttonVariants({ variant: "outline" })}>
               {t("backToList")}
             </Link>
           }
@@ -88,7 +88,7 @@ function EditorPage({ saleId }: { saleId?: string }) {
                 await create(values)
                 toast.success(t("created"))
               }
-              router.push("/dashboard/sales")
+              router.push("/dashboard/offers")
             }}
           />
         )}
