@@ -99,7 +99,15 @@
     "TOO_MANY_SALES": "Vous avez atteint le nombre maximum de promotions enregistrées. Supprimez-en une ancienne d'abord.",
     "ANNOUNCEMENT_SCHEDULE_INVALID": "Vérifiez les dates du bandeau d’annonce : la fin doit suivre le début, au plus 92 jours après, et le début dans l’année.",
     "INFO_TOO_LONG": "Raccourcissez vos horaires ou vos zones de livraison.",
-    "SOCIAL_INVALID": "Un de vos réseaux sociaux n’est pas un nom d’utilisateur ou un lien de profil valide."
+    "SOCIAL_INVALID": "Un de vos réseaux sociaux n’est pas un nom d’utilisateur ou un lien de profil valide.",
+    "DISCOUNT_CODE_INVALID": "Utilisez 3 à 20 lettres et chiffres pour le code (sans espaces ni symboles).",
+    "DISCOUNT_CODE_TAKEN": "Vous avez déjà un code avec ce texte. Choisissez-en un autre.",
+    "DISCOUNT_CODE_DISCOUNT_INVALID": "Vérifiez la réduction : 1 à 90 %, ou un montant inférieur au prix de chaque produit choisi.",
+    "DISCOUNT_CODE_SCHEDULE_INVALID": "Vérifiez les dates : la fin doit être après le début et dans le futur, 92 jours au plus.",
+    "DISCOUNT_CODE_NO_PRODUCTS": "Ce code ne baisse le prix d'aucun produit. Choisissez d'autres produits ou changez la réduction.",
+    "DISCOUNT_CODE_MAX_USES_INVALID": "Vérifiez le nombre maximum d'utilisations : un nombre entier à partir de 1, pas en dessous des utilisations déjà faites.",
+    "DISCOUNT_CODE_STALE": "Ce code a été modifié ailleurs pendant que vous le modifiiez. Votre changement n'a pas été enregistré : rechargez-le et réessayez.",
+    "TOO_MANY_DISCOUNT_CODES": "Vous avez atteint le nombre maximum de codes enregistrés. Supprimez-en un ancien d'abord."
   },
   "Validation": {
     "required": "Ce champ est obligatoire.",
@@ -610,7 +618,8 @@
       "suspend": "Suspendre et réactiver des boutiques",
       "delete": "Supprimer des boutiques",
       "resetLook": "Réinitialiser le style d'une boutique",
-      "manageSales": "Mettre en pause ou supprimer les promotions d'une boutique"
+      "manageSales": "Mettre en pause ou supprimer les promotions d'une boutique",
+      "manageDiscountCodes": "Mettre en pause ou supprimer les codes de réduction d'une boutique"
     },
     "products": {
       "title": "Produits",
@@ -907,6 +916,10 @@
     "sale": {
       "adminPaused": "A mis en pause une promotion",
       "adminDeleted": "A supprimé une promotion"
+    },
+    "discountCode": {
+      "adminPaused": "A mis en pause un code de réduction",
+      "adminDeleted": "A supprimé un code de réduction"
     }
   },
   "AuditDetails": {
@@ -945,7 +958,8 @@
     "fromVersion": "Version précédente",
     "toVersion": "Nouvelle version",
     "lowered": "Fonctionnalités retirées",
-    "sale": "Promotion"
+    "sale": "Promotion",
+    "code": "Code"
   },
   "AdminActivity": {
     "title": "Historique d'activité",
@@ -1966,6 +1980,10 @@
         "ended": "Votre promotion « {name} » est terminée. Les prix normaux sont de retour.",
         "adminPaused": "Un administrateur a mis en pause votre promotion « {name} ». Motif : {reason}",
         "adminDeleted": "Un administrateur a supprimé votre promotion « {name} ». Motif : {reason}"
+      },
+      "discountCode": {
+        "adminPaused": "Un administrateur a mis en pause votre code de réduction {code}. Motif : {reason}",
+        "adminDeleted": "Un administrateur a supprimé votre code de réduction {code}. Motif : {reason}"
       }
     }
   },

@@ -14,6 +14,7 @@ import { notificationCategoryValidator, notificationDataValidator } from "./noti
 import { currencyValidator } from "./lib/money";
 import { storedLookValidator } from "./lib/looks/validators";
 import { saleDiscountValidator, saleDisplayValidator, saleTargetValidator } from "./lib/sales/validators";
+import { codeDiscountValidator, codeTargetValidator } from "./lib/discountCodes/validators";
 import {
   nextActionValidator,
   paymentOutcomeValidator,
@@ -382,6 +383,57 @@ export default defineSchema({
     views: v.number(),
     whatsappClicks: v.number(),
   }).index("by_saleId_and_day", ["saleId", "day"]),
+
+  /**
+   * A seller's discount code (CLAUDE.md "Discount codes"): customers type
+   * it on a product page for a temporary price on top of the real one
+   * (never changed). Written only by `convex/discountCodes.ts`,
+   * `admin/discountCodes.ts`, `discountCodeJobs.ts` and the public
+   * `redeemDiscountCode` (uses).
+   */
+  discountCodes: defineTable({
+    shopId: v.id("shops"),
+    /** Upper case, no spaces (`normalizeCode`); unique in the shop. */
+    code: v.string(),
+    discount: codeDiscountValidator,
+    target: codeTargetValidator,
+    startsAt: v.number(),
+    endsAt: v.number(),
+    /** Missing = no limit. */
+    maxUses: v.optional(v.number()),
+    /** Orders placed with the code (one per visitor and product). */
+    uses: v.number(),
+    /** Paused by the seller. */
+    paused: v.boolean(),
+    /** Paused by an admin, with the reason (the seller may resume). */
+    adminPause: v.optional(v.object({ at: v.number(), reason: v.string() })),
+    /**
+     * In its dates, not paused and not used up, right now (queries can't
+     * read the clock). Kept by `discountCodeJobs.sync` and every use.
+     */
+    live: v.boolean(),
+    /** Bumped on every seller / admin write; edits send the version they started from. */
+    version: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_shopId", ["shopId"])
+    .index("by_shopId_and_code", ["shopId", "code"])
+    .index("by_shopId_and_live", ["shopId", "live"])
+    .index("by_live_and_endsAt", ["live", "endsAt"]),
+
+  /**
+   * One counted use of a code: a visitor (random browser id, nothing
+   * personal) ordering a product with it. Counted once per visitor and
+   * product, so tapping Order twice doesn't burn the maximum.
+   */
+  discountCodeUses: defineTable({
+    codeId: v.id("discountCodes"),
+    shopId: v.id("shops"),
+    productId: v.id("products"),
+    visitorId: v.string(),
+    at: v.number(),
+  })
+    .index("by_codeId_and_visitorId_and_productId", ["codeId", "visitorId", "productId"]),
 
   /**
    * Requests to change a protected shop field (name, link, WhatsApp).

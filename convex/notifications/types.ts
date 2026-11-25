@@ -123,6 +123,19 @@ const saleAdminPaused = v.object({
 });
 const saleAdminDeleted = v.object({ type: v.literal("sale.adminDeleted"), name: v.string(), reason: v.string() });
 
+/** To the seller: an admin paused or deleted one of their discount codes (CLAUDE.md "Discount codes"). */
+const discountCodeAdminPaused = v.object({
+  type: v.literal("discountCode.adminPaused"),
+  codeId: v.id("discountCodes"),
+  code: v.string(),
+  reason: v.string(),
+});
+const discountCodeAdminDeleted = v.object({
+  type: v.literal("discountCode.adminDeleted"),
+  code: v.string(),
+  reason: v.string(),
+});
+
 export const notificationDataValidator = v.union(
   changeRequestSubmitted,
   changeRequestFlagged,
@@ -140,6 +153,8 @@ export const notificationDataValidator = v.union(
   saleEnded,
   saleAdminPaused,
   saleAdminDeleted,
+  discountCodeAdminPaused,
+  discountCodeAdminDeleted,
 );
 export type NotificationData = Infer<typeof notificationDataValidator>;
 export type NotificationType = NotificationData["type"];
@@ -170,6 +185,8 @@ export const NOTIFICATION_TYPES: Record<NotificationType, TypeInfo> = {
   "sale.ended": { category: "shop", audience: "user" },
   "sale.adminPaused": { category: "shop", audience: "user" },
   "sale.adminDeleted": { category: "shop", audience: "user" },
+  "discountCode.adminPaused": { category: "shop", audience: "user" },
+  "discountCode.adminDeleted": { category: "shop", audience: "user" },
 };
 
 export const NOTIFICATION_TYPE_LIST = Object.keys(NOTIFICATION_TYPES) as NotificationType[];
@@ -202,5 +219,9 @@ export function notificationHref(data: NotificationData): string {
     case "sale.ended":
     case "sale.adminDeleted":
       return "/dashboard/sales";
+    case "discountCode.adminPaused":
+      return `/dashboard/discount-codes/${data.codeId}`;
+    case "discountCode.adminDeleted":
+      return "/dashboard/discount-codes";
   }
 }

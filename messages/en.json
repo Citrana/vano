@@ -99,7 +99,15 @@
     "TOO_MANY_SALES": "You've reached the maximum number of saved sales. Delete an old one first.",
     "ANNOUNCEMENT_SCHEDULE_INVALID": "Check the announcement bar’s dates: the end must be after the start, at most 92 days later, and the start within a year.",
     "INFO_TOO_LONG": "Shorten your opening hours or delivery areas.",
-    "SOCIAL_INVALID": "One of your social links isn’t a valid username or profile link."
+    "SOCIAL_INVALID": "One of your social links isn’t a valid username or profile link.",
+    "DISCOUNT_CODE_INVALID": "Use 3 to 20 letters and numbers for the code (no spaces or symbols).",
+    "DISCOUNT_CODE_TAKEN": "You already have a code with this text. Choose another one.",
+    "DISCOUNT_CODE_DISCOUNT_INVALID": "Check the discount: 1 to 90% off, or an amount lower than the price of every chosen product.",
+    "DISCOUNT_CODE_SCHEDULE_INVALID": "Check the dates: the end must be after the start and in the future, at most 92 days long.",
+    "DISCOUNT_CODE_NO_PRODUCTS": "This code doesn't lower the price of any product. Choose other products or change the discount.",
+    "DISCOUNT_CODE_MAX_USES_INVALID": "Check the maximum number of uses: a whole number from 1, not below the uses so far.",
+    "DISCOUNT_CODE_STALE": "This code was changed somewhere else while you were editing. Your change wasn't saved: reload it and try again.",
+    "TOO_MANY_DISCOUNT_CODES": "You've reached the maximum number of saved codes. Delete an old one first."
   },
   "Validation": {
     "required": "This field is required.",
@@ -610,7 +618,8 @@
       "suspend": "Suspend and reactivate shops",
       "delete": "Delete shops",
       "resetLook": "Reset a shop's look",
-      "manageSales": "Pause or delete a shop's sales"
+      "manageSales": "Pause or delete a shop's sales",
+      "manageDiscountCodes": "Pause or delete a shop's discount codes"
     },
     "products": {
       "title": "Products",
@@ -907,6 +916,10 @@
     "sale": {
       "adminPaused": "Paused a shop's sale",
       "adminDeleted": "Deleted a shop's sale"
+    },
+    "discountCode": {
+      "adminPaused": "Paused a shop's discount code",
+      "adminDeleted": "Deleted a shop's discount code"
     }
   },
   "AuditDetails": {
@@ -945,7 +958,8 @@
     "fromVersion": "Previous version",
     "toVersion": "New version",
     "lowered": "Features taken away",
-    "sale": "Sale"
+    "sale": "Sale",
+    "code": "Code"
   },
   "AdminActivity": {
     "title": "Activity history",
@@ -1966,6 +1980,10 @@
         "ended": "Your sale \"{name}\" has ended. Normal prices are back.",
         "adminPaused": "An admin paused your sale \"{name}\". Reason: {reason}",
         "adminDeleted": "An admin deleted your sale \"{name}\". Reason: {reason}"
+      },
+      "discountCode": {
+        "adminPaused": "An admin paused your discount code {code}. Reason: {reason}",
+        "adminDeleted": "An admin deleted your discount code {code}. Reason: {reason}"
       }
     }
   },

@@ -5,6 +5,7 @@ import { hasFeature } from "./lib/entitlements";
 import { addDays, isDay, utcDay } from "./lib/days";
 import { LIMITS } from "./lib/catalog";
 import { onShopDayStatsWritten } from "./lib/platformStats";
+import { shopCodes } from "./lib/discountCodes/store";
 import { requireOwnShop, sellerQuery } from "./lib/seller";
 import { bumpSaleStats, saleForProduct } from "./lib/sales/store";
 
@@ -140,6 +141,10 @@ export const summary = sellerQuery({
       products: v.array(
         v.object({ productId: v.id("products"), views: v.number(), whatsappClicks: v.number() }),
       ),
+      /** Uses per discount code, most used first (CLAUDE.md "Discount codes"). */
+      discountCodes: v.array(
+        v.object({ codeId: v.id("discountCodes"), code: v.string(), uses: v.number(), maxUses: v.union(v.number(), v.null()) }),
+      ),
     }),
   ),
   handler: async (ctx, { today }) => {
@@ -185,6 +190,9 @@ export const summary = sellerQuery({
       locked: false as const,
       ...sum,
       products: [...perProduct].map(([productId, acc]) => ({ productId, ...acc })),
+      discountCodes: (await shopCodes(ctx, shop._id))
+        .map((c) => ({ codeId: c._id, code: c.code, uses: c.uses, maxUses: c.maxUses ?? null }))
+        .sort((a, b) => b.uses - a.uses || a.code.localeCompare(b.code)),
     };
   },
 });

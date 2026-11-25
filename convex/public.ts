@@ -1,12 +1,18 @@
 import { v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
-import { query, type QueryCtx } from "./_generated/server";
-import { getEntitlements, shopProducts, visibleProductIds } from "./lib/entitlements";
+import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
+import { getEntitlements, hasFeature, shopProducts, visibleProductIds } from "./lib/entitlements";
 import { urlOf, urlsOf } from "./lib/images";
 import { publicLookFor } from "./lib/looks/store";
 import { readSettings } from "./lib/settings";
 import { bestSaleFor, publicSale } from "./lib/sales/active";
-import { liveSalesFor } from "./lib/sales/store";
+import { liveSalesFor, saleForProduct } from "./lib/sales/store";
+import { codeFieldFor, evaluateCode, isWrongAttempt } from "./lib/discountCodes/active";
+import { codeTextProblem, normalizeCode } from "./lib/discountCodes/code";
+import { cleanVisitorId } from "./lib/discountCodes/rules";
+import { codeByText, liveCodesFor, visibleProduct } from "./lib/discountCodes/store";
+import { codeResultValidator, type CodeResult } from "./lib/discountCodes/validators";
+import { rateLimiter } from "./lib/rateLimits";
 
 /**
  * Unauthenticated reads for the public shop pages. They never return
@@ -159,6 +165,8 @@ export const productForPage = query({
         soldOut: product.soldOut,
         fewLeft: product.fewLeft === true && !product.soldOut,
         sale: publicSale(bestSaleFor(product, await liveSalesFor(ctx, shop), shop.currency)),
+        /** Show "Have a discount code?" (a live code applies). Never the codes themselves. */
+        codeField: codeFieldFor(product, await liveCodesFor(ctx, shop), shop.currency),
         imageUrls: await urlsOf(ctx, product.imageIds.slice(0, limits.photosPerProduct)),
       },
     };
@@ -169,7 +177,9 @@ export const productForPage = query({
  * A product's price right now, for the order button (CLAUDE.md "Sales"):
  * live, so the WhatsApp message uses the price at the moment the
  * customer taps, even on a page opened before a sale started or ended.
- * Null for an unknown, hidden or suspended product.
+ * Null for an unknown, hidden or suspended product. `codeField` says
+ * whether the discount code field shows (it disappears live when the
+ * last code ends or the plan no longer includes codes).
  */
 export const productPrice = query({
   args: { productId: v.string() },
@@ -182,6 +192,7 @@ export const productPrice = query({
     return {
       price: product.price,
       sale: publicSale(bestSaleFor(product, await liveSalesFor(ctx, shop), shop.currency)),
+      codeField: codeFieldFor(product, await liveCodesFor(ctx, shop), shop.currency),
     };
   },
 });
@@ -205,6 +216,83 @@ export const shopPrices = query({
       .filter((p) => visible.has(p._id))
       .map((p) => ({ _id: p._id, price: p.price, sale: publicSale(bestSaleFor(p, sales, shop.currency)) }));
   },
+});
+
+const codeArgs = { productId: v.string(), code: v.string(), visitorId: v.string() };
+
+/**
+ * Tries a discount code on a product (CLAUDE.md "Discount codes"), with
+ * the guessing limits: a visitor or shop out of wrong attempts gets
+ * `tooMany` before the code is even read, and every wrong attempt costs
+ * one from both buckets. Results are returned, never thrown, so the
+ * count isn't rolled back. The price is computed here, never trusted from
+ * the browser, and the best of the code and a running sale wins.
+ */
+async function tryCode(
+  ctx: MutationCtx,
+  args: { productId: string; code: string; visitorId: string },
+  redeem: boolean,
+): Promise<CodeResult> {
+  const found = await visibleProduct(ctx, args.productId);
+  if (!found) return { status: "invalid" };
+  const { shop, product } = found;
+  const visitorId = cleanVisitorId(args.visitorId);
+  const visitorKey = `${shop._id}:${visitorId}`;
+  const visitorLimit = await rateLimiter.check(ctx, "discountCodeVisitor", { key: visitorKey });
+  const shopLimit = await rateLimiter.check(ctx, "discountCodeShop", { key: shop._id });
+  if (!visitorLimit.ok || !shopLimit.ok) return { status: "tooMany" };
+
+  const text = normalizeCode(args.code);
+  const entitled = codeTextProblem(text) === null && (await hasFeature(ctx, shop, "discountCodes"));
+  const code = entitled ? await codeByText(ctx, shop._id, text) : null;
+  const used =
+    code && redeem
+      ? await ctx.db
+          .query("discountCodeUses")
+          .withIndex("by_codeId_and_visitorId_and_productId", (q) =>
+            q.eq("codeId", code._id).eq("visitorId", visitorId).eq("productId", product._id),
+          )
+          .unique()
+      : null;
+  const now = Date.now();
+  const sale = await saleForProduct(ctx, shop, product);
+  const result = evaluateCode({ code, product, sale, currency: shop.currency, now, alreadyUsed: used !== null });
+
+  if (isWrongAttempt(result)) {
+    await rateLimiter.limit(ctx, "discountCodeVisitor", { key: visitorKey });
+    await rateLimiter.limit(ctx, "discountCodeShop", { key: shop._id });
+  }
+  if (redeem && code && result.status === "applied" && used === null) {
+    await ctx.db.insert("discountCodeUses", {
+      codeId: code._id,
+      shopId: shop._id,
+      productId: product._id,
+      visitorId,
+      at: now,
+    });
+    const uses = code.uses + 1;
+    const usedUp = code.maxUses !== undefined && uses >= code.maxUses;
+    await ctx.db.patch("discountCodes", code._id, { uses, ...(usedUp ? { live: false } : {}) });
+  }
+  return result;
+}
+
+/** "Apply": checks a code on a product and returns the price with it. Counts nothing. */
+export const checkDiscountCode = mutation({
+  args: codeArgs,
+  returns: codeResultValidator,
+  handler: async (ctx, args) => await tryCode(ctx, args, false),
+});
+
+/**
+ * The customer taps Order with a code: checked again at that moment, the
+ * maximum enforced in this transaction and one use counted (once per
+ * visitor and product). The result is the price for the WhatsApp message.
+ */
+export const redeemDiscountCode = mutation({
+  args: codeArgs,
+  returns: codeResultValidator,
+  handler: async (ctx, args) => await tryCode(ctx, args, true),
 });
 
 /** Whether public sign-up is open (admin settings). Only a boolean. */

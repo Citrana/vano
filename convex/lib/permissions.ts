@@ -15,8 +15,9 @@ export const PERMISSION_GROUPS = {
   /**
    * resetLook: reset a shop's look (banner photo / text, or all) to a safe default.
    * manageSales: pause or delete a shop's sale, with a reason.
+   * manageDiscountCodes: pause or delete a shop's discount code, with a reason.
    */
-  shops: ["view", "suspend", "delete", "resetLook", "manageSales"],
+  shops: ["view", "suspend", "delete", "resetLook", "manageSales", "manageDiscountCodes"],
   products: ["view", "hide", "delete"],
   roles: ["view", "manage"],
   audit: ["view"],

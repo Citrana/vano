@@ -6,12 +6,23 @@ providers, checkout, the scheduled jobs or billing admin updates this file
 in the same commit, with a dated entry in the change log below
 (see CLAUDE.md "Billing").
 
-**Last updated: 2026-11-22 12:39 CAT (UTC+02:00)**
+**Last updated: 2026-11-25 09:30 CAT (UTC+02:00)**
 
 ## Change log
 
 Newest first. Format: `YYYY-MM-DD HH:MM TZ — what changed (files)`.
 
+- **2026-11-25 09:30 CAT (UTC+02:00)**: the `discountCodes` flag (area
+  `sales`, already `enforced: true`, seed: Business and Enterprise) now
+  gates a built feature (CLAUDE.md "Discount codes"). `requireCan` guards
+  `discountCodes.create` / `update` / `resume`; pause and delete work on
+  any plan. Public reads use `liveCodesFor` (live **and** `hasFeature`),
+  so after a downgrade codes stop working and the product page field
+  disappears; saved codes and their uses are kept. The trial counts as Pro,
+  so trial shops don't get codes. No change to plan prices, limits or the
+  seed values; the EN/FR `PlanFeatures.discountCodes` description no longer
+  says "not built yet" (`convex/discountCodes.ts`, `convex/public.ts`,
+  `convex/lib/discountCodes/`, `messages/*.json`).
 - **2026-11-22 12:39 CAT (UTC+02:00)**: two shop-look features are now
   **enforced** (CLAUDE.md "Shop looks"). `featuredSections` (was pricing
   only) gates the shop sections other than "All products", their order
