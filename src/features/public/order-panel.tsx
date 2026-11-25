@@ -15,7 +15,10 @@ import { ShareButton } from "./share-button"
 import { WhatsAppIcon } from "./whatsapp-icon"
 import { buttonVariants } from "@/components/ui/button"
 import { productUrl } from "@/lib/site"
+import { useVisitorId } from "@/lib/visitor-id"
 import { orderHref } from "@/lib/whatsapp"
+import type { CodeProblem } from "../../../convex/lib/discountCodes/validators"
+import { DiscountCodeField, type AppliedCode } from "./discount-code-field"
 
 /** Size chips and colour dots: square corners on the product page, whatever the button shape. */
 const SQUARE_CHIP = { "--shop-btn-radius": "2px" } as CSSProperties
@@ -135,6 +138,12 @@ function ColorDots({
  * sale started or ended since the page opened (CLAUDE.md "Sales"). In `demo` mode
  * (marketing demo shop) WhatsApp opens with a labelled demo message for
  * any contact, and nothing is recorded.
+ *
+ * Discount codes (CLAUDE.md "Discount codes"): the field shows while a
+ * live code applies (`codeField`, live too). With a code applied, tapping
+ * Order opens the WhatsApp tab at once (so it isn't blocked), asks the
+ * server to redeem the code (re-checked, maximum enforced, one use
+ * counted) and sends the message with the price the server returned.
  */
 export function OrderPanel({
   slug,
@@ -158,6 +167,8 @@ export function OrderPanel({
     colors: string[]
     soldOut: boolean
     sale?: PublicSale | null
+    /** Show "Have a discount code?" (server-rendered; then live). */
+    codeField?: boolean
   }
 }) {
   const t = useTranslations("Public")
@@ -166,32 +177,86 @@ export function OrderPanel({
   const live = useQuery(api.public.productPrice, demo ? "skip" : { productId: product._id })
   const [size, setSize] = useState<string>()
   const [color, setColor] = useState<string>()
+  const redeem = useMutation(api.public.redeemDiscountCode)
+  const visitorId = useVisitorId()
+  const [code, setCode] = useState<AppliedCode | null>(null)
+  const [codeProblem, setCodeProblem] = useState<CodeProblem | "failed" | null>(null)
   // The server-rendered values until the live ones arrive.
   const normal = live?.price ?? product.price
   const sale = live === undefined || live === null ? (product.sale ?? null) : live.sale
-  const href = orderHref(t, {
-    product: product.name,
-    price: formatMoney(sale ? sale.price : normal, currency, locale),
-    normalPrice: sale ? formatMoney(sale.original, currency, locale) : undefined,
-    size,
-    color,
-    url: productUrl(slug, product._id),
-    whatsappNumber,
-    demo,
-    demoNote: t("demoOrderNote"),
-  })
+  const codeField = !demo && (live === undefined || live === null ? product.codeField === true : live.codeField)
+  // A code stops showing as soon as the field goes (code ended, plan changed).
+  const applied = codeField ? code : null
+
+  const hrefFor = (deal: { price: number; original?: number; code?: string } | null) =>
+    orderHref(t, {
+      product: product.name,
+      price: formatMoney(deal ? deal.price : normal, currency, locale),
+      normalPrice: deal?.original !== undefined ? formatMoney(deal.original, currency, locale) : undefined,
+      code: deal?.code,
+      size,
+      color,
+      url: productUrl(slug, product._id),
+      whatsappNumber,
+      demo,
+      demoNote: t("demoOrderNote"),
+    })
+  const saleDeal = sale ? { price: sale.price, original: sale.original } : null
+  const href = hrefFor(applied ?? saleDeal)
+
+  async function orderWithCode(appliedCode: AppliedCode) {
+    // Open the tab inside the tap, then point it at the final message.
+    const tab = window.open("about:blank", "_blank")
+    if (tab) tab.opener = null
+    const go = (url: string) => {
+      if (tab) tab.location.href = url
+      else window.location.href = url
+    }
+    try {
+      const result = await redeem({ productId: product._id, code: appliedCode.code, visitorId: visitorId() })
+      if (result.status === "applied") {
+        setCode(result)
+        go(hrefFor(result))
+      } else if (result.status === "saleBetter") {
+        setCode(null)
+        setCodeProblem("saleBetter")
+        go(hrefFor(saleDeal))
+      } else {
+        tab?.close()
+        setCode(null)
+        setCodeProblem(result.status)
+      }
+    } catch {
+      tab?.close()
+      setCodeProblem("failed")
+    }
+  }
 
   const shareUrl = () => (demo ? `${window.location.origin}/demo/${product._id}` : productUrl(slug, product._id))
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <SalePrice price={normal} sale={sale} currency={currency} size="page" />
-        <SaleTags sale={sale} />
-        {sale?.countdown ? <SaleCountdown endsAt={sale.endsAt} /> : null}
+        <SalePrice price={normal} sale={applied ?? sale} currency={currency} size="page" />
+        {applied ? null : <SaleTags sale={sale} />}
+        {!applied && sale?.countdown ? <SaleCountdown endsAt={sale.endsAt} /> : null}
       </div>
       <SizeChips label={t("sizes")} options={product.sizes} value={size} onChange={setSize} />
       <ColorDots label={t("colors")} options={product.colors} value={color} onChange={setColor} />
+      {codeField && !product.soldOut ? (
+        <DiscountCodeField
+          productId={product._id}
+          visitorId={visitorId}
+          applied={applied}
+          onApply={(result) => {
+            setCode(result)
+            setCodeProblem(null)
+          }}
+          onRemove={() => setCode(null)}
+          problem={codeProblem}
+          onProblem={setCodeProblem}
+        />
+      ) : null}
       {/* Phones: a fixed bar, so ordering is always one tap away (the page leaves room for it). */}
       <div className="fixed inset-x-0 bottom-[var(--bottom-bar,0px)] z-30 flex gap-2 border-t bg-background/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur md:static md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
         {product.soldOut ? (
@@ -206,8 +271,12 @@ export function OrderPanel({
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => {
+            onClick={(event) => {
               if (!demo) recordClick({ productId: product._id as Id<"products"> }).catch(() => {})
+              if (applied) {
+                event.preventDefault()
+                void orderWithCode(applied)
+              }
             }}
             className={buttonVariants({ size: "lg", variant: "whatsapp", className: "shop-btn shop-action min-w-0 flex-1" })}
           >

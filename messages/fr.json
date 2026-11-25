@@ -427,6 +427,8 @@
     },
     "orderSalePrice": "Prix promo : {price} (prix normal {normal})",
     "orderSaleNote": "En promotion au moment de cette commande.",
+    "orderCode": "Code de réduction : {code}",
+    "orderCodePrice": "Prix avec le code : {price} (prix normal {normal})",
     "salePriceLabel": "Prix promo :",
     "normalPriceLabel": "Prix normal :",
     "saleBadge": "-{percent} %",
@@ -502,6 +504,25 @@
       "max": "Max",
       "priceRange": "Prix de {min} à {max}.",
       "priceInvalid": "Saisissez des prix comme 25 ou 25,50, le max au-dessus du min."
+    },
+    "discountCode": {
+      "prompt": "Vous avez un code de réduction ?",
+      "label": "Code de réduction",
+      "placeholder": "Saisissez votre code",
+      "apply": "Appliquer",
+      "applying": "Vérification…",
+      "applied": "Code {code} appliqué",
+      "remove": "Retirer",
+      "problems": {
+        "invalid": "Ce code n'existe pas. Vérifiez l'orthographe et réessayez.",
+        "notActive": "Ce code n'est pas actif pour le moment.",
+        "ended": "Ce code a expiré.",
+        "usedUp": "Ce code a déjà été utilisé le nombre maximum de fois.",
+        "notForProduct": "Ce code ne fonctionne pas sur ce produit.",
+        "saleBetter": "Le prix promo est déjà plus bas que ce code, vous gardez donc le prix promo.",
+        "tooMany": "Trop d'essais. Patientez quelques minutes et réessayez.",
+        "failed": "Un problème est survenu. Veuillez réessayer."
+      }
     }
   },
   "NotFound": {

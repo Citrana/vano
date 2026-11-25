@@ -427,6 +427,8 @@
     },
     "orderSalePrice": "Sale price: {price} (normal price {normal})",
     "orderSaleNote": "On sale at the time of this order.",
+    "orderCode": "Discount code: {code}",
+    "orderCodePrice": "Price with the code: {price} (normal price {normal})",
     "salePriceLabel": "Sale price:",
     "normalPriceLabel": "Normal price:",
     "saleBadge": "-{percent}%",
@@ -502,6 +504,25 @@
       "max": "Max",
       "priceRange": "Prices from {min} to {max}.",
       "priceInvalid": "Enter prices like 25 or 25.50, the max above the min."
+    },
+    "discountCode": {
+      "prompt": "Have a discount code?",
+      "label": "Discount code",
+      "placeholder": "Enter your code",
+      "apply": "Apply",
+      "applying": "Checking…",
+      "applied": "Code {code} applied",
+      "remove": "Remove",
+      "problems": {
+        "invalid": "This code doesn't exist. Check the spelling and try again.",
+        "notActive": "This code isn't active right now.",
+        "ended": "This code has expired.",
+        "usedUp": "This code has already been used the maximum number of times.",
+        "notForProduct": "This code doesn't work on this product.",
+        "saleBetter": "The sale price is already lower than this code, so you keep the sale price.",
+        "tooMany": "Too many tries. Please wait a few minutes and try again.",
+        "failed": "Something went wrong. Please try again."
+      }
     }
   },
   "NotFound": {

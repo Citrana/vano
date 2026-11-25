@@ -43,6 +43,31 @@ describe("whatsapp", () => {
     )
   })
 
+  test("with a discount code: the product, the code, the normal and final prices (no sale note)", () => {
+    const en_t = createTranslator({ locale: "en", messages: en, namespace: "Public" })
+    const text = buildOrderMessage(en_t, {
+      product: "Wax dress",
+      price: "$22.50",
+      normalPrice: "$25",
+      code: "WELCOME10",
+      size: "M",
+      url: "https://x/y",
+    })
+    expect(text.split("\n")).toEqual([
+      "Hello! I'd like to order this product:",
+      "Product: Wax dress",
+      "Discount code: WELCOME10",
+      "Price with the code: $22.50 (normal price $25)",
+      "Size: M",
+      "Link: https://x/y",
+    ])
+    const fr_t = createTranslator({ locale: "fr", messages: fr, namespace: "Public" })
+    const fr_text = buildOrderMessage(fr_t, { product: "Robe", price: "22,50 $", normalPrice: "25 $", code: "BIENVENUE", url: "u" })
+    expect(fr_text).toContain("Code de réduction : BIENVENUE")
+    expect(fr_text).toContain("Prix avec le code : 22,50 $ (prix normal 25 $)")
+    expect(fr_text).not.toContain("En promotion")
+  })
+
   test("order message in French, without size or colour", () => {
     const t = createTranslator({ locale: "fr", messages: fr, namespace: "Public" })
     const text = buildOrderMessage(t, { product: "Robe", price: "25 $", url: "https://x/y" })

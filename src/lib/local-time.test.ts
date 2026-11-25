@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest"
+import { codeStatusAt } from "../../convex/lib/discountCodes/active"
 import { fromLocalInput, toLocalInput } from "./local-time"
 
 describe("local date-time fields (seller's time zone ↔ UTC)", () => {
@@ -23,5 +24,17 @@ describe("local date-time fields (seller's time zone ↔ UTC)", () => {
     expect(fromLocalInput("")).toBeUndefined()
     expect(fromLocalInput("27/11/2026", "Africa/Kinshasa")).toBeUndefined()
     expect(toLocalInput(undefined)).toBe("")
+  })
+
+  test("a discount code ends at the seller's local midnight, whatever the visitor's zone", () => {
+    // Entered in Kinshasa (UTC+1): ends at 23:00 UTC the day before.
+    const endsAt = fromLocalInput("2026-11-27T00:00", "Africa/Kinshasa")!
+    const code = { startsAt: Date.UTC(2026, 10, 20), endsAt, paused: false, uses: 0 }
+    expect(codeStatusAt(code, Date.UTC(2026, 10, 26, 22, 59))).toBe("running")
+    expect(codeStatusAt(code, Date.UTC(2026, 10, 26, 23, 0))).toBe("ended")
+    // The same wall-clock end in Nairobi (UTC+3) is two hours earlier.
+    const nairobi = { ...code, endsAt: fromLocalInput("2026-11-27T00:00", "Africa/Nairobi")! }
+    expect(codeStatusAt(nairobi, Date.UTC(2026, 10, 26, 21, 0))).toBe("ended")
+    expect(codeStatusAt(code, Date.UTC(2026, 10, 26, 21, 0))).toBe("running")
   })
 })

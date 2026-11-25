@@ -18,7 +18,8 @@ export async function OrderChat({ reply, typing = !reply }: { reply?: { text: st
 
   const product = DEMO_PRODUCTS[0]
   // The server translator's typing doesn't accept the shared key union.
-  const message = buildOrderMessage((key, values) => tp(key, values as Record<string, string>), {
+  const translate = tp as unknown as (key: string, values?: Record<string, string>) => string
+  const message = buildOrderMessage((key, values) => translate(key, values), {
     product: td(`products.${product.id}.name`),
     price: formatMoney(product.price, DEMO_CURRENCY, locale),
     size: "M",
