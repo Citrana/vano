@@ -338,7 +338,11 @@
     "last30": "30 jours",
     "shopViews": "Visites boutique",
     "productViews": "Vues produits",
-    "whatsappClicks": "Clics WhatsApp"
+    "whatsappClicks": "Clics WhatsApp",
+    "discountCodes": {
+      "title": "Utilisations des codes de réduction",
+      "manage": "Gérer les codes"
+    }
   },
   "ProductForm": {
     "newTitle": "Nouveau produit",
@@ -2370,7 +2374,7 @@
     },
     "discountCodes": {
       "name": "Codes de réduction",
-      "description": "Codes que les clients utilisent. Pas encore construit ; vérifié à sa sortie."
+      "description": "Des codes que les clients saisissent sur une page produit pour une réduction temporaire."
     },
     "orderTracking": {
       "name": "Suivi des commandes",
@@ -2693,6 +2697,68 @@
       "saving": "Enregistrement…",
       "discard": "Annuler les modifications",
       "saved": "Bandeau promo enregistré"
+    }
+  },
+  "DiscountCodes": {
+    "title": "Codes de réduction",
+    "new": "Nouveau code",
+    "newTitle": "Nouveau code de réduction",
+    "editTitle": "Modifier le code de réduction",
+    "notFound": "Ce code n'existe plus.",
+    "backToList": "Retour aux codes de réduction",
+    "full": "Vous avez atteint le nombre maximum de codes.",
+    "emptyTitle": "Aucun code de réduction pour le moment",
+    "emptyBody": "Créez un code comme BIENVENUE10 et partagez-le avec vos clients. Ils le saisissent sur une page produit pour obtenir la réduction.",
+    "emptyFilter": "Aucun code avec ce statut.",
+    "filterLabel": "Filtrer les codes par statut",
+    "filters": {
+      "all": "Tous"
+    },
+    "status": {
+      "running": "En cours",
+      "scheduled": "Programmé",
+      "paused": "En pause",
+      "usedUp": "Épuisé",
+      "ended": "Terminé"
+    },
+    "where": {
+      "shop": "toute la boutique",
+      "category": "{category}",
+      "products": "{count, plural, =0 {aucun produit} one {# produit} other {# produits}}"
+    },
+    "usesCount": "{count, plural, =0 {aucune utilisation} one {# utilisation} other {# utilisations}}",
+    "usesOf": "{uses} / {max} utilisations",
+    "actions": "Actions pour {code}",
+    "pause": "Mettre en pause",
+    "resume": "Reprendre",
+    "pausedToast": "Code mis en pause",
+    "resumedToast": "Code repris",
+    "adminPaused": "Un administrateur a mis ce code en pause. Motif : {reason}. Corrigez-le, puis reprenez-le.",
+    "noProductsRow": "Ce code ne baisse le prix d'aucun produit pour le moment.",
+    "deleteTitle": "Supprimer ce code ?",
+    "deleteBody": "{code} sera supprimé et cessera de fonctionner immédiatement. Vos produits ne changent pas.",
+    "deleted": "Code supprimé",
+    "saved": "Code enregistré",
+    "created": "Code créé",
+    "lock": {
+      "title": "Les codes de réduction sont disponibles avec {plan}",
+      "body": "Créez des codes que vos clients saisissent sur une page produit pour une réduction, avec des dates et un nombre maximum d'utilisations.",
+      "bodyKept": "Vos codes sont enregistrés mais ne fonctionnent pas avec votre offre actuelle. Vous pouvez toujours les mettre en pause ou les supprimer.",
+      "action": "Passer à {plan}"
+    },
+    "form": {
+      "code": "Code",
+      "codeHelp": "Ce que les clients saisissent. Lettres et chiffres, majuscules ou minuscules.",
+      "codeInvalid": "Utilisez {min} à {max} lettres et chiffres (sans espaces ni symboles).",
+      "suggest": "Suggérer",
+      "limitUses": "Limiter le nombre d'utilisations",
+      "limitUsesHelp": "Le code ne fonctionne plus après ce nombre de commandes.",
+      "maxUses": "Utilisations maximum",
+      "maxUsesRange": "Saisissez un nombre entier de 1 à {max}.",
+      "maxUsesBelow": "Il a déjà été utilisé {uses} fois : saisissez au moins {uses}.",
+      "usedSoFar": "{count, plural, one {Utilisé # fois jusqu'ici.} other {Utilisé # fois jusqu'ici.}}",
+      "save": "Enregistrer les modifications",
+      "create": "Créer le code"
     }
   }
 }

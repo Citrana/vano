@@ -338,7 +338,11 @@
     "last30": "30 days",
     "shopViews": "Shop views",
     "productViews": "Product views",
-    "whatsappClicks": "WhatsApp clicks"
+    "whatsappClicks": "WhatsApp clicks",
+    "discountCodes": {
+      "title": "Discount code uses",
+      "manage": "Manage codes"
+    }
   },
   "ProductForm": {
     "newTitle": "New product",
@@ -2370,7 +2374,7 @@
     },
     "discountCodes": {
       "name": "Discount codes",
-      "description": "Codes customers can use. Not built yet; checked once it ships."
+      "description": "Codes customers type on a product page for a temporary discount."
     },
     "orderTracking": {
       "name": "Order tracking",
@@ -2693,6 +2697,68 @@
       "saving": "Saving…",
       "discard": "Discard",
       "saved": "Promo bar saved"
+    }
+  },
+  "DiscountCodes": {
+    "title": "Discount codes",
+    "new": "New code",
+    "newTitle": "New discount code",
+    "editTitle": "Edit discount code",
+    "notFound": "This code doesn't exist anymore.",
+    "backToList": "Back to discount codes",
+    "full": "You've reached the maximum number of codes.",
+    "emptyTitle": "No discount codes yet",
+    "emptyBody": "Create a code like WELCOME10 and share it with your customers. They type it on a product page to get the discount.",
+    "emptyFilter": "No codes with this status.",
+    "filterLabel": "Filter codes by status",
+    "filters": {
+      "all": "All"
+    },
+    "status": {
+      "running": "Running",
+      "scheduled": "Scheduled",
+      "paused": "Paused",
+      "usedUp": "Used up",
+      "ended": "Ended"
+    },
+    "where": {
+      "shop": "whole shop",
+      "category": "{category}",
+      "products": "{count, plural, =0 {no products} one {# product} other {# products}}"
+    },
+    "usesCount": "{count, plural, =0 {no uses} one {# use} other {# uses}}",
+    "usesOf": "{uses} / {max} uses",
+    "actions": "Actions for {code}",
+    "pause": "Pause",
+    "resume": "Resume",
+    "pausedToast": "Code paused",
+    "resumedToast": "Code resumed",
+    "adminPaused": "An admin paused this code. Reason: {reason}. Fix it, then resume it.",
+    "noProductsRow": "This code doesn't lower any product's price right now.",
+    "deleteTitle": "Delete this code?",
+    "deleteBody": "{code} will be deleted and stop working at once. Your products don't change.",
+    "deleted": "Code deleted",
+    "saved": "Code saved",
+    "created": "Code created",
+    "lock": {
+      "title": "Discount codes are available on {plan}",
+      "body": "Create codes your customers type on a product page for a discount, with dates and a maximum number of uses.",
+      "bodyKept": "Your codes are saved but don't work on your current plan. You can still pause or delete them.",
+      "action": "Upgrade to {plan}"
+    },
+    "form": {
+      "code": "Code",
+      "codeHelp": "What customers type. Letters and numbers, not case sensitive.",
+      "codeInvalid": "Use {min} to {max} letters and numbers (no spaces or symbols).",
+      "suggest": "Suggest one",
+      "limitUses": "Limit the number of uses",
+      "limitUsesHelp": "The code stops working after this many orders.",
+      "maxUses": "Maximum uses",
+      "maxUsesRange": "Enter a whole number from 1 to {max}.",
+      "maxUsesBelow": "It has already been used {uses} times: enter at least {uses}.",
+      "usedSoFar": "{count, plural, one {Used # time so far.} other {Used # times so far.}}",
+      "save": "Save changes",
+      "create": "Create code"
     }
   }
 }

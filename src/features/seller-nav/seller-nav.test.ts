@@ -41,7 +41,7 @@ describe("seller nav", () => {
   test("phones: Home, Products, Look and Sales tabs, the rest in More", () => {
     const { tabs, more } = splitForMobile(ready)
     expect(tabs.map((i) => i.key).sort()).toEqual(["home", "look", "products", "sales"])
-    expect(more.map((i) => i.key)).toEqual(["settings", "stats", "plan"])
+    expect(more.map((i) => i.key)).toEqual(["settings", "discountCodes", "stats", "plan"])
   })
 
   test("the current page is highlighted, sub-pages included", () => {
