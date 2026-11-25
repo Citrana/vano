@@ -4,7 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server"
 import { cn } from "cn"
 import { CompareTable } from "@/features/marketing/pricing/compare-table"
 import { PlanCard } from "@/features/marketing/pricing/plan-card"
-import { getPlanCatalog } from "@/features/marketing/pricing/data"
+import { getPlanCatalog, getTrialOffer } from "@/features/marketing/pricing/data"
 import { buildComparison, buildPlanCards } from "@/features/marketing/pricing/plans"
 import { planNameIn } from "../../../../convex/lib/planCatalog"
 import { CtaBand } from "@/features/marketing/shared/cta-band"
@@ -15,7 +15,7 @@ import { Section } from "@/features/marketing/shared/section"
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Pricing")
   const title = t("metaTitle")
-  const description = t("metaDescription")
+  const description = t("metaDescription", await getTrialOffer(await getLocale()))
   return {
     title: { absolute: title },
     description,
@@ -32,20 +32,26 @@ export default async function PricingPage() {
   const plans = buildPlanCards(catalog, locale, (plan) => t("everythingIn", { plan }))
   const months = catalog.trialMonths
   const trialPlan = planNameIn(catalog, catalog.trialPlan, locale)
+  const business = planNameIn(catalog, "business", locale)
   const freeProducts = catalog.features.find((f) => f.key === "products")?.values.free
   const faq = [
     {
       id: "q1",
       question: t("faq.q1"),
-      answer: t("faq.a1", { months, free: planNameIn(catalog, "free", locale), count: typeof freeProducts === "number" ? freeProducts : 0 }),
+      answer: t("faq.a1", {
+        months,
+        plan: trialPlan,
+        free: planNameIn(catalog, "free", locale),
+        count: typeof freeProducts === "number" ? freeProducts : 0,
+      }),
     },
-    { id: "q2", question: t("faq.q2"), answer: t("faq.a2") },
+    { id: "q2", question: t("faq.q2"), answer: t("faq.a2", { plan: trialPlan, business }) },
     { id: "q3", question: t("faq.q3"), answer: t("faq.a3") },
   ]
 
   return (
     <>
-      <PageIntro eyebrow={t("eyebrow")} title={t("title", { months })} subtitle={t("subtitle")}>
+      <PageIntro eyebrow={t("eyebrow")} title={t("title", { months, plan: trialPlan })} subtitle={t("subtitle", { plan: trialPlan })}>
         <p className="mt-1 inline-flex items-center gap-2 rounded-lg border border-plum/15 bg-blush px-4 py-2 text-base font-semibold text-pretty">
           <GiftIcon className="size-5 shrink-0 text-plum" aria-hidden />
           {t("trialPill", { months, plan: trialPlan })}

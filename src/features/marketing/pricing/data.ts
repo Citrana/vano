@@ -2,7 +2,7 @@ import "server-only"
 import { fetchQuery } from "convex/nextjs"
 import { cache } from "react"
 import { api } from "../../../../convex/_generated/api"
-import type { PlanCatalog } from "../../../../convex/lib/planCatalog"
+import { planNameIn, type PlanCatalog } from "../../../../convex/lib/planCatalog"
 
 /**
  * The plan catalogue for server-rendered marketing pages (pricing, home,
@@ -13,3 +13,12 @@ export const getPlanCatalog = cache(async (): Promise<PlanCatalog> => {
   // The query returns plain keys; they are the catalogue's own feature keys.
   return (await fetchQuery(api.plans.catalog, {})) as PlanCatalog
 })
+
+/**
+ * The free trial offer for marketing text: its length and the plan it's
+ * on ("2 months free on Pro"; the trial is never on every plan).
+ */
+export async function getTrialOffer(locale: string): Promise<{ months: number; plan: string }> {
+  const catalog = await getPlanCatalog()
+  return { months: catalog.trialMonths, plan: planNameIn(catalog, catalog.trialPlan, locale) }
+}

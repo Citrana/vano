@@ -1,5 +1,5 @@
 import { CheckIcon, CircleCheckIcon, EyeIcon } from "lucide-react"
-import { getTranslations } from "next-intl/server"
+import { getLocale, getTranslations } from "next-intl/server"
 import Image from "next/image"
 import Link from "next/link"
 import type { ReactNode } from "react"
@@ -16,11 +16,11 @@ import { OrderBadge } from "@/features/marketing/home/order-badge"
 import { LivePhone } from "@/features/marketing/home/live-phone"
 import { PhoneThemeControls } from "@/features/marketing/home/phone-theme"
 import { DEMO_PRODUCTS } from "@/features/marketing/demo/demo-shop"
-import { getPlanCatalog } from "@/features/marketing/pricing/data"
+import { getTrialOffer } from "@/features/marketing/pricing/data"
 
 export async function Hero() {
   const t = await getTranslations("Home")
-  const { trialMonths } = await getPlanCatalog()
+  const offer = await getTrialOffer(await getLocale())
 
   const iconChip = (children: ReactNode, className: string) => (
     <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-full lg:size-10", className)}>{children}</span>
@@ -53,7 +53,7 @@ export async function Hero() {
           </Link>
         </div>
         <ul className="flex flex-wrap justify-center gap-x-6 gap-y-1 text-base font-medium">
-          {[t("trustTrial", { months: trialMonths }), t("trustNoPayment"), t("trustFast")].map((line) => (
+          {[t("trustTrial", offer), t("trustNoPayment"), t("trustFast")].map((line) => (
             <li key={line} className="inline-flex items-center gap-1.5">
               <CheckIcon className="size-5 text-success" strokeWidth={3} aria-hidden />
               {line}
