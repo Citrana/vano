@@ -6,12 +6,23 @@ providers, checkout, the scheduled jobs or billing admin updates this file
 in the same commit, with a dated entry in the change log below
 (see CLAUDE.md "Billing").
 
-**Last updated: 2026-11-25 12:17 CAT (UTC+02:00)**
+**Last updated: 2026-11-25 15:32 CAT (UTC+02:00)**
 
 ## Change log
 
 Newest first. Format: `YYYY-MM-DD HH:MM TZ — what changed (files)`.
 
+- **2026-11-25 15:32 CAT (UTC+02:00)**: the `salesReports` flag (area
+  `sales`, seed: Business and Enterprise, unchanged) is now
+  `enforced: true` for sales tracking (CLAUDE.md "Sales tracking"):
+  `salesRecords.record` / `update` / `reverse` call `requireCan({ kind:
+  "feature", feature: "salesReports" })`; `listMine`, `get`, `quote` and
+  `productHistory` check `hasFeature` and return `locked` (the Sales page
+  shows `PlanLockCard`). A downgrade keeps every recorded sale (hidden,
+  never deleted); upgrading shows them again. Pricing text renamed
+  "Sales tracking" (`PlanFeatures.salesReports`). Files:
+  `convex/lib/planFeatures.ts`, `convex/salesRecords.ts`,
+  `src/features/sales-records/`.
 - **2026-11-25 12:17 CAT (UTC+02:00)**: subscription rules rewritten
   (CLAUDE.md "Billing"). One pure module holds them all:
   `quotePurchase` / `applyPurchase` / `planChangeKind` /
