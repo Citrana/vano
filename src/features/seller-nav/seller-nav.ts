@@ -2,6 +2,7 @@ import {
   ChartColumnIcon,
   ContactIcon,
   CreditCardIcon,
+  FileBarChartIcon,
   HouseIcon,
   PackageIcon,
   PaletteIcon,
@@ -43,6 +44,7 @@ export type SellerNavKey =
   | "orders"
   | "customers"
   | "stats"
+  | "reports"
   | "plan"
   | "team"
 
@@ -61,6 +63,7 @@ export const SELLER_NAV: readonly SellerNavItem[] = [
   { key: "orders", href: "/dashboard/orders", icon: ShoppingBagIcon, group: "sell", permission: "ownShop.manage", feature: "orderTracking", ready: false },
   { key: "customers", href: "/dashboard/customers", icon: ContactIcon, group: "sell", permission: "ownShop.manage", ready: false },
   { key: "stats", href: "/dashboard/stats", icon: ChartColumnIcon, group: "insights", permission: "ownStats.view", feature: "shopStats", ready: true },
+  { key: "reports", href: "/dashboard/reports", icon: FileBarChartIcon, group: "insights", permission: "ownSales.manage", feature: "salesReports", ready: true },
   { key: "plan", href: "/dashboard/billing", icon: CreditCardIcon, group: "account", permission: "ownBilling.manage", ready: true },
   { key: "team", href: "/dashboard/team", icon: UsersRoundIcon, group: "account", permission: "ownShop.manage", ready: false },
 ]

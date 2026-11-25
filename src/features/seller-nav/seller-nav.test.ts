@@ -41,7 +41,7 @@ describe("seller nav", () => {
   test("phones: Home, Products, Look and Offers tabs, the rest in More", () => {
     const { tabs, more } = splitForMobile(ready)
     expect(tabs.map((i) => i.key).sort()).toEqual(["home", "look", "offers", "products"])
-    expect(more.map((i) => i.key)).toEqual(["settings", "discountCodes", "sales", "stats", "plan"])
+    expect(more.map((i) => i.key)).toEqual(["settings", "discountCodes", "sales", "stats", "reports", "plan"])
   })
 
   test("the current page is highlighted, sub-pages included", () => {
@@ -62,6 +62,7 @@ describe("seller nav", () => {
   test("locked pages name a plan feature", () => {
     expect(find("offers").feature).toBe("salesPromotions")
     expect(find("sales").feature).toBe("salesReports")
+    expect(find("reports").feature).toBe("salesReports")
     expect(find("stats").feature).toBe("shopStats")
     expect(find("look").feature).toBeUndefined()
   })

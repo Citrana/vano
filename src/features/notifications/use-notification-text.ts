@@ -86,6 +86,10 @@ export function useNotificationText(): (data: NotificationData, now: number) => 
         return t("types.discountCode.adminDeleted", { code: data.code, reason: data.reason })
       case "product.soldOut":
         return t("types.product.soldOut", { name: data.name })
+      case "report.ready":
+        return t("types.report.ready", {
+          month: format.dateTime(new Date(`${data.month}-15T12:00:00Z`), { month: "long", year: "numeric", timeZone: "UTC" }),
+        })
     }
   }
 }

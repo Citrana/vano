@@ -119,7 +119,8 @@
     "TIME_ZONE_INVALID": "Choisissez un fuseau horaire dans la liste.",
     "SALES_RECORD_STOCK": "Il ne reste pas assez de pièces pour cette vente.",
     "STOCK_INVALID": "Saisissez un nombre de pièces de 0 à 99 999, ou laissez vide.",
-    "STOCK_TRACKED": "Les pièces de ce produit sont comptées : changez plutôt le nombre de pièces."
+    "STOCK_TRACKED": "Les pièces de ce produit sont comptées : changez plutôt le nombre de pièces.",
+    "REPORT_INVALID": "Ce mois n'est pas valide."
   },
   "Validation": {
     "required": "Ce champ est obligatoire.",
@@ -201,6 +202,7 @@
       "orders": "Commandes",
       "customers": "Clients",
       "stats": "Statistiques",
+      "reports": "Rapports",
       "plan": "Forfait",
       "team": "Équipe",
       "more": "Plus"
@@ -2152,6 +2154,9 @@
       },
       "product": {
         "soldOut": "{name} est épuisé."
+      },
+      "report": {
+        "ready": "Votre rapport de {month} est prêt."
       }
     },
     "actions": {
@@ -3109,6 +3114,99 @@
     "status": {
       "recorded": "Comptée",
       "reversed": "Annulée"
+    }
+  },
+  "Reports": {
+    "title": "Rapports",
+    "month": "Mois",
+    "download": "Télécharger le CSV",
+    "print": "Imprimer ou enregistrer en PDF",
+    "downloadFailed": "Le fichier n'a pas pu être créé. Réessayez.",
+    "line": {
+      "up": "Vous avez vendu {items, plural, one {# article} other {# articles}} pour {revenue}, soit {percent} % de plus qu'en {previous}.",
+      "down": "Vous avez vendu {items, plural, one {# article} other {# articles}} pour {revenue}, soit {percent} % de moins qu'en {previous}.",
+      "same": "Vous avez vendu {items, plural, one {# article} other {# articles}} pour {revenue}, autant qu'en {previous}.",
+      "first": "Vous avez vendu {items, plural, one {# article} other {# articles}} pour {revenue}."
+    },
+    "cards": {
+      "label": "Chiffres clés",
+      "revenue": "Chiffre d'affaires",
+      "items": "Articles vendus",
+      "sales": "Ventes",
+      "average": "Vente moyenne",
+      "discounts": "Réductions accordées"
+    },
+    "change": {
+      "up": "+{percent} % par rapport à {month}",
+      "down": "−{percent} % par rapport à {month}",
+      "same": "Comme en {month}",
+      "new": "Rien en {month}"
+    },
+    "top": {
+      "title": "Meilleurs produits",
+      "byRevenue": "Par chiffre d'affaires",
+      "byPieces": "Par pièces",
+      "pieces": "{count, plural, one {# pièce} other {# pièces}}",
+      "open": "Voir les ventes de {name}"
+    },
+    "byDay": {
+      "title": "Ventes par jour",
+      "caption": "Chiffre d'affaires de chaque jour de {month}",
+      "day": "Jour",
+      "revenue": "Chiffre d'affaires",
+      "sales": "Ventes",
+      "bar": "{date} : {revenue}, {sales, plural, =0 {aucune vente} one {# vente} other {# ventes}}"
+    },
+    "bySource": {
+      "title": "Ventes par source"
+    },
+    "byCategory": {
+      "title": "Ventes par catégorie"
+    },
+    "rowLine": "{sales, plural, one {# vente} other {# ventes}} · {revenue}",
+    "taps": {
+      "title": "Clics WhatsApp et ventes",
+      "taps": "Clics",
+      "sales": "Ventes",
+      "ratio": "Environ 1 vente pour {taps, plural, one {# clic} other {# clics}}.",
+      "noTaps": "Aucun clic sur vos boutons Commander ce mois-ci.",
+      "note": "Clics sur les boutons Commander de votre boutique, comptés par jour UTC. Un clic n'est pas un chiffre d'affaires."
+    },
+    "empty": {
+      "title": "Aucune vente en {month}",
+      "body": "Chaque vente que vous enregistrez apparaît dans le rapport du mois.",
+      "action": "Aller aux ventes"
+    },
+    "truncated": "Ce mois compte beaucoup de ventes : le rapport porte sur les {count} premières.",
+    "lock": {
+      "title": "Les rapports mensuels sont disponibles avec {plan}",
+      "body": "Voyez chaque mois votre chiffre d'affaires, vos meilleurs produits et vos ventes par jour et par source, et téléchargez-le en fichier.",
+      "bodyKept": "{count, plural, one {Votre # vente est conservée} other {Vos # ventes sont conservées}} et apparaîtront dans vos rapports quand vous passerez au forfait supérieur.",
+      "action": "Passer à {plan}"
+    },
+    "sample": {
+      "label": "Exemple",
+      "dress": "Robe en wax",
+      "sandals": "Sandales en cuir",
+      "necklace": "Collier de perles"
+    },
+    "printTitle": "Rapport des ventes",
+    "printMeta": "{shop} · {month}",
+    "csv": {
+      "date": "Date",
+      "product": "Produit",
+      "size": "Taille",
+      "color": "Couleur",
+      "quantity": "Quantité",
+      "unitPrice": "Prix par article",
+      "normalPrice": "Prix normal",
+      "discount": "Réduction",
+      "total": "Total",
+      "currency": "Devise",
+      "source": "Source",
+      "offer": "Offre",
+      "customerName": "Client",
+      "customerPhone": "Téléphone du client"
     }
   }
 }

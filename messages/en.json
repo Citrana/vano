@@ -119,7 +119,8 @@
     "TIME_ZONE_INVALID": "Pick a time zone from the list.",
     "SALES_RECORD_STOCK": "There aren't enough pieces left for this sale.",
     "STOCK_INVALID": "Enter a number of pieces from 0 to 99,999, or leave it empty.",
-    "STOCK_TRACKED": "This product's pieces are counted: change the number of pieces instead."
+    "STOCK_TRACKED": "This product's pieces are counted: change the number of pieces instead.",
+    "REPORT_INVALID": "This month isn't valid."
   },
   "Validation": {
     "required": "This field is required.",
@@ -201,6 +202,7 @@
       "orders": "Orders",
       "customers": "Customers",
       "stats": "Stats",
+      "reports": "Reports",
       "plan": "Plan",
       "team": "Team",
       "more": "More"
@@ -2152,6 +2154,9 @@
       },
       "product": {
         "soldOut": "{name} is sold out."
+      },
+      "report": {
+        "ready": "Your {month} report is ready."
       }
     },
     "actions": {
@@ -3109,6 +3114,99 @@
     "status": {
       "recorded": "Counted",
       "reversed": "Reversed"
+    }
+  },
+  "Reports": {
+    "title": "Reports",
+    "month": "Month",
+    "download": "Download CSV",
+    "print": "Print or save as PDF",
+    "downloadFailed": "The file couldn't be made. Try again.",
+    "line": {
+      "up": "You sold {items, plural, one {# item} other {# items}} for {revenue}, up {percent}% on {previous}.",
+      "down": "You sold {items, plural, one {# item} other {# items}} for {revenue}, down {percent}% on {previous}.",
+      "same": "You sold {items, plural, one {# item} other {# items}} for {revenue}, the same as {previous}.",
+      "first": "You sold {items, plural, one {# item} other {# items}} for {revenue}."
+    },
+    "cards": {
+      "label": "Key numbers",
+      "revenue": "Revenue",
+      "items": "Items sold",
+      "sales": "Sales",
+      "average": "Average sale",
+      "discounts": "Discounts given"
+    },
+    "change": {
+      "up": "Up {percent}% from {month}",
+      "down": "Down {percent}% from {month}",
+      "same": "Same as {month}",
+      "new": "None in {month}"
+    },
+    "top": {
+      "title": "Top products",
+      "byRevenue": "By revenue",
+      "byPieces": "By pieces",
+      "pieces": "{count, plural, one {# piece} other {# pieces}}",
+      "open": "See the sales of {name}"
+    },
+    "byDay": {
+      "title": "Sales by day",
+      "caption": "Revenue each day of {month}",
+      "day": "Day",
+      "revenue": "Revenue",
+      "sales": "Sales",
+      "bar": "{date}: {revenue}, {sales, plural, =0 {no sales} one {# sale} other {# sales}}"
+    },
+    "bySource": {
+      "title": "Sales by source"
+    },
+    "byCategory": {
+      "title": "Sales by category"
+    },
+    "rowLine": "{sales, plural, one {# sale} other {# sales}} · {revenue}",
+    "taps": {
+      "title": "WhatsApp taps and sales",
+      "taps": "Taps",
+      "sales": "Sales",
+      "ratio": "About 1 sale for every {taps, plural, one {# tap} other {# taps}}.",
+      "noTaps": "No taps on your Order buttons this month.",
+      "note": "Taps on the Order buttons of your shop, counted by UTC day. Taps are not revenue."
+    },
+    "empty": {
+      "title": "No sales in {month}",
+      "body": "Each sale you record shows up in this month's report.",
+      "action": "Go to Sales"
+    },
+    "truncated": "This month has a lot of sales: the report covers the first {count}.",
+    "lock": {
+      "title": "Monthly reports are available on {plan}",
+      "body": "See each month's revenue, best sellers, and sales by day and by source, and download it as a file.",
+      "bodyKept": "{count, plural, one {Your # sale is kept} other {Your # sales are kept}} and shows in your reports when you upgrade.",
+      "action": "Upgrade to {plan}"
+    },
+    "sample": {
+      "label": "Example",
+      "dress": "Wax print dress",
+      "sandals": "Leather sandals",
+      "necklace": "Beaded necklace"
+    },
+    "printTitle": "Sales report",
+    "printMeta": "{shop} · {month}",
+    "csv": {
+      "date": "Date",
+      "product": "Product",
+      "size": "Size",
+      "color": "Color",
+      "quantity": "Quantity",
+      "unitPrice": "Price per item",
+      "normalPrice": "Normal price",
+      "discount": "Discount",
+      "total": "Total",
+      "currency": "Currency",
+      "source": "Source",
+      "offer": "Offer",
+      "customerName": "Customer",
+      "customerPhone": "Customer phone"
     }
   }
 }
