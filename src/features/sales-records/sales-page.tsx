@@ -18,6 +18,7 @@ import { TableToolbar } from "@/components/data-table/table-toolbar"
 import { useLocalPages } from "@/components/data-table/use-table-pages"
 import { useTableState, type TableState } from "@/components/data-table/use-table-state"
 import { PageTitle } from "@/components/shell/page-title"
+import { StatTile } from "@/components/stats/stat-tile"
 import { LoadingState } from "@/components/states/states"
 import { Button } from "@/components/ui/button"
 import { PickProductDialog } from "./pick-product-dialog"
@@ -184,10 +185,7 @@ function Totals({
   return (
     <dl aria-label={t("label")} className="grid grid-cols-2 gap-2 md:grid-cols-4">
       {tiles.map(([label, value]) => (
-        <div key={label} className="rounded-lg border bg-card p-3">
-          <dt className="text-xs text-muted-foreground">{label}</dt>
-          <dd className="truncate text-lg font-bold tabular-nums">{value}</dd>
-        </div>
+        <StatTile key={label} tone="card" label={label} value={value} />
       ))}
     </dl>
   )
