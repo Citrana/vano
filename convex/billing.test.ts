@@ -188,7 +188,7 @@ describe("billing.mine and history", () => {
     await me.mutation(api.billing.mockSimulate, { paymentId, outcome: "succeeded" });
     const mine = await me.query(api.billing.mine, {});
     expect(mine).toMatchObject({ plan: "pro", effectivePlan: "pro", status: "active", openPaymentId: null });
-    expect(mine.limits).toEqual({ products: 50, photosPerProduct: 6, teamMembers: 0, features: ["allLooks", "featuredSections", "announcementBar", "salesPromotions", "shopStats"] });
+    expect(mine.limits).toEqual({ products: 50, photosPerProduct: 6, teamMembers: 0, features: ["allLooks", "featuredSections", "announcementBar", "shopFilters", "salesPromotions", "shopStats"] });
     const history = await me.query(api.billing.payments, { paginationOpts: { numItems: 10, cursor: null } });
     expect(history.page.map((p) => [p._id, p.status])).toEqual([[paymentId, "succeeded"]]);
   });

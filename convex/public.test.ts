@@ -1,7 +1,8 @@
 import { describe, expect, test } from "vitest";
 import { api } from "./_generated/api";
 import { presetLook } from "./lib/looks/presets";
-import { as, productArgs, sellerWithShop, newTest, setSubscription, storeFile } from "./lib/test.utils";
+import { as, insertProducts, productArgs, sellerWithShop, newTest, setSubscription, storeFile } from "./lib/test.utils";
+import { FULL_FILTERS_MIN_PRODUCTS } from "./lib/looks/filters";
 
 const setup = newTest;
 
@@ -38,6 +39,49 @@ describe("public.shopBySlug", () => {
     expect(page.products).toHaveLength(1);
     expect(page.products[0]).toMatchObject({ name: "Robe wax", price: 2500, soldOut: false });
     expect(JSON.stringify(page)).not.toContain(userId);
+  });
+});
+
+describe("public.shopBySlug filters", () => {
+  test("trial: full filters from the minimum product count, sort and Sale below it", async () => {
+    const t = setup();
+    const { shopId } = await sellerWithShop(t);
+    await insertProducts(t, shopId, FULL_FILTERS_MIN_PRODUCTS - 1);
+    let page = active(await t.query(api.public.shopBySlug, { slug: "chez-amani" }));
+    expect(page.filters).toEqual({ show: true, categories: false, sale: true, panel: false });
+    await insertProducts(t, shopId, 1);
+    page = active(await t.query(api.public.shopBySlug, { slug: "chez-amani" }));
+    expect(page.filters).toEqual({ show: true, categories: true, sale: true, panel: true });
+  });
+
+  test("Free: category chips and sort only", async () => {
+    const t = setup();
+    const { shopId } = await sellerWithShop(t);
+    await insertProducts(t, shopId, FULL_FILTERS_MIN_PRODUCTS);
+    await setSubscription(t, shopId, { plan: "free", status: "free" });
+    const page = active(await t.query(api.public.shopBySlug, { slug: "chez-amani" }));
+    expect(page.filters).toEqual({ show: true, categories: true, sale: false, panel: false });
+  });
+
+  test("the seller's setting: always or hidden, on every plan", async () => {
+    const t = setup();
+    const { userId, shopId } = await sellerWithShop(t);
+    await insertProducts(t, shopId, 2);
+    const seller = as(t, userId);
+    const withFilters = (filters: "on" | "off") => ({
+      ...presetLook("classic"),
+      overrides: { sections: { order: [{ id: "all" as const, on: true }], layout: "grid2" as const, about: true, filters } },
+    });
+    await seller.mutation(api.shopLooks.saveDraft, { look: withFilters("on") });
+    await seller.mutation(api.shopLooks.publish, {});
+    let page = active(await t.query(api.public.shopBySlug, { slug: "chez-amani" }));
+    expect(page.filters).toEqual({ show: true, categories: true, sale: true, panel: true });
+
+    await seller.mutation(api.shopLooks.saveDraft, { look: withFilters("off") });
+    await seller.mutation(api.shopLooks.publish, {});
+    await setSubscription(t, shopId, { plan: "free", status: "free" });
+    page = active(await t.query(api.public.shopBySlug, { slug: "chez-amani" }));
+    expect(page.filters).toEqual({ show: false, categories: false, sale: false, panel: false });
   });
 });
 

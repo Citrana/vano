@@ -46,6 +46,29 @@ describe("shopLooks.mine", () => {
     const t = newTest();
     await expect(t.query(api.shopLooks.mine, {})).rejects.toThrow(/NOT_AUTHENTICATED/);
   });
+
+  test("full filters follow the plan (trial yes, Free no)", async () => {
+    const t = newTest();
+    const { userId, shopId } = await sellerWithShop(t);
+    const seller = as(t, userId);
+    expect((await seller.query(api.shopLooks.mine, {})).filtersEntitled).toBe(true);
+    await setSubscription(t, shopId, { plan: "free", status: "free" });
+    expect((await seller.query(api.shopLooks.mine, {})).filtersEntitled).toBe(false);
+  });
+
+  test("the filters setting saves and publishes on Free", async () => {
+    const t = newTest();
+    const { userId, shopId } = await sellerWithShop(t);
+    const seller = as(t, userId);
+    await setSubscription(t, shopId, { plan: "free", status: "free" });
+    const look: StoredLook = {
+      ...FREE_LOOK,
+      overrides: { sections: { order: [{ id: "all", on: true }], layout: "grid2", about: true, filters: "off" } },
+    };
+    await seller.mutation(api.shopLooks.saveDraft, { look });
+    await seller.mutation(api.shopLooks.publish, {});
+    expect((await seller.query(api.shopLooks.mine, {})).published?.overrides.sections?.filters).toBe("off");
+  });
 });
 
 describe("shopLooks.saveDraft / publish / discardDraft", () => {

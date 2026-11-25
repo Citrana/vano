@@ -35,7 +35,8 @@ import { SectionPanel } from "./section-panel"
 import { PREVIEW_SECTIONS_MAX, previewProducts } from "./section-state"
 import { SectionTabs, type SectionFlags } from "./section-tabs"
 import { LOOK_SECTIONS, SECTION_KEYS, type SectionKey, type SectionProps } from "./sections"
-import { useIsDesktop } from "./use-is-desktop"
+import { useIsDesktop } from "@/lib/use-is-desktop"
+import { filterAccess } from "../../../../convex/lib/looks/filters"
 import { useLeaveGuard } from "./use-leave-guard"
 import { useLookEditor, type MineLook } from "./use-look-editor"
 import { useLookSection } from "./use-look-section"
@@ -255,6 +256,12 @@ export function LookEditor({ mine, shop, products }: { mine: MineLook; shop: Sho
   const hasPromo = editor.draft.overrides.promo !== undefined
   const previewLook =
     previewMode === "live" ? editor.liveResolved : hasPromo && previewBanner === "event" ? editor.full : editor.resolved
+  // The filter row as customers would see it: the look's setting, the plan and the seller's real product count.
+  const previewFilters = filterAccess({
+    mode: previewLook.sections.filters,
+    entitled: mine.filtersEntitled,
+    productCount: ownProducts.length,
+  })
 
   const toolbar = (size: "default" | "compact") => (
     <div className="flex w-full flex-col gap-2">
@@ -298,13 +305,14 @@ export function LookEditor({ mine, shop, products }: { mine: MineLook; shop: Sho
   const fullPreview = (className?: string) => (
     <div className={cn("flex flex-col items-center gap-2", className)}>
       {previewWidth === "phone" ? (
-        <LookPreview look={previewLook} shop={headerShop} currency={previewCurrency} products={preview.products} label={t("preview.label")} />
+        <LookPreview look={previewLook} shop={headerShop} currency={previewCurrency} products={preview.products} filters={previewFilters} label={t("preview.label")} />
       ) : (
         <WidePreview
           look={previewLook}
           shop={headerShop}
           currency={previewCurrency}
           products={preview.products}
+          filters={previewFilters}
           label={t("preview.wideLabel")}
         />
       )}
@@ -480,6 +488,7 @@ export function LookEditor({ mine, shop, products }: { mine: MineLook; shop: Sho
               shop={headerShop}
               currency={previewCurrency}
               products={preview.products}
+              filters={previewFilters}
               label={t("preview.label")}
               className="h-[26dvh]"
             />
@@ -490,6 +499,7 @@ export function LookEditor({ mine, shop, products }: { mine: MineLook; shop: Sho
                 shop={headerShop}
                 currency={previewCurrency}
                 products={preview.products}
+                filters={previewFilters}
                 label={t("preview.wideLabel")}
               />
             </div>

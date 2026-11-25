@@ -494,16 +494,28 @@
       "showResults": "{count, plural, =0 {Aucun produit} one {Voir # produit} other {Voir # produits}}",
       "results": "{count, plural, =0 {Aucun produit} one {# produit} other {# produits}}",
       "clearAll": "Tout effacer",
-      "clearPanel": "Effacer ces filtres",
-      "emptyTitle": "Aucun résultat",
-      "emptyBody": "Essayez une autre recherche ou retirez un filtre.",
+      "emptyTitle": "Aucun article pour ces filtres",
+      "emptyBody": "Essayez une fourchette de prix plus large, une autre taille ou moins de filtres. Le reste de la boutique est toujours là.",
       "size": "Taille",
       "color": "Couleur",
       "price": "Prix",
       "min": "Min",
       "max": "Max",
       "priceRange": "Prix de {min} à {max}.",
-      "priceInvalid": "Saisissez des prix comme 25 ou 25,50, le max au-dessus du min."
+      "priceInvalid": "Saisissez des prix comme 25 ou 25,50, le max au-dessus du min.",
+      "category": "Catégorie",
+      "quickPrice": "Fourchettes de prix",
+      "priceUpTo": "Jusqu'à {max}",
+      "priceBetween": "{min} – {max}",
+      "priceFrom": "À partir de {min}",
+      "onSale": "En promo",
+      "newOnly": "Nouveautés",
+      "newHint": "Ajoutés ces {days} derniers jours",
+      "activeFilters": "Filtres actifs",
+      "removeFilter": "Retirer le filtre : {label}",
+      "chipSearch": "« {q} »",
+      "chipSize": "Taille {size}",
+      "removeLast": "Annuler le dernier filtre"
     },
     "discountCode": {
       "prompt": "Vous avez un code de réduction ?",
@@ -1406,7 +1418,19 @@
       "layoutHelp": "Sur téléphone : 2 colonnes, ou 1 pour les grandes cartes. Avec peu de produits, les cartes sont plus grandes et centrées.",
       "about": "À propos et contact",
       "aboutHelp": "Vos horaires, zones de livraison et réseaux sociaux. Le bloc s’affiche seulement si au moins un est rempli (votre description et votre adresse sont déjà sous votre nom).",
-      "aboutLink": "Modifier dans Paramètres"
+      "aboutLink": "Modifier dans Paramètres",
+      "filters": "Filtres pour les clients",
+      "filterModes": {
+        "auto": "Automatique",
+        "on": "Toujours",
+        "off": "Masqués"
+      },
+      "filterModesHelp": {
+        "auto": "Filtres complets à partir de {count} produits. Avant, vos clients ont le tri et la puce Promo.",
+        "on": "Vos clients ont toujours la ligne de filtres, quel que soit le nombre de produits.",
+        "off": "Pas de ligne de filtres : vos clients parcourent vos sections."
+      },
+      "filtersFree": "Avec votre offre, vos clients ont les catégories et le tri. Les filtres prix, taille, couleur, promo et nouveautés sont inclus dans une offre supérieure."
     },
     "announcement": {
       "show": "Afficher le bandeau promo",
@@ -2464,6 +2488,10 @@
     "announcementBar": {
       "name": "Bandeau promo",
       "description": "Une fine ligne en haut de la boutique : la promo en cours et son compte à rebours, ou votre message, à votre style."
+    },
+    "shopFilters": {
+      "name": "Filtres complets",
+      "description": "Vos clients cherchent et filtrent par prix, taille, couleur, promo et nouveautés. Les boutiques Free ont les catégories et le tri."
     }
   },
   "PlanAreas": {

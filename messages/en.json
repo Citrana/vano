@@ -494,16 +494,28 @@
       "showResults": "{count, plural, =0 {No products} one {Show # product} other {Show # products}}",
       "results": "{count, plural, =0 {No products} one {# product} other {# products}}",
       "clearAll": "Clear all",
-      "clearPanel": "Clear these filters",
-      "emptyTitle": "Nothing matches",
-      "emptyBody": "Try another search or remove a filter.",
+      "emptyTitle": "No match for these filters",
+      "emptyBody": "Try a wider price range, another size or fewer filters. Everything else in the shop is still here.",
       "size": "Size",
       "color": "Color",
       "price": "Price",
       "min": "Min",
       "max": "Max",
       "priceRange": "Prices from {min} to {max}.",
-      "priceInvalid": "Enter prices like 25 or 25.50, the max above the min."
+      "priceInvalid": "Enter prices like 25 or 25.50, the max above the min.",
+      "category": "Category",
+      "quickPrice": "Quick price ranges",
+      "priceUpTo": "Up to {max}",
+      "priceBetween": "{min} – {max}",
+      "priceFrom": "From {min}",
+      "onSale": "On sale",
+      "newOnly": "New",
+      "newHint": "Added in the last {days} days",
+      "activeFilters": "Active filters",
+      "removeFilter": "Remove filter: {label}",
+      "chipSearch": "“{q}”",
+      "chipSize": "Size {size}",
+      "removeLast": "Undo last filter"
     },
     "discountCode": {
       "prompt": "Have a discount code?",
@@ -1406,7 +1418,19 @@
       "layoutHelp": "On phones: 2 columns, or 1 for big cards. With only a few products, cards get bigger and centred.",
       "about": "About and contact",
       "aboutHelp": "Your opening hours, delivery areas and social links. It shows only when at least one of them is filled (your description and location are already under your name).",
-      "aboutLink": "Edit in Shop settings"
+      "aboutLink": "Edit in Shop settings",
+      "filters": "Customer filters",
+      "filterModes": {
+        "auto": "Automatic",
+        "on": "Always",
+        "off": "Hidden"
+      },
+      "filterModesHelp": {
+        "auto": "Full filters once you have {count} products or more. Before that, customers get the sort and the Sale chip.",
+        "on": "Customers always get the filter row, whatever the number of products.",
+        "off": "No filter row: customers scroll your sections."
+      },
+      "filtersFree": "On your plan, customers get category chips and the sort. Price, size, color, on sale and new filters come with a higher plan."
     },
     "announcement": {
       "show": "Show the Promo bar",
@@ -2464,6 +2488,10 @@
     "announcementBar": {
       "name": "Promo bar",
       "description": "A slim bar at the top of the shop: the running sale with its countdown, or your message, in your own style."
+    },
+    "shopFilters": {
+      "name": "Full shop filters",
+      "description": "Customers search and filter by price, size, color, on sale and new. Free shops get category chips and sort."
     }
   },
   "PlanAreas": {

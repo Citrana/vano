@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl"
 import type { Currency } from "../../../../convex/lib/money"
+import type { FilterAccess } from "../../../../convex/lib/looks/filters"
 import type { ResolvedLook } from "../../../../convex/lib/looks/resolve"
 import { ShopHeaderView } from "@/features/public/shop-header-view"
 import { countryName } from "@/features/shop/countries"
@@ -19,12 +20,15 @@ export function WidePreview({
   shop,
   currency,
   products,
+  filters,
   label,
 }: {
   look: ResolvedLook<string>
   shop: PreviewShop
   currency: Currency
   products: PreviewProduct[]
+  /** The filter row to show (`filterAccess`); missing = none. */
+  filters?: FilterAccess
   label: string
 }) {
   const t = useTranslations("Public")
@@ -63,6 +67,7 @@ export function WidePreview({
                 shop={shop}
                 currency={currency}
                 products={products}
+                filters={filters}
                 columns="responsive"
               />
             </div>
