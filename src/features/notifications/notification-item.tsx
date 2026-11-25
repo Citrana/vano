@@ -11,6 +11,7 @@ import {
   PauseCircleIcon,
   SparklesIcon,
   TagIcon,
+  TicketPercentIcon,
   Trash2Icon,
   XCircleIcon,
   type LucideIcon,
@@ -40,6 +41,8 @@ const ICONS: Record<NotificationType, { icon: LucideIcon; tone: string }> = {
   "sale.ended": { icon: TagIcon, tone: "text-muted-foreground" },
   "sale.adminPaused": { icon: PauseCircleIcon, tone: "text-destructive" },
   "sale.adminDeleted": { icon: Trash2Icon, tone: "text-destructive" },
+  "discountCode.adminPaused": { icon: TicketPercentIcon, tone: "text-destructive" },
+  "discountCode.adminDeleted": { icon: Trash2Icon, tone: "text-destructive" },
 }
 
 export type NotificationRow = FunctionReturnType<typeof api.notifications.inbox.latest>[number]

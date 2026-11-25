@@ -24,7 +24,8 @@ export function SalePrice({
   size = "card",
 }: {
   price: number
-  sale: PublicSale | null | undefined
+  /** A sale, or a discount code's price (only the two prices are read). */
+  sale: Pick<PublicSale, "price" | "original"> | null | undefined
   currency: Currency
   size?: "card" | "page"
 }) {

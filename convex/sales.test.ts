@@ -74,7 +74,7 @@ describe("sales: create and show", () => {
   test("the order button's live price follows the server (WhatsApp price at tap time)", async () => {
     const t = newTest();
     const { me, dress } = await shopWithProducts(t);
-    expect(await t.query(api.public.productPrice, { productId: dress })).toEqual({ price: 2500, sale: null });
+    expect(await t.query(api.public.productPrice, { productId: dress })).toEqual({ price: 2500, sale: null, codeField: false });
     const saleId = await me.mutation(api.sales.create, saleArgs());
     expect((await t.query(api.public.productPrice, { productId: dress }))?.sale?.price).toBe(1750);
     await me.mutation(api.sales.pause, { saleId });

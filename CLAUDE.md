@@ -23,7 +23,7 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   change **their own** shop and products. A product that isn't yours is
   reported as `NOT_FOUND`, never as "forbidden" (don't leak existence).
 - **One shop per user** (`shops.by_ownerId`), enforced in `shops.create`.
-- Public functions (`convex/public.ts`, the `stats.record*` mutations) never
+- Public functions (`convex/public.ts`, incl. the discount code mutations, the `stats.record*` mutations) never
   return `ownerId` or any personal data, and never accept one.
 - Errors thrown to the UI are `ConvexError` with a code from
   `convex/lib/errors.ts`; the UI maps codes to translated messages
@@ -432,7 +432,7 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   `saleScheduleProblem` (the event banner limits plus an end in the
   future), presets. The editor, the shop and the server use the same
   ones. Over 80% off needs `steepConfirmed`. A future discount code reuses
-  `saleDiscountValidator` + `discountedPrice`.
+  `saleDiscountValidator` + `discountedPrice` (see "Discount codes").
 - Queries never read the clock: `sales.live` is stored by every write
   (`writeLiveAndSchedule`) and kept by `saleJobs.sync`, scheduled at the
   start, end − 24 h and end (idempotent; it also sends `sale.started` /
@@ -458,6 +458,54 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 - Admins with `shops.manageSales` pause or delete a sale with a reason,
   never on their own shop; logged (`sale.adminPaused` /
   `sale.adminDeleted`) and the seller is notified (they may resume).
+
+## Discount codes
+
+- A code is **a temporary price a customer unlocks on the product page**,
+  on top of the real price (never changed): the `discountCodes` table
+  (code upper case, unique per shop, `by_shopId_and_code`; percent or
+  amount off; the sale target; dates; optional `maxUses`; `uses`),
+  written only by `convex/discountCodes.ts` (seller, `ownProducts.manage`),
+  `admin/discountCodes.ts`, `discountCodeJobs.ts` and the public
+  `redeemDiscountCode` (uses).
+- Rules live **only** in `convex/lib/discountCodes/` (pure) and reuse the
+  sale ones: `discountedPrice`, `saleAppliesTo`, `saleScheduleProblem`
+  (dates entered in the seller's zone with `ScheduleFields`, stored UTC).
+  `normalizeCode` / `codeTextProblem` (3–20 letters and digits, not case
+  sensitive), `suggestCode`, `maxUsesProblem`, `codeStatusAt` (ended →
+  used up → paused → scheduled / running), `evaluateCode`.
+- **Business only**: the `discountCodes` plan feature. `requireCan` on
+  create / update / resume (pause and delete on any plan); public reads go
+  through `liveCodesFor` (live **and** `hasFeature`), so a downgrade turns
+  codes off and hides the field; codes are never deleted.
+- Queries never read the clock: `discountCodes.live` is stored by every
+  write (`writeCodeLiveAndSchedule`), by `discountCodeJobs.sync` at start /
+  end, by a use that reaches the maximum, and the hourly `sweep`.
+- The product page shows "Have a discount code?" only when
+  `public.productPrice.codeField` is true (a live code lowers this
+  product). Never return the code list, `ownerId` or a storage id.
+- The server computes every price: `public.checkDiscountCode` (Apply,
+  counts nothing) and `public.redeemDiscountCode` (Order: re-checked,
+  `maxUses` enforced in the transaction, one use per visitor × product in
+  `discountCodeUses`). The best of sale and code wins, never both
+  (`saleBetter`). Results are returned, never thrown, so the guessing
+  limits aren't rolled back.
+- Guessing limits (`rateLimits.ts`): `discountCodeVisitor` (per shop ×
+  random browser id, `src/lib/visitor-id.ts`) and `discountCodeShop`.
+  Only wrong attempts consume; a visitor or shop out of tokens gets
+  `tooMany` before any code is read. No IP or user agent is stored.
+- The WhatsApp message carries the code, the normal and the final price
+  (`orderHref` with `code`); the Order tap opens the tab first, then
+  points it at the server-confirmed message.
+- Uses show in the codes list and the stats page (`stats.summary.discountCodes`).
+- Admins with `shops.manageDiscountCodes` pause or delete a code with a
+  reason, never on their own shop; logged (`discountCode.adminPaused` /
+  `adminDeleted`) and the seller is notified. Deleting a code purges its
+  uses in batches (`discountCodeJobs.purgeUses`); deleting a product
+  removes it from codes (`forgetProductInCodes`).
+- The sale and code editors share `TargetFields` / `DiscountFields`
+  (`src/features/sales/`); admin moderation dialogs share `ModerateDialog`;
+  plan locks use `PlanLockCard`.
 
 ## Protected shop changes
 
@@ -586,7 +634,7 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   forms with several fields show `<RequiredFieldsHint />`.
 - Components are small and grouped by feature in `src/features/<feature>/`
   (`auth`, `shop`, `product`, `public`, `stats`, `i18n`, `marketing/*`,
-  `shop-looks`, `sales`, `billing`, `change-requests`, `notifications`, `seller-nav`, `admin/*`).
+  `shop-looks`, `sales`, `discount-codes`, `billing`, `change-requests`, `notifications`, `seller-nav`, `admin/*`).
   Generic primitives live in `src/components/ui/`.
 - Admin pages live under `src/app/admin/` and wrap their content in
   `<RequirePermission permission="…">`. Sidebar sections are defined only
@@ -636,6 +684,7 @@ convex/
   shopLooks.ts      # shop look draft / publish (lib/looks/: model, presets, contrast, sections)
   productJobs.ts    # ends "Back in stock"
   sales.ts saleJobs.ts   # seller sales, start/end jobs (lib/sales/: rules)
+  discountCodes.ts discountCodeJobs.ts   # discount codes (lib/discountCodes/: rules)
   changeRequests.ts changeRequestJobs.ts   # protected shop changes
   notifications/    # notification types, inbox, config, outside channels
   notificationJobs.ts                     # ending-soon warnings, cleanup

@@ -58,6 +58,26 @@ export async function saleForProduct(
   return bestSaleFor(product, await liveSalesFor(ctx, shop), shop.currency);
 }
 
+/**
+ * The shop's products as the sale and discount code editors show them
+ * (picker, preview, overview): visible to customers, with a cover photo.
+ */
+export async function pickerProducts(ctx: QueryCtx, shopId: Id<"shops">) {
+  const out = [];
+  for (const p of await shopProducts(ctx, shopId)) {
+    if (p.hidden) continue;
+    out.push({
+      _id: p._id,
+      name: p.name,
+      price: p.price,
+      category: p.category,
+      soldOut: p.soldOut,
+      coverUrl: p.imageIds[0] ? await ctx.storage.getUrl(p.imageIds[0]) : null,
+    });
+  }
+  return out;
+}
+
 export type SaleJobKind = "start" | "endingSoon" | "end";
 
 /**

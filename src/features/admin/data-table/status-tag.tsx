@@ -21,6 +21,7 @@ const NAMESPACE = {
   shop: "ShopStatus",
   visibility: "AdminProducts",
   sale: "Sales.status",
+  discountCode: "DiscountCodes.status",
 } as const
 
 /** A small status tag; the same status always has the same color on every admin page. */

@@ -7,6 +7,7 @@ import { api } from "../../../../../convex/_generated/api"
 import { utcDay } from "../../../../../convex/lib/days"
 import { PageTitle } from "@/components/shell/page-title"
 import { LockedStatsCard } from "@/features/billing/locked-stats-card"
+import { DiscountCodeUses } from "@/features/stats/discount-code-uses"
 import { StatsCards } from "@/features/stats/stats-cards"
 
 export default function StatsPage() {
@@ -19,7 +20,14 @@ export default function StatsPage() {
     <div className="mx-auto flex max-w-2xl flex-col">
       <PageTitle title={t("title")} />
       {/* Without the plan's shop stats: the "Available on {plan}" card. */}
-      {result?.locked ? <LockedStatsCard /> : <StatsCards summary={result && !result.locked ? result : undefined} />}
+      {result?.locked ? (
+        <LockedStatsCard />
+      ) : (
+        <div className="flex flex-col gap-5">
+          <StatsCards summary={result && !result.locked ? result : undefined} />
+          {result && !result.locked ? <DiscountCodeUses codes={result.discountCodes} /> : null}
+        </div>
+      )}
     </div>
   )
 }

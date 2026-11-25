@@ -12,4 +12,12 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
    */
   phoneCodeBurst: { kind: "token bucket", rate: 1, period: MINUTE, capacity: 1 },
   phoneCodeHourly: { kind: "token bucket", rate: 5, period: HOUR, capacity: 5 },
+  /**
+   * Wrong discount code attempts (CLAUDE.md "Discount codes"), against
+   * guessing: per visitor of a shop (a burst of 5, then 10 an hour) and per
+   * shop (a burst of 30, then 100 an hour, so rotating visitor ids doesn't
+   * help). Valid codes never count.
+   */
+  discountCodeVisitor: { kind: "token bucket", rate: 10, period: HOUR, capacity: 5 },
+  discountCodeShop: { kind: "token bucket", rate: 100, period: HOUR, capacity: 30 },
 });

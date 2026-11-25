@@ -99,7 +99,15 @@
     "TOO_MANY_SALES": "Vous avez atteint le nombre maximum de promotions enregistrées. Supprimez-en une ancienne d'abord.",
     "ANNOUNCEMENT_SCHEDULE_INVALID": "Vérifiez les dates du bandeau d’annonce : la fin doit suivre le début, au plus 92 jours après, et le début dans l’année.",
     "INFO_TOO_LONG": "Raccourcissez vos horaires ou vos zones de livraison.",
-    "SOCIAL_INVALID": "Un de vos réseaux sociaux n’est pas un nom d’utilisateur ou un lien de profil valide."
+    "SOCIAL_INVALID": "Un de vos réseaux sociaux n’est pas un nom d’utilisateur ou un lien de profil valide.",
+    "DISCOUNT_CODE_INVALID": "Utilisez 3 à 20 lettres et chiffres pour le code (sans espaces ni symboles).",
+    "DISCOUNT_CODE_TAKEN": "Vous avez déjà un code avec ce texte. Choisissez-en un autre.",
+    "DISCOUNT_CODE_DISCOUNT_INVALID": "Vérifiez la réduction : 1 à 90 %, ou un montant inférieur au prix de chaque produit choisi.",
+    "DISCOUNT_CODE_SCHEDULE_INVALID": "Vérifiez les dates : la fin doit être après le début et dans le futur, 92 jours au plus.",
+    "DISCOUNT_CODE_NO_PRODUCTS": "Ce code ne baisse le prix d'aucun produit. Choisissez d'autres produits ou changez la réduction.",
+    "DISCOUNT_CODE_MAX_USES_INVALID": "Vérifiez le nombre maximum d'utilisations : un nombre entier à partir de 1, pas en dessous des utilisations déjà faites.",
+    "DISCOUNT_CODE_STALE": "Ce code a été modifié ailleurs pendant que vous le modifiiez. Votre changement n'a pas été enregistré : rechargez-le et réessayez.",
+    "TOO_MANY_DISCOUNT_CODES": "Vous avez atteint le nombre maximum de codes enregistrés. Supprimez-en un ancien d'abord."
   },
   "Validation": {
     "required": "Ce champ est obligatoire.",
@@ -330,7 +338,11 @@
     "last30": "30 jours",
     "shopViews": "Visites boutique",
     "productViews": "Vues produits",
-    "whatsappClicks": "Clics WhatsApp"
+    "whatsappClicks": "Clics WhatsApp",
+    "discountCodes": {
+      "title": "Utilisations des codes de réduction",
+      "manage": "Gérer les codes"
+    }
   },
   "ProductForm": {
     "newTitle": "Nouveau produit",
@@ -415,6 +427,8 @@
     },
     "orderSalePrice": "Prix promo : {price} (prix normal {normal})",
     "orderSaleNote": "En promotion au moment de cette commande.",
+    "orderCode": "Code de réduction : {code}",
+    "orderCodePrice": "Prix avec le code : {price} (prix normal {normal})",
     "salePriceLabel": "Prix promo :",
     "normalPriceLabel": "Prix normal :",
     "saleBadge": "-{percent} %",
@@ -502,6 +516,25 @@
       "chipSearch": "« {q} »",
       "chipSize": "Taille {size}",
       "removeLast": "Annuler le dernier filtre"
+    },
+    "discountCode": {
+      "prompt": "Vous avez un code de réduction ?",
+      "label": "Code de réduction",
+      "placeholder": "Saisissez votre code",
+      "apply": "Appliquer",
+      "applying": "Vérification…",
+      "applied": "Code {code} appliqué",
+      "remove": "Retirer",
+      "problems": {
+        "invalid": "Ce code n'existe pas. Vérifiez l'orthographe et réessayez.",
+        "notActive": "Ce code n'est pas actif pour le moment.",
+        "ended": "Ce code a expiré.",
+        "usedUp": "Ce code a déjà été utilisé le nombre maximum de fois.",
+        "notForProduct": "Ce code ne fonctionne pas sur ce produit.",
+        "saleBetter": "Le prix promo est déjà plus bas que ce code, vous gardez donc le prix promo.",
+        "tooMany": "Trop d'essais. Patientez quelques minutes et réessayez.",
+        "failed": "Un problème est survenu. Veuillez réessayer."
+      }
     }
   },
   "NotFound": {
@@ -622,7 +655,8 @@
       "suspend": "Suspendre et réactiver des boutiques",
       "delete": "Supprimer des boutiques",
       "resetLook": "Réinitialiser le style d'une boutique",
-      "manageSales": "Mettre en pause ou supprimer les promotions d'une boutique"
+      "manageSales": "Mettre en pause ou supprimer les promotions d'une boutique",
+      "manageDiscountCodes": "Mettre en pause ou supprimer les codes de réduction d'une boutique"
     },
     "products": {
       "title": "Produits",
@@ -801,17 +835,31 @@
     "sales": {
       "title": "Promotions",
       "empty": "Cette boutique n'a aucune promotion.",
-      "pause": "Mettre en pause",
       "pauseTitle": "Mettre « {name} » en pause ?",
       "pauseBody": "La promotion ne s'affiche plus immédiatement et les prix normaux reviennent. Le vendeur est informé du motif et peut la reprendre après correction.",
       "deleteTitle": "Supprimer « {name} » ?",
       "deleteBody": "La promotion et ses chiffres sont supprimés. Les produits ne changent pas. Le vendeur est informé du motif.",
-      "reason": "Motif (envoyé au vendeur)",
-      "reasonHelp": "{min} à {max} caractères.",
       "pausedDone": "Promotion mise en pause",
       "deletedDone": "Promotion supprimée",
       "pausedBecause": "Mise en pause par un administrateur : {reason}",
       "ownShop": "C'est votre propre boutique : un autre administrateur doit modérer ses promotions."
+    },
+    "moderate": {
+      "pause": "Mettre en pause",
+      "reason": "Motif (envoyé au vendeur)",
+      "reasonHelp": "{min} à {max} caractères."
+    },
+    "discountCodes": {
+      "title": "Codes de réduction",
+      "empty": "Cette boutique n'a aucun code de réduction.",
+      "pauseTitle": "Mettre {code} en pause ?",
+      "pauseBody": "Le code cesse de fonctionner immédiatement. Le vendeur est informé du motif et peut le reprendre après correction.",
+      "deleteTitle": "Supprimer {code} ?",
+      "deleteBody": "Le code est supprimé et cesse de fonctionner. Les produits ne changent pas. Le vendeur est informé du motif.",
+      "pausedDone": "Code mis en pause",
+      "deletedDone": "Code supprimé",
+      "pausedBecause": "Mis en pause par un administrateur : {reason}",
+      "ownShop": "C'est votre propre boutique : un autre administrateur doit modérer ses codes."
     }
   },
   "ShopStatus": {
@@ -917,6 +965,10 @@
     "sale": {
       "adminPaused": "A mis en pause une promotion",
       "adminDeleted": "A supprimé une promotion"
+    },
+    "discountCode": {
+      "adminPaused": "A mis en pause un code de réduction",
+      "adminDeleted": "A supprimé un code de réduction"
     }
   },
   "AuditDetails": {
@@ -955,7 +1007,8 @@
     "fromVersion": "Version précédente",
     "toVersion": "Nouvelle version",
     "lowered": "Fonctionnalités retirées",
-    "sale": "Promotion"
+    "sale": "Promotion",
+    "code": "Code"
   },
   "AdminActivity": {
     "title": "Historique d'activité",
@@ -1988,6 +2041,10 @@
         "ended": "Votre promotion « {name} » est terminée. Les prix normaux sont de retour.",
         "adminPaused": "Un administrateur a mis en pause votre promotion « {name} ». Motif : {reason}",
         "adminDeleted": "Un administrateur a supprimé votre promotion « {name} ». Motif : {reason}"
+      },
+      "discountCode": {
+        "adminPaused": "Un administrateur a mis en pause votre code de réduction {code}. Motif : {reason}",
+        "adminDeleted": "Un administrateur a supprimé votre code de réduction {code}. Motif : {reason}"
       }
     }
   },
@@ -2374,7 +2431,7 @@
     },
     "discountCodes": {
       "name": "Codes de réduction",
-      "description": "Codes que les clients utilisent. Pas encore construit ; vérifié à sa sortie."
+      "description": "Des codes que les clients saisissent sur une page produit pour une réduction temporaire."
     },
     "orderTracking": {
       "name": "Suivi des commandes",
@@ -2701,6 +2758,68 @@
       "saving": "Enregistrement…",
       "discard": "Annuler les modifications",
       "saved": "Bandeau promo enregistré"
+    }
+  },
+  "DiscountCodes": {
+    "title": "Codes de réduction",
+    "new": "Nouveau code",
+    "newTitle": "Nouveau code de réduction",
+    "editTitle": "Modifier le code de réduction",
+    "notFound": "Ce code n'existe plus.",
+    "backToList": "Retour aux codes de réduction",
+    "full": "Vous avez atteint le nombre maximum de codes.",
+    "emptyTitle": "Aucun code de réduction pour le moment",
+    "emptyBody": "Créez un code comme BIENVENUE10 et partagez-le avec vos clients. Ils le saisissent sur une page produit pour obtenir la réduction.",
+    "emptyFilter": "Aucun code avec ce statut.",
+    "filterLabel": "Filtrer les codes par statut",
+    "filters": {
+      "all": "Tous"
+    },
+    "status": {
+      "running": "En cours",
+      "scheduled": "Programmé",
+      "paused": "En pause",
+      "usedUp": "Épuisé",
+      "ended": "Terminé"
+    },
+    "where": {
+      "shop": "toute la boutique",
+      "category": "{category}",
+      "products": "{count, plural, =0 {aucun produit} one {# produit} other {# produits}}"
+    },
+    "usesCount": "{count, plural, =0 {aucune utilisation} one {# utilisation} other {# utilisations}}",
+    "usesOf": "{uses} / {max} utilisations",
+    "actions": "Actions pour {code}",
+    "pause": "Mettre en pause",
+    "resume": "Reprendre",
+    "pausedToast": "Code mis en pause",
+    "resumedToast": "Code repris",
+    "adminPaused": "Un administrateur a mis ce code en pause. Motif : {reason}. Corrigez-le, puis reprenez-le.",
+    "noProductsRow": "Ce code ne baisse le prix d'aucun produit pour le moment.",
+    "deleteTitle": "Supprimer ce code ?",
+    "deleteBody": "{code} sera supprimé et cessera de fonctionner immédiatement. Vos produits ne changent pas.",
+    "deleted": "Code supprimé",
+    "saved": "Code enregistré",
+    "created": "Code créé",
+    "lock": {
+      "title": "Les codes de réduction sont disponibles avec {plan}",
+      "body": "Créez des codes que vos clients saisissent sur une page produit pour une réduction, avec des dates et un nombre maximum d'utilisations.",
+      "bodyKept": "Vos codes sont enregistrés mais ne fonctionnent pas avec votre offre actuelle. Vous pouvez toujours les mettre en pause ou les supprimer.",
+      "action": "Passer à {plan}"
+    },
+    "form": {
+      "code": "Code",
+      "codeHelp": "Ce que les clients saisissent. Lettres et chiffres, majuscules ou minuscules.",
+      "codeInvalid": "Utilisez {min} à {max} lettres et chiffres (sans espaces ni symboles).",
+      "suggest": "Suggérer",
+      "limitUses": "Limiter le nombre d'utilisations",
+      "limitUsesHelp": "Le code ne fonctionne plus après ce nombre de commandes.",
+      "maxUses": "Utilisations maximum",
+      "maxUsesRange": "Saisissez un nombre entier de 1 à {max}.",
+      "maxUsesBelow": "Il a déjà été utilisé {uses} fois : saisissez au moins {uses}.",
+      "usedSoFar": "{count, plural, one {Utilisé # fois jusqu'ici.} other {Utilisé # fois jusqu'ici.}}",
+      "save": "Enregistrer les modifications",
+      "create": "Créer le code"
     }
   }
 }

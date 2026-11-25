@@ -51,3 +51,13 @@ export const saleInputFields = {
   /** The seller confirmed a discount over `STEEP_PERCENT`. */
   steepConfirmed: v.boolean(),
 };
+
+/** A product as the sale and discount code editors list it (`pickerProducts`). */
+export const pickerProductValidator = v.object({
+  _id: v.id("products"),
+  name: v.string(),
+  price: v.number(),
+  category: categoryValidator,
+  soldOut: v.boolean(),
+  coverUrl: v.union(v.string(), v.null()),
+});

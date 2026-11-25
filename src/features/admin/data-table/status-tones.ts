@@ -2,6 +2,7 @@ import type { ChangeStatus } from "../../../../convex/lib/changeRequests"
 import type { SubscriptionStatus } from "../../../../convex/lib/plans"
 import type { PaymentStatus } from "../../../../convex/payments/types"
 import type { SaleStatus } from "../../../../convex/lib/sales/active"
+import type { CodeStatus } from "../../../../convex/lib/discountCodes/active"
 
 /**
  * One color per meaning across every admin list (CLAUDE.md "UI"):
@@ -10,7 +11,7 @@ import type { SaleStatus } from "../../../../convex/lib/sales/active"
  */
 export type StatusTone = "success" | "warning" | "danger" | "info" | "muted"
 
-export type StatusKind = "change" | "payment" | "subscription" | "user" | "shop" | "visibility" | "sale"
+export type StatusKind = "change" | "payment" | "subscription" | "user" | "shop" | "visibility" | "sale" | "discountCode"
 
 type ActiveStatus = "active" | "suspended"
 
@@ -29,6 +30,13 @@ export const STATUS_TONES = {
   shop: { active: "success", suspended: "danger" } satisfies Record<ActiveStatus, StatusTone>,
   visibility: { visible: "success", hidden: "muted" } satisfies Record<"visible" | "hidden", StatusTone>,
   sale: { running: "success", scheduled: "info", paused: "warning", ended: "muted" } satisfies Record<SaleStatus, StatusTone>,
+  discountCode: {
+    running: "success",
+    scheduled: "info",
+    paused: "warning",
+    usedUp: "muted",
+    ended: "muted",
+  } satisfies Record<CodeStatus, StatusTone>,
 } as const
 
 export type StatusOf<K extends StatusKind> = keyof (typeof STATUS_TONES)[K] & string
