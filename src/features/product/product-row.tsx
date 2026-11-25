@@ -1,10 +1,23 @@
 "use client"
 
 import { useMutation } from "convex/react"
-import { EyeIcon, EyeOffIcon, ImageIcon, PencilIcon, PinIcon, StarIcon } from "lucide-react"
+import {
+  EyeIcon,
+  EyeOffIcon,
+  ImageIcon,
+  LockIcon,
+  MoreVerticalIcon,
+  PencilIcon,
+  PinIcon,
+  ReceiptTextIcon,
+  StarIcon,
+  Trash2Icon,
+} from "lucide-react"
 import type { OptimisticLocalStore } from "convex/browser"
 import { useLocale, useTranslations } from "next-intl"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
 import { toast } from "sonner"
 import { cn } from "cn"
 import { api } from "../../../convex/_generated/api"
@@ -14,7 +27,10 @@ import { errorCodeOf } from "../../../convex/lib/errors"
 import { formatMoney, type Currency } from "../../../convex/lib/money"
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Switch } from "@/components/ui/switch"
+import { RecordSaleDialog } from "@/features/sales-records/record-sale-dialog"
+import { useSalesAccess } from "@/features/sales-records/use-sales-access"
 import { useErrorMessage } from "@/lib/use-error-message"
 import { DeleteProductDialog } from "./delete-product-dialog"
 
@@ -73,6 +89,11 @@ export function ProductRow({
     patchList(store, productId, { fewLeft }),
   )
   const setPinned = useMutation(api.products.setPinned)
+  const sales = useSalesAccess()
+  const router = useRouter()
+  const tSales = useTranslations("SalesRecords")
+  const [recording, setRecording] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const errorMessage = useErrorMessage()
   const pin = (pinned: boolean) =>
     setPinned({ productId: product._id, pinned }).catch((error) =>
@@ -108,7 +129,32 @@ export function ProductRow({
             >
               <PencilIcon />
             </Link>
-            <DeleteProductDialog productId={product._id} name={product.name} />
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={<Button variant="ghost" size="icon" aria-label={t("moreActions", { name: product.name })} />}
+              >
+                <MoreVerticalIcon />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="min-w-48">
+                {sales.allowed ? (
+                  sales.locked ? (
+                    <DropdownMenuItem className="min-h-11" onClick={() => router.push("/dashboard/sales")}>
+                      <LockIcon /> {tSales("lock.menuItem", { plan: sales.plan })}
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem className="min-h-11" onClick={() => setRecording(true)}>
+                      <ReceiptTextIcon /> {t("markAsSold")}
+                    </DropdownMenuItem>
+                  )
+                ) : null}
+                {sales.allowed ? <DropdownMenuSeparator /> : null}
+                <DropdownMenuItem className="min-h-11 text-destructive" onClick={() => setDeleting(true)}>
+                  <Trash2Icon /> {tCommon("delete")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DeleteProductDialog productId={product._id} name={product.name} open={deleting} onOpenChange={setDeleting} />
+            <RecordSaleDialog productId={product._id} open={recording} onOpenChange={setRecording} />
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">

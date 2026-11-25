@@ -9,7 +9,7 @@ import { api } from "../../../../convex/_generated/api"
 import type { AuditTargetType } from "../../../../convex/lib/audit"
 import { EmptyState, LoadingState } from "@/components/states/states"
 import { Badge } from "@/components/ui/badge"
-import { DetailItem, DetailList } from "../data-table/detail-list"
+import { DetailItem, DetailList } from "@/components/data-table/detail-list"
 import { adminHref } from "../shell/hrefs"
 
 export type ActivityEntry = NonNullable<FunctionReturnType<typeof api.admin.audit.get>>
@@ -19,7 +19,7 @@ const DETAIL_KEYS = [
   "permissions", "added", "removed", "renamedFrom", "from", "to", "owner", "products", "force",
   "plan", "previousPlan", "days", "reason", "periodEnd", "previousEnd", "amount", "provider", "reference", "shop",
   "requestId", "field", "newValue", "flags", "cooldownOverridden", "scope", "bannerText", "bannerPhoto", "promoHeadline", "decoration",
-  "feature", "value", "endsAt", "fromVersion", "toVersion", "lowered", "sale", "code",
+  "feature", "value", "endsAt", "fromVersion", "toVersion", "lowered", "sale", "code", "records",
 ] as const
 type DetailKey = (typeof DETAIL_KEYS)[number]
 const isDetailKey = (key: string): key is DetailKey => (DETAIL_KEYS as readonly string[]).includes(key)

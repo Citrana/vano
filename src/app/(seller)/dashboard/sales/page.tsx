@@ -3,14 +3,14 @@
 import { Suspense } from "react"
 import { ErrorState, LoadingState } from "@/components/states/states"
 import { QueryBoundary } from "@/components/states/query-boundary"
-import { SalesList } from "@/features/sales/sales-list"
+import { SalesPage } from "@/features/sales-records/sales-page"
 
-export default function SalesPage() {
+export default function SalesRecordsPage() {
   return (
     <QueryBoundary fallback={(retry) => <ErrorState onRetry={retry} />}>
-      {/* The status filter lives in the address (useSearchParams). */}
+      {/* Filters live in the address (useSearchParams). */}
       <Suspense fallback={<LoadingState />}>
-        <SalesList />
+        <SalesPage />
       </Suspense>
     </QueryBoundary>
   )

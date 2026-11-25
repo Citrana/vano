@@ -11,12 +11,29 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog"
 import { useErrorMessage } from "@/lib/use-error-message"
 
-export function DeleteProductDialog({ productId, name }: { productId: Id<"products">; name: string }) {
+/**
+ * "Delete this product?". With `open` / `onOpenChange` the caller opens it
+ * (e.g. from a menu) and no trash button is drawn.
+ */
+export function DeleteProductDialog({
+  productId,
+  name,
+  open: controlledOpen,
+  onOpenChange,
+}: {
+  productId: Id<"products">
+  name: string
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+}) {
   const t = useTranslations("Dashboard")
   const tc = useTranslations("Common")
   const remove = useMutation(api.products.remove)
   const errorMessage = useErrorMessage()
-  const [open, setOpen] = useState(false)
+  const [ownOpen, setOwnOpen] = useState(false)
+  const controlled = controlledOpen !== undefined
+  const open = controlled ? controlledOpen : ownOpen
+  const setOpen = (next: boolean) => (controlled ? onOpenChange?.(next) : setOwnOpen(next))
   const [pending, setPending] = useState(false)
 
   async function confirm() {
@@ -34,9 +51,11 @@ export function DeleteProductDialog({ productId, name }: { productId: Id<"produc
 
   return (
     <>
-      <Button variant="ghost" size="icon" onClick={() => setOpen(true)} aria-label={`${tc("delete")}: ${name}`}>
-        <Trash2Icon />
-      </Button>
+      {controlled ? null : (
+        <Button variant="ghost" size="icon" onClick={() => setOpen(true)} aria-label={`${tc("delete")}: ${name}`}>
+          <Trash2Icon />
+        </Button>
+      )}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogTitle>{t("deleteTitle")}</DialogTitle>
