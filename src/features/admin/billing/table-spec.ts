@@ -1,6 +1,6 @@
 import { PLAN_IDS, SUBSCRIPTION_STATUSES } from "../../../../convex/lib/plans"
 import { PAYMENT_STATUSES } from "../../../../convex/payments/types"
-import type { TableSpec } from "../data-table/url-state"
+import type { TableSpec } from "../../../components/data-table/url-state"
 
 /** /admin/payments URL keys (the failed-payments card and notification use them). Newest first. */
 export const PAYMENTS_SPEC = {

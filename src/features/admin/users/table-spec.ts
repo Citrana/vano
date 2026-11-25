@@ -1,4 +1,4 @@
-import type { TableSpec } from "../data-table/url-state"
+import type { TableSpec } from "../../../components/data-table/url-state"
 
 /** /admin/users URL keys. `roleId` options are loaded at run time. Newest first. */
 export const USERS_SPEC = {

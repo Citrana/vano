@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest"
 import { PAYMENTS_SPEC, SUBSCRIPTIONS_SPEC } from "../billing/table-spec"
 import { CHANGE_REQUESTS_SPEC } from "../change-requests/table-spec"
-import { parseTableState } from "../data-table/url-state"
+import { parseTableState } from "../../../components/data-table/url-state"
 import { attentionHref } from "./links"
 
 const NOW = Date.parse("2026-11-19T12:00:00Z")

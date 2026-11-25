@@ -1,5 +1,5 @@
 import { CATEGORY_KEYS } from "../../../../convex/lib/catalog"
-import type { TableSpec } from "../data-table/url-state"
+import type { TableSpec } from "../../../components/data-table/url-state"
 
 /** /admin/products URL keys. Newest first. */
 export const PRODUCTS_SPEC = {

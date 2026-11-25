@@ -1,6 +1,6 @@
 import { CATEGORY_KEYS } from "../../../../convex/lib/catalog"
 import { CURRENCIES } from "../../../../convex/lib/money"
-import type { TableSpec } from "../data-table/url-state"
+import type { TableSpec } from "../../../components/data-table/url-state"
 
 /** /admin/shops URL keys. Newest first. */
 export const SHOPS_SPEC = {

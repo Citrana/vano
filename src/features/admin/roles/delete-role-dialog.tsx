@@ -10,7 +10,7 @@ import type { Id } from "../../../../convex/_generated/dataModel"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog"
 import { useErrorMessage } from "@/lib/use-error-message"
-import { closeDetailsDrawer } from "../data-table/use-table-state"
+import { closeDetailsDrawer } from "@/components/data-table/use-table-state"
 
 /** Delete with confirmation; a role still assigned is refused by the server. */
 export function DeleteRoleDialog({ roleId, name, inUse }: { roleId: Id<"roles">; name: string; inUse: boolean }) {

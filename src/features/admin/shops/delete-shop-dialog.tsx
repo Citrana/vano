@@ -12,7 +12,7 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useErrorMessage } from "@/lib/use-error-message"
-import { closeDetailsDrawer } from "../data-table/use-table-state"
+import { closeDetailsDrawer } from "@/components/data-table/use-table-state"
 
 /** Irreversible: the admin must type the shop's link (slug) to confirm. */
 export function DeleteShopDialog({ shopId, name, slug }: { shopId: Id<"shops">; name: string; slug: string }) {

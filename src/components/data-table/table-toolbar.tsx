@@ -155,6 +155,7 @@ function FilterField({ filter, table }: { filter: FilterDef; table: TableState }
       label={filter.label}
       from={table.filters[filter.fromKey] ?? ""}
       to={table.filters[filter.toKey] ?? ""}
+      timeZone={filter.timeZone}
       onChange={(from, to) => table.setFilters({ [filter.fromKey]: from, [filter.toKey]: to })}
     />
   )

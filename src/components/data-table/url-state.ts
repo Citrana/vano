@@ -1,4 +1,4 @@
-import { addDays, dayStartMs, isDay } from "../../../../convex/lib/days"
+import { addDays, dayStartMs, isDay } from "../../../convex/lib/days"
 
 /**
  * Admin lists keep their filters, search, page, page size, sort and open

@@ -1,5 +1,5 @@
 import { PLAN_AREAS } from "../../../../convex/lib/planFeatures"
-import type { TableSpec } from "../data-table/url-state"
+import type { TableSpec } from "../../../components/data-table/url-state"
 
 /** /admin/plans URL keys: area, enforced or pricing-only, a name search, the open feature. */
 export const PLAN_FEATURES_SPEC = {

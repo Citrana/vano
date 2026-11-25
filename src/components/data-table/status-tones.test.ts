@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest"
-import { CHANGE_STATUSES } from "../../../../convex/lib/changeRequests"
-import { SUBSCRIPTION_STATUSES } from "../../../../convex/lib/plans"
-import { PAYMENT_STATUSES } from "../../../../convex/payments/types"
+import { CHANGE_STATUSES } from "../../../convex/lib/changeRequests"
+import { SUBSCRIPTION_STATUSES } from "../../../convex/lib/plans"
+import { PAYMENT_STATUSES } from "../../../convex/payments/types"
 import { STATUS_TONES, statusTone } from "./status-tones"
 
 describe("status tones", () => {

@@ -9,7 +9,7 @@ import { LoadingState } from "@/components/states/states"
 import { Card, CardTitle } from "@/components/ui/card"
 import { useCodeLabels } from "@/features/discount-codes/use-code-labels"
 import { useNow } from "@/features/shop-looks/editor/schedule-fields"
-import { StatusTag } from "../data-table/status-tag"
+import { StatusTag } from "@/components/data-table/status-tag"
 import { ModerateDialog } from "./moderate-dialog"
 
 /** Pause or delete one code, with a required reason (logged, the seller is told). */
