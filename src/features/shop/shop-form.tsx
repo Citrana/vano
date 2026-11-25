@@ -26,17 +26,20 @@ import { Textarea } from "@/components/ui/textarea"
 import { shopUrl } from "@/lib/site"
 import { CategoryPicker } from "./category-picker"
 import { countryOptions } from "./countries"
+import { timeZoneOptions } from "./time-zones"
 import { DialCodeSelect } from "./dial-code-select"
 import { LogoField } from "./logo-field"
 import { shopSchema, type ShopFormValues } from "./schemas"
 import { SlugStatus } from "./slug-status"
+import { browserTimeZone } from "@/lib/local-time"
 
 /** The form-only About and contact fields, sent as `openingHours`, `deliveryAreas` and `socials`. */
 type InfoFields = "openingHours" | "deliveryAreas" | "instagram" | "tiktok" | "facebook"
 
 /** What the form sends: `whatsappNumber` is full E.164 (dial code included). */
-export type ShopSubmit = Omit<ShopFormValues, "logoId" | "description" | "whatsappCountry" | InfoFields> & {
+export type ShopSubmit = Omit<ShopFormValues, "logoId" | "description" | "whatsappCountry" | "timeZone" | InfoFields> & {
   description?: string
+  timeZone?: string
   logoId?: Id<"_storage">
   openingHours?: string
   deliveryAreas?: string
@@ -44,7 +47,8 @@ export type ShopSubmit = Omit<ShopFormValues, "logoId" | "description" | "whatsa
 }
 
 /** The form's initial values; About and contact are optional (onboarding doesn't ask for them). */
-export type ShopInitial = Omit<ShopFormValues, "whatsappCountry" | InfoFields> & Partial<Pick<ShopFormValues, InfoFields>>
+export type ShopInitial = Omit<ShopFormValues, "whatsappCountry" | "timeZone" | InfoFields> &
+  Partial<Pick<ShopFormValues, InfoFields | "timeZone">>
 
 const EMPTY_INFO: Pick<ShopFormValues, InfoFields> = {
   openingHours: "",
@@ -68,6 +72,7 @@ const FIELD_OF: Partial<Record<ErrorCode, keyof ShopFormValues>> = {
   CATEGORY_IN_USE: "categories",
   INFO_TOO_LONG: "openingHours",
   SOCIAL_INVALID: "instagram",
+  TIME_ZONE_INVALID: "timeZone",
 }
 
 /**
@@ -106,6 +111,7 @@ export function ShopForm({
   const form = useForm<ShopFormValues>({
     resolver: zodResolver(shopSchema(tv)),
     defaultValues: initial ? withSplitWhatsapp(initial) : {
+      timeZone: browserTimeZone() ?? "",
       name: "",
       slug: "",
       currency: "USD",
@@ -135,6 +141,8 @@ export function ShopForm({
   })
   const locked = mode === "edit" && protectedField !== undefined
   const countries = useMemo(() => countryOptions(locale), [locale])
+  const initialZone = form.getValues("timeZone")
+  const timeZones = useMemo(() => timeZoneOptions(initialZone), [initialZone])
 
   /** A pasted "+254 712…" switches the dial code and keeps the national part. */
   function splitInternational(value: string) {
@@ -162,6 +170,7 @@ export function ShopForm({
         whatsappNumber: normalizeWhatsapp(values.whatsappNumber, dial as CountryCode) ?? values.whatsappNumber,
         description: values.description || undefined,
         logoId: values.logoId as Id<"_storage"> | undefined,
+        timeZone: values.timeZone || undefined,
       })
     } catch (error) {
       const code = errorCodeOf(error)
@@ -361,6 +370,18 @@ export function ShopForm({
               </NativeSelect>
             )}
           </Field>
+          <Field id="timeZone" label={t("timeZone")} help={t("timeZoneHint")} error={errors.timeZone?.message}>
+            {(p) => (
+              <NativeSelect {...p} {...register("timeZone")}>
+                <option value="">—</option>
+                {timeZones.map((zone) => (
+                  <option key={zone} value={zone}>
+                    {zone.replaceAll("_", " ")}
+                  </option>
+                ))}
+              </NativeSelect>
+            )}
+          </Field>
           <Field id="city" label={t("city")} required error={errors.city?.message}>
             {(p) => (
               <Input {...p} autoComplete="address-level2" placeholder={t("cityPlaceholder")} {...register("city")} />
@@ -475,5 +496,11 @@ export function ShopForm({
 /** The stored E.164 number as a dial-code country + national number for the form. */
 function withSplitWhatsapp(initial: ShopInitial): ShopFormValues {
   const { country, national } = splitWhatsapp(initial.whatsappNumber, initial.country as CountryCode)
-  return { ...EMPTY_INFO, ...initial, whatsappNumber: national, whatsappCountry: country }
+  return {
+    ...EMPTY_INFO,
+    ...initial,
+    timeZone: initial.timeZone || browserTimeZone() || "",
+    whatsappNumber: national,
+    whatsappCountry: country,
+  }
 }

@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import type { Doc } from "../_generated/dataModel";
 import { adminMutation, adminQuery } from "../lib/access";
 import { logAdminAction } from "../lib/audit";
-import { shopProducts } from "../lib/entitlements";
+import { hiddenFromShop, shopProducts } from "../lib/entitlements";
 import { fail } from "../lib/errors";
 import { assertNotOwnShop } from "../lib/guards";
 import { resetReasonProblem } from "../lib/looks/reset";
@@ -49,7 +49,7 @@ export const listForShop = adminQuery({
     const shopId = ctx.db.normalizeId("shops", args.shopId);
     const shop = shopId ? await ctx.db.get("shops", shopId) : null;
     if (!shop) return null;
-    const products = (await shopProducts(ctx, shop._id)).filter((p) => !p.hidden);
+    const products = (await shopProducts(ctx, shop._id)).filter((p) => !hiddenFromShop(p));
     const sales = [];
     for (const sale of await shopSales(ctx, shop._id)) {
       sales.push({

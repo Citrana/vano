@@ -1,26 +1,14 @@
+import { wallClock, zonedToUtc } from "../../convex/lib/timeZone"
+
 /**
  * Date-time fields in the seller's own time zone (event banners, profile
- * decorations, sales). Stored values are UTC ms; `<input
+ * decorations, sales, recorded sales). Stored values are UTC ms; `<input
  * type="datetime-local">` speaks "YYYY-MM-DDTHH:mm" wall-clock time. Pure.
- * `timeZone` defaults to the browser's; tests pass one explicitly.
+ * `timeZone` defaults to the browser's; the zone maths lives in
+ * `convex/lib/timeZone.ts` (shared with the server).
  */
 
 const pad = (n: number) => String(n).padStart(2, "0")
-
-/** Wall-clock parts of `ms` in `timeZone`. */
-function partsIn(ms: number, timeZone: string) {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    hourCycle: "h23",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).formatToParts(new Date(ms))
-  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value)
-  return { year: get("year"), month: get("month"), day: get("day"), hour: get("hour"), minute: get("minute") }
-}
 
 /** UTC ms → "YYYY-MM-DDTHH:mm" in the time zone; "" for undefined. */
 export function toLocalInput(ms: number | undefined, timeZone?: string): string {
@@ -29,7 +17,7 @@ export function toLocalInput(ms: number | undefined, timeZone?: string): string 
     const d = new Date(ms)
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
   }
-  const p = partsIn(ms, timeZone)
+  const p = wallClock(ms, timeZone)
   return `${p.year}-${pad(p.month)}-${pad(p.day)}T${pad(p.hour)}:${pad(p.minute)}`
 }
 
@@ -42,13 +30,15 @@ export function fromLocalInput(value: string, timeZone?: string): number | undef
     const ms = new Date(year, month - 1, day, hour, minute).getTime()
     return Number.isFinite(ms) ? ms : undefined
   }
-  // Guess with the wall clock read as UTC, then correct by the zone's
-  // offset at that moment (twice, for times next to a DST change).
-  const wall = Date.UTC(year, month - 1, day, hour, minute)
-  let ms = wall
-  for (let i = 0; i < 2; i++) {
-    const p = partsIn(ms, timeZone)
-    ms += wall - Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute)
-  }
+  const ms = zonedToUtc({ year, month, day, hour, minute }, timeZone)
   return Number.isFinite(ms) ? ms : undefined
+}
+
+/** The browser's IANA time zone ("Africa/Kinshasa"), or undefined. */
+export function browserTimeZone(): string | undefined {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined
+  } catch {
+    return undefined
+  }
 }

@@ -3,11 +3,11 @@
 import { CalendarIcon } from "lucide-react"
 import { useFormatter, useLocale, useTranslations } from "next-intl"
 import { enUS, fr } from "react-day-picker/locale"
-import { addDays, utcDay } from "../../../../convex/lib/days"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useNow } from "@/features/billing/use-billing"
+import { datePresets } from "./date-presets"
 
 const toDate = (day: string) => (day ? new Date(`${day}T12:00:00Z`) : undefined)
 const toDay = (date: Date | undefined) => (date ? date.toISOString().slice(0, 10) : "")
@@ -27,28 +27,27 @@ export function useRangeLabel() {
 
 /**
  * A date range picker (calendar in a popover) for list filters. Values
- * stay "YYYY-MM-DD" in UTC, like the server's day ranges.
+ * stay "YYYY-MM-DD": UTC days like the server's day ranges, or days in
+ * `timeZone` when given (a shop's recorded sales).
  */
 export function DateRangeFilter({
   label,
   from,
   to,
   onChange,
+  timeZone,
 }: {
   label: string
   from: string
   to: string
   onChange: (from: string, to: string) => void
+  timeZone?: string
 }) {
   const t = useTranslations("DataTable")
   const locale = useLocale()
   const rangeLabel = useRangeLabel()
-  const today = utcDay(useNow())
-  const presets = [
-    { label: t("last7"), from: addDays(today, -6), to: today },
-    { label: t("last30"), from: addDays(today, -29), to: today },
-    { label: t("thisMonth"), from: `${today.slice(0, 8)}01`, to: today },
-  ]
+  const { today, presets: ranges } = datePresets(useNow(), timeZone)
+  const presets = ranges.map((p) => ({ ...p, label: t(p.key) }))
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -84,7 +83,7 @@ export function DateRangeFilter({
             disabled={{ after: toDate(today)! }}
           />
           <div className="flex items-center justify-between gap-2 border-t pt-2">
-            <p className="text-xs text-muted-foreground">{t("utcNote")}</p>
+            <p className="text-xs text-muted-foreground">{timeZone ? t("zoneNote", { zone: timeZone }) : t("utcNote")}</p>
             {from || to ? (
               <Button variant="ghost" size="sm" onClick={() => onChange("", "")}>
                 {t("clearDates")}

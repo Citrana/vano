@@ -94,7 +94,7 @@ export function evaluateCode(args: {
 
 /** Wrong guesses (counted by the rate limits); a valid code never is. */
 export function isWrongAttempt(result: CodeResult): boolean {
-  return result.status !== "applied" && result.status !== "saleBetter" && result.status !== "tooMany";
+  return result.status !== "applied" && result.status !== "saleBetter" && result.status !== "tooMany" && result.status !== "soldOut";
 }
 
 /** Whether the product page shows the "Have a discount code?" field. */

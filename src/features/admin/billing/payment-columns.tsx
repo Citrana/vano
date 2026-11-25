@@ -4,8 +4,8 @@ import type { FunctionReturnType } from "convex/server"
 import { useFormatter, useLocale, useTranslations } from "next-intl"
 import { api } from "../../../../convex/_generated/api"
 import { formatMoney } from "../../../../convex/lib/money"
-import { StatusTag } from "../data-table/status-tag"
-import type { Column } from "../data-table/types"
+import { StatusTag } from "@/components/data-table/status-tag"
+import type { Column } from "@/components/data-table/types"
 import { usePlanName } from "@/features/billing/use-plan-catalog"
 
 export type AdminPaymentRow = FunctionReturnType<typeof api.admin.billing.payments>["page"][number]

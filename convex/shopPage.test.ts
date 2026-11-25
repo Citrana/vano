@@ -27,7 +27,7 @@ describe("public.shopPrices", () => {
     const hidden = await me.mutation(api.products.create, await productArgs(t, { name: "Cachée", price: 900 }));
     await t.run((ctx) => ctx.db.patch("products", hidden, { hidden: true }));
 
-    expect(await t.query(api.public.shopPrices, { slug: "chez-amani" })).toEqual([{ _id: dress, price: 2500, sale: null }]);
+    expect(await t.query(api.public.shopPrices, { slug: "chez-amani" })).toEqual([{ _id: dress, price: 2500, soldOut: false, sale: null }]);
 
     await me.mutation(api.sales.create, {
       name: "Black Friday",

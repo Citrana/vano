@@ -18,7 +18,7 @@ import { ShopLookScope } from "@/features/shop-looks/look-scope"
 import { ShopBanner } from "@/features/shop-looks/shop-banner"
 import { ChoiceGroup } from "@/features/shop-looks/editor/choice-group"
 import { useErrorMessage } from "@/lib/use-error-message"
-import { DetailItem, DetailList } from "../data-table/detail-list"
+import { DetailItem, DetailList } from "@/components/data-table/detail-list"
 
 /** Reset a shop's look (banner only, profile photo only, or everything) with a required reason. */
 function ResetLookDialog({ shopId, name }: { shopId: Id<"shops">; name: string }) {

@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import { mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
-import { getEntitlements, hasFeature, shopProducts, visibleProductIds } from "./lib/entitlements";
+import { getEntitlements, hasFeature, hiddenFromShop, shopProducts, visibleProductIds } from "./lib/entitlements";
 import { filterAccess } from "./lib/looks/filters";
 import { urlOf, urlsOf } from "./lib/images";
 import { publicLookFor } from "./lib/looks/store";
@@ -162,7 +162,7 @@ export const productForPage = query({
     if (isSuspended(shop)) return suspendedMarker(shop);
     const id = ctx.db.normalizeId("products", productId);
     const product = id ? await ctx.db.get("products", id) : null;
-    if (!product || product.shopId !== shop._id || product.hidden) return null;
+    if (!product || product.shopId !== shop._id || hiddenFromShop(product)) return null;
     const { limits } = await getEntitlements(ctx, shop);
     if (!visibleProductIds(await shopProducts(ctx, shop._id), limits).has(product._id)) return null;
     return {
@@ -193,20 +193,22 @@ export const productForPage = query({
  * customer taps, even on a page opened before a sale started or ended.
  * Null for an unknown, hidden or suspended product. `codeField` says
  * whether the discount code field shows (it disappears live when the
- * last code ends or the plan no longer includes codes).
+ * last code ends or the plan no longer includes codes). `soldOut` is live
+ * too: the Order button turns off the moment the last piece sells.
  */
 export const productPrice = query({
   args: { productId: v.string() },
   handler: async (ctx, { productId }) => {
     const id = ctx.db.normalizeId("products", productId);
     const product = id ? await ctx.db.get("products", id) : null;
-    if (!product || product.hidden) return null;
+    if (!product || hiddenFromShop(product)) return null;
     const shop = await ctx.db.get("shops", product.shopId);
     if (!shop || isSuspended(shop)) return null;
     return {
       price: product.price,
+      soldOut: product.soldOut,
       sale: publicSale(bestSaleFor(product, await liveSalesFor(ctx, shop), shop.currency)),
-      codeField: codeFieldFor(product, await liveCodesFor(ctx, shop), shop.currency),
+      codeField: !product.soldOut && codeFieldFor(product, await liveCodesFor(ctx, shop), shop.currency),
     };
   },
 });
@@ -215,7 +217,8 @@ export const productPrice = query({
  * Live prices for every visible product of a shop, for the WhatsApp
  * buttons on the product cards (CLAUDE.md "Sales"): one subscription for
  * the whole page, so a card's message carries the price at tap time.
- * Null for an unknown or suspended shop. Prices only — nothing else.
+ * Null for an unknown or suspended shop. Prices and the live Sold out
+ * state (the card's Order button turns off) — nothing else.
  */
 export const shopPrices = query({
   args: { slug: v.string() },
@@ -228,7 +231,12 @@ export const shopPrices = query({
     const sales = await liveSalesFor(ctx, shop);
     return products
       .filter((p) => visible.has(p._id))
-      .map((p) => ({ _id: p._id, price: p.price, sale: publicSale(bestSaleFor(p, sales, shop.currency)) }));
+      .map((p) => ({
+        _id: p._id,
+        price: p.price,
+        soldOut: p.soldOut,
+        sale: publicSale(bestSaleFor(p, sales, shop.currency)),
+      }));
   },
 });
 
@@ -250,6 +258,8 @@ async function tryCode(
   const found = await visibleProduct(ctx, args.productId);
   if (!found) return { status: "invalid" };
   const { shop, product } = found;
+  // A sold-out product can't be ordered, with or without a code.
+  if (product.soldOut) return { status: "soldOut" };
   const visitorId = cleanVisitorId(args.visitorId);
   const visitorKey = `${shop._id}:${visitorId}`;
   const visitorLimit = await rateLimiter.check(ctx, "discountCodeVisitor", { key: visitorKey });

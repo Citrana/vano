@@ -6,6 +6,7 @@ import { CURRENCIES } from "../../../convex/lib/money"
 import { normalizeWhatsapp } from "../../../convex/lib/phone"
 import { SHOP_INFO_LIMITS, socialHandle, type SocialNetwork } from "../../../convex/lib/shopInfo"
 import { slugProblem } from "../../../convex/lib/slug"
+import { timeZoneProblem } from "../../../convex/lib/timeZone"
 
 type TV = ReturnType<typeof useTranslations<"Validation">>
 
@@ -37,6 +38,8 @@ export function shopSchema(tv: TV) {
       whatsappCountry: z.string().min(2, tv("required")),
       city: z.string().trim().min(1, tv("required")).max(LIMITS.cityMax, tv("tooLong", { max: LIMITS.cityMax })),
       country: z.string().min(2, tv("required")),
+      /** IANA zone ("" = not chosen yet; lib/timeZone.ts). */
+      timeZone: z.string().refine((zone) => zone === "" || timeZoneProblem(zone) === null, tv("required")),
       logoId: z.string().optional(),
       /** About and contact (lib/shopInfo.ts); all optional. */
       openingHours: z

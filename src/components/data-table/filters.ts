@@ -10,6 +10,8 @@ export type FilterLabel = {
   optionLabel?: (value: string) => string
   /** Options loaded at run time (ids), for selects whose spec has no option list. */
   options?: readonly SelectOption[]
+  /** A date range in this time zone instead of UTC. */
+  timeZone?: string
 }
 
 /**
@@ -19,7 +21,7 @@ export type FilterLabel = {
  */
 export function filterDefs(spec: TableSpec, labels: Record<string, FilterLabel>): FilterDef[] {
   return spec.filters.map((f): FilterDef => {
-    if (f.kind === "dateRange") return { ...f, label: labels[f.fromKey].label }
+    if (f.kind === "dateRange") return { ...f, label: labels[f.fromKey].label, timeZone: labels[f.fromKey].timeZone }
     const l = labels[f.key]
     if (f.kind === "checkbox") return { ...f, label: l.label }
     return {

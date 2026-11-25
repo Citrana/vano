@@ -16,6 +16,12 @@ import { storedLookValidator } from "./lib/looks/validators";
 import { saleDiscountValidator, saleDisplayValidator, saleTargetValidator } from "./lib/sales/validators";
 import { codeDiscountValidator, codeTargetValidator } from "./lib/discountCodes/validators";
 import {
+  productEventKindValidator,
+  recordOfferValidator,
+  recordStatusValidator,
+  saleSourceValidator,
+} from "./lib/salesRecords/validators";
+import {
   nextActionValidator,
   paymentOutcomeValidator,
   paymentStatusValidator,
@@ -107,6 +113,8 @@ export default defineSchema({
     /** ISO 3166-1 alpha-2, e.g. "CD". */
     country: v.string(),
     logoId: v.optional(v.id("_storage")),
+    /** IANA zone ("Africa/Kinshasa") for dates and a sale's day (lib/timeZone.ts); missing = UTC. */
+    timeZone: v.optional(v.string()),
     /**
      * Legacy look picker, replaced by `shopLooks`. Moved there by
      * `migrations:looksV1`; drop this field once it has run everywhere.
@@ -189,12 +197,86 @@ export default defineSchema({
      * `productJobs.endBackInStock` after RESTOCK_DAYS or when sold out again.
      */
     backInStock: v.optional(v.boolean()),
+    /**
+     * Pieces in stock (lib/stock.ts); missing = not tracked. While the plan
+     * has `stockManagement`, it drives `fewLeft` / `soldOut`.
+     */
+    pieces: v.optional(v.number()),
+    /** Hidden from the shop by its seller (they can show it again; `hidden` is the admin's). */
+    hiddenBySeller: v.optional(v.boolean()),
   })
     .index("by_shopId", ["shopId"])
     .index("by_shopId_and_category", ["shopId", "category"])
     .index("by_hidden_and_category", ["hidden", "category"])
     .index("by_category", ["category"])
     .searchIndex("search_name", { searchField: "name", filterFields: ["hidden", "category"] }),
+
+  /**
+   * Recorded sales (CLAUDE.md "Sales tracking"): one row per sale a seller
+   * marked, with a snapshot of the product so reports stay right when the
+   * product is edited or deleted (`productId` may then point nowhere; the
+   * photo is kept, see `deleteFilesNotIn`). Never deleted by a plan change
+   * or a product deletion; reversed sales stay, `status: "reversed"`.
+   * Written only by `convex/salesRecords.ts` (and purged with the shop).
+   */
+  salesRecords: defineTable({
+    shopId: v.id("shops"),
+    productId: v.id("products"),
+    productName: v.string(),
+    photoId: v.optional(v.id("_storage")),
+    category: categoryValidator,
+    size: v.optional(v.string()),
+    color: v.optional(v.string()),
+    currency: currencyValidator,
+    /** Integer minor units: the product's normal price per item at the time. */
+    normalUnitPrice: v.number(),
+    /** What the customer paid per item (prefilled, editable: negotiated). */
+    finalUnitPrice: v.number(),
+    quantity: v.number(),
+    /** finalUnitPrice × quantity. */
+    total: v.number(),
+    /** max(0, normalUnitPrice × quantity − total). */
+    discount: v.number(),
+    offer: v.optional(recordOfferValidator),
+    source: saleSourceValidator,
+    /** Personal data: only returned with `ownCustomers.view` (or an audited admin reveal). */
+    customerName: v.optional(v.string()),
+    /** E.164. */
+    customerPhone: v.optional(v.string()),
+    soldAt: v.number(),
+    /** "YYYY-MM-DD" of `soldAt` in the shop's time zone (reports). */
+    day: v.string(),
+    /** This sale turned the product sold out (reversing it may put it back). */
+    markedSoldOut: v.boolean(),
+    /** Pieces this sale took from the product's stock (edits and reverses give them back). */
+    piecesTaken: v.optional(v.number()),
+    status: recordStatusValidator,
+    reversedAt: v.optional(v.number()),
+    createdBy: v.id("users"),
+    updatedAt: v.number(),
+    version: v.number(),
+  })
+    .index("by_shopId_and_day", ["shopId", "day"])
+    .index("by_shopId_and_soldAt", ["shopId", "soldAt"])
+    .index("by_productId", ["productId"])
+    .index("by_photoId", ["photoId"]),
+
+  /**
+   * A product's history (sold out on / off, sold, sale edited / reversed,
+   * deleted), kept after the product is deleted. Written only through
+   * `lib/productStock.ts`.
+   */
+  productEvents: defineTable({
+    shopId: v.id("shops"),
+    productId: v.id("products"),
+    productName: v.string(),
+    kind: productEventKindValidator,
+    salesRecordId: v.optional(v.id("salesRecords")),
+    at: v.number(),
+    byUserId: v.optional(v.id("users")),
+  })
+    .index("by_productId_and_at", ["productId", "at"])
+    .index("by_shopId", ["shopId"]),
 
   /**
    * Who uploaded each storage file. A file is claimed by the first seller

@@ -8,9 +8,11 @@ export default function DashboardLayout({ children }: LayoutProps<"/dashboard">)
   return (
     <SellerGate need="shop">
       <SellerShell>
-        <AnnouncementBanner />
-        <ShopSuspendedBanner />
-        <BillingBanner />
+        <div data-print-hide>
+          <AnnouncementBanner />
+          <ShopSuspendedBanner />
+          <BillingBanner />
+        </div>
         {/* Phones: room for the bottom bar (`--bottom-bar`, set by SellerShell). */}
         <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-5 pb-[calc(var(--bottom-bar)+1.5rem)] md:pb-12">
           {children}

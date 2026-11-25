@@ -1,10 +1,23 @@
 "use client"
 
 import { useMutation } from "convex/react"
-import { EyeIcon, EyeOffIcon, ImageIcon, PencilIcon, PinIcon, StarIcon } from "lucide-react"
+import {
+  EyeIcon,
+  EyeOffIcon,
+  ImageIcon,
+  LockIcon,
+  MoreVerticalIcon,
+  PencilIcon,
+  PinIcon,
+  ReceiptTextIcon,
+  StarIcon,
+  Trash2Icon,
+} from "lucide-react"
 import type { OptimisticLocalStore } from "convex/browser"
 import { useLocale, useTranslations } from "next-intl"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
 import { toast } from "sonner"
 import { cn } from "cn"
 import { api } from "../../../convex/_generated/api"
@@ -14,7 +27,10 @@ import { errorCodeOf } from "../../../convex/lib/errors"
 import { formatMoney, type Currency } from "../../../convex/lib/money"
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Switch } from "@/components/ui/switch"
+import { RecordSaleDialog } from "@/features/sales-records/record-sale-dialog"
+import { useSalesAccess } from "@/features/sales-records/use-sales-access"
 import { useErrorMessage } from "@/lib/use-error-message"
 import { DeleteProductDialog } from "./delete-product-dialog"
 
@@ -36,6 +52,12 @@ export type ProductRowData = {
   fewLeft?: boolean
   /** Recently restocked: in the "Back in stock" section. */
   backInStock?: boolean
+  /** Hidden from the shop by the seller (they can show it again). */
+  hiddenBySeller?: boolean
+  /** Pieces in stock, null when not counted. */
+  pieces?: number | null
+  /** The count drives Few left / Sold out (plan has stock management). */
+  tracked?: boolean
   coverUrl: string | null
 }
 
@@ -73,6 +95,21 @@ export function ProductRow({
     patchList(store, productId, { fewLeft }),
   )
   const setPinned = useMutation(api.products.setPinned)
+  const setHiddenBySeller = useMutation(api.products.setHiddenBySeller).withOptimisticUpdate((store, { productId, hidden }) => {
+    const list = store.getQuery(api.products.listMine, {})
+    if (list) store.setQuery(api.products.listMine, {}, list.map((p) => (p._id === productId ? { ...p, hiddenBySeller: hidden } : p)))
+  })
+  const toggleHidden = () => {
+    const hidden = product.hiddenBySeller !== true
+    setHiddenBySeller({ productId: product._id, hidden })
+      .then(() => toast.success(hidden ? t("hiddenToast") : t("shownToast")))
+      .catch((error) => toast.error(errorMessage(error)))
+  }
+  const sales = useSalesAccess()
+  const router = useRouter()
+  const tSales = useTranslations("SalesRecords")
+  const [recording, setRecording] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const errorMessage = useErrorMessage()
   const pin = (pinned: boolean) =>
     setPinned({ productId: product._id, pinned }).catch((error) =>
@@ -108,12 +145,54 @@ export function ProductRow({
             >
               <PencilIcon />
             </Link>
-            <DeleteProductDialog productId={product._id} name={product.name} />
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={<Button variant="ghost" size="icon" aria-label={t("moreActions", { name: product.name })} />}
+              >
+                <MoreVerticalIcon />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="min-w-48">
+                {sales.allowed ? (
+                  sales.locked ? (
+                    <DropdownMenuItem className="min-h-11" onClick={() => router.push("/dashboard/sales")}>
+                      <LockIcon /> {tSales("lock.menuItem", { plan: sales.plan })}
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem className="min-h-11" onClick={() => setRecording(true)}>
+                      <ReceiptTextIcon /> {t("markAsSold")}
+                    </DropdownMenuItem>
+                  )
+                ) : null}
+                {!product.hidden ? (
+                  <DropdownMenuItem className="min-h-11" onClick={toggleHidden}>
+                    {product.hiddenBySeller ? <EyeIcon /> : <EyeOffIcon />}
+                    {product.hiddenBySeller ? t("showInShop") : t("hideFromShop")}
+                  </DropdownMenuItem>
+                ) : null}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="min-h-11 text-destructive" onClick={() => setDeleting(true)}>
+                  <Trash2Icon /> {tCommon("delete")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DeleteProductDialog productId={product._id} name={product.name} open={deleting} onOpenChange={setDeleting} />
+            <RecordSaleDialog productId={product._id} open={recording} onOpenChange={setRecording} />
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <Badge variant="muted">{tc(product.category)}</Badge>
           {product.hidden ? <Badge variant="destructive">{t("hiddenByAdmin")}</Badge> : null}
+          {product.hiddenBySeller && !product.hidden ? (
+            <Badge variant="secondary">
+              <EyeOffIcon aria-hidden />
+              {t("hiddenBySeller")}
+            </Badge>
+          ) : null}
+          {product.tracked && product.pieces !== null && product.pieces !== undefined ? (
+            <Badge variant="muted" className="tabular-nums">
+              {t("pieces", { count: product.pieces })}
+            </Badge>
+          ) : null}
           {product.overLimit ? (
             <Badge variant="destructive">
               <EyeOffIcon aria-hidden />
@@ -153,19 +232,21 @@ export function ProductRow({
           </Button>
         ) : null}
         <div className="mt-auto flex flex-wrap items-center gap-x-4 self-start">
-          <div className="flex items-center gap-2">
-            <Switch
-              aria-labelledby={switchLabelId}
-              checked={product.soldOut}
-              onCheckedChange={(soldOut) =>
-                setSoldOut({ productId: product._id, soldOut }).catch((error) => toast.error(errorMessage(error)))
-              }
-            />
-            <span id={switchLabelId} className="text-sm">
-              {t("markSoldOut")}
-            </span>
-          </div>
-          {!product.soldOut ? (
+          {!product.tracked ? (
+            <div className="flex items-center gap-2">
+              <Switch
+                aria-labelledby={switchLabelId}
+                checked={product.soldOut}
+                onCheckedChange={(soldOut) =>
+                  setSoldOut({ productId: product._id, soldOut }).catch((error) => toast.error(errorMessage(error)))
+                }
+              />
+              <span id={switchLabelId} className="text-sm">
+                {t("markSoldOut")}
+              </span>
+            </div>
+          ) : null}
+          {!product.soldOut && !product.tracked ? (
             <div className="flex items-center gap-2">
               <Switch
                 aria-labelledby={fewLeftLabelId}

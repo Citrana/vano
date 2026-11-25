@@ -185,6 +185,8 @@ export function OrderPanel({
   const normal = live?.price ?? product.price
   const sale = live === undefined || live === null ? (product.sale ?? null) : live.sale
   const codeField = !demo && (live === undefined || live === null ? product.codeField === true : live.codeField)
+  // Live too: the last piece may sell while the page is open.
+  const soldOut = product.soldOut || live?.soldOut === true
   // A code stops showing as soon as the field goes (code ended, plan changed).
   const applied = codeField ? code : null
 
@@ -243,7 +245,7 @@ export function OrderPanel({
       </div>
       <SizeChips label={t("sizes")} options={product.sizes} value={size} onChange={setSize} />
       <ColorDots label={t("colors")} options={product.colors} value={color} onChange={setColor} />
-      {codeField && !product.soldOut ? (
+      {codeField && !soldOut ? (
         <DiscountCodeField
           productId={product._id}
           visitorId={visitorId}
@@ -259,7 +261,7 @@ export function OrderPanel({
       ) : null}
       {/* Phones: a fixed bar, so ordering is always one tap away (the page leaves room for it). */}
       <div className="fixed inset-x-0 bottom-[var(--bottom-bar,0px)] z-30 flex gap-2 border-t bg-background/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur md:static md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
-        {product.soldOut ? (
+        {soldOut ? (
           <span
             className={buttonVariants({ size: "lg", variant: "secondary", className: "shop-btn min-w-0 flex-1 cursor-not-allowed opacity-70" })}
             aria-disabled

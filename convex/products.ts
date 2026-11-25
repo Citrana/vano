@@ -1,15 +1,14 @@
 import { v, type Infer } from "convex/values";
-import { internal } from "./_generated/api";
-import type { Doc, Id } from "./_generated/dataModel";
-import type { MutationCtx } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
 import { categoryValidator, cleanTags, LIMITS, tagsProblem } from "./lib/catalog";
 import { fail } from "./lib/errors";
 import { urlOf } from "./lib/images";
 import { priceProblem } from "./lib/money";
 import { onProductCreated } from "./lib/platformStats";
 import { deleteProduct } from "./lib/productWrites";
-import { RESTOCK_MS, stockChange } from "./lib/restock";
-import { getEntitlements, requireCan, shopProducts, visibleProductIds } from "./lib/entitlements";
+import { applyStock, piecesTracked, stockUpdate } from "./lib/productStock";
+import { isTracked, piecesProblem, stockFlags } from "./lib/stock";
+import { canShopDo, getEntitlements, hiddenFromShop, requireCan, shopProducts, visibleProductIds } from "./lib/entitlements";
 import {
   claimImages,
   deleteFilesNotIn,
@@ -17,6 +16,7 @@ import {
   requireOwnShop,
   sellerMutation,
   sellerQuery,
+  type SellerMutationCtx,
 } from "./lib/seller";
 
 const productInput = v.object({
@@ -29,6 +29,8 @@ const productInput = v.object({
   colors: v.array(v.string()),
   imageIds: v.array(v.id("_storage")),
   soldOut: v.boolean(),
+  /** Pieces in stock (lib/stock.ts); missing = not tracked. Needs `stockManagement`. */
+  pieces: v.optional(v.number()),
 });
 type ProductInput = Infer<typeof productInput>;
 
@@ -52,6 +54,7 @@ function cleanProductInput(shop: Doc<"shops">, input: ProductInput): ProductInpu
   if (imageIds.length < LIMITS.minImages || imageIds.length > LIMITS.maxImages) {
     fail("IMAGES_COUNT");
   }
+  if (input.pieces !== undefined && piecesProblem(input.pieces) !== null) fail("STOCK_INVALID");
   return {
     name,
     price: input.price,
@@ -61,12 +64,31 @@ function cleanProductInput(shop: Doc<"shops">, input: ProductInput): ProductInpu
     colors,
     imageIds,
     soldOut: input.soldOut,
+    pieces: input.pieces,
   };
 }
 
-/** Schedules the end of "Back in stock" for a restock (lib/restock.ts). */
-async function scheduleRestockEnd(ctx: MutationCtx, productId: Id<"products">, restockedAt: number) {
-  await ctx.scheduler.runAt(restockedAt + RESTOCK_MS, internal.productJobs.endBackInStock, { productId, restockedAt });
+/**
+ * The pieces to store and the labels they drive. With `stockManagement`
+ * the form's count is used (empty = not tracked) and decides "Few left" /
+ * "Sold out"; without it a count can't be set, and one saved before a
+ * downgrade is kept but ignored (the form's switches apply).
+ */
+async function stockFromForm(
+  ctx: SellerMutationCtx,
+  shop: Doc<"shops">,
+  input: ProductInput,
+  previousPieces: number | undefined,
+): Promise<{ pieces: number | undefined; tracked: boolean; soldOut: boolean; fewLeft: boolean | undefined }> {
+  const { limits } = await getEntitlements(ctx, shop, Date.now());
+  const canTrack = canShopDo(limits, { kind: "feature", feature: "stockManagement" }) === null;
+  if (!canTrack) {
+    if (input.pieces !== undefined && input.pieces !== previousPieces) fail("PLAN_FEATURE_LOCKED");
+    return { pieces: previousPieces, tracked: false, soldOut: input.soldOut, fewLeft: undefined };
+  }
+  if (input.pieces === undefined) return { pieces: undefined, tracked: false, soldOut: input.soldOut, fewLeft: undefined };
+  const flags = stockFlags(input.pieces);
+  return { pieces: input.pieces, tracked: true, soldOut: flags.soldOut, fewLeft: flags.fewLeft || undefined };
 }
 
 /**
@@ -90,11 +112,14 @@ export const listMine = sellerQuery({
         category: p.category,
         soldOut: p.soldOut,
         hidden: p.hidden ?? false,
-        overLimit: !p.hidden && !visible.has(p._id),
+        overLimit: !hiddenFromShop(p) && !visible.has(p._id),
         pinned: p.pinnedAt !== undefined,
         featured: p.featured === true,
         fewLeft: p.fewLeft === true,
         backInStock: p.backInStock === true,
+        hiddenBySeller: p.hiddenBySeller === true,
+        pieces: p.pieces ?? null,
+        tracked: isTracked(p, limits),
         imageCount: p.imageIds.length,
         coverUrl: await urlOf(ctx, p.imageIds[0]),
       })),
@@ -135,9 +160,13 @@ export const create = sellerMutation({
     if (existing.length >= LIMITS.maxProducts) fail("TOO_MANY_PRODUCTS");
     await requireCan(ctx, shop, { kind: "addProduct", products: existing.length });
     await requireCan(ctx, shop, { kind: "setPhotos", count: input.imageIds.length });
+    const stock = await stockFromForm(ctx, shop, input, undefined);
     await claimImages(ctx, input.imageIds);
     const productId = await ctx.db.insert("products", {
       ...input,
+      soldOut: stock.soldOut,
+      fewLeft: stock.fewLeft,
+      pieces: stock.pieces,
       shopId: shop._id,
       updatedAt: Date.now(),
     });
@@ -169,17 +198,20 @@ export const update = sellerMutation({
     // actions) aren't form fields; carry them over or `replace` would drop
     // them. Turning "Sold out" off here also marks it back in stock.
     const now = Date.now();
-    const stock = stockChange(product, input.soldOut, now);
+    const counted = await stockFromForm(ctx, shop, input, product.pieces);
+    const stock = await stockUpdate(ctx, product, counted.soldOut, now, { byUserId: ctx.user._id });
     await ctx.db.replace("products", productId, {
       ...input,
-      ...stock.fields,
+      ...stock,
+      ...(counted.tracked ? { fewLeft: counted.fewLeft } : {}),
+      pieces: counted.pieces,
       shopId: shop._id,
       hidden: product.hidden,
+      hiddenBySeller: product.hiddenBySeller,
       pinnedAt: product.pinnedAt,
       featured: product.featured,
       updatedAt: now,
     });
-    if (stock.restocked) await scheduleRestockEnd(ctx, productId, now);
     return null;
   },
 });
@@ -189,12 +221,9 @@ export const setSoldOut = sellerMutation({
   args: { productId: v.id("products"), soldOut: v.boolean() },
   returns: v.null(),
   handler: async (ctx, { productId, soldOut }) => {
-    const { product } = await requireOwnProduct(ctx, productId);
-    if (product.soldOut === soldOut) return null;
-    const now = Date.now();
-    const stock = stockChange(product, soldOut, now);
-    await ctx.db.patch("products", productId, { ...stock.fields, updatedAt: now });
-    if (stock.restocked) await scheduleRestockEnd(ctx, productId, now);
+    const { shop, product } = await requireOwnProduct(ctx, productId);
+    if (await piecesTracked(ctx, shop, product)) fail("STOCK_TRACKED");
+    await applyStock(ctx, product, soldOut, Date.now(), { byUserId: ctx.user._id });
     return null;
   },
 });
@@ -217,7 +246,8 @@ export const setFewLeft = sellerMutation({
   args: { productId: v.id("products"), fewLeft: v.boolean() },
   returns: v.null(),
   handler: async (ctx, { productId, fewLeft }) => {
-    const { product } = await requireOwnProduct(ctx, productId);
+    const { shop, product } = await requireOwnProduct(ctx, productId);
+    if (await piecesTracked(ctx, shop, product)) fail("STOCK_TRACKED");
     if (fewLeft && product.soldOut) return null;
     await ctx.db.patch("products", productId, { fewLeft: fewLeft || undefined, updatedAt: Date.now() });
     return null;
@@ -238,11 +268,41 @@ export const setPinned = sellerMutation({
     if (pinned === (product.pinnedAt !== undefined)) return null;
     if (pinned) {
       const products = await shopProducts(ctx, shop._id);
-      const pinnedCount = products.filter((p) => p.pinnedAt !== undefined && !p.hidden).length;
+      const pinnedCount = products.filter((p) => p.pinnedAt !== undefined && !hiddenFromShop(p)).length;
       await requireCan(ctx, shop, { kind: "pinProduct", pinned: pinnedCount });
     }
     await ctx.db.patch("products", productId, { pinnedAt: pinned ? Date.now() : undefined });
     return null;
+  },
+});
+
+/**
+ * Hides a product from the shop, or shows it again (the seller's own
+ * switch, any plan; e.g. "Hide product" on a sold-out notification). An
+ * admin's hide (`hidden`) stays: the seller can't undo it.
+ */
+export const setHiddenBySeller = sellerMutation({
+  permission: "ownProducts.manage",
+  args: { productId: v.id("products"), hidden: v.boolean() },
+  returns: v.null(),
+  handler: async (ctx, { productId, hidden }) => {
+    const { product } = await requireOwnProduct(ctx, productId);
+    if ((product.hiddenBySeller === true) === hidden) return null;
+    await ctx.db.patch("products", productId, { hiddenBySeller: hidden || undefined, updatedAt: Date.now() });
+    return null;
+  },
+});
+
+/** Whether the seller hid one of their products (the notification's Hide / Show button); null if gone. */
+export const visibility = sellerQuery({
+  permission: "ownProducts.manage",
+  args: { productId: v.string() },
+  handler: async (ctx, { productId }) => {
+    const shop = await requireOwnShop(ctx);
+    const id = ctx.db.normalizeId("products", productId);
+    const product = id ? await ctx.db.get("products", id) : null;
+    if (!product || product.shopId !== shop._id) return null;
+    return { hiddenBySeller: product.hiddenBySeller === true, hiddenByAdmin: product.hidden === true };
   },
 });
 
@@ -253,7 +313,7 @@ export const remove = sellerMutation({
   returns: v.null(),
   handler: async (ctx, { productId }) => {
     const { product } = await requireOwnProduct(ctx, productId);
-    await deleteProduct(ctx, product);
+    await deleteProduct(ctx, product, ctx.user._id);
     return null;
   },
 });

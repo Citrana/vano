@@ -51,6 +51,7 @@ export default function SettingsPage() {
           whatsappNumber: shop.whatsappNumber,
           city: shop.city,
           country: shop.country,
+          timeZone: shop.timeZone ?? "",
           logoId: shop.logoId,
           openingHours: shop.openingHours ?? "",
           deliveryAreas: shop.deliveryAreas ?? "",
@@ -71,6 +72,7 @@ export default function SettingsPage() {
             openingHours: values.openingHours,
             deliveryAreas: values.deliveryAreas,
             socials: values.socials,
+            timeZone: values.timeZone,
           })
           toast.success(tf("saved"))
         }}

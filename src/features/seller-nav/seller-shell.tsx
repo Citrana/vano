@@ -29,7 +29,7 @@ export function SellerShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex flex-1 flex-col [--bottom-bar:calc(4rem+env(safe-area-inset-bottom))] md:[--bottom-bar:0px]">
-      <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
+      <header data-print-hide className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
         <div className="flex h-14 items-center justify-between gap-2 px-4">
           <Brand href={SELLER_HOME} />
           {viewer ? (
@@ -44,6 +44,7 @@ export function SellerShell({ children }: { children: ReactNode }) {
       <div className="flex flex-1">
         <aside
           id="seller-sidebar"
+          data-print-hide
           className={cn(
             "sticky top-14 hidden h-[calc(100dvh-3.5rem)] shrink-0 flex-col justify-between gap-4 overflow-y-auto border-r bg-card py-4 md:flex",
             collapsed ? "w-16 px-2" : "w-60 px-3",

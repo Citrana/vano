@@ -2,9 +2,11 @@ import {
   ChartColumnIcon,
   ContactIcon,
   CreditCardIcon,
+  FileBarChartIcon,
   HouseIcon,
   PackageIcon,
   PaletteIcon,
+  ReceiptTextIcon,
   SettingsIcon,
   ShoppingBagIcon,
   TagIcon,
@@ -36,11 +38,13 @@ export type SellerNavKey =
   | "products"
   | "look"
   | "settings"
-  | "sales"
+  | "offers"
   | "discountCodes"
+  | "sales"
   | "orders"
   | "customers"
   | "stats"
+  | "reports"
   | "plan"
   | "team"
 
@@ -53,11 +57,13 @@ export const SELLER_NAV: readonly SellerNavItem[] = [
   { key: "products", href: "/dashboard/products", icon: PackageIcon, group: "shop", permission: "ownProducts.manage", mobile: "tab", ready: true },
   { key: "look", href: "/dashboard/look", icon: PaletteIcon, group: "shop", permission: "ownShop.manage", mobile: "tab", ready: true },
   { key: "settings", href: "/dashboard/settings", icon: SettingsIcon, group: "shop", permission: "ownShop.manage", ready: true },
-  { key: "sales", href: "/dashboard/sales", icon: TagIcon, group: "sell", permission: "ownProducts.manage", feature: "salesPromotions", mobile: "tab", ready: true },
+  { key: "offers", href: "/dashboard/offers", icon: TagIcon, group: "sell", permission: "ownProducts.manage", feature: "salesPromotions", mobile: "tab", ready: true },
   { key: "discountCodes", href: "/dashboard/discount-codes", icon: TicketPercentIcon, group: "sell", permission: "ownProducts.manage", feature: "discountCodes", ready: true },
+  { key: "sales", href: "/dashboard/sales", icon: ReceiptTextIcon, group: "sell", permission: "ownSales.manage", feature: "salesReports", ready: true },
   { key: "orders", href: "/dashboard/orders", icon: ShoppingBagIcon, group: "sell", permission: "ownShop.manage", feature: "orderTracking", ready: false },
   { key: "customers", href: "/dashboard/customers", icon: ContactIcon, group: "sell", permission: "ownShop.manage", ready: false },
   { key: "stats", href: "/dashboard/stats", icon: ChartColumnIcon, group: "insights", permission: "ownStats.view", feature: "shopStats", ready: true },
+  { key: "reports", href: "/dashboard/reports", icon: FileBarChartIcon, group: "insights", permission: "ownSales.manage", feature: "salesReports", ready: true },
   { key: "plan", href: "/dashboard/billing", icon: CreditCardIcon, group: "account", permission: "ownBilling.manage", ready: true },
   { key: "team", href: "/dashboard/team", icon: UsersRoundIcon, group: "account", permission: "ownShop.manage", ready: false },
 ]

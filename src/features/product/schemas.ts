@@ -2,6 +2,7 @@ import { z } from "zod"
 import type { useTranslations } from "next-intl"
 import { CATEGORY_KEYS, LIMITS, tagsProblem } from "../../../convex/lib/catalog"
 import { parseMoneyToMinor, priceProblem } from "../../../convex/lib/money"
+import { piecesProblem } from "../../../convex/lib/stock"
 
 type TV = ReturnType<typeof useTranslations<"Validation">>
 
@@ -32,7 +33,17 @@ export function productSchema(tv: TV, shopCategories: readonly string[]) {
     sizes: tags,
     colors: tags,
     soldOut: z.boolean(),
+    /** Pieces in stock as typed ("" = not counted); lib/stock.ts checks the range. */
+    pieces: z
+      .string()
+      .trim()
+      .refine((v) => v === "" || (/^\d{1,6}$/.test(v) && piecesProblem(Number(v)) === null), tv("pieces")),
   })
+}
+
+/** The typed pieces as a number, or undefined when the field is empty. */
+export function piecesOf(text: string): number | undefined {
+  return text.trim() === "" ? undefined : Number(text.trim())
 }
 
 export type ProductFormValues = z.infer<ReturnType<typeof productSchema>>

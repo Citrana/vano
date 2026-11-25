@@ -1,7 +1,7 @@
 import { internal } from "../../_generated/api";
 import type { Doc, Id } from "../../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../../_generated/server";
-import { getEntitlements, hasFeature, shopProducts, visibleProductIds } from "../entitlements";
+import { getEntitlements, hasFeature, hiddenFromShop, shopProducts, visibleProductIds } from "../entitlements";
 import { promoSaleSummary, type PromoSaleSummary } from "../looks/announcement";
 import { bestSaleFor, publicSale, saleLiveAt, type AppliedSale } from "./active";
 import { ENDING_SOON_MS, SALES_MAX } from "./rules";
@@ -65,7 +65,7 @@ export async function saleForProduct(
 export async function pickerProducts(ctx: QueryCtx, shopId: Id<"shops">) {
   const out = [];
   for (const p of await shopProducts(ctx, shopId)) {
-    if (p.hidden) continue;
+    if (hiddenFromShop(p)) continue;
     out.push({
       _id: p._id,
       name: p.name,

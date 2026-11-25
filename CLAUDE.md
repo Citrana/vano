@@ -378,7 +378,7 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   `announcementBar`; `shopLooks.announcementLive` is stored by
   `savePromoBar` / `syncSchedules` like `promoLive`. Visitors close it for the visit
   when allowed (session storage, wrapped in try/catch).
-- It is **edited on the Sales page** (`src/features/sales/promo-bar-editor.tsx`:
+- It is **edited on the Offers page** (`src/features/sales/promo-bar-editor.tsx`:
   live preview with the shop's look and the real sale, `promo-bar-form.tsx`
   options, one Save / Discard), read with `shopLooks.promoBar` and saved,
   live at once, by `shopLooks.savePromoBar` (into the published look and the
@@ -422,7 +422,10 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   `ShopInfo` shows only the filled parts, and only when there's something
   the header doesn't show (hours, delivery areas or a social link).
 - Product flags: `featured` and `fewLeft` are seller switches
-  (`products.setFeatured` / `setFewLeft`); "Back in stock" is set when
+  (`products.setFeatured` / `setFewLeft`) — except that a product whose
+  pieces are tracked gets `fewLeft` / `soldOut` from its count (see
+  "Sales tracking"; the switches are refused with `STOCK_TRACKED`).
+  "Back in stock" is set when
   Sold out is turned off (`lib/restock.ts`, `stockChange`) and cleared
   after `RESTOCK_DAYS` by `productJobs.endBackInStock` (idempotent on
   `restockedAt`). Sold out clears both.
@@ -518,6 +521,94 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   (`src/features/sales/`); admin moderation dialogs share `ModerateDialog`;
   plan locks use `PlanLockCard`.
 
+## Sales tracking
+
+- **Naming**: "sales" in code means promotions (`sales` table,
+  `convex/sales.ts`, `Sales.*` texts), shown to sellers as **Offers**
+  (`/dashboard/offers`). A sale a seller *made* is a **recorded sale**:
+  the `salesRecords` table, `convex/salesRecords.ts`,
+  `convex/lib/salesRecords/`, `src/features/sales-records/`,
+  `SalesRecords.*` texts, shown as **Sales** (`/dashboard/sales`). Never
+  mix the two.
+- A recorded sale is written only by `convex/salesRecords.ts` ("Mark as
+  sold": `record`, `update`, `reverse`) and purged only with its shop
+  (`admin/shops.purgeShop`). It stores a **snapshot** (product name,
+  first photo, category, size, colour, currency, normal price per item,
+  final price per item, quantity, `total`, `discount`, the `offer` —
+  running sale or code — and `source`), so reports stay right after the
+  product is edited or deleted. Never read the product to report a sale.
+  The product's real price is never changed.
+- Prices: `suggestedPrice` (best of `saleForProduct` and `evaluateCode`
+  for the customer, never both) prefills the dialog; the seller may type
+  another price (negotiated, above or below). `recordTotals` gives
+  `total` and `discount` (never negative). Rules (quantity 1–999, date
+  within two years and not in the future, size / colour required when the
+  product has them, customer name / phone) live only in
+  `convex/lib/salesRecords/rules.ts`, used by the Zod schemas and the
+  server. Codes don't count a use (the customer's Order tap did).
+- **Sold out** and the pieces count change only through
+  `lib/productStock.ts` (`applyStock` / `stockUpdate` / `applyPieces`),
+  used by `products.setSoldOut`, `products.update` and recorded sales, so
+  every change lands in `productEvents` (the product's history: sold out,
+  back on sale, sold, sale edited / reversed, deleted).
+- **Pieces in stock**: optional `products.pieces` (missing = not
+  counted), rules only in `convex/lib/stock.ts` (`stockFlags`,
+  `takePieces`, `FEW_LEFT_MAX` = 3, `isTracked`). Tracked = a count and
+  the `stockManagement` plan feature (`requireCan` to set one; after a
+  downgrade the count is kept but ignored and the manual switches work).
+  While tracked: "Few left" at 3 or fewer, "Sold out" at 0, each recorded
+  sale takes its quantity (never more: `SALES_RECORD_STOCK`) and stores
+  `piecesTaken`; an edit takes or gives back the difference; a reverse
+  gives the pieces back (no longer sold out). Taking the last piece sets
+  `markedSoldOut` and notifies the seller (`product.soldOut`, with "Hide
+  product"). The sale modal has no sold-out switch; untracked products
+  don't change when sold.
+- A sold-out product can't be ordered: `public.productPrice` /
+  `shopPrices` return `soldOut` live (the Order buttons turn off on an
+  open page), `redeemDiscountCode` / `checkDiscountCode` return
+  `soldOut` (no use counted) and WhatsApp clicks aren't counted.
+- **Hidden by the seller**: `products.hiddenBySeller`
+  (`products.setHiddenBySeller`, any plan; the seller can show it
+  again), separate from the admin's `hidden` (the seller can't undo it).
+  Every customer-facing check uses `hiddenFromShop` (`entitlements.ts`);
+  admin screens read `hidden`.
+- Deleting a product never deletes its sales or history.
+  `deleteFilesNotIn` keeps a photo still used by a recorded sale; it goes
+  when the shop is purged.
+- A reversed sale stays listed (`status: "reversed"`) and is excluded
+  from every total (`sumRecords`). Edits send `expectedVersion`
+  (`SALES_RECORD_STALE`); a reversed sale can't change.
+- **Business only**: the `salesReports` plan feature. `requireCan` on
+  every write, `hasFeature` in every read (`locked`). A downgrade hides
+  sales, never deletes them.
+- **Dates**: each sale stores `soldAt` (UTC) and `day` ("YYYY-MM-DD" in
+  the shop's time zone, `shops.timeZone`, IANA, `lib/timeZone.ts`; UTC
+  until set). Reports group by `day` (`by_shopId_and_day`). The zone is
+  set from the browser at sign-up or on the first sale, and edited in
+  Shop settings; `src/lib/local-time.ts` shares its maths.
+- **Customer data** (name, phone): returned to sellers only with
+  `ownCustomers.view` (a future team role may lack it); recording needs
+  `ownSales.manage`. Admins see totals with `shops.view`; names and
+  phones need `shops.viewCustomers` and a reason, never on their own
+  shop, through the `admin/salesRecords.revealCustomers` mutation, which
+  logs `salesRecord.customersViewed` in the same transaction.
+- **Reports** (`/dashboard/reports`, `convex/reports.ts`, Business via
+  `salesReports`): one month ("YYYY-MM") in the shop's time zone — a day
+  range on each sale's stored `day`, so zone maths is never redone. Rules
+  only in `convex/lib/salesRecords/report.ts` (`buildReport`, `change`,
+  `monthRange`, `previousMonth`, `currentMonth`): confirmed sales only,
+  from the snapshot, compared with the previous month. WhatsApp taps come
+  from `shopDailyStats` (UTC days) and are shown as taps, never revenue.
+  The CSV reuses `salesRecords.listMine` (`src/features/reports/csv.ts`);
+  Print shows a print-only summary (`print:` + `data-print-hide` on the
+  seller shell). `reportJobs.monthly` (daily cron at a fixed UTC hour)
+  sends `report.ready` on each shop's local 1st, only with the plan and
+  at least one confirmed sale, deduped per shop and month.
+- "Mark as sold" is one dialog (`RecordSaleDialog`) opened from the
+  product list menu, the product page and the Sales page ("Record a
+  sale" → `PickProductDialog`). The Sales page keeps its filters in the
+  address (`range`, `from`, `to`, `source`, `product`, `q`, `open`).
+
 ## Protected shop changes
 
 - After creation, a shop's **name, link (slug) and WhatsApp number** only
@@ -588,6 +679,9 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   (`NOTIFICATION_RETENTION_DAYS`, `COUNT_CAP`, …). The daily cron
   `notificationJobs.cleanup` deletes old rows; `notificationJobs.endingSoon`
   sends the ending-soon warnings.
+- A type may have one action of its own (e.g. "Hide product" on
+  `product.soldOut`), drawn by `notification-action.tsx` beside the row's
+  link (never inside it) on the inbox page and in the bell.
 - Outside delivery (WhatsApp, email) implements `NotificationChannel`
   (`convex/notifications/channel.ts`), registered in `registry.ts` and
   enabled by `NOTIFY_CHANNELS`; `notify` schedules it. Features don't change.
@@ -627,6 +721,10 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   headline. Selected chips / toggles use `chip-selected` (ink), badges
   plum. Button fills use `--coral-strong` and WhatsApp `--whatsapp` so
   white text passes WCAG AA; plain `--coral` text only at >= 24px.
+- **Charts** (seller Reports): one hue, `--chart` (`bg-chart`, checked
+  for 3:1 on cards), thin bars with 4px rounded ends on the baseline, a
+  hidden table with the same numbers, growth only under `motion-safe:`.
+  Number tiles use the shared `StatTile` (`src/components/stats/`).
 - **Surfaces**: one radius scale (`rounded-sm` 6px tags/badges,
   `rounded-md` 10px buttons/inputs, `rounded-lg` 12px tiles, `rounded-xl`
   16px cards; `rounded-full` only for chips, avatars, dots, switches, the
@@ -645,7 +743,7 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   forms with several fields show `<RequiredFieldsHint />`.
 - Components are small and grouped by feature in `src/features/<feature>/`
   (`auth`, `shop`, `product`, `public`, `stats`, `i18n`, `marketing/*`,
-  `shop-looks`, `sales`, `discount-codes`, `billing`, `change-requests`, `notifications`, `seller-nav`, `admin/*`).
+  `shop-looks`, `sales`, `sales-records`, `discount-codes`, `billing`, `change-requests`, `notifications`, `seller-nav`, `admin/*`).
   Generic primitives live in `src/components/ui/`.
 - Admin pages live under `src/app/admin/` and wrap their content in
   `<RequirePermission permission="…">`. Sidebar sections are defined only
@@ -661,16 +759,18 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   shared `SideNav` (`src/components/shell/nav/`), also used by the admin
   sidebar. Phones reserve the bottom bar with `--bottom-bar`: sticky footers
   use `bottom-[var(--bottom-bar,0px)]`, never `bottom-0`.
-- **Admin lists** use the shared `DataTable` (`src/features/admin/data-table/`);
-  a page only defines its columns, its pure URL spec (`table-spec.ts`:
+- **Lists** (admin and seller) use the shared `DataTable`
+  (`src/components/data-table/`); a page only defines its columns, its pure URL spec (`table-spec.ts`:
   filter keys, options, defaults) and labels (`filterDefs`). Never build a
   list, filter bar, pagination or date input by hand. Filters, search,
   page, page size, sort and the open row live in the URL (`useTableState`,
   pure codec in `url-state.ts`); a record opens in `DetailsDrawer`
-  (`?open=<id>`, links built only by `adminHref`); old
+  (`?open=<id>`, admin links built only by `adminHref`); old
   `/admin/<list>/<id>` routes redirect there. Only the date column sorts,
   on the server (`order` arg, `convex/lib/listOrder.ts`). Statuses use
-  `StatusTag` (one tone map in `status-tones.ts`).
+  `StatusTag` (one tone map in `status-tones.ts`). A list whose days are
+  in the shop's time zone (recorded sales) passes `timeZone` to its date
+  filter; admin lists stay in UTC.
 - Pure modules imported by Vitest use relative imports (Vitest has no `@/`
   alias).
 
@@ -695,6 +795,7 @@ convex/
   shopLooks.ts      # shop look draft / publish (lib/looks/: model, presets, contrast, sections)
   productJobs.ts    # ends "Back in stock"
   sales.ts saleJobs.ts   # seller sales, start/end jobs (lib/sales/: rules)
+  salesRecords.ts        # recorded sales (lib/salesRecords/: rules)
   discountCodes.ts discountCodeJobs.ts   # discount codes (lib/discountCodes/: rules)
   changeRequests.ts changeRequestJobs.ts   # protected shop changes
   notifications/    # notification types, inbox, config, outside channels

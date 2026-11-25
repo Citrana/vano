@@ -13,7 +13,7 @@ import type { SellerSale } from "../../../convex/sales"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { StatusTag } from "@/features/admin/data-table/status-tag"
+import { StatusTag } from "@/components/data-table/status-tag"
 import { useErrorMessage } from "@/lib/use-error-message"
 import { useSaleLabels } from "./use-sale-labels"
 
@@ -75,7 +75,7 @@ export function SaleRow({ sale, currency, now, locked }: { sale: SaleRowData; cu
           </DropdownMenuTrigger>
           <DropdownMenuContent className="min-w-48">
             {!locked ? (
-              <DropdownMenuItem className="min-h-11" onClick={() => router.push(`/dashboard/sales/${sale._id}`)}>
+              <DropdownMenuItem className="min-h-11" onClick={() => router.push(`/dashboard/offers/${sale._id}`)}>
                 <PencilIcon /> {tc("edit")}
               </DropdownMenuItem>
             ) : null}
@@ -87,7 +87,7 @@ export function SaleRow({ sale, currency, now, locked }: { sale: SaleRowData; cu
                   try {
                     const id = await duplicate({ saleId: sale._id, name: t("copyName", { name: sale.name }).slice(0, 60) })
                     toast.success(t("duplicated"))
-                    router.push(`/dashboard/sales/${id}`)
+                    router.push(`/dashboard/offers/${id}`)
                   } catch (error) {
                     toast.error(errorMessage(error))
                   } finally {

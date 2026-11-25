@@ -1,5 +1,5 @@
 import { AUDIT_ACTIONS } from "../../../../convex/lib/audit"
-import type { TableSpec } from "../data-table/url-state"
+import type { TableSpec } from "../../../components/data-table/url-state"
 
 /** /admin/activity URL keys. `actor` is "system" or a user id (loaded at run time). Newest first. */
 export const ACTIVITY_SPEC = {

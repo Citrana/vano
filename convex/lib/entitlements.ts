@@ -101,11 +101,20 @@ export async function hasFeature(
   return canShopDo(limits, { kind: "feature", feature }) === null;
 }
 
-type VisibilityInput = Pick<Doc<"products">, "_id" | "_creationTime" | "pinnedAt" | "hidden">;
+/**
+ * Whether a product is kept off the shop: hidden by an admin (`hidden`,
+ * the seller can't undo it) or by its seller (`hiddenBySeller`). Every
+ * customer-facing check uses this; admin screens read `hidden` itself.
+ */
+export function hiddenFromShop(product: Pick<Doc<"products">, "hidden" | "hiddenBySeller">): boolean {
+  return product.hidden === true || product.hiddenBySeller === true;
+}
+
+type VisibilityInput = Pick<Doc<"products">, "_id" | "_creationTime" | "pinnedAt" | "hidden" | "hiddenBySeller">;
 
 /**
  * Which products the public shop shows (CLAUDE.md "Billing"): products
- * hidden by an admin never count; then the seller's pinned products
+ * hidden by an admin or their seller never count; then the seller's pinned products
  * (most recently pinned first), then the newest, up to the plan's limit.
  * The rest are "over the limit": kept and editable, but not public.
  * Computed on every read, so upgrading shows everything again at once.
@@ -116,7 +125,7 @@ export function visibleProductIds<P extends VisibilityInput>(
 ): Set<Id<"products">> {
   const cap = productCap(limits);
   const ranked = products
-    .filter((p) => !p.hidden)
+    .filter((p) => !hiddenFromShop(p))
     .sort((a, b) => {
       const pa = a.pinnedAt ?? -1;
       const pb = b.pinnedAt ?? -1;

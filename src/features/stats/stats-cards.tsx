@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl"
 import { useState } from "react"
 import { cn } from "cn"
 import { Card, CardTitle } from "@/components/ui/card"
+import { StatTile } from "@/components/stats/stat-tile"
 import { Skeleton } from "@/components/ui/skeleton"
 
 type Totals = { shopViews: number; productViews: number; whatsappClicks: number }
@@ -46,16 +47,13 @@ export function StatsCards({ summary }: { summary: StatsSummary | undefined }) {
         </div>
       </div>
       <dl className="grid grid-cols-3 gap-2">
-        {tiles.map(({ key, icon: Icon }) => (
-          <div key={key} className="flex min-w-0 flex-col gap-2 rounded-lg bg-muted/60 p-4">
-            <dt className="flex flex-col gap-1.5 text-xs text-muted-foreground">
-              <Icon className="size-4 shrink-0" aria-hidden />
-              <span className="leading-snug break-words">{t(key)}</span>
-            </dt>
-            <dd className="font-heading text-2xl font-bold tracking-tight tabular-nums">
-              {totals ? totals[key].toLocaleString() : <Skeleton className="h-7 w-10" />}
-            </dd>
-          </div>
+        {tiles.map(({ key, icon }) => (
+          <StatTile
+            key={key}
+            icon={icon}
+            label={t(key)}
+            value={totals ? totals[key].toLocaleString() : <Skeleton className="h-7 w-10" />}
+          />
         ))}
       </dl>
     </Card>

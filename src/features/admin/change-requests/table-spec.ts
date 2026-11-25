@@ -1,5 +1,5 @@
 import { CHANGE_STATUSES, PROTECTED_FIELDS } from "../../../../convex/lib/changeRequests"
-import type { TableSpec } from "../data-table/url-state"
+import type { TableSpec } from "../../../components/data-table/url-state"
 
 /** /admin/change-requests URL keys (read by attention cards and notifications). Pending by default. */
 export const CHANGE_REQUESTS_SPEC = {

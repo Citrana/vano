@@ -107,7 +107,20 @@
     "DISCOUNT_CODE_NO_PRODUCTS": "This code doesn't lower the price of any product. Choose other products or change the discount.",
     "DISCOUNT_CODE_MAX_USES_INVALID": "Check the maximum number of uses: a whole number from 1, not below the uses so far.",
     "DISCOUNT_CODE_STALE": "This code was changed somewhere else while you were editing. Your change wasn't saved: reload it and try again.",
-    "TOO_MANY_DISCOUNT_CODES": "You've reached the maximum number of saved codes. Delete an old one first."
+    "TOO_MANY_DISCOUNT_CODES": "You've reached the maximum number of saved codes. Delete an old one first.",
+    "SALES_RECORD_INVALID": "Something in this sale isn't valid. Check it and try again.",
+    "SALES_RECORD_QUANTITY": "Enter a quantity from 1 to 999.",
+    "SALES_RECORD_PRICE": "Enter a price above zero.",
+    "SALES_RECORD_DATE": "Pick a date in the last two years, not in the future.",
+    "SALES_RECORD_OPTION": "Pick one of the product's sizes and colors.",
+    "SALES_RECORD_CUSTOMER": "Check the customer's name (60 characters at most) and phone number.",
+    "SALES_RECORD_STALE": "This sale was changed in the meantime. Close it and open it again.",
+    "SALES_RECORD_REVERSED": "This sale was reversed. It can't be changed anymore.",
+    "TIME_ZONE_INVALID": "Pick a time zone from the list.",
+    "SALES_RECORD_STOCK": "There aren't enough pieces left for this sale.",
+    "STOCK_INVALID": "Enter a number of pieces from 0 to 99,999, or leave it empty.",
+    "STOCK_TRACKED": "This product's pieces are counted: change the number of pieces instead.",
+    "REPORT_INVALID": "This month isn't valid."
   },
   "Validation": {
     "required": "This field is required.",
@@ -129,7 +142,8 @@
     "announcementBothRequired": "Write the announcement in both languages, or leave both empty.",
     "reasonLength": "Write a reason of {min} to {max} characters.",
     "daysRange": "Enter a whole number of days from {min} to {max}.",
-    "socialInvalid": "Enter a username like @yourshop, or a link to your profile."
+    "socialInvalid": "Enter a username like @yourshop, or a link to your profile.",
+    "pieces": "Enter a whole number from 0 to 99,999, or leave it empty."
   },
   "Categories": {
     "clothes": "Clothes",
@@ -182,11 +196,13 @@
       "products": "Products",
       "look": "Look",
       "settings": "Shop settings",
-      "sales": "Sales",
+      "offers": "Offers",
       "discountCodes": "Discount codes",
+      "sales": "Sales",
       "orders": "Orders",
       "customers": "Customers",
       "stats": "Stats",
+      "reports": "Reports",
       "plan": "Plan",
       "team": "Team",
       "more": "More"
@@ -259,7 +275,9 @@
       "facebook": "Facebook"
     },
     "socialPlaceholder": "@yourshop",
-    "socialsHelp": "Your username (@yourshop) or a link to your profile."
+    "socialsHelp": "Your username (@yourshop) or a link to your profile.",
+    "timeZone": "Time zone",
+    "timeZoneHint": "Used for the dates of your sales and reports."
   },
   "Dashboard": {
     "title": "My shop",
@@ -320,7 +338,14 @@
     "fewLeft": "Few left",
     "backInStock": "Back in stock",
     "markFewLeft": "Few left",
-    "markFeatured": "Featured"
+    "markFeatured": "Featured",
+    "moreActions": "More actions for {name}",
+    "markAsSold": "Mark as sold",
+    "pieces": "{count, plural, one {# piece} other {# pieces}}",
+    "hiddenBySeller": "Hidden",
+    "hideFromShop": "Hide from shop",
+    "hiddenToast": "Hidden from your shop",
+    "shownToast": "Back in your shop"
   },
   "Share": {
     "title": "Your shop link",
@@ -379,7 +404,11 @@
     "notFoundBody": "It may have been deleted.",
     "backToDashboard": "Back to dashboard",
     "hiddenNotice": "An admin hid this product, so customers can't see it. Contact Vano support if you think this is a mistake.",
-    "photosPlanHint": "Your plan allows {max} photos per product."
+    "photosPlanHint": "Your plan allows {max} photos per product.",
+    "pieces": "Pieces in stock",
+    "piecesHelp": "Leave empty to not count. Few left shows at {few} or fewer, Sold out at 0, and each recorded sale takes its pieces.",
+    "piecesLocked": "Counting pieces is available on {plan}.",
+    "stockDriven": "Sold out and Few left follow the pieces count."
   },
   "TagInput": {
     "add": "Add",
@@ -533,7 +562,8 @@
         "notForProduct": "This code doesn't work on this product.",
         "saleBetter": "The sale price is already lower than this code, so you keep the sale price.",
         "tooMany": "Too many tries. Please wait a few minutes and try again.",
-        "failed": "Something went wrong. Please try again."
+        "failed": "Something went wrong. Please try again.",
+        "soldOut": "This product is sold out."
       }
     }
   },
@@ -656,7 +686,8 @@
       "delete": "Delete shops",
       "resetLook": "Reset a shop's look",
       "manageSales": "Pause or delete a shop's sales",
-      "manageDiscountCodes": "Pause or delete a shop's discount codes"
+      "manageDiscountCodes": "Pause or delete a shop's discount codes",
+      "viewCustomers": "See customer names and phone numbers of a shop's sales"
     },
     "products": {
       "title": "Products",
@@ -707,6 +738,14 @@
     "plans": {
       "title": "Plans & features",
       "manage": "View and edit plans, features and shop exceptions"
+    },
+    "ownSales": {
+      "title": "Own sales",
+      "manage": "Record, edit and reverse their shop's sales"
+    },
+    "ownCustomers": {
+      "title": "Own customers",
+      "view": "See customer names and phone numbers of their sales"
     }
   },
   "AdminRoles": {
@@ -833,7 +872,7 @@
       "promoBarTitle": "Sale title: “{title}”"
     },
     "sales": {
-      "title": "Sales",
+      "title": "Offers",
       "empty": "This shop has no sales.",
       "pauseTitle": "Pause \"{name}\"?",
       "pauseBody": "The sale stops showing at once and normal prices return. The seller is told why and can resume it after fixing it.",
@@ -860,6 +899,25 @@
       "deletedDone": "Code deleted",
       "pausedBecause": "Paused by an admin: {reason}",
       "ownShop": "This is your own shop: another admin has to moderate its codes."
+    },
+    "salesRecords": {
+      "title": "Recorded sales",
+      "empty": "This shop hasn't recorded any sales.",
+      "sales": "Sales",
+      "items": "Items",
+      "revenue": "Revenue",
+      "discounts": "Discounts",
+      "reversed": "{count, plural, one {# reversed sale, not counted} other {# reversed sales, not counted}}",
+      "truncated": "Based on the latest {count} sales.",
+      "lastSale": "Last sale {date}",
+      "reveal": "Show customer details",
+      "revealTitle": "Show customer details?",
+      "revealBody": "Customer names and phone numbers are personal data. Say why you need them: your reason is saved in the activity history.",
+      "revealConfirm": "Show",
+      "revealed": "Customers of the last {count} sales",
+      "noCustomers": "No customer details in recent sales.",
+      "hide": "Hide",
+      "reason": "Reason (saved in the activity history)"
     }
   },
   "ShopStatus": {
@@ -969,6 +1027,9 @@
     "discountCode": {
       "adminPaused": "Paused a shop's discount code",
       "adminDeleted": "Deleted a shop's discount code"
+    },
+    "salesRecord": {
+      "customersViewed": "Viewed a shop's customer details"
     }
   },
   "AuditDetails": {
@@ -1008,7 +1069,8 @@
     "toVersion": "New version",
     "lowered": "Features taken away",
     "sale": "Sale",
-    "code": "Code"
+    "code": "Code",
+    "records": "Sales shown"
   },
   "AdminActivity": {
     "title": "Activity history",
@@ -1130,7 +1192,7 @@
       "sections": "Sections",
       "sectionsHint": "What your shop page shows, in which order, and how your products are laid out.",
       "announcement": "Promo bar",
-      "announcementHint": "Now edited on the Sales page."
+      "announcementHint": "Now edited on the Offers page."
     },
     "status": {
       "saving": "Saving draft…",
@@ -1481,9 +1543,9 @@
       "customColorsHelp": "Pick the background and the text. The text must stay easy to read (contrast 4.5:1) before you can publish.",
       "background": "Background",
       "textColor": "Text",
-      "movedTitle": "The Promo bar is now in Sales",
+      "movedTitle": "The Promo bar is now in Offers",
       "movedBody": "Set its colors, style, icon, title and message next to your sales, with a live preview.",
-      "editInSales": "Edit in Sales"
+      "editInSales": "Edit in Offers"
     }
   },
   "Demo": {
@@ -2089,7 +2151,19 @@
       "discountCode": {
         "adminPaused": "An admin paused your discount code {code}. Reason: {reason}",
         "adminDeleted": "An admin deleted your discount code {code}. Reason: {reason}"
+      },
+      "product": {
+        "soldOut": "{name} is sold out."
+      },
+      "report": {
+        "ready": "Your {month} report is ready."
       }
+    },
+    "actions": {
+      "hideProduct": "Hide product",
+      "showProduct": "Show in shop",
+      "hidden": "Hidden from your shop",
+      "shown": "Back in your shop"
     }
   },
   "AdminChangeRequests": {
@@ -2161,6 +2235,7 @@
     "dateFrom": "From {date}",
     "dateTo": "Until {date}",
     "utcNote": "Dates are in UTC.",
+    "zoneNote": "Days in {zone}.",
     "last7": "Last 7 days",
     "last30": "Last 30 days",
     "thisMonth": "This month",
@@ -2431,7 +2506,7 @@
     },
     "stockManagement": {
       "name": "Stock management",
-      "description": "Stock counts with low-stock alerts. Not built yet."
+      "description": "Pieces in stock: Few left at 3 or fewer, Sold out at 0, and a notification when the last piece sells."
     },
     "bulkUpload": {
       "name": "Bulk upload",
@@ -2490,8 +2565,8 @@
       "description": "Views, WhatsApp clicks and best-viewed products on the dashboard."
     },
     "salesReports": {
-      "name": "Sales reports",
-      "description": "Sales tracking and monthly reports. Not built yet."
+      "name": "Sales tracking",
+      "description": "Mark products as sold and see sales, revenue and discounts by date, source and product."
     },
     "advancedStats": {
       "name": "Advanced stats",
@@ -2658,16 +2733,16 @@
     "revoked": "Exception removed."
   },
   "Sales": {
-    "title": "Sales",
-    "new": "New sale",
-    "newTitle": "New sale",
-    "editTitle": "Edit sale",
+    "title": "Offers",
+    "new": "New offer",
+    "newTitle": "New offer",
+    "editTitle": "Edit offer",
     "notFound": "This sale doesn't exist anymore.",
-    "backToList": "Back to sales",
+    "backToList": "Back to offers",
     "full": "You've reached the maximum number of saved sales. Delete an old one to add another.",
     "saved": "Sale saved",
     "created": "Sale published",
-    "emptyTitle": "No sales yet",
+    "emptyTitle": "No offers yet",
     "emptyBody": "Put products on sale for a weekend, a holiday or to clear stock. Customers see the new price, the old one crossed out, and a badge.",
     "emptyFilter": "No sales with this status.",
     "filterLabel": "Filter sales by status",
@@ -2703,7 +2778,7 @@
       "setPrice": "Sale price {price}"
     },
     "lock": {
-      "title": "Sales are available on {plan}",
+      "title": "Offers are available on {plan}",
       "body": "Put products on sale with a crossed-out price, a badge and a countdown.",
       "bodyKept": "Your sales are saved but don't show in your shop on your current plan. You can still pause or delete them.",
       "action": "Upgrade to {plan}"
@@ -2866,6 +2941,272 @@
       "usedSoFar": "{count, plural, one {Used # time so far.} other {Used # times so far.}}",
       "save": "Save changes",
       "create": "Create code"
+    }
+  },
+  "SalesRecords": {
+    "title": "Sales",
+    "record": "Record a sale",
+    "markAsSold": "Mark as sold",
+    "pick": {
+      "title": "Which product did you sell?",
+      "search": "Search your products",
+      "empty": "No products match.",
+      "noProducts": "Add a product first, then record its sales.",
+      "soldOut": "Sold out"
+    },
+    "dialog": {
+      "title": "Mark as sold",
+      "size": "Size",
+      "color": "Color",
+      "quantity": "Quantity",
+      "decrease": "One less",
+      "increase": "One more",
+      "finalPrice": "Price per item",
+      "finalPriceHint": "Today's price. Change it if you agreed on another price.",
+      "normalPrice": "Normal price {price}",
+      "offerSale": "{percent}% sale applied",
+      "offerCode": "Code {code} applied (-{percent}%)",
+      "code": "Discount code",
+      "codeHint": "If the customer used one.",
+      "codeApply": "Apply",
+      "codeRemove": "Remove",
+      "codeStatus": {
+        "invalid": "This code doesn't exist.",
+        "notActive": "This code isn't active right now.",
+        "ended": "This code has ended.",
+        "usedUp": "This code is used up.",
+        "notForProduct": "This code doesn't apply to this product.",
+        "saleBetter": "The running sale is a better price, so it's kept.",
+        "tooMany": "Too many tries. Wait a moment.",
+        "soldOut": "This product is sold out."
+      },
+      "customer": "Customer (optional)",
+      "customerName": "Name",
+      "customerPhone": "Phone",
+      "customerHint": "Only you and your team members allowed to see customers can see this.",
+      "source": "Where did you sell it?",
+      "soldAt": "Date and time",
+      "timeZoneNote": "In your shop's time zone ({zone}).",
+      "total": "Total",
+      "discountLine": "{amount} less than the normal price",
+      "confirm": "Confirm sale",
+      "confirming": "Saving…",
+      "recorded": "Sale recorded",
+      "recordedSoldOut": "Sale recorded. The product is now sold out.",
+      "locked": "Recording sales is available on {plan}.",
+      "piecesLeft": "{count, plural, one {# piece left} other {# pieces left}}",
+      "leaves": "This sale leaves {count, plural, =0 {no pieces: the product will show Sold out} one {# piece} other {# pieces}}.",
+      "noPieces": "Sold out: add pieces to the product to record a sale.",
+      "notEnough": "Only {count, plural, one {# piece} other {# pieces}} left."
+    },
+    "sources": {
+      "whatsapp": "WhatsApp",
+      "instagram": "Instagram",
+      "tiktok": "TikTok",
+      "inPerson": "In person",
+      "other": "Other"
+    },
+    "validation": {
+      "quantity": "Enter a quantity from 1 to 999.",
+      "price": "Enter a price above zero.",
+      "option": "Pick one.",
+      "date": "Pick a date in the last two years, not in the future.",
+      "phone": "Enter a valid phone number.",
+      "name": "60 characters at most."
+    },
+    "filters": {
+      "range": "Period",
+      "source": "Source",
+      "allSources": "All sources",
+      "product": "Product",
+      "allProducts": "All products",
+      "search": "Search sales",
+      "searchPlaceholder": "Product or customer",
+      "searchPlaceholderProduct": "Product name",
+      "status": "Status",
+      "allStatuses": "All statuses"
+    },
+    "totals": {
+      "label": "Totals for this list",
+      "sales": "Sales",
+      "items": "Items",
+      "revenue": "Revenue",
+      "discounts": "Discounts"
+    },
+    "emptyTitle": "No sales yet",
+    "emptyBody": "Each time you sell a product, mark it as sold. Your sales and totals show here.",
+    "emptyFilter": "No sales match these filters.",
+    "truncated": "Showing the latest {count} sales. Pick a shorter period to see them all.",
+    "row": {
+      "quantity": "× {count}"
+    },
+    "details": {
+      "title": "Sale",
+      "notFound": "This sale doesn't exist anymore.",
+      "product": "Product",
+      "options": "Size and color",
+      "quantity": "Quantity",
+      "unitPrice": "Price per item",
+      "normalPrice": "Normal price",
+      "discount": "Discount",
+      "total": "Total",
+      "offer": "Offer",
+      "offerSale": "Sale (-{percent}%)",
+      "offerCode": "Code {code} (-{percent}%)",
+      "none": "None",
+      "source": "Source",
+      "soldAt": "Sold on",
+      "customer": "Customer",
+      "noCustomer": "Not given",
+      "customerHidden": "Hidden",
+      "status": "Status",
+      "recorded": "Counted",
+      "reversedOn": "Reversed on {date}",
+      "markedSoldOut": "This sale marked the product sold out.",
+      "productDeleted": "This product was deleted. The sale keeps what it was when sold.",
+      "edit": "Edit",
+      "reverse": "Reverse sale"
+    },
+    "edit": {
+      "title": "Edit sale",
+      "body": "Change the price, the quantity or the date. Totals update everywhere.",
+      "save": "Save changes",
+      "confirmTitle": "Save these changes?",
+      "confirmBody": "The new total is {total}.",
+      "back": "Back",
+      "saved": "Sale updated"
+    },
+    "reverse": {
+      "title": "Reverse this sale?",
+      "body": "It stays in your history, marked Reversed, and no longer counts in your totals. This can't be undone.",
+      "confirm": "Reverse sale",
+      "done": "Sale reversed",
+      "piecesBack": "{count, plural, one {# piece goes} other {# pieces go}} back to the product's stock."
+    },
+    "lock": {
+      "title": "Sales tracking is available on {plan}",
+      "body": "Mark products as sold in one tap and see your sales, revenue and discounts by date, source and product.",
+      "bodyKept": "{count, plural, one {Your # sale is kept.} other {Your # sales are kept.}} They show again when you upgrade.",
+      "action": "Upgrade to {plan}",
+      "menuItem": "Mark as sold (available on {plan})"
+    },
+    "sample": {
+      "label": "Example",
+      "dress": "Wax print dress",
+      "sandals": "Leather sandals",
+      "necklace": "Beaded necklace"
+    },
+    "history": {
+      "title": "Sales and history",
+      "empty": "No sales or changes yet.",
+      "seeAll": "See all sales",
+      "sales": "Last sales",
+      "events": "History",
+      "kinds": {
+        "soldOut": "Marked sold out",
+        "backOnSale": "Back on sale",
+        "sold": "Sold",
+        "saleEdited": "Sale edited",
+        "saleReversed": "Sale reversed",
+        "deleted": "Deleted"
+      }
+    },
+    "status": {
+      "recorded": "Counted",
+      "reversed": "Reversed"
+    }
+  },
+  "Reports": {
+    "title": "Reports",
+    "month": "Month",
+    "download": "Download CSV",
+    "print": "Print or save as PDF",
+    "downloadFailed": "The file couldn't be made. Try again.",
+    "line": {
+      "up": "You sold {items, plural, one {# item} other {# items}} for {revenue}, up {percent}% on {previous}.",
+      "down": "You sold {items, plural, one {# item} other {# items}} for {revenue}, down {percent}% on {previous}.",
+      "same": "You sold {items, plural, one {# item} other {# items}} for {revenue}, the same as {previous}.",
+      "first": "You sold {items, plural, one {# item} other {# items}} for {revenue}."
+    },
+    "cards": {
+      "label": "Key numbers",
+      "revenue": "Revenue",
+      "items": "Items sold",
+      "sales": "Sales",
+      "average": "Average sale",
+      "discounts": "Discounts given"
+    },
+    "change": {
+      "up": "Up {percent}% from {month}",
+      "down": "Down {percent}% from {month}",
+      "same": "Same as {month}",
+      "new": "None in {month}"
+    },
+    "top": {
+      "title": "Top products",
+      "byRevenue": "By revenue",
+      "byPieces": "By pieces",
+      "pieces": "{count, plural, one {# piece} other {# pieces}}",
+      "open": "See the sales of {name}"
+    },
+    "byDay": {
+      "title": "Sales by day",
+      "caption": "Revenue each day of {month}",
+      "day": "Day",
+      "revenue": "Revenue",
+      "sales": "Sales",
+      "bar": "{date}: {revenue}, {sales, plural, =0 {no sales} one {# sale} other {# sales}}"
+    },
+    "bySource": {
+      "title": "Sales by source"
+    },
+    "byCategory": {
+      "title": "Sales by category"
+    },
+    "rowLine": "{sales, plural, one {# sale} other {# sales}} · {revenue}",
+    "taps": {
+      "title": "WhatsApp taps and sales",
+      "taps": "Taps",
+      "sales": "Sales",
+      "ratio": "About 1 sale for every {taps, plural, one {# tap} other {# taps}}.",
+      "noTaps": "No taps on your Order buttons this month.",
+      "note": "Taps on the Order buttons of your shop, counted by UTC day. Taps are not revenue."
+    },
+    "empty": {
+      "title": "No sales in {month}",
+      "body": "Each sale you record shows up in this month's report.",
+      "action": "Go to Sales"
+    },
+    "truncated": "This month has a lot of sales: the report covers the first {count}.",
+    "lock": {
+      "title": "Monthly reports are available on {plan}",
+      "body": "See each month's revenue, best sellers, and sales by day and by source, and download it as a file.",
+      "bodyKept": "{count, plural, one {Your # sale is kept} other {Your # sales are kept}} and shows in your reports when you upgrade.",
+      "action": "Upgrade to {plan}"
+    },
+    "sample": {
+      "label": "Example",
+      "dress": "Wax print dress",
+      "sandals": "Leather sandals",
+      "necklace": "Beaded necklace"
+    },
+    "printTitle": "Sales report",
+    "printMeta": "{shop} · {month}",
+    "csv": {
+      "date": "Date",
+      "product": "Product",
+      "size": "Size",
+      "color": "Color",
+      "quantity": "Quantity",
+      "unitPrice": "Price per item",
+      "normalPrice": "Normal price",
+      "discount": "Discount",
+      "total": "Total",
+      "currency": "Currency",
+      "source": "Source",
+      "offer": "Offer",
+      "customerName": "Customer",
+      "customerPhone": "Customer phone"
     }
   }
 }

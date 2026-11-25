@@ -5,7 +5,7 @@ import { codeTextProblem, normalizeCode } from "./lib/discountCodes/code";
 import { CODES_MAX, codeScheduleProblem, maxUsesProblem } from "./lib/discountCodes/rules";
 import { codeByText, deleteCode, shopCodes, writeCodeLiveAndSchedule } from "./lib/discountCodes/store";
 import { codeDiscountValidator, codeInputFields, codeTargetValidator } from "./lib/discountCodes/validators";
-import { hasFeature, requireCan, shopProducts } from "./lib/entitlements";
+import { hasFeature, hiddenFromShop, requireCan, shopProducts } from "./lib/entitlements";
 import { fail } from "./lib/errors";
 import { currencyValidator } from "./lib/money";
 import { affectedProducts } from "./lib/sales/active";
@@ -78,7 +78,7 @@ export const listMine = sellerQuery({
   }),
   handler: async (ctx) => {
     const shop = await requireOwnShop(ctx);
-    const products = (await shopProducts(ctx, shop._id)).filter((p) => !p.hidden);
+    const products = (await shopProducts(ctx, shop._id)).filter((p) => !hiddenFromShop(p));
     const codes = (await shopCodes(ctx, shop._id)).map((code) => ({
       ...toCode(code),
       products: affectedProducts(code, products, shop.currency).length,
@@ -170,7 +170,7 @@ async function cleanCodeInput(
   }
   if (maxUsesProblem(input.maxUses, existing?.uses ?? 0) !== null) fail("DISCOUNT_CODE_MAX_USES_INVALID");
 
-  const shown = products.filter((p) => !p.hidden);
+  const shown = products.filter((p) => !hiddenFromShop(p));
   const affected = affectedProducts({ discount: input.discount, target }, shown, shop.currency);
   if (target.kind === "products") {
     const chosen = shown.filter((p) => target.productIds.includes(p._id));

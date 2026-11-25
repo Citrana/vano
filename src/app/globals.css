@@ -17,6 +17,8 @@
   --color-cream: var(--cream);
   --color-blush: var(--blush);
   --color-plum: var(--plum);
+  /* Bars in seller charts (Reports): one hue, 3:1+ on cards (dataviz-checked). */
+  --color-chart: var(--chart);
   /* One faint shadow, only for floating things (sheet, dialog, hero cards). */
   --shadow-float: var(--shadow-float);
   --color-ring: var(--ring);
@@ -131,6 +133,7 @@
   --cream: #fff8f3;
   --blush: #ffe3d6;
   --plum: #5b1f4a;
+  --chart: #8e3a75;
 
   --background: var(--cream);
   --foreground: var(--ink);
@@ -428,3 +431,27 @@
   0%, 100% { rotate: -3deg; }
   50% { rotate: 3deg; }
 }
+
+/* Printing a report (Reports → Print → Save as PDF): plain white pages,
+   no shadows, cards kept whole. Screens hide print-only blocks with
+   `hidden print:block`; the seller shell hides itself with `print:hidden`. */
+@media print {
+  @page {
+    margin: 14mm;
+  }
+  html,
+  body {
+    background: #ffffff !important;
+  }
+  * {
+    box-shadow: none !important;
+  }
+  .print-avoid-break {
+    break-inside: avoid;
+  }
+  /* The seller shell (header, sidebar, bottom bar, banners) and screen-only parts. */
+  [data-print-hide] {
+    display: none !important;
+  }
+}
+

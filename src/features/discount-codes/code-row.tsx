@@ -13,7 +13,7 @@ import type { Currency } from "../../../convex/lib/money"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { StatusTag } from "@/features/admin/data-table/status-tag"
+import { StatusTag } from "@/components/data-table/status-tag"
 import { useErrorMessage } from "@/lib/use-error-message"
 import { useCodeLabels } from "./use-code-labels"
 

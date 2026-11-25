@@ -12,11 +12,11 @@ import {
 import { PLAN_IDS, TRIAL_PLAN, type PlanId } from "../../../../convex/lib/plans"
 import { Badge } from "@/components/ui/badge"
 import { usePlanName } from "@/features/billing/use-plan-catalog"
-import { DataTable } from "../data-table/data-table"
-import { TablePagination } from "../data-table/table-pagination"
-import type { Column } from "../data-table/types"
-import { useLocalPages } from "../data-table/use-table-pages"
-import type { TableState } from "../data-table/use-table-state"
+import { DataTable } from "@/components/data-table/data-table"
+import { TablePagination } from "@/components/data-table/table-pagination"
+import type { Column } from "@/components/data-table/types"
+import { useLocalPages } from "@/components/data-table/use-table-pages"
+import type { TableState } from "@/components/data-table/use-table-state"
 import { FeatureValueControl } from "./feature-value-control"
 
 type Row = { key: FeatureKey; name: string; description: string }

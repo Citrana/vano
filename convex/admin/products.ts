@@ -173,7 +173,7 @@ export const remove = adminMutation({
   returns: v.null(),
   handler: async (ctx, { productId }) => {
     const { product, label } = await productAndShop(ctx, productId);
-    await deleteProduct(ctx, product);
+    await deleteProduct(ctx, product, ctx.user._id);
     await logAdminAction(ctx, {
       actor: ctx.user,
       action: "product.delete",

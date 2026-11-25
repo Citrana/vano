@@ -107,7 +107,20 @@
     "DISCOUNT_CODE_NO_PRODUCTS": "Ce code ne baisse le prix d'aucun produit. Choisissez d'autres produits ou changez la réduction.",
     "DISCOUNT_CODE_MAX_USES_INVALID": "Vérifiez le nombre maximum d'utilisations : un nombre entier à partir de 1, pas en dessous des utilisations déjà faites.",
     "DISCOUNT_CODE_STALE": "Ce code a été modifié ailleurs pendant que vous le modifiiez. Votre changement n'a pas été enregistré : rechargez-le et réessayez.",
-    "TOO_MANY_DISCOUNT_CODES": "Vous avez atteint le nombre maximum de codes enregistrés. Supprimez-en un ancien d'abord."
+    "TOO_MANY_DISCOUNT_CODES": "Vous avez atteint le nombre maximum de codes enregistrés. Supprimez-en un ancien d'abord.",
+    "SALES_RECORD_INVALID": "Quelque chose n'est pas valide dans cette vente. Vérifiez et réessayez.",
+    "SALES_RECORD_QUANTITY": "Saisissez une quantité de 1 à 999.",
+    "SALES_RECORD_PRICE": "Saisissez un prix supérieur à zéro.",
+    "SALES_RECORD_DATE": "Choisissez une date des deux dernières années, pas dans le futur.",
+    "SALES_RECORD_OPTION": "Choisissez une des tailles et couleurs du produit.",
+    "SALES_RECORD_CUSTOMER": "Vérifiez le nom du client (60 caractères au plus) et son numéro.",
+    "SALES_RECORD_STALE": "Cette vente a été modifiée entre-temps. Fermez-la et rouvrez-la.",
+    "SALES_RECORD_REVERSED": "Cette vente a été annulée. Elle ne peut plus être modifiée.",
+    "TIME_ZONE_INVALID": "Choisissez un fuseau horaire dans la liste.",
+    "SALES_RECORD_STOCK": "Il ne reste pas assez de pièces pour cette vente.",
+    "STOCK_INVALID": "Saisissez un nombre de pièces de 0 à 99 999, ou laissez vide.",
+    "STOCK_TRACKED": "Les pièces de ce produit sont comptées : changez plutôt le nombre de pièces.",
+    "REPORT_INVALID": "Ce mois n'est pas valide."
   },
   "Validation": {
     "required": "Ce champ est obligatoire.",
@@ -129,7 +142,8 @@
     "announcementBothRequired": "Écrivez l'annonce dans les deux langues, ou laissez les deux vides.",
     "reasonLength": "Indiquez une raison de {min} à {max} caractères.",
     "daysRange": "Indiquez un nombre entier de jours entre {min} et {max}.",
-    "socialInvalid": "Saisissez un nom d’utilisateur comme @votreboutique, ou le lien de votre profil."
+    "socialInvalid": "Saisissez un nom d’utilisateur comme @votreboutique, ou le lien de votre profil.",
+    "pieces": "Saisissez un nombre entier de 0 à 99 999, ou laissez vide."
   },
   "Categories": {
     "clothes": "Vêtements",
@@ -182,11 +196,13 @@
       "products": "Produits",
       "look": "Style",
       "settings": "Paramètres de la boutique",
-      "sales": "Promos",
+      "offers": "Offres",
       "discountCodes": "Codes promo",
+      "sales": "Ventes",
       "orders": "Commandes",
       "customers": "Clients",
       "stats": "Statistiques",
+      "reports": "Rapports",
       "plan": "Forfait",
       "team": "Équipe",
       "more": "Plus"
@@ -259,7 +275,9 @@
       "facebook": "Facebook"
     },
     "socialPlaceholder": "@votreboutique",
-    "socialsHelp": "Votre nom d’utilisateur (@votreboutique) ou le lien de votre profil."
+    "socialsHelp": "Votre nom d’utilisateur (@votreboutique) ou le lien de votre profil.",
+    "timeZone": "Fuseau horaire",
+    "timeZoneHint": "Utilisé pour les dates de vos ventes et rapports."
   },
   "Dashboard": {
     "title": "Ma boutique",
@@ -320,7 +338,14 @@
     "fewLeft": "Plus que quelques-uns",
     "backInStock": "De retour en stock",
     "markFewLeft": "Plus que quelques-uns",
-    "markFeatured": "Coup de cœur"
+    "markFeatured": "Coup de cœur",
+    "moreActions": "Plus d'actions pour {name}",
+    "markAsSold": "Marquer comme vendu",
+    "pieces": "{count, plural, one {# pièce} other {# pièces}}",
+    "hiddenBySeller": "Masqué",
+    "hideFromShop": "Masquer de la boutique",
+    "hiddenToast": "Masqué de votre boutique",
+    "shownToast": "De nouveau dans votre boutique"
   },
   "Share": {
     "title": "Le lien de votre boutique",
@@ -379,7 +404,11 @@
     "notFoundBody": "Il a peut-être été supprimé.",
     "backToDashboard": "Retour au tableau de bord",
     "hiddenNotice": "Un admin a masqué ce produit : les clients ne peuvent pas le voir. Contactez le support Vano si vous pensez qu'il s'agit d'une erreur.",
-    "photosPlanHint": "Votre forfait permet {max} photos par produit."
+    "photosPlanHint": "Votre forfait permet {max} photos par produit.",
+    "pieces": "Pièces en stock",
+    "piecesHelp": "Laissez vide pour ne pas compter. Stock faible s'affiche à {few} pièces ou moins, Épuisé à 0, et chaque vente enregistrée retire ses pièces.",
+    "piecesLocked": "Le comptage des pièces est disponible avec {plan}.",
+    "stockDriven": "Épuisé et Stock faible suivent le nombre de pièces."
   },
   "TagInput": {
     "add": "Ajouter",
@@ -533,7 +562,8 @@
         "notForProduct": "Ce code ne fonctionne pas sur ce produit.",
         "saleBetter": "Le prix promo est déjà plus bas que ce code, vous gardez donc le prix promo.",
         "tooMany": "Trop d'essais. Patientez quelques minutes et réessayez.",
-        "failed": "Un problème est survenu. Veuillez réessayer."
+        "failed": "Un problème est survenu. Veuillez réessayer.",
+        "soldOut": "Ce produit est épuisé."
       }
     }
   },
@@ -656,7 +686,8 @@
       "delete": "Supprimer des boutiques",
       "resetLook": "Réinitialiser le style d'une boutique",
       "manageSales": "Mettre en pause ou supprimer les promotions d'une boutique",
-      "manageDiscountCodes": "Mettre en pause ou supprimer les codes de réduction d'une boutique"
+      "manageDiscountCodes": "Mettre en pause ou supprimer les codes de réduction d'une boutique",
+      "viewCustomers": "Voir les noms et numéros des clients des ventes d'une boutique"
     },
     "products": {
       "title": "Produits",
@@ -707,6 +738,14 @@
     "plans": {
       "title": "Formules et fonctionnalités",
       "manage": "Voir et modifier les formules, fonctionnalités et exceptions"
+    },
+    "ownSales": {
+      "title": "Ses ventes",
+      "manage": "Enregistrer, modifier et annuler les ventes de sa boutique"
+    },
+    "ownCustomers": {
+      "title": "Ses clients",
+      "view": "Voir les noms et numéros des clients de ses ventes"
     }
   },
   "AdminRoles": {
@@ -833,7 +872,7 @@
       "promoBarTitle": "Titre de promo : « {title} »"
     },
     "sales": {
-      "title": "Promotions",
+      "title": "Offres",
       "empty": "Cette boutique n'a aucune promotion.",
       "pauseTitle": "Mettre « {name} » en pause ?",
       "pauseBody": "La promotion ne s'affiche plus immédiatement et les prix normaux reviennent. Le vendeur est informé du motif et peut la reprendre après correction.",
@@ -860,6 +899,25 @@
       "deletedDone": "Code supprimé",
       "pausedBecause": "Mis en pause par un administrateur : {reason}",
       "ownShop": "C'est votre propre boutique : un autre administrateur doit modérer ses codes."
+    },
+    "salesRecords": {
+      "title": "Ventes enregistrées",
+      "empty": "Cette boutique n'a enregistré aucune vente.",
+      "sales": "Ventes",
+      "items": "Articles",
+      "revenue": "Chiffre d'affaires",
+      "discounts": "Réductions",
+      "reversed": "{count, plural, one {# vente annulée, non comptée} other {# ventes annulées, non comptées}}",
+      "truncated": "Sur les {count} dernières ventes.",
+      "lastSale": "Dernière vente {date}",
+      "reveal": "Voir les coordonnées des clients",
+      "revealTitle": "Voir les coordonnées des clients ?",
+      "revealBody": "Les noms et numéros des clients sont des données personnelles. Dites pourquoi vous en avez besoin : votre raison est enregistrée dans l'historique d'activité.",
+      "revealConfirm": "Afficher",
+      "revealed": "Clients des {count} dernières ventes",
+      "noCustomers": "Aucune coordonnée client dans les ventes récentes.",
+      "hide": "Masquer",
+      "reason": "Raison (enregistrée dans l'historique d'activité)"
     }
   },
   "ShopStatus": {
@@ -969,6 +1027,9 @@
     "discountCode": {
       "adminPaused": "A mis en pause un code de réduction",
       "adminDeleted": "A supprimé un code de réduction"
+    },
+    "salesRecord": {
+      "customersViewed": "A consulté les coordonnées des clients d'une boutique"
     }
   },
   "AuditDetails": {
@@ -1008,7 +1069,8 @@
     "toVersion": "Nouvelle version",
     "lowered": "Fonctionnalités retirées",
     "sale": "Promotion",
-    "code": "Code"
+    "code": "Code",
+    "records": "Ventes affichées"
   },
   "AdminActivity": {
     "title": "Historique d'activité",
@@ -1130,7 +1192,7 @@
       "sections": "Sections",
       "sectionsHint": "Ce que montre votre boutique, dans quel ordre, et la mise en page de vos produits.",
       "announcement": "Bandeau promo",
-      "announcementHint": "Se modifie maintenant sur la page Promos."
+      "announcementHint": "Se modifie maintenant sur la page Offres."
     },
     "status": {
       "saving": "Enregistrement du brouillon…",
@@ -1481,9 +1543,9 @@
       "customColorsHelp": "Choisissez le fond et le texte. Le texte doit rester lisible (contraste 4,5:1) pour pouvoir publier.",
       "background": "Fond",
       "textColor": "Texte",
-      "movedTitle": "Le bandeau promo est maintenant dans Promos",
+      "movedTitle": "Le bandeau promo est maintenant dans Offres",
       "movedBody": "Réglez ses couleurs, son style, son icône, son titre et son message à côté de vos promos, avec un aperçu en direct.",
-      "editInSales": "Modifier dans Promos"
+      "editInSales": "Modifier dans Offres"
     }
   },
   "Demo": {
@@ -2089,7 +2151,19 @@
       "discountCode": {
         "adminPaused": "Un administrateur a mis en pause votre code de réduction {code}. Motif : {reason}",
         "adminDeleted": "Un administrateur a supprimé votre code de réduction {code}. Motif : {reason}"
+      },
+      "product": {
+        "soldOut": "{name} est épuisé."
+      },
+      "report": {
+        "ready": "Votre rapport de {month} est prêt."
       }
+    },
+    "actions": {
+      "hideProduct": "Masquer le produit",
+      "showProduct": "Afficher dans la boutique",
+      "hidden": "Masqué de votre boutique",
+      "shown": "De nouveau dans votre boutique"
     }
   },
   "AdminChangeRequests": {
@@ -2161,6 +2235,7 @@
     "dateFrom": "À partir du {date}",
     "dateTo": "Jusqu’au {date}",
     "utcNote": "Les dates sont en UTC.",
+    "zoneNote": "Jours dans le fuseau {zone}.",
     "last7": "7 derniers jours",
     "last30": "30 derniers jours",
     "thisMonth": "Ce mois-ci",
@@ -2431,7 +2506,7 @@
     },
     "stockManagement": {
       "name": "Gestion du stock",
-      "description": "Quantités en stock et alertes. Pas encore construit."
+      "description": "Pièces en stock : Stock faible à 3 ou moins, Épuisé à 0, et une notification quand la dernière pièce est vendue."
     },
     "bulkUpload": {
       "name": "Import en masse",
@@ -2490,8 +2565,8 @@
       "description": "Vues, clics WhatsApp et produits les plus vus dans le tableau de bord."
     },
     "salesReports": {
-      "name": "Rapports de ventes",
-      "description": "Suivi des ventes et rapports mensuels. Pas encore construit."
+      "name": "Suivi des ventes",
+      "description": "Marquer des produits comme vendus et voir ventes, chiffre d'affaires et réductions par date, source et produit."
     },
     "advancedStats": {
       "name": "Statistiques avancées",
@@ -2658,16 +2733,16 @@
     "revoked": "Exception retirée."
   },
   "Sales": {
-    "title": "Promotions",
-    "new": "Nouvelle promo",
-    "newTitle": "Nouvelle promotion",
-    "editTitle": "Modifier la promotion",
+    "title": "Offres",
+    "new": "Nouvelle offre",
+    "newTitle": "Nouvelle offre",
+    "editTitle": "Modifier l'offre",
     "notFound": "Cette promotion n'existe plus.",
-    "backToList": "Retour aux promotions",
+    "backToList": "Retour aux offres",
     "full": "Vous avez atteint le nombre maximum de promotions enregistrées. Supprimez-en une ancienne pour en ajouter.",
     "saved": "Promotion enregistrée",
     "created": "Promotion publiée",
-    "emptyTitle": "Aucune promotion",
+    "emptyTitle": "Aucune offre",
     "emptyBody": "Mettez des produits en promotion pour un week-end, une fête ou pour vider le stock. Les clients voient le nouveau prix, l'ancien barré et un badge.",
     "emptyFilter": "Aucune promotion avec ce statut.",
     "filterLabel": "Filtrer les promotions par statut",
@@ -2703,7 +2778,7 @@
       "setPrice": "Prix promo {price}"
     },
     "lock": {
-      "title": "Les promotions sont disponibles avec {plan}",
+      "title": "Les offres sont disponibles avec {plan}",
       "body": "Mettez des produits en promotion avec un prix barré, un badge et un compte à rebours.",
       "bodyKept": "Vos promotions sont enregistrées mais ne s'affichent pas dans votre boutique avec votre offre actuelle. Vous pouvez toujours les mettre en pause ou les supprimer.",
       "action": "Passer à {plan}"
@@ -2866,6 +2941,272 @@
       "usedSoFar": "{count, plural, one {Utilisé # fois jusqu'ici.} other {Utilisé # fois jusqu'ici.}}",
       "save": "Enregistrer les modifications",
       "create": "Créer le code"
+    }
+  },
+  "SalesRecords": {
+    "title": "Ventes",
+    "record": "Enregistrer une vente",
+    "markAsSold": "Marquer comme vendu",
+    "pick": {
+      "title": "Quel produit avez-vous vendu ?",
+      "search": "Rechercher vos produits",
+      "empty": "Aucun produit ne correspond.",
+      "noProducts": "Ajoutez d'abord un produit, puis enregistrez ses ventes.",
+      "soldOut": "Épuisé"
+    },
+    "dialog": {
+      "title": "Marquer comme vendu",
+      "size": "Taille",
+      "color": "Couleur",
+      "quantity": "Quantité",
+      "decrease": "Un de moins",
+      "increase": "Un de plus",
+      "finalPrice": "Prix par article",
+      "finalPriceHint": "Le prix du jour. Changez-le si vous avez convenu d'un autre prix.",
+      "normalPrice": "Prix normal {price}",
+      "offerSale": "Promotion de {percent} % appliquée",
+      "offerCode": "Code {code} appliqué (-{percent} %)",
+      "code": "Code promo",
+      "codeHint": "Si le client en a utilisé un.",
+      "codeApply": "Appliquer",
+      "codeRemove": "Retirer",
+      "codeStatus": {
+        "invalid": "Ce code n'existe pas.",
+        "notActive": "Ce code n'est pas actif en ce moment.",
+        "ended": "Ce code est terminé.",
+        "usedUp": "Ce code est épuisé.",
+        "notForProduct": "Ce code ne s'applique pas à ce produit.",
+        "saleBetter": "La promotion en cours donne un meilleur prix, elle est gardée.",
+        "tooMany": "Trop d'essais. Patientez un instant.",
+        "soldOut": "Ce produit est épuisé."
+      },
+      "customer": "Client (facultatif)",
+      "customerName": "Nom",
+      "customerPhone": "Téléphone",
+      "customerHint": "Visible seulement par vous et les membres de l'équipe autorisés à voir les clients.",
+      "source": "Où l'avez-vous vendu ?",
+      "soldAt": "Date et heure",
+      "timeZoneNote": "Dans le fuseau horaire de votre boutique ({zone}).",
+      "total": "Total",
+      "discountLine": "{amount} de moins que le prix normal",
+      "confirm": "Confirmer la vente",
+      "confirming": "Enregistrement…",
+      "recorded": "Vente enregistrée",
+      "recordedSoldOut": "Vente enregistrée. Le produit est maintenant épuisé.",
+      "locked": "L'enregistrement des ventes est disponible avec {plan}.",
+      "piecesLeft": "{count, plural, one {# pièce restante} other {# pièces restantes}}",
+      "leaves": "Après cette vente : {count, plural, =0 {plus aucune pièce, le produit sera Épuisé} one {# pièce} other {# pièces}}.",
+      "noPieces": "Épuisé : ajoutez des pièces au produit pour enregistrer une vente.",
+      "notEnough": "Plus que {count, plural, one {# pièce} other {# pièces}}."
+    },
+    "sources": {
+      "whatsapp": "WhatsApp",
+      "instagram": "Instagram",
+      "tiktok": "TikTok",
+      "inPerson": "En personne",
+      "other": "Autre"
+    },
+    "validation": {
+      "quantity": "Saisissez une quantité de 1 à 999.",
+      "price": "Saisissez un prix supérieur à zéro.",
+      "option": "Choisissez-en un.",
+      "date": "Choisissez une date des deux dernières années, pas dans le futur.",
+      "phone": "Saisissez un numéro valide.",
+      "name": "60 caractères au plus."
+    },
+    "filters": {
+      "range": "Période",
+      "source": "Source",
+      "allSources": "Toutes les sources",
+      "product": "Produit",
+      "allProducts": "Tous les produits",
+      "search": "Rechercher des ventes",
+      "searchPlaceholder": "Produit ou client",
+      "searchPlaceholderProduct": "Nom du produit",
+      "status": "Statut",
+      "allStatuses": "Tous les statuts"
+    },
+    "totals": {
+      "label": "Totaux de cette liste",
+      "sales": "Ventes",
+      "items": "Articles",
+      "revenue": "Chiffre d'affaires",
+      "discounts": "Réductions"
+    },
+    "emptyTitle": "Aucune vente pour l'instant",
+    "emptyBody": "Chaque fois que vous vendez un produit, marquez-le comme vendu. Vos ventes et vos totaux s'affichent ici.",
+    "emptyFilter": "Aucune vente ne correspond à ces filtres.",
+    "truncated": "Affichage des {count} dernières ventes. Choisissez une période plus courte pour toutes les voir.",
+    "row": {
+      "quantity": "× {count}"
+    },
+    "details": {
+      "title": "Vente",
+      "notFound": "Cette vente n'existe plus.",
+      "product": "Produit",
+      "options": "Taille et couleur",
+      "quantity": "Quantité",
+      "unitPrice": "Prix par article",
+      "normalPrice": "Prix normal",
+      "discount": "Réduction",
+      "total": "Total",
+      "offer": "Offre",
+      "offerSale": "Promotion (-{percent} %)",
+      "offerCode": "Code {code} (-{percent} %)",
+      "none": "Aucune",
+      "source": "Source",
+      "soldAt": "Vendu le",
+      "customer": "Client",
+      "noCustomer": "Non renseigné",
+      "customerHidden": "Masqué",
+      "status": "Statut",
+      "recorded": "Comptée",
+      "reversedOn": "Annulée le {date}",
+      "markedSoldOut": "Cette vente a marqué le produit épuisé.",
+      "productDeleted": "Ce produit a été supprimé. La vente garde ce qu'il était au moment de la vente.",
+      "edit": "Modifier",
+      "reverse": "Annuler la vente"
+    },
+    "edit": {
+      "title": "Modifier la vente",
+      "body": "Changez le prix, la quantité ou la date. Les totaux se mettent à jour partout.",
+      "save": "Enregistrer",
+      "confirmTitle": "Enregistrer ces changements ?",
+      "confirmBody": "Le nouveau total est {total}.",
+      "back": "Retour",
+      "saved": "Vente modifiée"
+    },
+    "reverse": {
+      "title": "Annuler cette vente ?",
+      "body": "Elle reste dans votre historique, marquée Annulée, et ne compte plus dans vos totaux. C'est définitif.",
+      "confirm": "Annuler la vente",
+      "done": "Vente annulée",
+      "piecesBack": "{count, plural, one {# pièce revient} other {# pièces reviennent}} dans le stock du produit."
+    },
+    "lock": {
+      "title": "Le suivi des ventes est disponible avec {plan}",
+      "body": "Marquez vos produits comme vendus en un geste et voyez vos ventes, votre chiffre d'affaires et vos réductions par date, source et produit.",
+      "bodyKept": "{count, plural, one {Votre # vente est conservée.} other {Vos # ventes sont conservées.}} Elles réapparaissent quand vous passez au forfait supérieur.",
+      "action": "Passer à {plan}",
+      "menuItem": "Marquer comme vendu (disponible avec {plan})"
+    },
+    "sample": {
+      "label": "Exemple",
+      "dress": "Robe en wax",
+      "sandals": "Sandales en cuir",
+      "necklace": "Collier de perles"
+    },
+    "history": {
+      "title": "Ventes et historique",
+      "empty": "Aucune vente ni modification pour l'instant.",
+      "seeAll": "Voir toutes les ventes",
+      "sales": "Dernières ventes",
+      "events": "Historique",
+      "kinds": {
+        "soldOut": "Marqué épuisé",
+        "backOnSale": "Remis en vente",
+        "sold": "Vendu",
+        "saleEdited": "Vente modifiée",
+        "saleReversed": "Vente annulée",
+        "deleted": "Supprimé"
+      }
+    },
+    "status": {
+      "recorded": "Comptée",
+      "reversed": "Annulée"
+    }
+  },
+  "Reports": {
+    "title": "Rapports",
+    "month": "Mois",
+    "download": "Télécharger le CSV",
+    "print": "Imprimer ou enregistrer en PDF",
+    "downloadFailed": "Le fichier n'a pas pu être créé. Réessayez.",
+    "line": {
+      "up": "Vous avez vendu {items, plural, one {# article} other {# articles}} pour {revenue}, soit {percent} % de plus qu'en {previous}.",
+      "down": "Vous avez vendu {items, plural, one {# article} other {# articles}} pour {revenue}, soit {percent} % de moins qu'en {previous}.",
+      "same": "Vous avez vendu {items, plural, one {# article} other {# articles}} pour {revenue}, autant qu'en {previous}.",
+      "first": "Vous avez vendu {items, plural, one {# article} other {# articles}} pour {revenue}."
+    },
+    "cards": {
+      "label": "Chiffres clés",
+      "revenue": "Chiffre d'affaires",
+      "items": "Articles vendus",
+      "sales": "Ventes",
+      "average": "Vente moyenne",
+      "discounts": "Réductions accordées"
+    },
+    "change": {
+      "up": "+{percent} % par rapport à {month}",
+      "down": "−{percent} % par rapport à {month}",
+      "same": "Comme en {month}",
+      "new": "Rien en {month}"
+    },
+    "top": {
+      "title": "Meilleurs produits",
+      "byRevenue": "Par chiffre d'affaires",
+      "byPieces": "Par pièces",
+      "pieces": "{count, plural, one {# pièce} other {# pièces}}",
+      "open": "Voir les ventes de {name}"
+    },
+    "byDay": {
+      "title": "Ventes par jour",
+      "caption": "Chiffre d'affaires de chaque jour de {month}",
+      "day": "Jour",
+      "revenue": "Chiffre d'affaires",
+      "sales": "Ventes",
+      "bar": "{date} : {revenue}, {sales, plural, =0 {aucune vente} one {# vente} other {# ventes}}"
+    },
+    "bySource": {
+      "title": "Ventes par source"
+    },
+    "byCategory": {
+      "title": "Ventes par catégorie"
+    },
+    "rowLine": "{sales, plural, one {# vente} other {# ventes}} · {revenue}",
+    "taps": {
+      "title": "Clics WhatsApp et ventes",
+      "taps": "Clics",
+      "sales": "Ventes",
+      "ratio": "Environ 1 vente pour {taps, plural, one {# clic} other {# clics}}.",
+      "noTaps": "Aucun clic sur vos boutons Commander ce mois-ci.",
+      "note": "Clics sur les boutons Commander de votre boutique, comptés par jour UTC. Un clic n'est pas un chiffre d'affaires."
+    },
+    "empty": {
+      "title": "Aucune vente en {month}",
+      "body": "Chaque vente que vous enregistrez apparaît dans le rapport du mois.",
+      "action": "Aller aux ventes"
+    },
+    "truncated": "Ce mois compte beaucoup de ventes : le rapport porte sur les {count} premières.",
+    "lock": {
+      "title": "Les rapports mensuels sont disponibles avec {plan}",
+      "body": "Voyez chaque mois votre chiffre d'affaires, vos meilleurs produits et vos ventes par jour et par source, et téléchargez-le en fichier.",
+      "bodyKept": "{count, plural, one {Votre # vente est conservée} other {Vos # ventes sont conservées}} et apparaîtront dans vos rapports quand vous passerez au forfait supérieur.",
+      "action": "Passer à {plan}"
+    },
+    "sample": {
+      "label": "Exemple",
+      "dress": "Robe en wax",
+      "sandals": "Sandales en cuir",
+      "necklace": "Collier de perles"
+    },
+    "printTitle": "Rapport des ventes",
+    "printMeta": "{shop} · {month}",
+    "csv": {
+      "date": "Date",
+      "product": "Produit",
+      "size": "Taille",
+      "color": "Couleur",
+      "quantity": "Quantité",
+      "unitPrice": "Prix par article",
+      "normalPrice": "Prix normal",
+      "discount": "Réduction",
+      "total": "Total",
+      "currency": "Devise",
+      "source": "Source",
+      "offer": "Offre",
+      "customerName": "Client",
+      "customerPhone": "Téléphone du client"
     }
   }
 }

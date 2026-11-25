@@ -13,6 +13,8 @@ import { EmptyState, LoadingState } from "@/components/states/states"
 import { buttonVariants } from "@/components/ui/button"
 import { useMyBilling } from "@/features/billing/use-billing"
 import { ProductForm } from "@/features/product/product-form"
+import { MarkSoldButton } from "@/features/sales-records/mark-sold-button"
+import { ProductSalesHistory } from "@/features/sales-records/product-sales-history"
 
 export default function EditProductPage() {
   const t = useTranslations("ProductForm")
@@ -44,7 +46,12 @@ export default function EditProductPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <PageTitle title={t("editTitle")} backHref="/dashboard/products" backLabel={tc("back")} />
+      <PageTitle
+        title={t("editTitle")}
+        backHref="/dashboard/products"
+        backLabel={tc("back")}
+        action={<MarkSoldButton productId={product._id} />}
+      />
       {product.hidden ? (
         <p role="status" className="mb-5 flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-sm">
           <EyeOffIcon className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden />
@@ -63,6 +70,7 @@ export default function EditProductPage() {
           router.push("/dashboard/products")
         }}
       />
+      <ProductSalesHistory productId={product._id} />
     </div>
   )
 }

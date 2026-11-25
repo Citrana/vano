@@ -124,6 +124,10 @@ const saleEndingSoon = v.object({
   endsAt: v.number(),
 });
 const saleEnded = v.object({ type: v.literal("sale.ended"), saleId: v.id("sales"), name: v.string() });
+/** A recorded sale took the product's last piece (lib/productStock.ts). The UI offers "Hide product". */
+/** Last month's sales report is ready (reportJobs.monthly); `month` is "YYYY-MM" in the shop's zone. */
+const reportReady = v.object({ type: v.literal("report.ready"), month: v.string() });
+const productSoldOut = v.object({ type: v.literal("product.soldOut"), productId: v.id("products"), name: v.string() });
 
 /** To the seller: an admin paused or deleted one of their sales. */
 const saleAdminPaused = v.object({
@@ -168,6 +172,8 @@ export const notificationDataValidator = v.union(
   saleAdminDeleted,
   discountCodeAdminPaused,
   discountCodeAdminDeleted,
+  productSoldOut,
+  reportReady,
 );
 export type NotificationData = Infer<typeof notificationDataValidator>;
 export type NotificationType = NotificationData["type"];
@@ -198,6 +204,8 @@ export const NOTIFICATION_TYPES: Record<NotificationType, TypeInfo> = {
   "sale.started": { category: "shop", audience: "user" },
   "sale.endingSoon": { category: "shop", audience: "user" },
   "sale.ended": { category: "shop", audience: "user" },
+  "product.soldOut": { category: "shop", audience: "user" },
+  "report.ready": { category: "shop", audience: "user" },
   "sale.adminPaused": { category: "shop", audience: "user" },
   "sale.adminDeleted": { category: "shop", audience: "user" },
   "discountCode.adminPaused": { category: "shop", audience: "user" },
@@ -232,13 +240,17 @@ export function notificationHref(data: NotificationData): string {
     case "sale.started":
     case "sale.endingSoon":
     case "sale.adminPaused":
-      return `/dashboard/sales/${data.saleId}`;
+      return `/dashboard/offers/${data.saleId}`;
     case "sale.ended":
     case "sale.adminDeleted":
-      return "/dashboard/sales";
+      return "/dashboard/offers";
     case "discountCode.adminPaused":
       return `/dashboard/discount-codes/${data.codeId}`;
     case "discountCode.adminDeleted":
       return "/dashboard/discount-codes";
+    case "product.soldOut":
+      return `/dashboard/products/${data.productId}`;
+    case "report.ready":
+      return `/dashboard/reports?month=${data.month}`;
   }
 }

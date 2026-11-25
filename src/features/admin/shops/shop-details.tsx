@@ -11,14 +11,15 @@ import { Card, CardTitle } from "@/components/ui/card"
 import { countryName } from "@/features/shop/countries"
 import { ShopPlanPanel } from "../billing/shop-plan-panel"
 import { PlanExceptionsCard } from "../plans/plan-exceptions-card"
-import { DetailItem, DetailList } from "../data-table/detail-list"
-import { StatusTag } from "../data-table/status-tag"
+import { DetailItem, DetailList } from "@/components/data-table/detail-list"
+import { StatusTag } from "@/components/data-table/status-tag"
 import { adminHref } from "../shell/hrefs"
 import { useAdminViewer } from "../shell/use-admin-viewer"
 import { DeleteShopDialog } from "./delete-shop-dialog"
 import { ShopLookCard } from "./shop-look-card"
 import { ShopSalesCard } from "./shop-sales-card"
 import { ShopDiscountCodesCard } from "./shop-discount-codes-card"
+import { ShopSalesRecordsCard } from "./shop-sales-records-card"
 import { ShopProducts } from "./shop-products"
 import { SuspendShopDialog } from "./suspend-shop-dialog"
 
@@ -114,6 +115,12 @@ export function ShopDetails({ shopId }: { shopId: string }) {
       <ShopDiscountCodesCard
         shopId={shop._id}
         canManage={can("shops.manageDiscountCodes")}
+        isOwnShop={viewer.email !== null && shop.owner.email === viewer.email}
+      />
+
+      <ShopSalesRecordsCard
+        shopId={shop._id}
+        canViewCustomers={can("shops.viewCustomers")}
         isOwnShop={viewer.email !== null && shop.owner.email === viewer.email}
       />
 

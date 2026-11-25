@@ -12,7 +12,7 @@ export function PromoBarMoved() {
     <div className="flex flex-col gap-3 rounded-lg border bg-card p-4">
       <p className="text-sm font-medium">{t("movedTitle")}</p>
       <p className="text-sm text-muted-foreground">{t("movedBody")}</p>
-      <Link href="/dashboard/sales#promo-bar" className={buttonVariants({ variant: "outline", className: "w-fit" })}>
+      <Link href="/dashboard/offers#promo-bar" className={buttonVariants({ variant: "outline", className: "w-fit" })}>
         {t("editInSales")}
         <ArrowRightIcon aria-hidden />
       </Link>

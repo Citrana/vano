@@ -53,6 +53,7 @@ export const codeResultValidator = v.union(
       v.literal("notForProduct"),
       v.literal("saleBetter"),
       v.literal("tooMany"),
+      v.literal("soldOut"),
     ),
   }),
 );

@@ -36,4 +36,5 @@ export type FilterDef =
       default?: string
     }
   | { kind: "checkbox"; key: string; label: string }
-  | { kind: "dateRange"; fromKey: string; toKey: string; label: string }
+  /** `timeZone`: days in that zone (presets, note) instead of UTC. */
+  | { kind: "dateRange"; fromKey: string; toKey: string; label: string; timeZone?: string }
