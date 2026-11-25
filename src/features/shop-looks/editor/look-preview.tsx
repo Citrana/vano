@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl"
 import type { Currency } from "../../../../convex/lib/money"
+import type { FilterAccess } from "../../../../convex/lib/looks/filters"
 import type { ResolvedLook } from "../../../../convex/lib/looks/resolve"
 import { cn } from "cn"
 import { ShopHeaderView } from "@/features/public/shop-header-view"
@@ -24,6 +25,7 @@ export function LookPreview({
   shop,
   currency,
   products,
+  filters,
   label,
   compact = false,
   className,
@@ -33,6 +35,8 @@ export function LookPreview({
   currency: Currency
   /** 2 to PREVIEW_SECTIONS_MAX (`previewProducts`). */
   products: PreviewProduct[]
+  /** The filter row to show (`filterAccess`); missing = none. */
+  filters?: FilterAccess
   label: string
   compact?: boolean
   className?: string
@@ -51,7 +55,7 @@ export function LookPreview({
         onBanner={look.banner.kind !== "none"}
         sizing="phone"
       />
-      <PreviewBody look={look} shop={shop} currency={currency} products={products} columns="phone" />
+      <PreviewBody look={look} shop={shop} currency={currency} products={products} filters={filters} columns="phone" />
     </ShopPreview>
   )
 

@@ -4,7 +4,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { promoSaleSummary } from "../../../../convex/lib/looks/announcement"
 import { getShopPage, withNewBadges } from "@/features/public/data"
-import { parseShopFilters, shopFiltersToQuery } from "@/features/public/filters/shop-filters"
+import { filterOptions, limitShopFilters, parseShopFilters, shopFiltersToQuery } from "@/features/public/filters/shop-filters"
 import { PromoBar } from "@/features/public/promo-bar"
 import { ShopHeader } from "@/features/public/shop-header"
 import { ShopInfo } from "@/features/public/shop-info"
@@ -42,13 +42,16 @@ export async function generateMetadata({ params }: PageProps<"/[slug]">): Promis
 
 export default async function ShopPage({ params, searchParams }: PageProps<"/[slug]">) {
   const { slug } = await params
-  const filters = parseShopFilters(await searchParams)
+  const linkFilters = parseShopFilters(await searchParams)
   const page = await getShopPage(slug)
   if (!page) notFound()
   // Layouts and pages render in parallel, so this page handles it too.
   if (page.suspended) return <ShopUnavailable name={page.name} language={page.language} />
   const { shop } = page
   const products = withNewBadges(page.products)
+  // CLAUDE.md "Shop looks": only the filters the server says this shop
+  // offers (setting, product count, plan) are kept from the link.
+  const filters = limitShopFilters(linkFilters, page.filters, filterOptions(products))
   const hasBanner = shop.look.banner.kind !== "none"
   const t = await getTranslations({ locale: shop.language, namespace: "Public" })
   // CLAUDE.md "Sales": the "Sale" filter, the Promo bar's sale and the
@@ -91,6 +94,7 @@ export default async function ShopPage({ params, searchParams }: PageProps<"/[sl
               currency={shop.currency}
               products={products}
               filters={filters}
+              access={page.filters}
               syncUrl
               saleEndsAt={barCountdown ? null : (sale?.endsAt ?? null)}
               order={{ slug: shop.slug, currency: shop.currency, label: shop.look.buttons.label, whatsappNumber: shop.whatsappNumber }}

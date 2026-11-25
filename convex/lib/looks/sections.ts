@@ -40,12 +40,23 @@ export const productLayoutValidator = v.union(v.literal("grid2"), v.literal("gri
 export type ProductLayout = Infer<typeof productLayoutValidator>;
 export const FREE_LAYOUT: ProductLayout = "grid2";
 
+/**
+ * The shop's customer filters (`filterAccess` in `filters.ts`): "auto"
+ * (full filters from FULL_FILTERS_MIN_PRODUCTS products, else sort and
+ * Sale), "on" (always) or "off" (no filter row). Free on every plan.
+ */
+export const FILTER_MODES = ["auto", "on", "off"] as const;
+export const filterModeValidator = v.union(v.literal("auto"), v.literal("on"), v.literal("off"));
+export type FilterMode = Infer<typeof filterModeValidator>;
+
 export const sectionsFacetValidator = v.object({
   /** The page's sections, top to bottom. */
   order: v.array(sectionEntryValidator),
   layout: productLayoutValidator,
   /** Show the About and contact block (its filled parts, from Shop settings). */
   about: v.boolean(),
+  /** The customer filters; missing = "auto". */
+  filters: v.optional(filterModeValidator),
 });
 export type SectionsFacet = Infer<typeof sectionsFacetValidator>;
 
@@ -89,7 +100,9 @@ export function cleanSections(facet: SectionsFacet): SectionsFacet | null {
     order.push(entry.id === "category" ? { id: "category", on: entry.on, category: entry.category } : { id: entry.id, on: entry.on });
   }
   if (!seen.has("all")) order.push({ id: "all", on: true });
-  return { order, layout: facet.layout, about: facet.about };
+  const clean: SectionsFacet = { order, layout: facet.layout, about: facet.about };
+  if (facet.filters !== undefined && facet.filters !== "auto") clean.filters = facet.filters;
+  return clean;
 }
 
 /** The sections a page uses: the facet, else the default. */
@@ -106,15 +119,17 @@ export function sectionRows(facet: SectionsFacet): SectionEntry[] {
   return [...facet.order, ...BUILT_IN_SECTIONS.filter((id) => !listed.has(id)).map((id) => ({ id, on: false }))];
 }
 
-/** What Free publishes: every product in 2 columns. The About switch is free. */
+/** What Free publishes: every product in 2 columns. The About switch and the filters setting are free. */
 export function isFreeSections(facet: SectionsFacet | undefined): boolean {
   if (!facet) return true;
   return facet.layout === FREE_LAYOUT && facet.order.every((entry) => !entry.on || entry.id === "all");
 }
 
-/** What a Free shop shows for its saved sections: the default, with its About choice. */
+/** What a Free shop shows for its saved sections: the default, with its About and filters choices. */
 export function freeSectionsOf(facet: SectionsFacet): SectionsFacet {
-  return { ...DEFAULT_SECTIONS, about: facet.about };
+  const free: SectionsFacet = { ...DEFAULT_SECTIONS, about: facet.about };
+  if (facet.filters !== undefined) free.filters = facet.filters;
+  return free;
 }
 
 /** What a product needs for the section rules (public cards and previews). */

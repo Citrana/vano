@@ -1,9 +1,11 @@
 "use client"
 
 import type { Category } from "../../../../convex/lib/catalog"
+import type { FilterAccess } from "../../../../convex/lib/looks/filters"
 import type { Currency } from "../../../../convex/lib/money"
 import type { ResolvedLook } from "../../../../convex/lib/looks/resolve"
 import type { SocialNetwork } from "../../../../convex/lib/shopInfo"
+import { NO_FILTERS } from "@/features/public/filters/shop-filters"
 import { PromoBar } from "@/features/public/promo-bar"
 import type { HeaderShop } from "@/features/public/shop-header-view"
 import { ShopInfo } from "@/features/public/shop-info"
@@ -44,12 +46,15 @@ export function PreviewBody({
   shop,
   currency,
   products,
+  filters,
   columns,
 }: {
   look: ResolvedLook<string>
   shop: PreviewShop
   currency: Currency
   products: PreviewProduct[]
+  /** The filter row customers would see; missing = none. */
+  filters?: FilterAccess
   columns: "phone" | "responsive"
 }) {
   return (
@@ -61,6 +66,8 @@ export function PreviewBody({
         currency={currency}
         columns={columns}
         maxPerSection={PREVIEW_MAX}
+        filters={filters ? NO_FILTERS : undefined}
+        access={filters}
         order={{ slug: shop.slug, currency, label: look.buttons.label, preview: true }}
       />
       {look.sections.about ? (

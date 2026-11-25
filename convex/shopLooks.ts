@@ -64,6 +64,7 @@ export const mine = sellerQuery({
     const promoEntitled = await hasFeature(ctx, shop, "salesPromotions");
     const sectionsEntitled = await hasFeature(ctx, shop, "featuredSections");
     const announcementEntitled = await hasFeature(ctx, shop, "announcementBar");
+    const filtersEntitled = await hasFeature(ctx, shop, "shopFilters");
     const published = row?.published ?? null;
     const draft = row?.draft ?? null;
     return {
@@ -90,6 +91,8 @@ export const mine = sellerQuery({
       /** The published sections / layout are saved but the plan shows the Free ones. */
       sectionsHiddenByPlan: !sectionsEntitled && !isFreeSections(published?.overrides.sections),
       announcementEntitled,
+      /** `shopFilters`: the full customer filters (Free: category chips and sort). */
+      filtersEntitled,
       /** The published announcement bar is saved but the plan doesn't show it. */
       announcementHiddenByPlan: !announcementEntitled && published?.overrides.announcement !== undefined,
       /** Whether the published announcement bar is live now (its dates). */

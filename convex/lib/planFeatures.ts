@@ -41,6 +41,7 @@ export const FEATURES = {
   colorsLogoBanner: { kind: "flag", area: "shopLook", enforced: false },
   featuredSections: { kind: "flag", area: "shopLook", enforced: true },
   announcementBar: { kind: "flag", area: "shopLook", enforced: true },
+  shopFilters: { kind: "flag", area: "shopLook", enforced: true },
   customDomain: { kind: "flag", area: "shopLook", enforced: false },
   customBranding: { kind: "flag", area: "shopLook", enforced: false },
   // Sales

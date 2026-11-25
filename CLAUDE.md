@@ -325,7 +325,7 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   whole photo fits, never cropped or zoomed; small corners, ≤ 6px) and
   **one** badge, the first that applies (`cardBadge`: Sold out, sale
   "-N%" / "Sale", "New" for `NEW_BADGE_DAYS` = 14, section label, Few
-  left): a sale is a scalloped seal over the card's top-right corner
+  left): a sale is a scalloped seal inside the card's top-right corner
   (`SaleSeal`, `--chip` tokens, static), the others a pill on the photo's
   top-left; the name on one line with the prices right under it
   (old price crossed out), colours as dots
@@ -375,20 +375,33 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   Look editor never changes it: `saveDraft` / `publish` keep the published
   bar (`withPublishedBar`), and its "Promo bar" tab is only an "Edit in
   Sales" link (`promo-bar-moved.tsx`).
-- **Filters** (`src/features/public/filters/`): search by name, category
-  chips, a Sale chip (only while a sale runs), sort (newest = the
-  page's order, price low → high / high → low on the price paid now),
-  then size, colour and price range in a popover (computers) / bottom
-  sheet (phones), mounted inside the look scope. Rules are pure in
-  `shop-filters.ts` (`parseShopFilters`, `shopFiltersToQuery`,
-  `applyShopFilters`, `filtersActive`); shops under
-  `FULL_FILTERS_MIN_PRODUCTS` (8) only get the Sale chip and the sort.
-  Filters live in the link (`q, cat, sale=1, sort, size, color, min, max`;
-  prices in major units through the money helpers): the page parses them
-  on the server, `useShopFilters` writes them back with
-  `history.replaceState`. While any filter is active, one results grid
-  (count, "Clear all", empty state) replaces the sections. Public
-  products carry every size and colour; the card shows `CARD_TAGS_MAX`.
+- **Filters** (`src/features/public/filters/`): **one slim row** —
+  category chips, a Sale chip (only while a sale runs), sort (newest =
+  the page's order, price low → high / high → low on the price paid
+  now) and a "Filters" button with a count badge, which opens a side
+  sheet (computers) / bottom sheet (phones) mounted inside the look
+  scope: search, price (quick ranges from the shop's real prices,
+  `priceRanges`, then min / max), category, size, colour, On sale and
+  New switches. Only values the shop's products have are shown. Under
+  the row, while filtering: removable active-filter chips, the result
+  count and "Clear all"; one results grid (friendly empty state)
+  replaces the sections.
+- What a shop offers is **one rule**, `filterAccess`
+  (`convex/lib/looks/filters.ts`): the look's `sections.filters` setting
+  (`auto` = full filters from `FULL_FILTERS_MIN_PRODUCTS` (8) products,
+  else sort + Sale; `on`; `off` = no row; free on every plan, a missing
+  field = `auto`), the visible product count and the `shopFilters` plan
+  feature (Free: category chips + sort; Pro / trial: everything).
+  `public.shopBySlug` computes it on the server (`filters`); the page
+  drops everything else from the link with `limitShopFilters` before
+  rendering. The demo and the Look preview call the same rule.
+  Rules are pure in `shop-filters.ts` (`parseShopFilters`,
+  `shopFiltersToQuery`, `limitShopFilters`, `applyShopFilters`,
+  `activeFilterChips`). Filters live in the link (`q, cat, sale=1,
+  new=1, sort, size, color, min, max`; prices in major units through the
+  money helpers): the page parses them on the server, `useShopFilters`
+  writes them back with `history.replaceState`. Public products carry
+  every size and colour; the card shows `CARD_TAGS_MAX`.
 - `shownLook` gates each part on its own feature (`allLooks`,
   `salesPromotions`, `featuredSections`, `announcementBar`); a preset
   change never drops the sections or the Promo bar (`ownParts`).
