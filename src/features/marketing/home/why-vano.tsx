@@ -41,7 +41,7 @@ export async function WhyVano() {
   return (
     <section aria-labelledby="why-vano-title" className="border-b bg-blush/40 px-4 py-14 md:py-20">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 md:gap-12">
-        <Reveal className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center">
+        <Reveal className="mx-auto flex max-w-[50rem] flex-col items-center gap-3 text-center">
           <p className="text-sm font-semibold tracking-wide text-plum uppercase">{t("highlightsEyebrow")}</p>
           <h2
             id="why-vano-title"
@@ -49,7 +49,14 @@ export async function WhyVano() {
           >
             {t("buryTitle")}
           </h2>
-          <p className="text-base text-muted-foreground text-pretty md:text-lg">{t("buryLead")}</p>
+          <p className="text-base text-muted-foreground text-balance md:text-lg">{t("buryLead")}</p>
+        </Reveal>
+
+        {/* The promise; the accent words are plum (readable at every size). */}
+        <Reveal delay={100}>
+          <p className="mx-auto max-w-[62.5rem] text-center text-xl leading-snug font-medium text-balance md:text-2xl">
+            {t.rich("whyPromise", { accent: (chunks) => <span className="text-plum">{chunks}</span> })}
+          </p>
         </Reveal>
 
         <div className="flex flex-col gap-4 md:gap-6">
