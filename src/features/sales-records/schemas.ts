@@ -30,7 +30,16 @@ export function priceOf(text: string): number | null {
  */
 export function recordSchema(
   tv: TV,
-  ctx: { sizes: readonly string[]; colors: readonly string[]; country: string; timeZone: string; now: () => number },
+  ctx: {
+    sizes: readonly string[]
+    colors: readonly string[]
+    country: string
+    timeZone: string
+    now: () => number
+    /** Pieces left when the product's stock is counted (a sale can't take more). */
+    maxQuantity?: number
+    notEnough?: string
+  },
 ) {
   return z
     .object({
@@ -42,12 +51,14 @@ export function recordSchema(
       customerName: z.string(),
       customerPhone: z.string(),
       soldAt: z.string(),
-      markSoldOut: z.boolean(),
     })
     .superRefine((v, issue) => {
       if (!cleanOption(v.size, ctx.sizes).ok) issue.addIssue({ code: "custom", path: ["size"], message: tv("option") })
       if (!cleanOption(v.color, ctx.colors).ok) issue.addIssue({ code: "custom", path: ["color"], message: tv("option") })
       if (quantityProblem(v.quantity) !== null) issue.addIssue({ code: "custom", path: ["quantity"], message: tv("quantity") })
+      else if (ctx.maxQuantity !== undefined && v.quantity > ctx.maxQuantity) {
+        issue.addIssue({ code: "custom", path: ["quantity"], message: ctx.notEnough ?? tv("quantity") })
+      }
       if (priceOf(v.price) === null) issue.addIssue({ code: "custom", path: ["price"], message: tv("price") })
       if (customerNameProblem(v.customerName) !== null) issue.addIssue({ code: "custom", path: ["customerName"], message: tv("name") })
       if (cleanCustomerPhone(v.customerPhone, ctx.country) === null) {

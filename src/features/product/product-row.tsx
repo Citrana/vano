@@ -52,6 +52,12 @@ export type ProductRowData = {
   fewLeft?: boolean
   /** Recently restocked: in the "Back in stock" section. */
   backInStock?: boolean
+  /** Hidden from the shop by the seller (they can show it again). */
+  hiddenBySeller?: boolean
+  /** Pieces in stock, null when not counted. */
+  pieces?: number | null
+  /** The count drives Few left / Sold out (plan has stock management). */
+  tracked?: boolean
   coverUrl: string | null
 }
 
@@ -89,6 +95,16 @@ export function ProductRow({
     patchList(store, productId, { fewLeft }),
   )
   const setPinned = useMutation(api.products.setPinned)
+  const setHiddenBySeller = useMutation(api.products.setHiddenBySeller).withOptimisticUpdate((store, { productId, hidden }) => {
+    const list = store.getQuery(api.products.listMine, {})
+    if (list) store.setQuery(api.products.listMine, {}, list.map((p) => (p._id === productId ? { ...p, hiddenBySeller: hidden } : p)))
+  })
+  const toggleHidden = () => {
+    const hidden = product.hiddenBySeller !== true
+    setHiddenBySeller({ productId: product._id, hidden })
+      .then(() => toast.success(hidden ? t("hiddenToast") : t("shownToast")))
+      .catch((error) => toast.error(errorMessage(error)))
+  }
   const sales = useSalesAccess()
   const router = useRouter()
   const tSales = useTranslations("SalesRecords")
@@ -147,7 +163,13 @@ export function ProductRow({
                     </DropdownMenuItem>
                   )
                 ) : null}
-                {sales.allowed ? <DropdownMenuSeparator /> : null}
+                {!product.hidden ? (
+                  <DropdownMenuItem className="min-h-11" onClick={toggleHidden}>
+                    {product.hiddenBySeller ? <EyeIcon /> : <EyeOffIcon />}
+                    {product.hiddenBySeller ? t("showInShop") : t("hideFromShop")}
+                  </DropdownMenuItem>
+                ) : null}
+                <DropdownMenuSeparator />
                 <DropdownMenuItem className="min-h-11 text-destructive" onClick={() => setDeleting(true)}>
                   <Trash2Icon /> {tCommon("delete")}
                 </DropdownMenuItem>
@@ -160,6 +182,17 @@ export function ProductRow({
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <Badge variant="muted">{tc(product.category)}</Badge>
           {product.hidden ? <Badge variant="destructive">{t("hiddenByAdmin")}</Badge> : null}
+          {product.hiddenBySeller && !product.hidden ? (
+            <Badge variant="secondary">
+              <EyeOffIcon aria-hidden />
+              {t("hiddenBySeller")}
+            </Badge>
+          ) : null}
+          {product.tracked && product.pieces !== null && product.pieces !== undefined ? (
+            <Badge variant="muted" className="tabular-nums">
+              {t("pieces", { count: product.pieces })}
+            </Badge>
+          ) : null}
           {product.overLimit ? (
             <Badge variant="destructive">
               <EyeOffIcon aria-hidden />
@@ -199,19 +232,21 @@ export function ProductRow({
           </Button>
         ) : null}
         <div className="mt-auto flex flex-wrap items-center gap-x-4 self-start">
-          <div className="flex items-center gap-2">
-            <Switch
-              aria-labelledby={switchLabelId}
-              checked={product.soldOut}
-              onCheckedChange={(soldOut) =>
-                setSoldOut({ productId: product._id, soldOut }).catch((error) => toast.error(errorMessage(error)))
-              }
-            />
-            <span id={switchLabelId} className="text-sm">
-              {t("markSoldOut")}
-            </span>
-          </div>
-          {!product.soldOut ? (
+          {!product.tracked ? (
+            <div className="flex items-center gap-2">
+              <Switch
+                aria-labelledby={switchLabelId}
+                checked={product.soldOut}
+                onCheckedChange={(soldOut) =>
+                  setSoldOut({ productId: product._id, soldOut }).catch((error) => toast.error(errorMessage(error)))
+                }
+              />
+              <span id={switchLabelId} className="text-sm">
+                {t("markSoldOut")}
+              </span>
+            </div>
+          ) : null}
+          {!product.soldOut && !product.tracked ? (
             <div className="flex items-center gap-2">
               <Switch
                 aria-labelledby={fewLeftLabelId}

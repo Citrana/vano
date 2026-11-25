@@ -8,7 +8,6 @@ import { useId, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { api } from "../../../convex/_generated/api"
-import type { Id } from "../../../convex/_generated/dataModel"
 import { minorToInput } from "../../../convex/lib/money"
 import { recordTotals } from "../../../convex/lib/salesRecords/pricing"
 import { formatWhatsapp } from "../../../convex/lib/phone"
@@ -18,7 +17,6 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { MoneyInput } from "@/components/ui/money-input"
-import { Switch } from "@/components/ui/switch"
 import { DetailItem, DetailList } from "@/components/data-table/detail-list"
 import { StatusTag } from "@/components/data-table/status-tag"
 import { fromLocalInput, toLocalInput } from "@/lib/local-time"
@@ -142,7 +140,7 @@ function EditSaleDialog({ sale, onClose }: { sale: Details; onClose: () => void 
     setPending(true)
     try {
       await update({
-        recordId: sale._id as Id<"salesRecords">,
+        recordId: sale._id,
         expectedVersion: sale.version,
         finalUnitPrice: priceOf(values.price)!,
         quantity: values.quantity,
@@ -215,22 +213,19 @@ function EditSaleDialog({ sale, onClose }: { sale: Details; onClose: () => void 
   )
 }
 
-/** Reverse = kept and listed, out of the totals; may put the product back on sale. */
+/** Reverse = kept and listed, out of the totals; the pieces it took go back to the product. */
 function ReverseSaleDialog({ sale, open, onOpenChange }: { sale: Details; open: boolean; onOpenChange: (open: boolean) => void }) {
   const t = useTranslations("SalesRecords.reverse")
   const tc = useTranslations("Common")
-  const id = useId()
   const errorMessage = useErrorMessage()
   const reverse = useMutation(api.salesRecords.reverse)
-  const [restock, setRestock] = useState(true)
   const [pending, setPending] = useState(false)
 
   async function confirm() {
     setPending(true)
     try {
-      const withRestock = sale.canRestock && restock
-      await reverse({ recordId: sale._id as Id<"salesRecords">, expectedVersion: sale.version, restock: withRestock })
-      toast.success(withRestock ? t("doneRestocked") : t("done"))
+      await reverse({ recordId: sale._id, expectedVersion: sale.version })
+      toast.success(t("done"))
       onOpenChange(false)
     } catch (error) {
       toast.error(errorMessage(error))
@@ -244,16 +239,8 @@ function ReverseSaleDialog({ sale, open, onOpenChange }: { sale: Details; open: 
       <DialogContent>
         <DialogTitle>{t("title")}</DialogTitle>
         <DialogDescription>{t("body")}</DialogDescription>
-        {sale.canRestock ? (
-          <div className="flex items-start justify-between gap-3 rounded-lg border p-3">
-            <div className="flex flex-col gap-0.5">
-              <span id={`${id}-restock`} className="text-sm font-medium">
-                {t("restock")}
-              </span>
-              <span className="text-xs text-muted-foreground">{t("restockHint")}</span>
-            </div>
-            <Switch aria-labelledby={`${id}-restock`} checked={restock} onCheckedChange={setRestock} />
-          </div>
+        {sale.piecesTaken !== null && sale.productExists ? (
+          <p className="text-sm">{t("piecesBack", { count: sale.piecesTaken })}</p>
         ) : null}
         <DialogFooter>
           <DialogClose render={<Button variant="outline" />}>{tc("cancel")}</DialogClose>

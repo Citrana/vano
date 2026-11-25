@@ -3,12 +3,16 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useTranslations } from "next-intl"
 import { useState } from "react"
-import { Controller, useForm } from "react-hook-form"
+import { LockIcon } from "lucide-react"
+import { Controller, useForm, useWatch } from "react-hook-form"
 import { toast } from "sonner"
 import type { Doc, Id } from "../../../convex/_generated/dataModel"
 import { LIMITS, type Category } from "../../../convex/lib/catalog"
 import { errorCodeOf, type ErrorCode } from "../../../convex/lib/errors"
+import { canShopDo } from "../../../convex/lib/entitlements"
 import { minorToInput, parseMoneyToMinor } from "../../../convex/lib/money"
+import { toPlanLimits } from "../../../convex/lib/planFeatures"
+import { FEW_LEFT_MAX } from "../../../convex/lib/stock"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Field } from "@/components/ui/field"
@@ -19,8 +23,10 @@ import { RequiredFieldsHint } from "@/components/ui/required-fields-hint"
 import { Switch } from "@/components/ui/switch"
 import { TagInput } from "@/components/ui/tag-input"
 import { Textarea } from "@/components/ui/textarea"
+import { useMyBilling } from "@/features/billing/use-billing"
+import { useUpgradePlanName } from "@/features/billing/use-plan-catalog"
 import { ProductImagesField } from "./product-images-field"
-import { productSchema, type ProductFormValues } from "./schemas"
+import { piecesOf, productSchema, type ProductFormValues } from "./schemas"
 import { useProductImages } from "./use-product-images"
 
 export type ProductSubmit = {
@@ -32,6 +38,7 @@ export type ProductSubmit = {
   colors: string[]
   imageIds: Id<"_storage">[]
   soldOut: boolean
+  pieces?: number
 }
 
 const FIELD_OF: Partial<Record<ErrorCode, keyof ProductFormValues>> = {
@@ -40,10 +47,11 @@ const FIELD_OF: Partial<Record<ErrorCode, keyof ProductFormValues>> = {
   CATEGORY_NOT_IN_SHOP: "category",
   DESCRIPTION_TOO_LONG: "description",
   TAGS_INVALID: "sizes",
+  STOCK_INVALID: "pieces",
 }
 
 type ShopInfo = Pick<Doc<"shops">, "currency" | "categories">
-type Initial = Pick<Doc<"products">, "name" | "price" | "category" | "description" | "sizes" | "colors" | "soldOut"> & {
+type Initial = Pick<Doc<"products">, "name" | "price" | "category" | "description" | "sizes" | "colors" | "soldOut" | "pieces"> & {
   images: Array<{ storageId: Id<"_storage">; url: string | null }>
 }
 
@@ -65,6 +73,10 @@ export function ProductForm({
   const tc = useTranslations("Categories")
   const tCommon = useTranslations("Common")
   const images = useProductImages(initial?.images, maxImages)
+  const billing = useMyBilling()
+  const stockPlan = useUpgradePlanName("stockManagement")
+  // Counting pieces needs `stockManagement`; the server checks again.
+  const canCount = billing ? canShopDo(toPlanLimits(billing.limits), { kind: "feature", feature: "stockManagement" }) === null : false
   const [imagesError, setImagesError] = useState<string>()
 
   const form = useForm<ProductFormValues>({
@@ -78,9 +90,12 @@ export function ProductForm({
       sizes: initial?.sizes ?? [],
       colors: initial?.colors ?? [],
       soldOut: initial?.soldOut ?? false,
+      pieces: initial?.pieces !== undefined ? String(initial.pieces) : "",
     },
   })
   const { register, control, formState, setError } = form
+  const piecesText = useWatch({ control, name: "pieces" })
+  const counted = canCount && piecesText.trim() !== ""
   const { errors, isSubmitting } = formState
 
   function checkImages(): boolean {
@@ -106,6 +121,8 @@ export function ProductForm({
         colors: values.colors,
         imageIds: images.readyIds,
         soldOut: values.soldOut,
+        // Without the plan feature a saved count is sent back unchanged (kept, not used).
+        pieces: canCount ? piecesOf(values.pieces) : initial?.pieces,
       })
     } catch (error) {
       const code = errorCodeOf(error)
@@ -216,21 +233,42 @@ export function ProductForm({
             )}
           </Field>
         </div>
-        <Controller
-          control={control}
-          name="soldOut"
-          render={({ field }) => (
-            <div className="flex items-center justify-between gap-4 rounded-lg bg-muted/60 px-3 py-1">
-              <div>
-                <p id="soldOut-label" className="text-sm font-medium">
-                  {t("soldOut")}
-                </p>
-                <p className="text-xs text-muted-foreground">{t("soldOutHelp")}</p>
+        {canCount ? (
+          <Field
+            id="pieces"
+            label={t("pieces")}
+            help={t("piecesHelp", { few: FEW_LEFT_MAX })}
+            error={errors.pieces?.message}
+          >
+            {(p) => (
+              <Input {...p} inputMode="numeric" autoComplete="off" className="tabular-nums sm:max-w-40" {...register("pieces")} />
+            )}
+          </Field>
+        ) : billing ? (
+          <p className="flex items-center gap-2 text-xs text-muted-foreground">
+            <LockIcon className="size-3.5" aria-hidden />
+            {t("piecesLocked", { plan: stockPlan })}
+          </p>
+        ) : null}
+        {counted ? (
+          <p className="rounded-lg bg-muted/60 px-3 py-2 text-xs text-muted-foreground">{t("stockDriven")}</p>
+        ) : (
+          <Controller
+            control={control}
+            name="soldOut"
+            render={({ field }) => (
+              <div className="flex items-center justify-between gap-4 rounded-lg bg-muted/60 px-3 py-1">
+                <div>
+                  <p id="soldOut-label" className="text-sm font-medium">
+                    {t("soldOut")}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{t("soldOutHelp")}</p>
+                </div>
+                <Switch aria-labelledby="soldOut-label" checked={field.value} onCheckedChange={field.onChange} />
               </div>
-              <Switch aria-labelledby="soldOut-label" checked={field.value} onCheckedChange={field.onChange} />
-            </div>
-          )}
-        />
+            )}
+          />
+        )}
       </Card>
       <div className="sticky bottom-[var(--bottom-bar,0px)] -mx-4 border-t bg-background/95 px-4 py-3 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0">
         <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={isSubmitting}>

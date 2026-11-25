@@ -22,7 +22,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { MoneyInput } from "@/components/ui/money-input"
 import { RequiredFieldsHint } from "@/components/ui/required-fields-hint"
-import { Switch } from "@/components/ui/switch"
 import { useUpgradePlanName } from "@/features/billing/use-plan-catalog"
 import { browserTimeZone, fromLocalInput, toLocalInput } from "@/lib/local-time"
 import { useErrorMessage } from "@/lib/use-error-message"
@@ -119,6 +118,8 @@ function RecordSaleForm({
         country: quote.country,
         timeZone: quote.timeZone,
         now: clock,
+        maxQuantity: quote.pieces ?? undefined,
+        notEnough: t("dialog.notEnough", { count: quote.pieces ?? 0 }),
       }),
     ),
     defaultValues: {
@@ -130,7 +131,6 @@ function RecordSaleForm({
       customerName: "",
       customerPhone: "",
       soldAt: toLocalInput(openedAt, quote.timeZone),
-      markSoldOut: quote.defaultMarkSoldOut && !product.soldOut,
     },
   })
   const { errors, isSubmitting } = form.formState
@@ -164,10 +164,9 @@ function RecordSaleForm({
         customerName: values.customerName.trim() || undefined,
         customerPhone: values.customerPhone.trim() || undefined,
         soldAt: fromLocalInput(values.soldAt, quote.timeZone)!,
-        markSoldOut: values.markSoldOut,
         timeZone: quote.hasTimeZone ? undefined : browserTimeZone(),
       })
-      toast.success(values.markSoldOut ? t("dialog.recordedSoldOut") : t("dialog.recorded"))
+      toast.success(quote.pieces !== null && quote.pieces - values.quantity <= 0 ? t("dialog.recordedSoldOut") : t("dialog.recorded"))
       onDone()
     } catch (error) {
       toast.error(errorMessage(error))
@@ -247,6 +246,7 @@ function RecordSaleForm({
               error={errors.quantity?.message}
               decreaseLabel={t("dialog.decrease")}
               increaseLabel={t("dialog.increase")}
+              max={quote.pieces !== null && quote.pieces > 0 ? Math.min(QUANTITY_MAX, quote.pieces) : QUANTITY_MAX}
             />
           )}
         />
@@ -260,6 +260,15 @@ function RecordSaleForm({
           {(props) => <MoneyInput currency={quote.currency} {...props} {...form.register("price")} />}
         </Field>
       </div>
+      {quote.pieces !== null ? (
+        <p role="status" className={cn("-mt-2 text-xs", quote.pieces === 0 ? "font-medium text-destructive" : "text-muted-foreground")}>
+          {quote.pieces === 0
+            ? t("dialog.noPieces")
+            : `${t("dialog.piecesLeft", { count: quote.pieces })} · ${t("dialog.leaves", {
+                count: Math.max(0, quote.pieces - (Number.isFinite(quantity) ? quantity : 0)),
+              })}`}
+        </p>
+      ) : null}
       {offerNote ? (
         <p role="status" className="-mt-2 flex items-center gap-1.5 text-xs font-medium">
           <TagIcon className="size-3.5" aria-hidden />
@@ -337,24 +346,6 @@ function RecordSaleForm({
         <p className="text-xs text-muted-foreground">{t("dialog.customerHint")}</p>
       </fieldset>
 
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex flex-col gap-0.5">
-          <span id={`${id}-soldout`} className="text-sm font-medium">
-            {t("dialog.markSoldOut")}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {product.soldOut ? t("dialog.alreadySoldOut") : t("dialog.markSoldOutHint")}
-          </span>
-        </div>
-        <Controller
-          control={form.control}
-          name="markSoldOut"
-          render={({ field }) => (
-            <Switch aria-labelledby={`${id}-soldout`} checked={field.value} onCheckedChange={field.onChange} disabled={product.soldOut} />
-          )}
-        />
-      </div>
-
       <div className="flex items-baseline justify-between gap-3 border-t pt-3" aria-live="polite">
         <span className="text-sm font-medium">{t("dialog.total")}</span>
         <span className="text-right">
@@ -369,7 +360,7 @@ function RecordSaleForm({
 
       <DialogFooter>
         <DialogClose render={<Button type="button" variant="outline" />}>{tc("cancel")}</DialogClose>
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting || quote.pieces === 0}>
           {isSubmitting ? t("dialog.confirming") : t("dialog.confirm")}
         </Button>
       </DialogFooter>
@@ -438,6 +429,7 @@ export function QuantityField({
   error,
   decreaseLabel,
   increaseLabel,
+  max = QUANTITY_MAX,
 }: {
   id: string
   label: string
@@ -446,6 +438,8 @@ export function QuantityField({
   error?: string
   decreaseLabel: string
   increaseLabel: string
+  /** Highest quantity the + button reaches (e.g. the pieces left). */
+  max?: number
 }) {
   return (
     <div className="flex flex-col gap-2">
@@ -481,8 +475,8 @@ export function QuantityField({
           size="icon"
           className="size-11"
           aria-label={increaseLabel}
-          disabled={value >= QUANTITY_MAX}
-          onClick={() => onChange(Math.min(QUANTITY_MAX, (Number.isFinite(value) ? value : 0) + 1))}
+          disabled={value >= max}
+          onClick={() => onChange(Math.min(max, (Number.isFinite(value) ? value : 0) + 1))}
         >
           <PlusIcon />
         </Button>

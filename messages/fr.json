@@ -116,7 +116,10 @@
     "SALES_RECORD_CUSTOMER": "Vérifiez le nom du client (60 caractères au plus) et son numéro.",
     "SALES_RECORD_STALE": "Cette vente a été modifiée entre-temps. Fermez-la et rouvrez-la.",
     "SALES_RECORD_REVERSED": "Cette vente a été annulée. Elle ne peut plus être modifiée.",
-    "TIME_ZONE_INVALID": "Choisissez un fuseau horaire dans la liste."
+    "TIME_ZONE_INVALID": "Choisissez un fuseau horaire dans la liste.",
+    "SALES_RECORD_STOCK": "Il ne reste pas assez de pièces pour cette vente.",
+    "STOCK_INVALID": "Saisissez un nombre de pièces de 0 à 99 999, ou laissez vide.",
+    "STOCK_TRACKED": "Les pièces de ce produit sont comptées : changez plutôt le nombre de pièces."
   },
   "Validation": {
     "required": "Ce champ est obligatoire.",
@@ -138,7 +141,8 @@
     "announcementBothRequired": "Écrivez l'annonce dans les deux langues, ou laissez les deux vides.",
     "reasonLength": "Indiquez une raison de {min} à {max} caractères.",
     "daysRange": "Indiquez un nombre entier de jours entre {min} et {max}.",
-    "socialInvalid": "Saisissez un nom d’utilisateur comme @votreboutique, ou le lien de votre profil."
+    "socialInvalid": "Saisissez un nom d’utilisateur comme @votreboutique, ou le lien de votre profil.",
+    "pieces": "Saisissez un nombre entier de 0 à 99 999, ou laissez vide."
   },
   "Categories": {
     "clothes": "Vêtements",
@@ -334,7 +338,12 @@
     "markFewLeft": "Plus que quelques-uns",
     "markFeatured": "Coup de cœur",
     "moreActions": "Plus d'actions pour {name}",
-    "markAsSold": "Marquer comme vendu"
+    "markAsSold": "Marquer comme vendu",
+    "pieces": "{count, plural, one {# pièce} other {# pièces}}",
+    "hiddenBySeller": "Masqué",
+    "hideFromShop": "Masquer de la boutique",
+    "hiddenToast": "Masqué de votre boutique",
+    "shownToast": "De nouveau dans votre boutique"
   },
   "Share": {
     "title": "Le lien de votre boutique",
@@ -393,7 +402,11 @@
     "notFoundBody": "Il a peut-être été supprimé.",
     "backToDashboard": "Retour au tableau de bord",
     "hiddenNotice": "Un admin a masqué ce produit : les clients ne peuvent pas le voir. Contactez le support Vano si vous pensez qu'il s'agit d'une erreur.",
-    "photosPlanHint": "Votre forfait permet {max} photos par produit."
+    "photosPlanHint": "Votre forfait permet {max} photos par produit.",
+    "pieces": "Pièces en stock",
+    "piecesHelp": "Laissez vide pour ne pas compter. Stock faible s'affiche à {few} pièces ou moins, Épuisé à 0, et chaque vente enregistrée retire ses pièces.",
+    "piecesLocked": "Le comptage des pièces est disponible avec {plan}.",
+    "stockDriven": "Épuisé et Stock faible suivent le nombre de pièces."
   },
   "TagInput": {
     "add": "Ajouter",
@@ -547,7 +560,8 @@
         "notForProduct": "Ce code ne fonctionne pas sur ce produit.",
         "saleBetter": "Le prix promo est déjà plus bas que ce code, vous gardez donc le prix promo.",
         "tooMany": "Trop d'essais. Patientez quelques minutes et réessayez.",
-        "failed": "Un problème est survenu. Veuillez réessayer."
+        "failed": "Un problème est survenu. Veuillez réessayer.",
+        "soldOut": "Ce produit est épuisé."
       }
     }
   },
@@ -2135,7 +2149,16 @@
       "discountCode": {
         "adminPaused": "Un administrateur a mis en pause votre code de réduction {code}. Motif : {reason}",
         "adminDeleted": "Un administrateur a supprimé votre code de réduction {code}. Motif : {reason}"
+      },
+      "product": {
+        "soldOut": "{name} est épuisé."
       }
+    },
+    "actions": {
+      "hideProduct": "Masquer le produit",
+      "showProduct": "Afficher dans la boutique",
+      "hidden": "Masqué de votre boutique",
+      "shown": "De nouveau dans votre boutique"
     }
   },
   "AdminChangeRequests": {
@@ -2478,7 +2501,7 @@
     },
     "stockManagement": {
       "name": "Gestion du stock",
-      "description": "Quantités en stock et alertes. Pas encore construit."
+      "description": "Pièces en stock : Stock faible à 3 ou moins, Épuisé à 0, et une notification quand la dernière pièce est vendue."
     },
     "bulkUpload": {
       "name": "Import en masse",
@@ -2949,7 +2972,8 @@
         "usedUp": "Ce code est épuisé.",
         "notForProduct": "Ce code ne s'applique pas à ce produit.",
         "saleBetter": "La promotion en cours donne un meilleur prix, elle est gardée.",
-        "tooMany": "Trop d'essais. Patientez un instant."
+        "tooMany": "Trop d'essais. Patientez un instant.",
+        "soldOut": "Ce produit est épuisé."
       },
       "customer": "Client (facultatif)",
       "customerName": "Nom",
@@ -2960,14 +2984,15 @@
       "timeZoneNote": "Dans le fuseau horaire de votre boutique ({zone}).",
       "total": "Total",
       "discountLine": "{amount} de moins que le prix normal",
-      "markSoldOut": "Marquer ce produit comme épuisé",
-      "markSoldOutHint": "Les clients verront Épuisé. Vous pourrez le désactiver plus tard.",
-      "alreadySoldOut": "Ce produit est déjà marqué épuisé.",
       "confirm": "Confirmer la vente",
       "confirming": "Enregistrement…",
       "recorded": "Vente enregistrée",
       "recordedSoldOut": "Vente enregistrée. Le produit est maintenant épuisé.",
-      "locked": "L'enregistrement des ventes est disponible avec {plan}."
+      "locked": "L'enregistrement des ventes est disponible avec {plan}.",
+      "piecesLeft": "{count, plural, one {# pièce restante} other {# pièces restantes}}",
+      "leaves": "Après cette vente : {count, plural, =0 {plus aucune pièce, le produit sera Épuisé} one {# pièce} other {# pièces}}.",
+      "noPieces": "Épuisé : ajoutez des pièces au produit pour enregistrer une vente.",
+      "notEnough": "Plus que {count, plural, one {# pièce} other {# pièces}}."
     },
     "sources": {
       "whatsapp": "WhatsApp",
@@ -3049,11 +3074,9 @@
     "reverse": {
       "title": "Annuler cette vente ?",
       "body": "Elle reste dans votre historique, marquée Annulée, et ne compte plus dans vos totaux. C'est définitif.",
-      "restock": "Remettre le produit en vente",
-      "restockHint": "Cette vente l'a marqué épuisé. Les clients le reverront.",
       "confirm": "Annuler la vente",
       "done": "Vente annulée",
-      "doneRestocked": "Vente annulée. Le produit est de nouveau en vente."
+      "piecesBack": "{count, plural, one {# pièce revient} other {# pièces reviennent}} dans le stock du produit."
     },
     "lock": {
       "title": "Le suivi des ventes est disponible avec {plan}",

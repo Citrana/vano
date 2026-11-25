@@ -116,7 +116,10 @@
     "SALES_RECORD_CUSTOMER": "Check the customer's name (60 characters at most) and phone number.",
     "SALES_RECORD_STALE": "This sale was changed in the meantime. Close it and open it again.",
     "SALES_RECORD_REVERSED": "This sale was reversed. It can't be changed anymore.",
-    "TIME_ZONE_INVALID": "Pick a time zone from the list."
+    "TIME_ZONE_INVALID": "Pick a time zone from the list.",
+    "SALES_RECORD_STOCK": "There aren't enough pieces left for this sale.",
+    "STOCK_INVALID": "Enter a number of pieces from 0 to 99,999, or leave it empty.",
+    "STOCK_TRACKED": "This product's pieces are counted: change the number of pieces instead."
   },
   "Validation": {
     "required": "This field is required.",
@@ -138,7 +141,8 @@
     "announcementBothRequired": "Write the announcement in both languages, or leave both empty.",
     "reasonLength": "Write a reason of {min} to {max} characters.",
     "daysRange": "Enter a whole number of days from {min} to {max}.",
-    "socialInvalid": "Enter a username like @yourshop, or a link to your profile."
+    "socialInvalid": "Enter a username like @yourshop, or a link to your profile.",
+    "pieces": "Enter a whole number from 0 to 99,999, or leave it empty."
   },
   "Categories": {
     "clothes": "Clothes",
@@ -334,7 +338,12 @@
     "markFewLeft": "Few left",
     "markFeatured": "Featured",
     "moreActions": "More actions for {name}",
-    "markAsSold": "Mark as sold"
+    "markAsSold": "Mark as sold",
+    "pieces": "{count, plural, one {# piece} other {# pieces}}",
+    "hiddenBySeller": "Hidden",
+    "hideFromShop": "Hide from shop",
+    "hiddenToast": "Hidden from your shop",
+    "shownToast": "Back in your shop"
   },
   "Share": {
     "title": "Your shop link",
@@ -393,7 +402,11 @@
     "notFoundBody": "It may have been deleted.",
     "backToDashboard": "Back to dashboard",
     "hiddenNotice": "An admin hid this product, so customers can't see it. Contact Vano support if you think this is a mistake.",
-    "photosPlanHint": "Your plan allows {max} photos per product."
+    "photosPlanHint": "Your plan allows {max} photos per product.",
+    "pieces": "Pieces in stock",
+    "piecesHelp": "Leave empty to not count. Few left shows at {few} or fewer, Sold out at 0, and each recorded sale takes its pieces.",
+    "piecesLocked": "Counting pieces is available on {plan}.",
+    "stockDriven": "Sold out and Few left follow the pieces count."
   },
   "TagInput": {
     "add": "Add",
@@ -547,7 +560,8 @@
         "notForProduct": "This code doesn't work on this product.",
         "saleBetter": "The sale price is already lower than this code, so you keep the sale price.",
         "tooMany": "Too many tries. Please wait a few minutes and try again.",
-        "failed": "Something went wrong. Please try again."
+        "failed": "Something went wrong. Please try again.",
+        "soldOut": "This product is sold out."
       }
     }
   },
@@ -2135,7 +2149,16 @@
       "discountCode": {
         "adminPaused": "An admin paused your discount code {code}. Reason: {reason}",
         "adminDeleted": "An admin deleted your discount code {code}. Reason: {reason}"
+      },
+      "product": {
+        "soldOut": "{name} is sold out."
       }
+    },
+    "actions": {
+      "hideProduct": "Hide product",
+      "showProduct": "Show in shop",
+      "hidden": "Hidden from your shop",
+      "shown": "Back in your shop"
     }
   },
   "AdminChangeRequests": {
@@ -2478,7 +2501,7 @@
     },
     "stockManagement": {
       "name": "Stock management",
-      "description": "Stock counts with low-stock alerts. Not built yet."
+      "description": "Pieces in stock: Few left at 3 or fewer, Sold out at 0, and a notification when the last piece sells."
     },
     "bulkUpload": {
       "name": "Bulk upload",
@@ -2949,7 +2972,8 @@
         "usedUp": "This code is used up.",
         "notForProduct": "This code doesn't apply to this product.",
         "saleBetter": "The running sale is a better price, so it's kept.",
-        "tooMany": "Too many tries. Wait a moment."
+        "tooMany": "Too many tries. Wait a moment.",
+        "soldOut": "This product is sold out."
       },
       "customer": "Customer (optional)",
       "customerName": "Name",
@@ -2960,14 +2984,15 @@
       "timeZoneNote": "In your shop's time zone ({zone}).",
       "total": "Total",
       "discountLine": "{amount} less than the normal price",
-      "markSoldOut": "Mark this product as sold out",
-      "markSoldOutHint": "Customers will see Sold out. You can turn it off later.",
-      "alreadySoldOut": "This product is already marked sold out.",
       "confirm": "Confirm sale",
       "confirming": "Saving…",
       "recorded": "Sale recorded",
       "recordedSoldOut": "Sale recorded. The product is now sold out.",
-      "locked": "Recording sales is available on {plan}."
+      "locked": "Recording sales is available on {plan}.",
+      "piecesLeft": "{count, plural, one {# piece left} other {# pieces left}}",
+      "leaves": "This sale leaves {count, plural, =0 {no pieces: the product will show Sold out} one {# piece} other {# pieces}}.",
+      "noPieces": "Sold out: add pieces to the product to record a sale.",
+      "notEnough": "Only {count, plural, one {# piece} other {# pieces}} left."
     },
     "sources": {
       "whatsapp": "WhatsApp",
@@ -3049,11 +3074,9 @@
     "reverse": {
       "title": "Reverse this sale?",
       "body": "It stays in your history, marked Reversed, and no longer counts in your totals. This can't be undone.",
-      "restock": "Put the product back on sale",
-      "restockHint": "This sale marked it sold out. Customers will see it again.",
       "confirm": "Reverse sale",
       "done": "Sale reversed",
-      "doneRestocked": "Sale reversed. The product is back on sale."
+      "piecesBack": "{count, plural, one {# piece goes} other {# pieces go}} back to the product's stock."
     },
     "lock": {
       "title": "Sales tracking is available on {plan}",

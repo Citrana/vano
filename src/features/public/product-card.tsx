@@ -264,7 +264,8 @@ function OrderButton({
     </>
   )
 
-  if (soldOut) {
+  // Live: the last piece may sell while the page is open.
+  if (soldOut || (!order.preview && order.livePrice(productId)?.soldOut)) {
     return (
       <span
         style={COMPACT_RADIUS}

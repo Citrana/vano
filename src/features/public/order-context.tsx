@@ -20,7 +20,8 @@ export type ShopOrder = {
   preview?: boolean
 }
 
-type LivePrice = { price: number; sale: PublicSale | null }
+/** Live per product: the price at tap time and whether it just sold out. */
+type LivePrice = { price: number; sale: PublicSale | null; soldOut: boolean }
 type OrderValue = ShopOrder & { livePrice: (productId: string) => LivePrice | undefined }
 
 const OrderContext = createContext<OrderValue | null>(null)
@@ -34,7 +35,7 @@ const OrderContext = createContext<OrderValue | null>(null)
 export function ShopOrderProvider({ order, children }: { order: ShopOrder; children: ReactNode }) {
   const live = useQuery(api.public.shopPrices, order.demo || order.preview ? "skip" : { slug: order.slug })
   const value = useMemo<OrderValue>(() => {
-    const prices = new Map<string, LivePrice>((live ?? []).map((p) => [p._id, { price: p.price, sale: p.sale }]))
+    const prices = new Map<string, LivePrice>((live ?? []).map((p) => [p._id, { price: p.price, sale: p.sale, soldOut: p.soldOut }]))
     return { ...order, livePrice: (id) => prices.get(id) }
   }, [order, live])
   return <OrderContext.Provider value={value}>{children}</OrderContext.Provider>
