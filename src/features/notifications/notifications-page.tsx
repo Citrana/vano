@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button"
 import { NativeSelect } from "@/components/ui/native-select"
 import { isKnownNotification, NotificationItem } from "./notification-item"
 import { useMarkAllRead, useOpenNotification } from "./use-open-notification"
+import { hasNotificationAction, NotificationActionButton } from "./notification-action"
 
 const PAGE_SIZE = 20
 
@@ -99,17 +100,22 @@ function NotificationList({ unreadOnly, category }: { unreadOnly: boolean; categ
     <>
       <ul className="flex flex-col gap-2">
         {results.map((row) => (
-          <li key={row._id}>
+          <li
+            key={row._id}
+            className={cn("flex flex-col rounded-xl border", row.read ? "bg-background" : "bg-card")}
+          >
             <button
               type="button"
               onClick={() => open(row)}
-              className={cn(
-                "focus-ring flex min-h-11 w-full rounded-xl border px-3 text-left hover:bg-muted md:px-4",
-                row.read ? "bg-background" : "bg-card",
-              )}
+              className="focus-ring flex min-h-11 w-full rounded-xl px-3 text-left hover:bg-muted md:px-4"
             >
               <NotificationItem row={row} now={now} />
             </button>
+            {hasNotificationAction(row) ? (
+              <div className="flex px-3 pb-3 pl-14 md:px-4 md:pl-15">
+                <NotificationActionButton row={row} />
+              </div>
+            ) : null}
           </li>
         ))}
       </ul>

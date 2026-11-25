@@ -4,7 +4,7 @@ import { useQuery } from "convex/react"
 import { BellIcon, CheckCheckIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { Fragment, useState } from "react"
 import { api } from "../../../convex/_generated/api"
 import { QueryBoundary } from "@/components/states/query-boundary"
 import { Button } from "@/components/ui/button"
@@ -19,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { CountBadge, countLabel } from "./count-badge"
 import { isKnownNotification, NotificationItem } from "./notification-item"
 import { useMarkAllRead, useOpenNotification } from "./use-open-notification"
+import { NotificationActionMenuItem } from "./notification-action"
 
 /**
  * Top-bar bell (admin and seller): unread count, and a dropdown with the
@@ -89,9 +90,12 @@ function BellList({ allHref, hasUnread }: { allHref: string; hasUnread: boolean 
           </div>
         ) : (
           rows.map((row) => (
-            <DropdownMenuItem key={row._id} className="h-auto min-h-11 items-start rounded-lg px-2" onClick={() => open(row)}>
-              <NotificationItem row={row} now={now} />
-            </DropdownMenuItem>
+            <Fragment key={row._id}>
+              <DropdownMenuItem className="h-auto min-h-11 items-start rounded-lg px-2" onClick={() => open(row)}>
+                <NotificationItem row={row} now={now} />
+              </DropdownMenuItem>
+              <NotificationActionMenuItem row={row} />
+            </Fragment>
           ))
         )}
       </div>

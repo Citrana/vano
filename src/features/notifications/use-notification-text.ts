@@ -84,6 +84,8 @@ export function useNotificationText(): (data: NotificationData, now: number) => 
         return t("types.discountCode.adminPaused", { code: data.code, reason: data.reason })
       case "discountCode.adminDeleted":
         return t("types.discountCode.adminDeleted", { code: data.code, reason: data.reason })
+      case "product.soldOut":
+        return t("types.product.soldOut", { name: data.name })
     }
   }
 }
