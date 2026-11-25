@@ -789,17 +789,19 @@
     "sales": {
       "title": "Promotions",
       "empty": "Cette boutique n'a aucune promotion.",
-      "pause": "Mettre en pause",
       "pauseTitle": "Mettre « {name} » en pause ?",
       "pauseBody": "La promotion ne s'affiche plus immédiatement et les prix normaux reviennent. Le vendeur est informé du motif et peut la reprendre après correction.",
       "deleteTitle": "Supprimer « {name} » ?",
       "deleteBody": "La promotion et ses chiffres sont supprimés. Les produits ne changent pas. Le vendeur est informé du motif.",
-      "reason": "Motif (envoyé au vendeur)",
-      "reasonHelp": "{min} à {max} caractères.",
       "pausedDone": "Promotion mise en pause",
       "deletedDone": "Promotion supprimée",
       "pausedBecause": "Mise en pause par un administrateur : {reason}",
       "ownShop": "C'est votre propre boutique : un autre administrateur doit modérer ses promotions."
+    },
+    "moderate": {
+      "pause": "Mettre en pause",
+      "reason": "Motif (envoyé au vendeur)",
+      "reasonHelp": "{min} à {max} caractères."
     }
   },
   "ShopStatus": {

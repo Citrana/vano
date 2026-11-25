@@ -1,7 +1,7 @@
 "use client"
 
 import { useQuery } from "convex/react"
-import { LockIcon, PlusIcon, TagIcon } from "lucide-react"
+import { PlusIcon, TagIcon } from "lucide-react"
 import { useTranslations } from "next-intl"
 import Link from "next/link"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
@@ -12,8 +12,7 @@ import { SALES_MAX } from "../../../convex/lib/sales/rules"
 import { PageTitle } from "@/components/shell/page-title"
 import { EmptyState, LoadingState } from "@/components/states/states"
 import { buttonVariants } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { useUpgradePlanName } from "@/features/billing/use-plan-catalog"
+import { PlanLockCard } from "@/features/billing/plan-lock-card"
 import { useNow } from "@/features/shop-looks/editor/schedule-fields"
 import { PromoBarEditor } from "./promo-bar-editor"
 import { SaleRow } from "./sale-row"
@@ -25,18 +24,13 @@ const isFilter = (v: string | null): v is Filter => v !== null && (FILTERS as re
 /** "Available on Pro" + upgrade, for a shop whose plan has no sales. */
 export function SalesLockCard({ hasSales }: { hasSales: boolean }) {
   const t = useTranslations("Sales.lock")
-  const plan = useUpgradePlanName("salesPromotions")
   return (
-    <Card className="gap-3">
-      <p className="flex items-center gap-2 font-semibold">
-        <LockIcon className="size-4" aria-hidden />
-        {t("title", { plan })}
-      </p>
-      <p className="text-sm text-muted-foreground">{hasSales ? t("bodyKept") : t("body")}</p>
-      <Link href="/dashboard/billing" className={buttonVariants({ className: "w-full sm:w-fit" })}>
-        {t("action", { plan })}
-      </Link>
-    </Card>
+    <PlanLockCard
+      feature="salesPromotions"
+      title={(plan) => t("title", { plan })}
+      body={hasSales ? t("bodyKept") : t("body")}
+      action={(plan) => t("action", { plan })}
+    />
   )
 }
 

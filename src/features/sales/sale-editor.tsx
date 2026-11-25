@@ -10,23 +10,22 @@ import type { Category } from "../../../convex/lib/catalog"
 import { errorCodeOf, type ErrorCode } from "../../../convex/lib/errors"
 import type { Currency } from "../../../convex/lib/money"
 import { affectedProducts, bestSaleFor, overlappingSales, publicSale, saleAppliesTo, type SaleLike } from "../../../convex/lib/sales/active"
-import { isSteep, PERCENT_MAX, PERCENT_MIN } from "../../../convex/lib/sales/discount"
+import { isSteep } from "../../../convex/lib/sales/discount"
 import { presetValues, SALE_NAME_MAX, SALE_PRESETS, type SalePreset } from "../../../convex/lib/sales/rules"
-import type { SaleDiscount, SaleDisplay, SaleTarget } from "../../../convex/lib/sales/validators"
+import { DISCOUNT_KINDS, type SaleDiscount, type SaleDisplay, type SaleTarget } from "../../../convex/lib/sales/validators"
 import { Button } from "@/components/ui/button"
 import { Card, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle } from "@/components/ui/dialog"
 import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { MoneyInput } from "@/components/ui/money-input"
-import { NativeSelect } from "@/components/ui/native-select"
 import { RequiredFieldsHint } from "@/components/ui/required-fields-hint"
 import { Switch } from "@/components/ui/switch"
-import { ChoiceGroup } from "@/features/shop-looks/editor/choice-group"
 import { ScheduleFields, useNow } from "@/features/shop-looks/editor/schedule-fields"
-import { ProductPicker, type PickerProduct } from "./product-picker"
+import { DiscountFields } from "./discount-fields"
+import type { PickerProduct } from "./product-picker"
 import { SalePreview } from "./sale-preview"
-import { initialValues, saleSchema, toDiscount, toTarget, type SaleFormValues, type TargetMode } from "./schemas"
+import { initialValues, saleSchema, toDiscount, toTarget, type SaleFormValues } from "./schemas"
+import { TargetFields, type TargetValues } from "./target-fields"
 import { useSaleLabels } from "./use-sale-labels"
 
 export type EditorProduct = PickerProduct & { category: Category }
@@ -76,7 +75,6 @@ export function SaleEditor({
   const t = useTranslations("Sales.form")
   const tp = useTranslations("Sales.presets")
   const te = useTranslations("Errors")
-  const tc = useTranslations("Categories")
   const tCommon = useTranslations("Common")
   const labels = useSaleLabels(currency)
   const now = useNow()
@@ -155,7 +153,6 @@ export function SaleEditor({
     }
   }
 
-  const mode = values.targetMode
   const reviewAffected = review ? affectedProducts(review, products, currency) : []
   const reviewSteep = reviewAffected.some((a) => isSteep(a.product.price, a.price))
   const reviewOverlaps = review
@@ -192,44 +189,16 @@ export function SaleEditor({
           {(p) => <Input {...p} maxLength={SALE_NAME_MAX} placeholder={t("namePlaceholder")} {...register("name")} />}
         </Field>
 
-        <Controller
-          control={control}
-          name="discountKind"
-          render={({ field }) => (
-            <ChoiceGroup
-              label={t("discountType")}
-              value={field.value}
-              wrap
-              onChange={(kind) => {
-                field.onChange(kind)
-                setValue("discountValue", "")
-              }}
-              options={[
-                { value: "percent", label: t("kind.percent") },
-                { value: "amount", label: t("kind.amount") },
-                { value: "price", label: t("kind.price") },
-              ]}
-            />
-          )}
-        />
-        <Field
-          id="sale-value"
-          label={values.discountKind === "percent" ? t("percent") : values.discountKind === "amount" ? t("amount") : t("salePrice")}
-          required
-          help={values.discountKind === "percent" ? t("percentHelp", { min: PERCENT_MIN, max: PERCENT_MAX }) : t("amountHelp")}
+        <DiscountFields
+          idPrefix="sale"
+          kinds={DISCOUNT_KINDS}
+          kind={values.discountKind}
+          value={values.discountValue}
+          onKindChange={(kind) => setValue("discountKind", kind)}
+          onValueChange={(v) => setValue("discountValue", v, { shouldValidate: formState.isSubmitted })}
           error={errors.discountValue?.message}
-        >
-          {(p) =>
-            values.discountKind === "percent" ? (
-              <div className="relative">
-                <Input {...p} inputMode="numeric" autoComplete="off" className="pr-10 tabular-nums" placeholder="30" {...register("discountValue")} />
-                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm font-medium text-muted-foreground">%</span>
-              </div>
-            ) : (
-              <MoneyInput {...p} currency={currency} placeholder="0" {...register("discountValue")} />
-            )
-          }
-        </Field>
+          currency={currency}
+        />
         {discount?.kind === "percent" && discount.value > 80 ? (
           <p role="status" className="flex items-start gap-2 text-sm text-tag-warning-foreground">
             <AlertTriangleIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
@@ -240,91 +209,19 @@ export function SaleEditor({
 
       <Card className="gap-5">
         <CardTitle className="text-base">{t("whereTitle")}</CardTitle>
-        <Controller
-          control={control}
-          name="targetMode"
-          render={({ field }) => (
-            <ChoiceGroup<TargetMode>
-              label={t("appliesTo")}
-              value={field.value}
-              wrap
-              onChange={(m) => {
-                field.onChange(m)
-                if (m === "product") setValue("productIds", values.productIds.slice(0, 1))
-              }}
-              options={[
-                { value: "product", label: t("target.product") },
-                { value: "products", label: t("target.products") },
-                { value: "category", label: t("target.category") },
-                { value: "shop", label: t("target.shop") },
-              ]}
-            />
-          )}
+        <TargetFields
+          idPrefix="sale"
+          value={values}
+          onChange={(patch) => {
+            for (const [key, v] of Object.entries(patch)) {
+              setValue(key as keyof TargetValues, v as never, { shouldValidate: formState.isSubmitted })
+            }
+          }}
+          errors={{ productIds: errors.productIds?.message, category: errors.category?.message }}
+          categories={categories}
+          products={products}
+          price={labels.money}
         />
-        {products.length === 0 ? <p className="text-sm text-muted-foreground">{t("noProducts")}</p> : null}
-        {(mode === "product" || mode === "products") && products.length > 0 ? (
-          <Controller
-            control={control}
-            name="productIds"
-            render={({ field }) => (
-              <div className="flex flex-col gap-2">
-                <ProductPicker
-                  label={mode === "product" ? t("chooseOne") : t("chooseSeveral")}
-                  products={products}
-                  selected={field.value}
-                  onChange={field.onChange}
-                  single={mode === "product"}
-                  price={(p) => labels.money(p.price)}
-                  invalid={Boolean(errors.productIds)}
-                  describedBy={errors.productIds ? "sale-products-error" : undefined}
-                />
-                {errors.productIds ? (
-                  <p id="sale-products-error" role="alert" className="text-xs text-destructive">
-                    {errors.productIds.message}
-                  </p>
-                ) : null}
-              </div>
-            )}
-          />
-        ) : null}
-        {mode === "category" ? (
-          <Field id="sale-category" label={t("category")} required error={errors.category?.message}>
-            {(p) => (
-              <NativeSelect {...p} {...register("category")}>
-                <option value="" disabled>
-                  {t("chooseCategory")}
-                </option>
-                {categories.map((c) => (
-                  <option key={c} value={c}>
-                    {tc(c)}
-                  </option>
-                ))}
-              </NativeSelect>
-            )}
-          </Field>
-        ) : null}
-        {(mode === "category" && values.category !== "") || mode === "shop" ? (
-          <details className="rounded-lg border px-3 py-2" open={values.excludedIds.length > 0}>
-            <summary className="flex min-h-11 cursor-pointer items-center text-sm font-medium">
-              {t("excludeTitle", { count: values.excludedIds.length })}
-            </summary>
-            <div className="pt-2 pb-1">
-              <Controller
-                control={control}
-                name="excludedIds"
-                render={({ field }) => (
-                  <ProductPicker
-                    label={t("excludeHint")}
-                    products={mode === "category" ? products.filter((p) => p.category === values.category) : products}
-                    selected={field.value}
-                    onChange={field.onChange}
-                    price={(p) => labels.money(p.price)}
-                  />
-                )}
-              />
-            </div>
-          </details>
-        ) : null}
         {draft ? (
           <p role="status" className="text-sm text-muted-foreground">
             {t("affectedLive", { count: affected.length })}

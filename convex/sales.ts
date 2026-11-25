@@ -7,10 +7,11 @@ import { currencyValidator } from "./lib/money";
 import { affectedProducts, overlappingSales } from "./lib/sales/active";
 import { discountProblem, isSteep } from "./lib/sales/discount";
 import { SALES_MAX, saleNameProblem, saleScheduleProblem } from "./lib/sales/rules";
-import { deleteSale, saleTotals, shopSales, writeLiveAndSchedule } from "./lib/sales/store";
+import { deleteSale, pickerProducts, saleTotals, shopSales, writeLiveAndSchedule } from "./lib/sales/store";
 import {
   saleDiscountValidator,
   saleDisplayValidator,
+  pickerProductValidator,
   saleInputFields,
   saleTargetValidator,
   type SaleTarget,
@@ -117,16 +118,7 @@ export const editor = sellerQuery({
     currency: currencyValidator,
     categories: v.array(categoryValidator),
     salesCount: v.number(),
-    products: v.array(
-      v.object({
-        _id: v.id("products"),
-        name: v.string(),
-        price: v.number(),
-        category: categoryValidator,
-        soldOut: v.boolean(),
-        coverUrl: v.union(v.string(), v.null()),
-      }),
-    ),
+    products: v.array(pickerProductValidator),
     others: v.array(saleValidator),
     sale: v.union(saleValidator, v.null()),
   }),
@@ -135,18 +127,7 @@ export const editor = sellerQuery({
     const sales = await shopSales(ctx, shop._id);
     const saleId = args.saleId === undefined ? null : ctx.db.normalizeId("sales", args.saleId);
     const sale = saleId ? (sales.find((s) => s._id === saleId) ?? null) : null;
-    const products = [];
-    for (const p of await shopProducts(ctx, shop._id)) {
-      if (p.hidden) continue;
-      products.push({
-        _id: p._id,
-        name: p.name,
-        price: p.price,
-        category: p.category,
-        soldOut: p.soldOut,
-        coverUrl: p.imageIds[0] ? await ctx.storage.getUrl(p.imageIds[0]) : null,
-      });
-    }
+    const products = await pickerProducts(ctx, shop._id);
     return {
       entitled: await hasFeature(ctx, shop, "salesPromotions"),
       currency: shop.currency,

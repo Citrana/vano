@@ -789,17 +789,19 @@
     "sales": {
       "title": "Sales",
       "empty": "This shop has no sales.",
-      "pause": "Pause",
       "pauseTitle": "Pause \"{name}\"?",
       "pauseBody": "The sale stops showing at once and normal prices return. The seller is told why and can resume it after fixing it.",
       "deleteTitle": "Delete \"{name}\"?",
       "deleteBody": "The sale and its numbers are deleted. Products don't change. The seller is told why.",
-      "reason": "Reason (sent to the seller)",
-      "reasonHelp": "{min} to {max} characters.",
       "pausedDone": "Sale paused",
       "deletedDone": "Sale deleted",
       "pausedBecause": "Paused by an admin: {reason}",
       "ownShop": "This is your own shop: another admin has to moderate its sales."
+    },
+    "moderate": {
+      "pause": "Pause",
+      "reason": "Reason (sent to the seller)",
+      "reasonHelp": "{min} to {max} characters."
     }
   },
   "ShopStatus": {
