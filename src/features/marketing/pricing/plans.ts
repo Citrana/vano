@@ -1,5 +1,5 @@
 import { formatMoney } from "../../../../convex/lib/money"
-import { localizedIn, type CatalogFeature, type PlanCatalog } from "../../../../convex/lib/planCatalog"
+import { localizedIn, planCta, type CatalogFeature, type PlanCatalog, type PlanCta } from "../../../../convex/lib/planCatalog"
 import { PLAN_AREAS, isLower, type FeatureValue, type PlanArea } from "../../../../convex/lib/planFeatures"
 import { PLAN_CURRENCY, type PlanId } from "../../../../convex/lib/plans"
 
@@ -22,8 +22,8 @@ export type Plan = {
   /** Months saved by paying yearly, when a yearly price is set. */
   yearlyFreeMonths: number | null
   highlight: boolean
-  /** free = "Start free", trial = "Start free trial", talk = WhatsApp. */
-  cta: "free" | "trial" | "talk"
+  /** free = "Start free", trial = "Start free trial" (Pro), buy = "Get Business" (pay now), talk = WhatsApp. */
+  cta: PlanCta
   features: CardLine[]
 }
 
@@ -96,10 +96,22 @@ export function buildPlanCards(
       priceMinor: plan.monthlyMinor,
       yearlyFreeMonths: yearlyFreeMonths(plan.monthlyMinor, plan.yearlyMinor),
       highlight: plan.id === catalog.trialPlan,
-      cta: plan.monthlyMinor === 0 ? "free" : plan.monthlyMinor === null ? "talk" : "trial",
+      cta: planCta(catalog, plan),
       features: lines,
     }
   })
+}
+
+/**
+ * What moving from `from` to `to` unlocks: the card lines `to` gives more
+ * of (a flag on, a higher limit), in the admin's pricing order. The
+ * upgrade dialog shows the first few.
+ */
+export function addedFeatures(catalog: PlanCatalog, from: PlanId, to: PlanId, locale: string): CardLine[] {
+  return catalog.features
+    .filter((f) => f.pricing.show && f.pricing.showOnCard)
+    .filter((f) => included(f.values[to]) && isLower(f.values[to], f.values[from]))
+    .map((f) => lineFor(f, f.values[to], locale))
 }
 
 /** "Compare all features": rows grouped by area, in the admin's order. */

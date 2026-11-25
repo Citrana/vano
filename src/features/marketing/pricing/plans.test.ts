@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest"
 import { catalogOf, type PlanCatalog } from "../../../../convex/lib/planCatalog"
 import { DEFAULT_PLAN_CONFIG } from "../../../../convex/lib/planDefaults"
 import { withFeatureValue } from "../../../../convex/lib/planFeatures"
-import { buildComparison, buildPlanCards, formatPlanPrice, startingPriceMinor, visiblePlans } from "./plans"
+import { addedFeatures, buildComparison, buildPlanCards, formatPlanPrice, startingPriceMinor, visiblePlans } from "./plans"
 
 const SEED = catalogOf(DEFAULT_PLAN_CONFIG)
 const everything = (plan: string) => `Everything in ${plan}`
@@ -56,7 +56,7 @@ describe("plan cards from the catalogue (seed = the pricing page as it was)", ()
     expect(cards().map((p) => [p.id, p.priceMinor, p.cta, p.highlight, p.yearlyFreeMonths])).toEqual([
       ["free", 0, "free", false, null],
       ["pro", 29900, "trial", true, 2],
-      ["business", 100000, "trial", false, null],
+      ["business", 100000, "buy", false, null],
       ["enterprise", null, "talk", false, null],
     ])
   })
@@ -65,6 +65,38 @@ describe("plan cards from the catalogue (seed = the pricing page as it was)", ()
     expect(fr[0]).toMatchObject({ name: "Gratuit" })
     expect(fr[0].features[0].label).toBe("Jusqu'à 10 produits")
     expect(fr[3].features[0].label).toBe("Tout ce qu'inclut Business")
+  })
+})
+
+describe("trial and buy buttons", () => {
+  test("only the trial plan offers the free trial; Business is bought; Enterprise is a talk", () => {
+    const ctas = Object.fromEntries(cards().map((p) => [p.id, p.cta]))
+    expect(ctas).toEqual({ free: "free", pro: "trial", business: "buy", enterprise: "talk" })
+  })
+  test("with no trial months, Pro is bought too", () => {
+    expect(cards({ ...SEED, trialMonths: 0 }).find((p) => p.id === "pro")!.cta).toBe("buy")
+  })
+})
+
+describe("addedFeatures (the upgrade dialog's unlocks)", () => {
+  test("Pro → Business lists only what Business adds, in pricing order", () => {
+    expect(addedFeatures(SEED, "pro", "business", "en").map((f) => f.label)).toEqual([
+      "Unlimited products",
+      "Discount codes for customers",
+      "Team accounts with roles",
+      "Order tracking (new, confirmed, delivered)",
+      "Sales tracking and monthly reports",
+    ])
+  })
+  test("Free → Business includes the Pro features too, never something already there", () => {
+    const keys = addedFeatures(SEED, "free", "business", "en").map((f) => f.key)
+    expect(keys).toContain("salesPromotions")
+    expect(keys).toContain("discountCodes")
+    expect(keys).not.toContain("whatsappOrders")
+  })
+  test("nothing is added moving down or staying", () => {
+    expect(addedFeatures(SEED, "business", "pro", "en")).toEqual([])
+    expect(addedFeatures(SEED, "pro", "pro", "en")).toEqual([])
   })
 })
 

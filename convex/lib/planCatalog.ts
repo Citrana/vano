@@ -68,6 +68,21 @@ export function catalogOf(config: PlanConfigData): PlanCatalog {
   };
 }
 
+/**
+ * The plan's sign-up / buy button (CLAUDE.md "Billing"): Free = start free;
+ * the trial plan (Pro) = start the free trial, no payment method; a plan
+ * with a custom price (Enterprise) = talk to us; any other paid plan
+ * (Business) = buy it right away, no trial.
+ */
+export type PlanCta = "free" | "trial" | "buy" | "talk";
+
+export function planCta(catalog: Pick<PlanCatalog, "trialPlan" | "trialMonths">, plan: CatalogPlan): PlanCta {
+  if (plan.monthlyMinor === 0) return "free";
+  if (plan.monthlyMinor === null) return "talk";
+  if (plan.id === catalog.trialPlan && catalog.trialMonths > 0) return "trial";
+  return "buy";
+}
+
 /** The plan's name in a language (`fr` or anything else = English). */
 export function planNameIn(catalog: Pick<PlanCatalog, "plans">, id: PlanId, locale: string): string {
   const plan = catalog.plans.find((p) => p.id === id);
