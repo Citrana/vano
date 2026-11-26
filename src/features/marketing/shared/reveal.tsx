@@ -20,17 +20,25 @@ export function Reveal({ children, className, delay = 0 }: { children: ReactNode
     if (!el || typeof IntersectionObserver === "undefined") return
     if (el.getBoundingClientRect().top < window.innerHeight) return
     setState("hidden")
+    const show = () => {
+      setState("shown")
+      observer.disconnect()
+      window.removeEventListener("beforeprint", show)
+    }
+    // Shown once in view, and also when the page jumped past it (anchor,
+    // fast scroll) or is printed, so content never stays invisible.
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
-          setState("shown")
-          observer.disconnect()
-        }
+        if (entries.some((e) => e.isIntersecting || e.boundingClientRect.bottom < 0)) show()
       },
       { rootMargin: "0px 0px -10% 0px" },
     )
     observer.observe(el)
-    return () => observer.disconnect()
+    window.addEventListener("beforeprint", show)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener("beforeprint", show)
+    }
   }, [])
 
   return (
