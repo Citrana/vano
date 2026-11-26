@@ -17,9 +17,9 @@ import {
 } from "./shop-filters"
 
 const products: FilterableProduct[] = [
-  { _id: "a", name: "Robe Été wax", price: 5000, category: "clothes", sizes: ["S", "M"], colors: ["Rouge"], isNew: true },
-  { _id: "b", name: "Sandales cuir", price: 3000, category: "shoes", sizes: ["38", "39"], colors: ["Noir"], sale: { price: 2000 } },
-  { _id: "c", name: "Sac en raphia", price: 8000, category: "bags", colors: ["rouge", "Beige"] },
+  { _id: "a", name: "Robe Été wax", price: 5000, category: "clothes", sizes: ["S", "M"], colors: ["Rouge"], isNew: true, condition: "thrift", audience: "women" },
+  { _id: "b", name: "Sandales cuir", price: 3000, category: "shoes", sizes: ["38", "39"], colors: ["Noir"], sale: { price: 2000 }, condition: "new", audience: "men" },
+  { _id: "c", name: "Sac en raphia", price: 8000, category: "bags", colors: ["rouge", "Beige"], audience: "women" },
   { _id: "d", name: "Robe longue", price: 12000, category: "clothes", sizes: ["m", "L"], colors: [] },
 ]
 const ids = (list: FilterableProduct[]) => list.map((p) => p._id)
@@ -36,11 +36,15 @@ describe("shop filter links", () => {
       sort: "priceAsc",
       sizes: ["M", "L"],
       colors: ["Rouge"],
+      conditions: ["thrift"],
+      audiences: ["women", "kids"],
       min: 2050,
       max: 10000,
     }
     const query = shopFiltersToQuery(filters)
-    expect(query).toBe("?q=robe&cat=clothes&sale=1&new=1&sort=priceAsc&size=M&size=L&color=Rouge&min=20.50&max=100")
+    expect(query).toBe(
+      "?q=robe&cat=clothes&sale=1&new=1&sort=priceAsc&size=M&size=L&color=Rouge&cond=thrift&for=women&for=kids&min=20.50&max=100",
+    )
     expect(parseShopFilters(new URLSearchParams(query))).toEqual(filters)
     expect(shopFiltersToQuery(NO_FILTERS)).toBe("")
     expect(isFiltering(NO_FILTERS)).toBe(false)
@@ -148,5 +152,35 @@ describe("activeFilterChips", () => {
     expect(chips.map((c) => c.key)).toEqual(["q", "sale", "price", "size:S", "size:M"])
     expect(chips.find((c) => c.key === "size:S")?.patch).toEqual({ sizes: ["M"] })
     expect(chips.find((c) => c.key === "price")?.patch).toEqual({ min: null, max: null })
+  })
+})
+
+describe("condition and audience filters", () => {
+  it("keep products with any picked value; products without one never match", () => {
+    expect(apply({ conditions: ["thrift"] })).toEqual(["a"])
+    expect(apply({ conditions: ["thrift", "new"] })).toEqual(["a", "b"])
+    expect(apply({ audiences: ["women"] })).toEqual(["a", "c"])
+    expect(apply({ audiences: ["kids"] })).toEqual([])
+    expect(apply({ audiences: ["women"], conditions: ["thrift"] })).toEqual(["a"])
+  })
+
+  it("are only offered for values the products use", () => {
+    expect(options.conditions).toEqual(["new", "thrift"])
+    expect(options.audiences).toEqual(["women", "men"])
+    const plain = filterOptions([{ _id: "x", name: "Robe", price: 100, category: "clothes" }])
+    expect(plain.conditions).toEqual([])
+    expect(plain.audiences).toEqual([])
+  })
+
+  it("ignore unknown values in the link, count in the panel badge, show as chips and need the panel", () => {
+    const parsed = parseShopFilters(new URLSearchParams("cond=thrift&cond=used&for=kids&for=kids"))
+    expect(parsed.conditions).toEqual(["thrift"])
+    expect(parsed.audiences).toEqual(["kids"])
+    expect(panelFilterCount(parsed)).toBe(2)
+    expect(activeFilterChips(parsed).map((c) => c.key)).toEqual(["cond:thrift", "for:kids"])
+    const noPanel: FilterAccess = { ...FULL_FILTER_ACCESS, panel: false }
+    const limited = limitShopFilters(parsed, noPanel, { sale: false, hasNew: false })
+    expect(limited.conditions).toEqual([])
+    expect(limited.audiences).toEqual([])
   })
 })

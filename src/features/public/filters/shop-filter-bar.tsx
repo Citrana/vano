@@ -164,6 +164,10 @@ function ActiveChip({ chip, currency, onRemove }: { chip: ActiveFilterChip; curr
         return t("chipSize", { size: chip.value })
       case "color":
         return chip.value
+      case "condition":
+        return tp(`conditions.${chip.value}`)
+      case "audience":
+        return tp(`audiences.${chip.value}`)
       case "price":
         return priceRangeLabel(t, chip.range, currency, locale)
     }

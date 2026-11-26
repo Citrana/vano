@@ -1,4 +1,4 @@
-import { CATEGORY_KEYS, type Category } from "../../../../convex/lib/catalog"
+import { AUDIENCE_KEYS, CATEGORY_KEYS, CONDITION_KEYS, type Audience, type Category, type Condition } from "../../../../convex/lib/catalog"
 import type { FilterAccess } from "../../../../convex/lib/looks/filters"
 import { minorToInput, parseMoneyToMinor } from "../../../../convex/lib/money"
 
@@ -25,6 +25,10 @@ export type ShopFilters = {
   sort: ShopSort
   sizes: string[]
   colors: string[]
+  /** Product condition (new / thrift), any of. */
+  conditions: Condition[]
+  /** Who it's for (women / men / kids), any of. */
+  audiences: Audience[]
   /** Minor units. */
   min: number | null
   max: number | null
@@ -38,6 +42,8 @@ export const NO_FILTERS: ShopFilters = {
   sort: "newest",
   sizes: [],
   colors: [],
+  conditions: [],
+  audiences: [],
   min: null,
   max: null,
 }
@@ -53,6 +59,8 @@ export type FilterableProduct = {
   colors?: string[]
   /** "New" badge, computed by the page (`isNewProduct`). */
   isNew?: boolean
+  condition?: Condition | null
+  audience?: Audience | null
 }
 
 type Params = Record<string, string | string[] | undefined> | URLSearchParams
@@ -64,6 +72,12 @@ function all(params: Params, key: string): string[] {
 }
 
 const first = (params: Params, key: string) => all(params, key)[0] ?? ""
+
+/** The link's values that are known keys, once each, in the keys' order. */
+function keysIn<K extends string>(params: Params, name: string, keys: readonly K[]): K[] {
+  const values = new Set(all(params, name))
+  return keys.filter((key) => values.has(key))
+}
 
 function money(raw: string): number | null {
   if (raw.trim() === "") return null
@@ -84,6 +98,8 @@ export function parseShopFilters(params: Params): ShopFilters {
     sort: (SHOP_SORTS as readonly string[]).includes(sort) ? (sort as ShopSort) : "newest",
     sizes: [...new Set(all(params, "size").filter(Boolean))],
     colors: [...new Set(all(params, "color").filter(Boolean))],
+    conditions: keysIn(params, "cond", CONDITION_KEYS),
+    audiences: keysIn(params, "for", AUDIENCE_KEYS),
     min,
     max: max !== null && min !== null && max < min ? null : max,
   }
@@ -100,6 +116,8 @@ export function shopFiltersToQuery(filters: ShopFilters): string {
   if (filters.sort !== "newest") params.set("sort", filters.sort)
   for (const size of filters.sizes) params.append("size", size)
   for (const color of filters.colors) params.append("color", color)
+  for (const condition of filters.conditions) params.append("cond", condition)
+  for (const audience of filters.audiences) params.append("for", audience)
   if (filters.min !== null) params.set("min", minorToInput(filters.min))
   if (filters.max !== null) params.set("max", minorToInput(filters.max))
   const query = params.toString()
@@ -117,6 +135,8 @@ export function panelFilterCount(filters: ShopFilters): number {
     (filters.q.trim() !== "" ? 1 : 0) +
     filters.sizes.length +
     filters.colors.length +
+    filters.conditions.length +
+    filters.audiences.length +
     (filters.min !== null || filters.max !== null ? 1 : 0) +
     (filters.isNew ? 1 : 0)
   )
@@ -139,6 +159,8 @@ export function limitShopFilters(filters: ShopFilters, access: FilterAccess, opt
     sort: filters.sort,
     sizes: panel ? filters.sizes : [],
     colors: panel ? filters.colors : [],
+    conditions: panel ? filters.conditions : [],
+    audiences: panel ? filters.audiences : [],
     min: panel ? filters.min : null,
     max: panel ? filters.max : null,
   }
@@ -171,6 +193,8 @@ export function applyShopFilters<P extends FilterableProduct>(products: readonly
     if (filters.isNew && !p.isNew) return false
     if (filters.sizes.length > 0 && !filters.sizes.some((s) => (p.sizes ?? []).some((size) => sameText(size, s)))) return false
     if (filters.colors.length > 0 && !filters.colors.some((c) => (p.colors ?? []).some((color) => sameText(color, c)))) return false
+    if (filters.conditions.length > 0 && !(p.condition && filters.conditions.includes(p.condition))) return false
+    if (filters.audiences.length > 0 && !(p.audience && filters.audiences.includes(p.audience))) return false
     const price = shownPrice(p)
     if (filters.min !== null && price < filters.min) return false
     if (filters.max !== null && price > filters.max) return false
@@ -239,6 +263,9 @@ export function filterOptions(products: readonly FilterableProduct[]) {
     categories: CATEGORY_KEYS.filter((key) => products.some((p) => p.category === key)),
     sizes: distinct(products.flatMap((p) => p.sizes ?? [])),
     colors: distinct(products.flatMap((p) => p.colors ?? [])),
+    /** Only the conditions / audiences some product uses (none = no filter group). */
+    conditions: CONDITION_KEYS.filter((key) => products.some((p) => p.condition === key)),
+    audiences: AUDIENCE_KEYS.filter((key) => products.some((p) => p.audience === key)),
     minPrice: prices.length > 0 ? Math.min(...prices) : 0,
     maxPrice: prices.length > 0 ? Math.max(...prices) : 0,
     priceRanges: priceRanges(prices),
@@ -253,6 +280,8 @@ export type ActiveFilterChip =
   | { key: string; kind: "category"; value: Category; patch: Partial<ShopFilters> }
   | { key: string; kind: "sale" | "isNew"; patch: Partial<ShopFilters> }
   | { key: string; kind: "size" | "color"; value: string; patch: Partial<ShopFilters> }
+  | { key: string; kind: "condition"; value: Condition; patch: Partial<ShopFilters> }
+  | { key: string; kind: "audience"; value: Audience; patch: Partial<ShopFilters> }
   | { key: string; kind: "price"; range: PriceRange; patch: Partial<ShopFilters> }
 
 export function activeFilterChips(filters: ShopFilters): ActiveFilterChip[] {
@@ -270,6 +299,22 @@ export function activeFilterChips(filters: ShopFilters): ActiveFilterChip[] {
   }
   for (const color of filters.colors) {
     chips.push({ key: `color:${color}`, kind: "color", value: color, patch: { colors: filters.colors.filter((c) => c !== color) } })
+  }
+  for (const condition of filters.conditions) {
+    chips.push({
+      key: `cond:${condition}`,
+      kind: "condition",
+      value: condition,
+      patch: { conditions: filters.conditions.filter((c) => c !== condition) },
+    })
+  }
+  for (const audience of filters.audiences) {
+    chips.push({
+      key: `for:${audience}`,
+      kind: "audience",
+      value: audience,
+      patch: { audiences: filters.audiences.filter((a) => a !== audience) },
+    })
   }
   return chips
 }

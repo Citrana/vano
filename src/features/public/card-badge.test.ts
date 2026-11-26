@@ -22,6 +22,12 @@ describe("cardBadge", () => {
     expect(cardBadge({ ...base, fewLeft: true })).toEqual({ kind: "fewLeft" })
     expect(cardBadge(base)).toBeNull()
   })
+
+  it("Thrift comes last; Brand new is never a card badge", () => {
+    expect(cardBadge({ ...base, fewLeft: true, condition: "thrift" })).toEqual({ kind: "fewLeft" })
+    expect(cardBadge({ ...base, condition: "thrift" })).toEqual({ kind: "thrift" })
+    expect(cardBadge({ ...base, condition: "new" })).toBeNull()
+  })
 })
 
 describe("New badge", () => {

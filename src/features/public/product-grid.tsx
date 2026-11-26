@@ -1,6 +1,6 @@
 "use client"
 
-import type { Category } from "../../../convex/lib/catalog"
+import type { Audience, Category, Condition } from "../../../convex/lib/catalog"
 import type { Currency } from "../../../convex/lib/money"
 import type { ProductLayout } from "../../../convex/lib/looks/sections"
 import type { PublicSale } from "../../../convex/lib/sales/active"
@@ -23,6 +23,11 @@ export type GridItem = {
   sizes?: string[]
   /** Added in the last NEW_BADGE_DAYS (computed by the page). */
   isNew?: boolean
+  /** Optional details: a badge (thrift) and shop filters. */
+  condition?: Condition | null
+  audience?: Audience | null
+  /** The seller's product code, only for the WhatsApp message. */
+  code?: string | null
 }
 
 /**
@@ -63,6 +68,8 @@ export function ProductList({
             colors={p.colors ?? []}
             sizes={p.sizes ?? []}
             isNew={p.isNew ?? false}
+            condition={p.condition ?? null}
+            productCode={p.code ?? null}
             highlight={highlight}
             size={classes.size}
           />
