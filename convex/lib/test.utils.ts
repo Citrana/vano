@@ -171,6 +171,8 @@ export async function setSubscription(
     /** The paid days inside the period (the upgrade credit counts only these). */
     paidStart?: number;
     paidEnd?: number;
+    /** Set on the Free a trial moved to (convex/lib/subscriptions.ts `expireIfDue`). */
+    trialEndedAt?: number;
     source?: "trial" | "payment" | "admin" | "system";
   },
 ): Promise<void> {
@@ -186,6 +188,7 @@ export async function setSubscription(
       periodEnd: state.periodEnd,
       paidStart: state.paidStart,
       paidEnd: state.paidEnd,
+      trialEndedAt: state.trialEndedAt,
       ...(state.source ? { source: state.source } : {}),
     });
   });

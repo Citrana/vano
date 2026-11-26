@@ -37,6 +37,12 @@ export type SubscriptionState = {
    */
   paidStart?: number | null;
   paidEnd?: number | null;
+  /**
+   * Set only on the Free state a trial moved to (`expireIfDue`), to the
+   * moment it did; any later plan change drops it. Used by the "You're
+   * now on Free" email (convex/lib/trialEmails.ts).
+   */
+  trialEndedAt?: number | null;
 };
 
 /** The trial length comes from the plan config (`trialMonths` of TRIAL_PLAN). */
@@ -102,11 +108,13 @@ export function inGrace(state: SubscriptionState, now: number): boolean {
 export function expireIfDue(state: SubscriptionState, now: number): SubscriptionState | null {
   const graceEnd = graceEndOf(state);
   if (graceEnd === null || graceEnd > now) return null;
+  const fromTrial = state.status === "trialing";
   return {
     plan: "free",
-    status: state.status === "trialing" ? "free" : "expired",
+    status: fromTrial ? "free" : "expired",
     periodStart: graceEnd,
     periodEnd: null,
+    ...(fromTrial ? { trialEndedAt: graceEnd } : {}),
   };
 }
 
@@ -284,6 +292,7 @@ export function stateOf(doc: Doc<"subscriptions">): SubscriptionState {
     periodEnd,
     paidStart: legacyPaid ? periodEnd - PERIOD_MS : (doc.paidStart ?? null),
     paidEnd: legacyPaid ? periodEnd : (doc.paidEnd ?? null),
+    trialEndedAt: doc.trialEndedAt ?? null,
   };
 }
 
@@ -332,6 +341,7 @@ export async function writeSubscription(
     periodEnd: next.periodEnd ?? undefined,
     paidStart: next.paidStart ?? undefined,
     paidEnd: next.paidEnd ?? undefined,
+    trialEndedAt: next.trialEndedAt ?? undefined,
     source: log.source,
     updatedAt: Date.now(),
   };

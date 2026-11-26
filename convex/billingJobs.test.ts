@@ -30,7 +30,10 @@ describe("billingJobs.expireDue", () => {
     expect(await t.mutation(internal.billingJobs.expireDue, {})).toBe(2);
     expect(await subOf(t, trial.shopId)).toMatchObject({ plan: "free", status: "free", source: "system" });
     expect((await subOf(t, trial.shopId))?.periodEnd).toBeUndefined();
+    // Marked for the "You're now on Free" email; a lapsed paid plan isn't.
+    expect((await subOf(t, trial.shopId))?.trialEndedAt).toBe(now - 1); // = the end of the grace days
     expect(await subOf(t, paid.shopId)).toMatchObject({ plan: "free", status: "expired" });
+    expect((await subOf(t, paid.shopId))?.trialEndedAt).toBeUndefined();
     expect(await subOf(t, running.shopId)).toMatchObject({ plan: "pro", status: "active" });
     expect(await subOf(t, grace.shopId)).toMatchObject({ plan: "business", status: "active" });
 
