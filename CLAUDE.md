@@ -43,8 +43,12 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   with wrong passwords —, 60 s resend wait, 15-minute lock wait).
 - Sign-up gives **no session** until the code is entered (same screen,
   `VerifyEmailStep`); an unverified account signing in gets a new code.
-  Resend = sign in again with the password. `reset-verification` changes
-  the password, verifies the email and signs out other sessions.
+  Resend = sign in again with the password. Reset is email → code → new
+  password: the code is checked first by `authCodes.checkResetCode`
+  (read-only, result returned not thrown, per-email `resetCodeCheck`
+  bucket, unknown email = `invalid`); `reset-verification` then checks it
+  again, uses it up, changes the password, verifies the email and signs
+  out other sessions.
 - `guardPasswordFlows` (`convex/lib/authFlows.ts`) wraps the provider's
   `authorize`: a `reset` never reveals whether an account exists (same
   answer, send limit taken for every address, `RESET_MIN_RESPONSE_MS`),
