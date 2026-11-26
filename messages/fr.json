@@ -3238,6 +3238,32 @@
       "heading": "L'envoi d'e-mails fonctionne",
       "body": "Ceci est un e-mail de test envoyé depuis les paramètres admin de Vano. Si vous pouvez le lire, les e-mails sont bien configurés.",
       "sentAt": "Envoyé le {date} (UTC)."
+    },
+    "welcome": {
+      "subject": "Bienvenue sur Vano, votre boutique est prête à être configurée",
+      "preheader": "Trois petites étapes pour recevoir vos premières commandes sur WhatsApp.",
+      "heading": "Bienvenue sur Vano !",
+      "intro": "Nous sommes ravis de vous compter parmi nous. Votre boutique est ouverte, et quelques minutes suffisent pour la préparer pour vos clients.",
+      "trialOne": "Votre premier mois sur {plan} est gratuit, sans moyen de paiement.",
+      "trialOther": "Vos {months} premiers mois sur {plan} sont gratuits, sans moyen de paiement.",
+      "stepsIntro": "Vos 3 premières étapes :",
+      "steps": {
+        "shop": {
+          "title": "Configurez votre boutique",
+          "body": "Vérifiez le nom de votre boutique, ajoutez une photo de profil et votre numéro WhatsApp. Les commandes arrivent sur WhatsApp."
+        },
+        "products": {
+          "title": "Ajoutez vos premiers produits",
+          "body": "Commencez avec 3 à 5 pièces : des photos nettes, les prix, les tailles ou les couleurs."
+        },
+        "share": {
+          "title": "Partagez votre lien",
+          "body": "Publiez-le dans votre statut WhatsApp, dans votre bio Instagram ou TikTok, et envoyez-le à vos meilleurs clients."
+        }
+      },
+      "button": "Aller à mon tableau de bord",
+      "lookTip": "Astuce : essayez un autre style de boutique dans « Style » pour qu'elle vous ressemble.",
+      "help": "Besoin d'aide ? Rendez-vous sur {url}."
     }
   }
 }
