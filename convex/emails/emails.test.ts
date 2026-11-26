@@ -61,8 +61,12 @@ describe("layout", () => {
       preheader: "<b>pre</b>",
       heading: "<script>x</script>",
       paragraphs: ['A "quote" & <tag>'],
+      steps: [{ title: "<i>Step</i>", body: "a & b" }],
       button: { label: "Open", url: "https://vano.app/?a=1&b=2" },
     });
+    expect(html).toContain("&lt;i&gt;Step&lt;/i&gt;");
+    expect(html).toContain("a &amp; b");
+    expect(text).toContain("1. <i>Step</i>");
     expect(html).not.toContain("<script>x</script>");
     expect(html).toContain("&lt;script&gt;");
     expect(html).toContain("A &quot;quote&quot; &amp; &lt;tag&gt;");

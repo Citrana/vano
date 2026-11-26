@@ -27,6 +27,8 @@ export type EmailBody = {
   preheader: string;
   heading: string;
   paragraphs: string[];
+  /** A short numbered list under the paragraphs ("first steps"). */
+  steps?: { title: string; body: string }[];
   button?: { label: string; url: string };
   /** Smaller grey lines under the button (dates, "ignore this if…"). */
   notes?: string[];
@@ -54,6 +56,21 @@ export function renderEmail(body: EmailBody): { html: string; text: string } {
   const paragraphs = body.paragraphs
     .map((p) => `<p style="margin:0 0 16px;font-size:16px;line-height:24px;color:${c.ink};">${escapeHtml(p)}</p>`)
     .join("");
+  const steps = body.steps?.length
+    ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 16px;">` +
+      body.steps
+        .map(
+          (step, i) =>
+            `<tr><td valign="top" width="40" style="padding:0 12px 16px 0;">` +
+            `<div style="width:28px;height:28px;border-radius:14px;background:${c.plum};color:#ffffff;font-size:14px;font-weight:700;line-height:28px;text-align:center;">${i + 1}</div>` +
+            `</td><td valign="top" style="padding:0 0 16px;">` +
+            `<p style="margin:0 0 4px;font-size:16px;line-height:24px;font-weight:700;color:${c.ink};">${escapeHtml(step.title)}</p>` +
+            `<p style="margin:0;font-size:15px;line-height:22px;color:${c.muted};">${escapeHtml(step.body)}</p>` +
+            `</td></tr>`,
+        )
+        .join("") +
+      `</table>`
+    : "";
   const button =
     body.button && url
       ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 24px;"><tr><td style="border-radius:10px;background:${c.plum};">` +
@@ -83,7 +100,7 @@ export function renderEmail(body: EmailBody): { html: string; text: string } {
 </td></tr>
 <tr><td style="background:${c.card};border:1px solid ${c.border};border-top:0;border-radius:0 0 16px 16px;padding:28px 24px 20px;">
 <h1 style="margin:0 0 16px;font-size:22px;line-height:28px;font-weight:800;color:${c.ink};">${escapeHtml(body.heading)}</h1>
-${paragraphs}${button}${notes}
+${paragraphs}${steps}${button}${notes}
 </td></tr>
 <tr><td style="padding:20px 24px;text-align:center;font-size:12px;line-height:18px;color:${c.muted};">
 <p style="margin:0 0 4px;font-weight:700;color:${c.plum};">Vano · ${escapeHtml(t.tagline)}</p>
@@ -99,6 +116,7 @@ ${paragraphs}${button}${notes}
     body.heading,
     "",
     ...body.paragraphs.flatMap((p) => [p, ""]),
+    ...(body.steps ?? []).flatMap((step, i) => [`${i + 1}. ${step.title}`, `   ${step.body}`, ""]),
     ...(body.button && url ? [`${body.button.label}: ${url}`, ""] : []),
     ...(body.notes ?? []),
     ...(body.notes?.length ? [""] : []),
