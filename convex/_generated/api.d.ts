@@ -104,6 +104,7 @@ import type * as lib_planFeatures from "../lib/planFeatures.js";
 import type * as lib_planValidators from "../lib/planValidators.js";
 import type * as lib_plans from "../lib/plans.js";
 import type * as lib_platformStats from "../lib/platformStats.js";
+import type * as lib_productCode from "../lib/productCode.js";
 import type * as lib_productStock from "../lib/productStock.js";
 import type * as lib_productWrites from "../lib/productWrites.js";
 import type * as lib_protectedNames from "../lib/protectedNames.js";
@@ -272,6 +273,7 @@ declare const fullApi: ApiFromModules<{
   "lib/planValidators": typeof lib_planValidators;
   "lib/plans": typeof lib_plans;
   "lib/platformStats": typeof lib_platformStats;
+  "lib/productCode": typeof lib_productCode;
   "lib/productStock": typeof lib_productStock;
   "lib/productWrites": typeof lib_productWrites;
   "lib/protectedNames": typeof lib_protectedNames;

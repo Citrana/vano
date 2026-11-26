@@ -169,6 +169,8 @@ export function OrderPanel({
     sale?: PublicSale | null
     /** Show "Have a discount code?" (server-rendered; then live). */
     codeField?: boolean
+    /** The seller's product code, for the WhatsApp message. */
+    code?: string | null
   }
 }) {
   const t = useTranslations("Public")
@@ -193,6 +195,7 @@ export function OrderPanel({
   const hrefFor = (deal: { price: number; original?: number; code?: string } | null) =>
     orderHref(t, {
       product: product.name,
+      productCode: product.code,
       price: formatMoney(deal ? deal.price : normal, currency, locale),
       normalPrice: deal?.original !== undefined ? formatMoney(deal.original, currency, locale) : undefined,
       code: deal?.code,

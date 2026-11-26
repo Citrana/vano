@@ -44,6 +44,8 @@ export default async function DemoShopPage() {
     colors: p.colors,
     sizes: p.sizes,
     isNew: p.isNew ?? false,
+    condition: p.condition ?? null,
+    audience: p.audience ?? null,
   }))
 
   return (

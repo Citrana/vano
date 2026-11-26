@@ -139,6 +139,11 @@ export const shopBySlug = query({
           /** Every colour and size: the shop's filters need them; the card shows CARD_TAGS_MAX (the description is on the product page). */
           colors: p.colors,
           sizes: p.sizes,
+          /** Optional details: a badge and shop filters. Never the cost price. */
+          condition: p.condition ?? null,
+          audience: p.audience ?? null,
+          /** The seller's product code, only for the WhatsApp order message. */
+          code: p.code ?? null,
           /** When it was added (the page shows "New" for NEW_BADGE_DAYS). */
           createdAt: p._creationTime,
           coverUrl: await urlOf(ctx, p.imageIds[0]),
@@ -178,6 +183,10 @@ export const productForPage = query({
         colors: product.colors,
         soldOut: product.soldOut,
         fewLeft: product.fewLeft === true && !product.soldOut,
+        condition: product.condition ?? null,
+        audience: product.audience ?? null,
+        /** Only for the WhatsApp order message. */
+        code: product.code ?? null,
         sale: publicSale(bestSaleFor(product, await liveSalesFor(ctx, shop), shop.currency)),
         /** Show "Have a discount code?" (a live code applies). Never the codes themselves. */
         codeField: codeFieldFor(product, await liveCodesFor(ctx, shop), shop.currency),

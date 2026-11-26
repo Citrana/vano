@@ -58,6 +58,8 @@ export function ProductCard({
   size = "default",
   colors: allColors = [],
   sizes: allSizes = [],
+  condition = null,
+  productCode = null,
 }: {
   productId?: string
   href: string
@@ -79,6 +81,10 @@ export function ProductCard({
   /** Every colour name and size; the card shows the first CARD_TAGS_MAX and "+N". */
   colors?: string[]
   sizes?: string[]
+  /** "thrift" shows a small badge when no other badge applies. */
+  condition?: "new" | "thrift" | null
+  /** The seller's product code, only for the WhatsApp message. */
+  productCode?: string | null
 }) {
   const t = useTranslations("Public")
   const locale = useLocale()
@@ -87,7 +93,7 @@ export function ProductCard({
   const moreColors = Math.max(0, allColors.length - CARD_TAGS_MAX)
   const sizes = allSizes.slice(0, CARD_TAGS_MAX)
   const moreSizes = Math.max(0, allSizes.length - CARD_TAGS_MAX)
-  const badge = cardBadge({ soldOut, sale, isNew, highlight, fewLeft })
+  const badge = cardBadge({ soldOut, sale, isNew, highlight, fewLeft, condition })
   // A sale is a seal inside the card's top-right corner; any other badge a pill on the photo.
   const sealLabel =
     badge?.kind === "salePercent" ? t("saleBadge", { percent: badge.percent }) : badge?.kind === "saleLabel" ? t("saleLabel") : null
@@ -189,7 +195,7 @@ export function ProductCard({
         // Order takes the width; share is a square icon button beside it.
         <div className="relative z-10 mt-auto flex gap-2 pt-3">
           <div className="min-w-0 flex-1">
-            <OrderButton productId={productId} name={name} price={price} sale={sale} soldOut={soldOut} />
+            <OrderButton productId={productId} name={name} price={price} sale={sale} soldOut={soldOut} productCode={productCode} />
           </div>
           <CardShareButton productId={productId} name={name} />
         </div>
@@ -210,6 +216,8 @@ function BadgePill({ badge }: { badge: Exclude<CardBadge, { kind: "salePercent" 
       return <span className={FILLED_PILL}>{badge.label}</span>
     case "fewLeft":
       return <span className={OUTLINED_PILL}>{t("fewLeft")}</span>
+    case "thrift":
+      return <span className={OUTLINED_PILL}>{t("conditions.thrift")}</span>
   }
 }
 
@@ -238,12 +246,14 @@ function OrderButton({
   price,
   sale,
   soldOut,
+  productCode,
 }: {
   productId: string
   name: string
   price: number
   sale: PublicSale | null
   soldOut: boolean
+  productCode: string | null
 }) {
   const t = useTranslations("Public")
   const locale = useLocale()
@@ -288,6 +298,7 @@ function OrderButton({
   const current = live ? live.sale : sale
   const whatsappHref = orderHref(t, {
     product: name,
+    productCode,
     price: formatMoney(current ? current.price : normal, order.currency, locale),
     normalPrice: current ? formatMoney(current.original, order.currency, locale) : undefined,
     url: productUrl(order.slug, productId),

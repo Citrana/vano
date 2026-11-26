@@ -5,6 +5,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { formatMoney } from "../../../../convex/lib/money"
 import { getProductPage } from "@/features/public/data"
+import { ConditionTag } from "@/features/public/condition-tag"
 import { OrderPanel } from "@/features/public/order-panel"
 import { ProductGallery } from "@/features/public/product-gallery"
 import { ProductSection } from "@/features/public/product-section"
@@ -78,7 +79,10 @@ export default async function ProductPage({ params }: PageProps<"/[slug]/[produc
           {/* Desktop: the info stays in view while the photos scroll. */}
           <div className="flex flex-col gap-6 md:sticky md:top-20 md:self-start">
             <div className="flex flex-col gap-2">
-              <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{tc(product.category)}</p>
+              <p className="flex flex-wrap items-center gap-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                {tc(product.category)}
+                {product.condition ? <ConditionTag label={t(`conditions.${product.condition}`)} /> : null}
+              </p>
               <h1 className="font-heading text-2xl leading-tight font-bold tracking-tight text-balance md:text-3xl">{product.name}</h1>
               {product.soldOut ? (
                 <span className="shop-btn w-fit rounded-full bg-[var(--chip,var(--foreground))] px-2.5 py-1 text-xs font-semibold text-[var(--chip-foreground,var(--background))]">

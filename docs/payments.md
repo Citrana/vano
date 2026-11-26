@@ -6,12 +6,22 @@ providers, checkout, the scheduled jobs or billing admin updates this file
 in the same commit, with a dated entry in the change log below
 (see CLAUDE.md "Billing").
 
-**Last updated: 2026-11-26 16:56 CAT (UTC+02:00)**
+**Last updated: 2026-11-26 18:48 CAT (UTC+02:00)**
 
 ## Change log
 
 Newest first. Format: `YYYY-MM-DD HH:MM TZ — what changed (files)`.
 
+- **2026-11-26 18:48 CAT (UTC+02:00)**: pieces in stock are now
+  **required** in the product form on every plan (and a cost price, see
+  CLAUDE.md "Sales tracking"), so **setting a count no longer needs
+  `stockManagement`**: `products.create` / `update` store it on any plan
+  (no more `PLAN_FEATURE_LOCKED` for it). The flag (seed: Business and
+  Enterprise, unchanged) still decides whether the count drives "Few
+  left" / "Sold out" and whether recorded sales take their quantity
+  (`isTracked`); without it the manual switches apply, as after a
+  downgrade. No price, limit or plan changed. Files: `convex/products.ts`,
+  `convex/lib/stock.ts`.
 - **2026-11-26 16:56 CAT (UTC+02:00)**: team accounts (CLAUDE.md "Team
   accounts"). The `teamRoles` flag (seed: Business and Enterprise,
   unchanged) gates teams, and the `teamMembers` limit (seed: 0 / 0 / 5 /

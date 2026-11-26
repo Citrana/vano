@@ -1,5 +1,5 @@
 import type { StaticImageData } from "next/image"
-import type { Category } from "../../../../convex/lib/catalog"
+import type { Audience, Category, Condition } from "../../../../convex/lib/catalog"
 import type { Currency } from "../../../../convex/lib/money"
 import { DEFAULT_SECTIONS, type SectionsFacet } from "../../../../convex/lib/looks/sections"
 import blueHeels from "@/assets/images/photos/products/demo/blue-heels.webp"
@@ -51,18 +51,21 @@ export type DemoProduct = {
   backInStock?: boolean
   /** Shows the "New" badge. */
   isNew?: boolean
+  /** Optional details: the condition badge and the shop filters. */
+  condition?: Condition
+  audience?: Audience
   photos: StaticImageData[]
 }
 
 export const DEMO_PRODUCTS: DemoProduct[] = [
-  { id: "slip-dress", category: "clothes", price: 250000, sizes: ["S", "M", "L"], colors: ["Black"], featured: true, isNew: true, photos: [slipDress, slipDress2] },
-  { id: "kente-shirt", category: "clothes", price: 320000, sizes: ["M", "L", "XL"], colors: [], photos: [kenteShirt] },
-  { id: "printed-top", category: "clothes", price: 180000, sizes: ["S", "M", "L"], colors: ["Red", "White"], isNew: true, photos: [printedTop] },
-  { id: "blue-heels", category: "shoes", price: 290000, sizes: ["37", "38", "39", "40"], colors: [], featured: true, fewLeft: true, photos: [blueHeels] },
-  { id: "wax-print-shirt", category: "clothes", price: 220000, sizes: ["M", "L", "XL"], colors: [], photos: [waxPrintShirt] },
+  { id: "slip-dress", category: "clothes", price: 250000, sizes: ["S", "M", "L"], colors: ["Black"], featured: true, isNew: true, audience: "women", condition: "new", photos: [slipDress, slipDress2] },
+  { id: "kente-shirt", category: "clothes", price: 320000, sizes: ["M", "L", "XL"], colors: [], audience: "men", photos: [kenteShirt] },
+  { id: "printed-top", category: "clothes", price: 180000, sizes: ["S", "M", "L"], colors: ["Red", "White"], isNew: true, audience: "women", condition: "thrift", photos: [printedTop] },
+  { id: "blue-heels", category: "shoes", price: 290000, sizes: ["37", "38", "39", "40"], colors: [], featured: true, fewLeft: true, audience: "women", photos: [blueHeels] },
+  { id: "wax-print-shirt", category: "clothes", price: 220000, sizes: ["M", "L", "XL"], colors: [], audience: "men", condition: "thrift", photos: [waxPrintShirt] },
   { id: "wide-brim-hat", category: "accessories", price: 150000, sizes: [], colors: [], featured: true, photos: [wideBrimHat, wideBrimHat2] },
-  { id: "kente-crop-top", category: "clothes", price: 160000, sizes: ["S", "M", "L", "XL"], colors: [], photos: [kenteCropTop, kenteCropTop2] },
-  { id: "leather-boots", category: "shoes", price: 450000, sizes: ["41", "42", "43", "44"], colors: [], soldOut: true, photos: [leatherBoots] },
+  { id: "kente-crop-top", category: "clothes", price: 160000, sizes: ["S", "M", "L", "XL"], colors: [], audience: "women", photos: [kenteCropTop, kenteCropTop2] },
+  { id: "leather-boots", category: "shoes", price: 450000, sizes: ["41", "42", "43", "44"], colors: [], soldOut: true, audience: "men", condition: "thrift", photos: [leatherBoots] },
   { id: "white-sunglasses", category: "accessories", price: 90000, sizes: [], colors: [], backInStock: true, photos: [whiteSunglasses] },
 ]
 

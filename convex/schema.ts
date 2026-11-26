@@ -3,7 +3,7 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { socialsValidator } from "./lib/shopInfo";
 import { auditActionValidator, auditDetailsValidator, auditTargetTypeValidator } from "./lib/audit";
-import { categoryValidator, languageValidator } from "./lib/catalog";
+import { audienceValidator, categoryValidator, conditionValidator, languageValidator } from "./lib/catalog";
 import {
   changeFlagValidator,
   changeStatusValidator,
@@ -233,15 +233,30 @@ export default defineSchema({
      */
     backInStock: v.optional(v.boolean()),
     /**
-     * Pieces in stock (lib/stock.ts); missing = not tracked. While the plan
+     * Pieces in stock (lib/stock.ts): required by the form on every plan;
+     * missing only on products saved before (= not tracked). While the plan
      * has `stockManagement`, it drives `fewLeft` / `soldOut`.
      */
     pieces: v.optional(v.number()),
+    /**
+     * What the seller paid per piece, integer minor units, 0 or more.
+     * Private: required by the form, missing on older products, never
+     * returned by public queries, only to sellers with `ownProducts.manage`.
+     * Copied into recorded sales (`salesRecords.unitCost`).
+     */
+    costPrice: v.optional(v.number()),
+    /** New or thrift (optional; a small badge and a shop filter). */
+    condition: v.optional(conditionValidator),
+    /** Women, men or kids (optional; a shop filter). */
+    audience: v.optional(audienceValidator),
+    /** The seller's product code, normalised (lib/productCode.ts), unique per shop. */
+    code: v.optional(v.string()),
     /** Hidden from the shop by its seller (they can show it again; `hidden` is the admin's). */
     hiddenBySeller: v.optional(v.boolean()),
   })
     .index("by_shopId", ["shopId"])
     .index("by_shopId_and_category", ["shopId", "category"])
+    .index("by_shopId_and_code", ["shopId", "code"])
     .index("by_hidden_and_category", ["hidden", "category"])
     .index("by_category", ["category"])
     .searchIndex("search_name", { searchField: "name", filterFields: ["hidden", "category"] }),
@@ -285,6 +300,11 @@ export default defineSchema({
     markedSoldOut: v.boolean(),
     /** Pieces this sale took from the product's stock (edits and reverses give them back). */
     piecesTaken: v.optional(v.number()),
+    /**
+     * The product's cost price per item when the sale was recorded (private,
+     * for profit later); missing when the product had none. Never changed.
+     */
+    unitCost: v.optional(v.number()),
     status: recordStatusValidator,
     reversedAt: v.optional(v.number()),
     createdBy: v.id("users"),

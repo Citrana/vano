@@ -22,6 +22,9 @@ describe("pieces in stock", () => {
     expect(piecesProblem(-1)).toBe("range");
     expect(piecesProblem(1.5)).toBe("range");
     expect(piecesProblem(100_000)).toBe("range");
+    // A new product needs at least one piece.
+    expect(piecesProblem(0, { creating: true })).toBe("range");
+    expect(piecesProblem(1, { creating: true })).toBeNull();
   });
 
   test("tracked only with a count and the plan feature", () => {

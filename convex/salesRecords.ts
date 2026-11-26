@@ -232,6 +232,8 @@ export const record = sellerMutation({
       finalUnitPrice: args.finalUnitPrice,
       quantity: args.quantity,
       ...totals,
+      // Private snapshot for profit later; never returned by the lists.
+      unitCost: product.costPrice,
       offer: offer ?? undefined,
       source: args.source,
       customerName: args.customerName?.trim() || undefined,

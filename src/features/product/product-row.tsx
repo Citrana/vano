@@ -58,6 +58,8 @@ export type ProductRowData = {
   pieces?: number | null
   /** The count drives Few left / Sold out (plan has stock management). */
   tracked?: boolean
+  /** The seller's product code, if set. */
+  code?: string | null
   coverUrl: string | null
 }
 
@@ -138,7 +140,10 @@ export function ProductRow({
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <p className="truncate font-medium">{product.name}</p>
-            <p className="text-sm font-semibold tabular-nums">{formatMoney(product.price, currency, locale)}</p>
+            <p className="flex flex-wrap items-baseline gap-x-2 text-sm font-semibold tabular-nums">
+              {formatMoney(product.price, currency, locale)}
+              {product.code ? <span className="text-xs font-normal text-muted-foreground">{product.code}</span> : null}
+            </p>
           </div>
           <div className="-mt-1 -mr-1 flex shrink-0">
             {canEdit ? (
@@ -199,7 +204,8 @@ export function ProductRow({
               {t("hiddenBySeller")}
             </Badge>
           ) : null}
-          {product.tracked && product.pieces !== null && product.pieces !== undefined ? (
+          {/* The count on every plan (it's required); it drives the labels only when tracked. */}
+          {product.pieces !== null && product.pieces !== undefined ? (
             <Badge variant="muted" className="tabular-nums">
               {t("pieces", { count: product.pieces })}
             </Badge>

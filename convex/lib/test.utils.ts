@@ -112,6 +112,11 @@ export async function productArgs(
     colors: string[];
     imageIds: Id<"_storage">[];
     soldOut: boolean;
+    pieces: number;
+    costPrice: number;
+    condition: "new" | "thrift";
+    audience: "women" | "men" | "kids";
+    code: string;
   }> = {},
 ) {
   return {
@@ -123,6 +128,8 @@ export async function productArgs(
     colors: ["Rouge"],
     imageIds: overrides.imageIds ?? [await storeFile(t)],
     soldOut: false,
+    pieces: 10,
+    costPrice: 1500,
     ...overrides,
   };
 }

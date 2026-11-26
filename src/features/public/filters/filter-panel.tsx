@@ -3,6 +3,7 @@
 import { SearchIcon } from "lucide-react"
 import { useLocale, useTranslations } from "next-intl"
 import { useId, useState, type ReactNode } from "react"
+import type { Audience, Condition } from "../../../../convex/lib/catalog"
 import { cn } from "cn"
 import { colorSwatch } from "../../../../convex/lib/colorSwatches"
 import type { FilterAccess } from "../../../../convex/lib/looks/filters"
@@ -13,6 +14,11 @@ import { MoneyInput } from "@/components/ui/money-input"
 import { Switch } from "@/components/ui/switch"
 import { FilterChip } from "./filter-chip"
 import { SEARCH_MAX, sameRange, sameText, type FilterOptions, type PriceRange, type ShopFilters } from "./shop-filters"
+
+/** Adds or removes a key. */
+function toggleKey<K extends string>(list: readonly K[], key: K): K[] {
+  return list.includes(key) ? list.filter((k) => k !== key) : [...list, key]
+}
 
 /** Adds or removes `value` (case and accents ignored). */
 function toggle(list: readonly string[], value: string): string[] {
@@ -42,7 +48,8 @@ function Group({ legend, children }: { legend: string; children: ReactNode }) {
 /**
  * The "Filters" panel's content (side sheet on computers, bottom sheet on
  * phones): search, price (quick ranges from the shop's real prices, then
- * min / max), category, size, colour and the On sale / New switches. Only
+ * min / max), category, size, colour, condition, who it's for and the
+ * On sale / New switches. Only
  * values the shop's products have are shown. Prices are typed in major
  * units and read with `parseMoneyToMinor` (CLAUDE.md "Money").
  */
@@ -61,6 +68,7 @@ export function FilterPanel({
 }) {
   const t = useTranslations("Public.filters")
   const tc = useTranslations("Categories")
+  const tp = useTranslations("Public")
   const locale = useLocale()
   const id = useId()
   const [min, setMin] = useState(filters.min === null ? "" : minorToInput(filters.min))
@@ -233,6 +241,38 @@ export function FilterPanel({
                 </button>
               )
             })}
+          </div>
+        </Group>
+      ) : null}
+
+      {options.conditions.length > 0 ? (
+        <Group legend={t("condition")}>
+          <div className="flex flex-wrap gap-x-1.5">
+            {options.conditions.map((key: Condition) => (
+              <FilterChip
+                key={key}
+                selected={filters.conditions.includes(key)}
+                onClick={() => onChange({ conditions: toggleKey(filters.conditions, key) })}
+              >
+                {tp(`conditions.${key}`)}
+              </FilterChip>
+            ))}
+          </div>
+        </Group>
+      ) : null}
+
+      {options.audiences.length > 0 ? (
+        <Group legend={t("audience")}>
+          <div className="flex flex-wrap gap-x-1.5">
+            {options.audiences.map((key: Audience) => (
+              <FilterChip
+                key={key}
+                selected={filters.audiences.includes(key)}
+                onClick={() => onChange({ audiences: toggleKey(filters.audiences, key) })}
+              >
+                {tp(`audiences.${key}`)}
+              </FilterChip>
+            ))}
           </div>
         </Group>
       ) : null}

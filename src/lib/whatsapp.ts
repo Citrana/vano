@@ -21,7 +21,8 @@ type OrderT = (
     | "orderCodePrice"
     | "orderSize"
     | "orderColor"
-    | "orderLink",
+    | "orderLink"
+    | "orderRef",
   values?: Record<string, string>,
 ) => string
 
@@ -36,6 +37,8 @@ type OrderLines = {
   normalPrice?: string
   /** The discount code applied (CLAUDE.md "Discount codes"). */
   code?: string
+  /** The seller's product code ("CLO-001"), so they know which item it is. */
+  productCode?: string | null
 }
 
 /**
@@ -55,6 +58,7 @@ export function buildOrderMessage(t: OrderT, order: OrderLines): string {
   return [
     t("orderGreeting"),
     t("orderProduct", { name: order.product }),
+    order.productCode ? t("orderRef", { code: order.productCode }) : null,
     ...priceLines,
     order.size ? t("orderSize", { size: order.size }) : null,
     order.color ? t("orderColor", { color: order.color }) : null,
