@@ -15,7 +15,7 @@ export function credentialsSchema(tv: TV) {
 
 export type Credentials = z.infer<ReturnType<typeof credentialsSchema>>
 
-/** The emailed code (sign-up verification). */
+/** The emailed code (sign-up verification, reset code step). */
 export function codeSchema(tv: TV) {
   return z.object({ code: codeField(tv) })
 }
@@ -29,9 +29,9 @@ export function resetEmailSchema(tv: TV) {
 
 export type ResetEmailValues = z.infer<ReturnType<typeof resetEmailSchema>>
 
-/** Step 2 of a password reset: the code and the new password. */
-export function resetPasswordSchema(tv: TV) {
-  return z.object({ code: codeField(tv), newPassword: passwordField(tv) })
+/** Last step of a password reset, once the code is confirmed. */
+export function newPasswordSchema(tv: TV) {
+  return z.object({ newPassword: passwordField(tv) })
 }
 
-export type ResetPasswordValues = z.infer<ReturnType<typeof resetPasswordSchema>>
+export type NewPasswordValues = z.infer<ReturnType<typeof newPasswordSchema>>

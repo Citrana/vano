@@ -208,7 +208,10 @@
     "passwordChanged": "Mot de passe changé. Vous êtes connecté ici et déconnecté sur vos autres appareils.",
     "invalidCode": "Ce code n'est pas correct ou a expiré. Vérifiez-le, ou demandez-en un nouveau.",
     "tooManyTries": "Trop de codes incorrects. Attendez {minutes} minutes, puis demandez un nouveau code.",
-    "backToLogin": "Retour à la connexion"
+    "backToLogin": "Retour à la connexion",
+    "continue": "Continuer",
+    "newPasswordTitle": "Choisissez un nouveau mot de passe",
+    "codeConfirmed": "Code confirmé pour <strong>{email}</strong>."
   },
   "Seller": {
     "settings": "Paramètres de la boutique",

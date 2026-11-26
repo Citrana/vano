@@ -208,7 +208,10 @@
     "passwordChanged": "Password changed. You're signed in here and signed out on your other devices.",
     "invalidCode": "That code isn't right or has expired. Check it, or ask for a new one.",
     "tooManyTries": "Too many wrong codes. Wait {minutes} minutes, then ask for a new code.",
-    "backToLogin": "Back to sign in"
+    "backToLogin": "Back to sign in",
+    "continue": "Continue",
+    "newPasswordTitle": "Choose a new password",
+    "codeConfirmed": "Code confirmed for <strong>{email}</strong>."
   },
   "Seller": {
     "settings": "Shop settings",

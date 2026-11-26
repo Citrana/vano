@@ -26,6 +26,7 @@ export function useCodeStep({
   sendError?: AuthErrorKind | null
 }) {
   const t = useTranslations("Auth")
+  const te = useTranslations("Errors")
   const message = useAuthErrorMessage()
   const [error, setError] = useState<string | null>(sendError ? message(sendError) : null)
   const [wrong, setWrong] = useState(0)
@@ -33,19 +34,37 @@ export function useCodeStep({
   const cooldown = useResendCooldown(sendError ? 0 : RESEND_COOLDOWN_S)
   const locked = wrong >= AUTH_MAX_FAILED_PER_HOUR
 
-  /** A code check failed: shows why and counts wrong codes. */
+  /** Counts a wrong code; shows the lock message when there were too many. */
+  function countWrong() {
+    const next = wrong + 1
+    setWrong(next)
+    if (next >= AUTH_MAX_FAILED_PER_HOUR) lock()
+    else setError(t("invalidCode"))
+  }
+
+  function lock() {
+    setWrong(AUTH_MAX_FAILED_PER_HOUR)
+    cooldown.start(AUTH_LOCK_WAIT_S)
+    setError(t("tooManyTries", { minutes: AUTH_LOCK_WAIT_S / 60 }))
+  }
+
+  /** A `signIn` code check failed: shows why and counts wrong codes. */
   function onCheckError(caught: unknown) {
     const result = classifyAuthError(caught, flow)
-    if (result.kind === "invalidCode") {
-      const next = wrong + 1
-      setWrong(next)
-      if (next >= AUTH_MAX_FAILED_PER_HOUR) {
-        cooldown.start(AUTH_LOCK_WAIT_S)
-        setError(t("tooManyTries", { minutes: AUTH_LOCK_WAIT_S / 60 }))
-        return
-      }
-    }
-    setError(message(result))
+    if (result.kind === "invalidCode") countWrong()
+    else setError(message(result))
+  }
+
+  /** The answer of `authCodes.checkResetCode` when it isn't ok. */
+  function onCheckResult(status: "invalid" | "tooMany") {
+    if (status === "tooMany") lock()
+    else countWrong()
+  }
+
+  /** The code stopped working meanwhile (expired): say so, allow a new one now. */
+  function onExpired() {
+    setError(te("CODE_EXPIRED"))
+    cooldown.start(0)
   }
 
   async function onResend() {
@@ -67,6 +86,8 @@ export function useCodeStep({
     error,
     clearError: () => setError(null),
     onCheckError,
+    onCheckResult,
+    onExpired,
     locked,
     resending,
     secondsLeft: cooldown.secondsLeft,
