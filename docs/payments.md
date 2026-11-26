@@ -6,12 +6,30 @@ providers, checkout, the scheduled jobs or billing admin updates this file
 in the same commit, with a dated entry in the change log below
 (see CLAUDE.md "Billing").
 
-**Last updated: 2026-11-26 18:48 CAT (UTC+02:00)**
+**Last updated: 2026-11-26 20:53 CAT (UTC+02:00)**
 
 ## Change log
 
 Newest first. Format: `YYYY-MM-DD HH:MM TZ — what changed (files)`.
 
+- **2026-11-26 20:53 CAT (UTC+02:00)**: **trial reminder emails** to the
+  shop owner, in the shop's language (section 14). `expireIfDue` now
+  stamps `subscriptions.trialEndedAt` (= the grace end) when a trial moves
+  to Free, persisted by `writeSubscription` and read by `stateOf`; any
+  later plan change (payment, grant, upgrade) drops it. New index
+  `by_status_and_trialEndedAt`. A new daily cron (06:00 UTC = 09:00
+  Nairobi) `trialEmailJobs.plan` schedules the 7-day, 2-day and "now on
+  Free" emails, at most `TRIAL_EMAILS_PER_DAY` (70) a day, one a minute;
+  each `trialEmailJobs.send` re-checks the live subscription and records
+  the email in the new `trialEmails` table in the same transaction. The
+  downgrade-impact loader moved to `convex/lib/shopDowngrade.ts` (shared
+  by `billing.downgradeImpact` and the 2-day email) and `formatPlanPrice`
+  to `convex/lib/plans.ts`. No price, limit or plan rule changed. Files:
+  `convex/lib/subscriptions.ts`, `convex/lib/trialEmails.ts`,
+  `convex/trialEmailJobs.ts`, `convex/emails/trialReminders.ts`,
+  `convex/emails/templates/trialReminders.ts`, `convex/lib/shopDowngrade.ts`,
+  `convex/lib/plans.ts`, `convex/lib/planCatalog.ts`, `convex/billing.ts`,
+  `convex/schema.ts`, `convex/crons.ts`, `convex/admin/shops.ts`.
 - **2026-11-26 18:48 CAT (UTC+02:00)**: pieces in stock are now
   **required** in the product form on every plan (and a cost price, see
   CLAUDE.md "Sales tracking"), so **setting a count no longer needs
@@ -340,6 +358,7 @@ with the feature (`useUpgradePlanName`).
 | `periodStart`, `periodEnd` | `periodEnd` is absent on Free |
 | `paidStart`, `paidEnd` | The paid days inside the period (optional). Only the upgrade credit reads them. Trial and admin days are never paid days. A row without them and `source: "payment"` counts its last 30 days as paid |
 | `source` | `trial \| payment \| admin \| system` (who set the current state) |
+| `trialEndedAt` | Only on the `free` state a trial moved to (`expireIfDue`): when it did. Any later plan change drops it. Read by the "now on Free" email (section 14) |
 
 A shop without a row (created before `billingV1` ran) is treated as a trial
 counted from its creation date.
@@ -400,7 +419,7 @@ its plan's product limit.
    `GRACE_DAYS` (3) days (time to pay; `plan.inGrace` notification). The
    hourly cron `billingJobs.expireDue` finds `trialing` / `active` rows with
    `periodEnd ≤ now − 3 days` (index `by_status_and_periodEnd`), moving
-   trialing → `free` and active → `expired`. It works in batches of 100 and
+   trialing → `free` (stamping `trialEndedAt`) and active → `expired`. It works in batches of 100 and
    reschedules itself while more are due. Mutations also treat a period
    past its grace days as Free right away (`getEntitlements(ctx, shop, now)`),
    so the cron's lag never gives extra days. Data is never deleted.
@@ -708,3 +727,35 @@ the Payments sidebar badge come from `admin/attention.counts`, which reads
 the real tables: failed payments in the last `FAILED_PAYMENT_WINDOW_DAYS`
 (7) whose shop hasn't paid successfully since, and trialing / active
 subscriptions ending within `EXPIRY_WARNING_DAYS`.
+
+## 14. Trial reminder emails
+
+Three emails to the shop owner on the Pro trial, in the shop's language,
+through `sendEmail` and the shared layout (CLAUDE.md "Emails"). Rules are
+pure in `convex/lib/trialEmails.ts`; the jobs are in
+`convex/trialEmailJobs.ts`; the content in `convex/emails/trialReminders.ts`
+and `templates/trialReminders.ts`.
+
+| Email | Due when | Content (all from real data and the plan config) | Button |
+|---|---|---|---|
+| `days7` | `trialing`, trial ends in 3–7 days | products, shop views, WhatsApp taps during the trial (only numbers > 0), Free's pricing card lines (`includedCardLines`) | Choose a plan |
+| `days2` | `trialing`, trial ends in 1–2 days (a 7-day email not sent by then is dropped) | what pauses on Free (offers, extra looks, stats, products over the Free limit from `shopDowngradeImpact`), the 3 grace days | Keep Pro (monthly price, `formatPlanPrice`) |
+| `ended` | `free` with `trialEndedAt` in the last 7 days | now on Free, data safe, nothing deleted, upgrade anytime | Upgrade |
+
+- **Once**: one `trialEmails` row per shop × kind × trial end (`periodEnd`
+  for the countdown, `trialEndedAt` for "ended"), inserted in the same
+  transaction that schedules the email. If the trial is extended, the
+  countdown follows the new end date.
+- **Live check**: `send` re-reads the shop, owner and subscription and
+  sends only if the same email is still due. A payment, a Business
+  upgrade, an admin grant or new dates mean nothing is sent. Suspended
+  shops / owners, a bad address or a missing `SITE_URL` are skipped
+  without a record (due again the next run).
+- **Daily limit**: `TRIAL_EMAILS_PER_DAY` (70, leaving room in Resend's free
+  100 for auth codes and welcome emails), counted per UTC day on
+  `trialEmails.by_day`, checked by `plan` and again by each `send`. Sends
+  are spaced `TRIAL_EMAIL_SPACING_MS` (1 min) apart, most urgent first
+  (`days2`, `ended`, `days7`); the rest go the next day.
+- **Failures**: each email is its own scheduled mutation, so one failing
+  never affects another; delivery retries are `sendEmail`'s.
+- Records are deleted with the shop (`admin/shops.purgeShop`).
