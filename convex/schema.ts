@@ -44,6 +44,23 @@ export default defineSchema({
   ...authTables,
 
   /**
+   * Convex Auth's codes table, unchanged, plus an index so
+   * `authCodeJobs.cleanup` can delete expired codes (CLAUDE.md "Auth codes").
+   */
+  authVerificationCodes: defineTable({
+    accountId: v.id("authAccounts"),
+    provider: v.string(),
+    code: v.string(),
+    expirationTime: v.number(),
+    verifier: v.optional(v.string()),
+    emailVerified: v.optional(v.string()),
+    phoneVerified: v.optional(v.string()),
+  })
+    .index("accountId", ["accountId"])
+    .index("code", ["code"])
+    .index("by_expirationTime", ["expirationTime"]),
+
+  /**
    * Convex Auth's users table plus role and status. `roleId` / `status`
    * stay optional until `migrations:rbacV1` has run everywhere: until then
    * a missing role counts as seller and a missing status as active
@@ -61,6 +78,8 @@ export default defineSchema({
     status: v.optional(userStatusValidator),
     /** When the welcome email was queued (convex/emails/welcome.ts): sent once per account. */
     welcomeEmailSentAt: v.optional(v.number()),
+    /** The screen language at sign-up, for auth code emails (convex/emails/authCode.ts). */
+    language: v.optional(languageValidator),
   })
     .index("email", ["email"])
     .index("phone", ["phone"])
