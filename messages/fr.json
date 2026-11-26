@@ -122,7 +122,8 @@
     "STOCK_TRACKED": "Les pièces de ce produit sont comptées : changez plutôt le nombre de pièces.",
     "REPORT_INVALID": "Ce mois n'est pas valide.",
     "EMAIL_MISSING": "Votre compte n'a pas d'adresse e-mail, l'e-mail de test ne peut donc pas être envoyé.",
-    "TEST_EMAIL_RATE_LIMITED": "Trop d'e-mails de test. Attendez quelques minutes et réessayez."
+    "TEST_EMAIL_RATE_LIMITED": "Trop d'e-mails de test. Attendez quelques minutes et réessayez.",
+    "EMAIL_SEND_FAILED": "Nous n'avons pas pu envoyer l'e-mail pour le moment. Réessayez dans un instant."
   },
   "Validation": {
     "required": "Ce champ est obligatoire.",
@@ -3264,6 +3265,22 @@
       "button": "Aller à mon tableau de bord",
       "lookTip": "Astuce : essayez un autre style de boutique dans « Style » pour qu'elle vous ressemble.",
       "help": "Besoin d'aide ? Rendez-vous sur {url}."
+    },
+    "verifyCode": {
+      "subject": "{code} est votre code Vano",
+      "preheader": "Saisissez ce code pour confirmer votre e-mail. Il est valable {minutes} minutes.",
+      "heading": "Confirmez votre e-mail",
+      "intro": "Saisissez ce code sur l'écran d'inscription Vano pour confirmer votre adresse e-mail :",
+      "expires": "Le code est valable {minutes} minutes et une seule fois.",
+      "ignore": "Vous n'avez pas créé de compte Vano ? Vous pouvez ignorer cet e-mail."
+    },
+    "resetCode": {
+      "subject": "{code} est votre code de réinitialisation Vano",
+      "preheader": "Saisissez ce code pour choisir un nouveau mot de passe. Il est valable {minutes} minutes.",
+      "heading": "Réinitialisez votre mot de passe",
+      "intro": "Saisissez ce code sur l'écran Vano pour choisir un nouveau mot de passe :",
+      "expires": "Le code est valable {minutes} minutes et une seule fois. Après le changement, vous serez déconnecté sur vos autres appareils.",
+      "ignore": "Vous n'avez pas demandé à réinitialiser votre mot de passe ? Ignorez cet e-mail : votre mot de passe reste le même."
     }
   }
 }

@@ -122,7 +122,8 @@
     "STOCK_TRACKED": "This product's pieces are counted: change the number of pieces instead.",
     "REPORT_INVALID": "This month isn't valid.",
     "EMAIL_MISSING": "Your account has no email address, so the test email can't be sent.",
-    "TEST_EMAIL_RATE_LIMITED": "Too many test emails. Please wait a few minutes and try again."
+    "TEST_EMAIL_RATE_LIMITED": "Too many test emails. Please wait a few minutes and try again.",
+    "EMAIL_SEND_FAILED": "We couldn't send the email right now. Please try again in a moment."
   },
   "Validation": {
     "required": "This field is required.",
@@ -3264,6 +3265,22 @@
       "button": "Go to my dashboard",
       "lookTip": "Tip: try a different shop look in \"Look\" to match your style.",
       "help": "Need help? Visit {url}."
+    },
+    "verifyCode": {
+      "subject": "{code} is your Vano code",
+      "preheader": "Enter this code to confirm your email. It works for {minutes} minutes.",
+      "heading": "Confirm your email",
+      "intro": "Enter this code on the Vano sign-up screen to confirm your email address:",
+      "expires": "The code works for {minutes} minutes and only once.",
+      "ignore": "Didn't create a Vano account? You can ignore this email."
+    },
+    "resetCode": {
+      "subject": "{code} is your Vano password reset code",
+      "preheader": "Enter this code to choose a new password. It works for {minutes} minutes.",
+      "heading": "Reset your password",
+      "intro": "Enter this code on the Vano screen to choose a new password:",
+      "expires": "The code works for {minutes} minutes and only once. After the change, you'll be signed out on your other devices.",
+      "ignore": "Didn't ask to reset your password? Ignore this email: your password stays the same."
     }
   }
 }
