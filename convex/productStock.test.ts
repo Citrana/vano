@@ -46,11 +46,9 @@ describe("pieces in stock on the product form", () => {
     expect(product).toMatchObject({ pieces: 10, soldOut: false, backInStock: true });
     expect(product.fewLeft).toBeUndefined();
 
-    // Emptying the field stops counting; the form's switch applies again.
-    await me.mutation(api.products.update, { productId: id, ...(await plain(t, { soldOut: true })) });
-    const untracked = (await productRow(t, id))!;
-    expect(untracked.pieces).toBeUndefined();
-    expect(untracked.soldOut).toBe(true);
+    // The count wins over the form's switch while tracked.
+    await me.mutation(api.products.update, { productId: id, ...(await plain(t, { pieces: 4, soldOut: true })) });
+    expect(await productRow(t, id)).toMatchObject({ pieces: 4, soldOut: false });
   });
 
   test("the manual switches are refused while the count is tracked", async () => {
@@ -63,17 +61,29 @@ describe("pieces in stock on the product form", () => {
     expect(list[0]).toMatchObject({ pieces: 5, tracked: true });
   });
 
-  test("invalid counts and plans without stock management are refused", async () => {
+  test("invalid counts are refused; a new product needs at least one piece", async () => {
     const t = newTest();
     const { me } = await shop(t);
     await expect(me.mutation(api.products.create, await plain(t, { pieces: -1 }))).rejects.toThrow(/STOCK_INVALID/);
     await expect(me.mutation(api.products.create, await plain(t, { pieces: 2.5 }))).rejects.toThrow(/STOCK_INVALID/);
+    await expect(me.mutation(api.products.create, await plain(t, { pieces: 0 }))).rejects.toThrow(/STOCK_INVALID/);
+    const id = await me.mutation(api.products.create, await plain(t, { pieces: 1 }));
+    // 0 is fine on an edit: the product is sold out.
+    await me.mutation(api.products.update, { productId: id, ...(await plain(t, { pieces: 0 })) });
+    expect(await productRow(t, id)).toMatchObject({ pieces: 0, soldOut: true });
+  });
 
-    const t2 = newTest();
-    const pro = await shop(t2, "pro");
-    await expect(pro.me.mutation(api.products.create, await plain(t2, { pieces: 3 }))).rejects.toThrow(/PLAN_FEATURE_LOCKED/);
-    const id = await pro.me.mutation(api.products.create, await plain(t2));
-    expect((await productRow(t2, id))!.pieces).toBeUndefined();
+  test("without stockManagement the count is required and saved, but the switches decide", async () => {
+    const t = newTest();
+    const pro = await shop(t, "pro");
+    const id = await pro.me.mutation(api.products.create, await plain(t, { pieces: 2 }));
+    expect(await productRow(t, id)).toMatchObject({ pieces: 2, soldOut: false });
+    expect((await productRow(t, id))!.fewLeft).toBeUndefined();
+    await pro.me.mutation(api.products.update, { productId: id, ...(await plain(t, { pieces: 0, soldOut: false })) });
+    expect(await productRow(t, id)).toMatchObject({ pieces: 0, soldOut: false });
+    await pro.me.mutation(api.products.setSoldOut, { productId: id, soldOut: true });
+    expect(await productRow(t, id)).toMatchObject({ soldOut: true });
+    expect((await pro.me.query(api.products.listMine, {}))[0]).toMatchObject({ pieces: 0, tracked: false });
   });
 });
 

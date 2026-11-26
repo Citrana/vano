@@ -1,9 +1,11 @@
 import { v, type Infer } from "convex/values";
-import type { Doc } from "./_generated/dataModel";
-import { categoryValidator, cleanTags, LIMITS, tagsProblem } from "./lib/catalog";
+import type { Doc, Id } from "./_generated/dataModel";
+import { audienceValidator, categoryValidator, cleanTags, conditionValidator, LIMITS, tagsProblem } from "./lib/catalog";
+import { hasPermission } from "./lib/access";
+import { normalizeProductCode, productCodeProblem, suggestProductCode } from "./lib/productCode";
 import { fail } from "./lib/errors";
 import { urlOf } from "./lib/images";
-import { priceProblem } from "./lib/money";
+import { costPriceProblem, priceProblem } from "./lib/money";
 import { onProductCreated } from "./lib/platformStats";
 import { deleteProduct } from "./lib/productWrites";
 import { applyStock, piecesTracked, stockUpdate } from "./lib/productStock";
@@ -31,12 +33,21 @@ const productInput = v.object({
   colors: v.array(v.string()),
   imageIds: v.array(v.id("_storage")),
   soldOut: v.boolean(),
-  /** Pieces in stock (lib/stock.ts); missing = not tracked. Needs `stockManagement`. */
-  pieces: v.optional(v.number()),
+  /**
+   * Pieces in stock (lib/stock.ts), required on every plan (at least 1 for a
+   * new product). It drives "Few left" / "Sold out" only with `stockManagement`.
+   */
+  pieces: v.number(),
+  /** What the seller paid per piece, minor units, 0 or more. Private. */
+  costPrice: v.number(),
+  condition: v.optional(conditionValidator),
+  audience: v.optional(audienceValidator),
+  /** Product code as typed ("" or missing = none); normalised and checked here. */
+  code: v.optional(v.string()),
 });
 type ProductInput = Infer<typeof productInput>;
 
-function cleanProductInput(shop: Doc<"shops">, input: ProductInput): ProductInput {
+function cleanProductInput(shop: Doc<"shops">, input: ProductInput, options: { creating: boolean }): ProductInput {
   const name = input.name.trim();
   if (name.length < LIMITS.productNameMin || name.length > LIMITS.productNameMax) {
     fail("NAME_INVALID");
@@ -56,7 +67,10 @@ function cleanProductInput(shop: Doc<"shops">, input: ProductInput): ProductInpu
   if (imageIds.length < LIMITS.minImages || imageIds.length > LIMITS.maxImages) {
     fail("IMAGES_COUNT");
   }
-  if (input.pieces !== undefined && piecesProblem(input.pieces) !== null) fail("STOCK_INVALID");
+  if (piecesProblem(input.pieces, options) !== null) fail("STOCK_INVALID");
+  if (costPriceProblem(input.costPrice) !== null) fail("COST_PRICE_INVALID");
+  const code = input.code === undefined ? "" : normalizeProductCode(input.code);
+  if (code !== "" && productCodeProblem(code) !== null) fail("PRODUCT_CODE_INVALID");
   return {
     name,
     price: input.price,
@@ -67,30 +81,38 @@ function cleanProductInput(shop: Doc<"shops">, input: ProductInput): ProductInpu
     imageIds,
     soldOut: input.soldOut,
     pieces: input.pieces,
+    costPrice: input.costPrice,
+    condition: input.condition,
+    audience: input.audience,
+    code: code || undefined,
   };
 }
 
+/** A product code is unique per shop (case insensitive: codes are stored normalised). */
+async function assertCodeFree(ctx: SellerMutationCtx, shop: Doc<"shops">, code: string | undefined, self?: Id<"products">) {
+  if (code === undefined) return;
+  const holder = await ctx.db
+    .query("products")
+    .withIndex("by_shopId_and_code", (q) => q.eq("shopId", shop._id).eq("code", code))
+    .first();
+  if (holder && holder._id !== self) fail("PRODUCT_CODE_TAKEN");
+}
+
 /**
- * The pieces to store and the labels they drive. With `stockManagement`
- * the form's count is used (empty = not tracked) and decides "Few left" /
- * "Sold out"; without it a count can't be set, and one saved before a
- * downgrade is kept but ignored (the form's switches apply).
+ * The labels the form's pieces drive. The count is stored on every plan;
+ * with `stockManagement` it decides "Few left" / "Sold out", without it
+ * it's kept but not used (the form's Sold out switch applies).
  */
 async function stockFromForm(
   ctx: SellerMutationCtx,
   shop: Doc<"shops">,
   input: ProductInput,
-  previousPieces: number | undefined,
-): Promise<{ pieces: number | undefined; tracked: boolean; soldOut: boolean; fewLeft: boolean | undefined }> {
+): Promise<{ tracked: boolean; soldOut: boolean; fewLeft: boolean | undefined }> {
   const { limits } = await getEntitlements(ctx, shop, Date.now());
   const canTrack = canShopDo(limits, { kind: "feature", feature: "stockManagement" }) === null;
-  if (!canTrack) {
-    if (input.pieces !== undefined && input.pieces !== previousPieces) fail("PLAN_FEATURE_LOCKED");
-    return { pieces: previousPieces, tracked: false, soldOut: input.soldOut, fewLeft: undefined };
-  }
-  if (input.pieces === undefined) return { pieces: undefined, tracked: false, soldOut: input.soldOut, fewLeft: undefined };
+  if (!canTrack) return { tracked: false, soldOut: input.soldOut, fewLeft: undefined };
   const flags = stockFlags(input.pieces);
-  return { pieces: input.pieces, tracked: true, soldOut: flags.soldOut, fewLeft: flags.fewLeft || undefined };
+  return { tracked: true, soldOut: flags.soldOut, fewLeft: flags.fewLeft || undefined };
 }
 
 /**
@@ -122,6 +144,7 @@ export const listMine = sellerQuery({
         hiddenBySeller: p.hiddenBySeller === true,
         pieces: p.pieces ?? null,
         tracked: isTracked(p, limits),
+        code: p.code ?? null,
         imageCount: p.imageIds.length,
         coverUrl: await urlOf(ctx, p.imageIds[0]),
       })),
@@ -129,7 +152,11 @@ export const listMine = sellerQuery({
   },
 });
 
-/** One of the caller's products for the edit form, or null (bad id / not theirs). */
+/**
+ * One of the caller's products for the edit form, or null (bad id / not
+ * theirs). The cost price is private: only for callers who can edit
+ * products (`ownProducts.manage`).
+ */
 export const getMine = sellerQuery({
   permission: "ownProducts.view",
   args: { productId: v.string() },
@@ -144,7 +171,31 @@ export const getMine = sellerQuery({
         url: await ctx.storage.getUrl(storageId),
       })),
     );
-    return { ...product, images };
+    const { costPrice, ...rest } = product;
+    const canSeeCost = hasPermission(ctx.access, "ownProducts.manage");
+    return { ...rest, costPrice: canSeeCost ? costPrice : undefined, images };
+  },
+});
+
+/**
+ * A free product code for a category ("CLO-004": its prefix and the next
+ * running number, lib/productCode.ts). The seller may edit it; saving
+ * checks it's still free.
+ */
+export const suggestCode = sellerQuery({
+  permission: "ownProducts.manage",
+  args: { category: categoryValidator },
+  returns: v.string(),
+  handler: async (ctx, { category }) => {
+    const shop = await requireOwnShop(ctx);
+    const products = await ctx.db
+      .query("products")
+      .withIndex("by_shopId", (q) => q.eq("shopId", shop._id))
+      .take(LIMITS.maxProducts);
+    return suggestProductCode(
+      category,
+      products.flatMap((p) => (p.code ? [p.code] : [])),
+    );
   },
 });
 
@@ -164,7 +215,8 @@ export const create = sellerMutation({
   returns: v.id("products"),
   handler: async (ctx, args) => {
     const shop = await requireOwnShop(ctx);
-    const input = cleanProductInput(shop, args);
+    const input = cleanProductInput(shop, args, { creating: true });
+    await assertCodeFree(ctx, shop, input.code);
     const existing = await ctx.db
       .query("products")
       .withIndex("by_shopId", (q) => q.eq("shopId", shop._id))
@@ -172,13 +224,12 @@ export const create = sellerMutation({
     if (existing.length >= LIMITS.maxProducts) fail("TOO_MANY_PRODUCTS");
     await requireCan(ctx, shop, { kind: "addProduct", products: existing.length });
     await requireCan(ctx, shop, { kind: "setPhotos", count: input.imageIds.length });
-    const stock = await stockFromForm(ctx, shop, input, undefined);
+    const stock = await stockFromForm(ctx, shop, input);
     await claimImages(ctx, shop, input.imageIds);
     const productId = await ctx.db.insert("products", {
       ...input,
       soldOut: stock.soldOut,
       fewLeft: stock.fewLeft,
-      pieces: stock.pieces,
       shopId: shop._id,
       updatedAt: Date.now(),
     });
@@ -195,7 +246,10 @@ export const update = sellerMutation({
   returns: v.null(),
   handler: async (ctx, { productId, ...args }) => {
     const { shop, product } = await requireOwnProduct(ctx, productId);
-    const input = cleanProductInput(shop, args);
+    // Pieces and cost price are required here too, so an older product
+    // without them gets them on its first save (CLAUDE.md "Sales tracking").
+    const input = cleanProductInput(shop, args, { creating: false });
+    await assertCodeFree(ctx, shop, input.code, productId);
     await requireCan(ctx, shop, {
       kind: "setPhotos",
       count: input.imageIds.length,
@@ -212,13 +266,12 @@ export const update = sellerMutation({
     // actions) aren't form fields; carry them over or `replace` would drop
     // them. Turning "Sold out" off here also marks it back in stock.
     const now = Date.now();
-    const counted = await stockFromForm(ctx, shop, input, product.pieces);
+    const counted = await stockFromForm(ctx, shop, input);
     const stock = await stockUpdate(ctx, product, counted.soldOut, now, { byUserId: ctx.user._id });
     await ctx.db.replace("products", productId, {
       ...input,
       ...stock,
       ...(counted.tracked ? { fewLeft: counted.fewLeft } : {}),
-      pieces: counted.pieces,
       shopId: shop._id,
       hidden: product.hidden,
       hiddenBySeller: product.hiddenBySeller,

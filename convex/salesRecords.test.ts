@@ -25,6 +25,11 @@ async function businessShop(t: T, email = "amani@shop.cd", slug = "chez-amani") 
   // A dress with sizes and a colour; a plain bag with no options.
   const dress = await me.mutation(api.products.create, await productArgs(t, { name: "Robe", price: 2500 }));
   const bag = await me.mutation(api.products.create, await productArgs(t, { name: "Sac", price: 10_000, sizes: [], colors: [] }));
+  // Untracked, like products saved before the count was required; tests
+  // about counting set one with `products.update`.
+  await t.run(async (ctx) => {
+    for (const id of [dress, bag]) await ctx.db.patch("products", id, { pieces: undefined });
+  });
   return { userId, shopId, me, dress, bag };
 }
 
@@ -65,6 +70,30 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers());
 
 describe("recorded sales: snapshot", () => {
+  test("the product's cost price is copied into the sale and never changes after", async () => {
+    const t = newTest();
+    const { me, dress } = await businessShop(t);
+    const id = await me.mutation(api.salesRecords.record, dressSale(dress, { quantity: 2 }));
+    expect((await recordRow(t, id))!.unitCost).toBe(1500);
+    await me.mutation(api.products.update, { productId: dress, ...(await productArgs(t, { name: "Robe", price: 2500, costPrice: 2000 })) });
+    const record = (await recordRow(t, id))!;
+    await me.mutation(api.salesRecords.update, {
+      recordId: id,
+      expectedVersion: record.version,
+      quantity: 1,
+      finalUnitPrice: 2400,
+      soldAt: record.soldAt,
+    });
+    expect((await recordRow(t, id))!.unitCost).toBe(1500);
+    // Private: not in the seller's list either (reports come later).
+    const rows = await list(me);
+    expect(JSON.stringify(rows)).not.toContain("unitCost");
+    // A product saved before cost prices has none in its sale.
+    await t.run((ctx) => ctx.db.patch("products", dress, { costPrice: undefined }));
+    const older = await me.mutation(api.salesRecords.record, dressSale(dress));
+    expect((await recordRow(t, older))!.unitCost).toBeUndefined();
+  });
+
   test("a sale keeps the product as it was, whatever happens to it later", async () => {
     const t = newTest();
     const { me, dress } = await businessShop(t);
@@ -294,12 +323,14 @@ describe("recorded sales: pieces in stock", () => {
     // The manual switch works again.
     await me.mutation(api.products.setSoldOut, { productId: shoes, soldOut: true });
     expect((await productRow(t, shoes))!.soldOut).toBe(true);
-    // A count can't be changed without the feature; saving the form keeps it.
-    await expect(
-      me.mutation(api.products.update, { productId: shoes, ...(await productArgs(t, { name: "Sandales", sizes: [], colors: [] })), pieces: 9 }),
-    ).rejects.toThrow(/PLAN_FEATURE_LOCKED/);
-    await me.mutation(api.products.update, { productId: shoes, ...(await productArgs(t, { name: "Sandales", sizes: [], colors: [] })), pieces: 1 });
-    expect((await productRow(t, shoes))!.pieces).toBe(1);
+    // The count is still saved by the form (it's required), but doesn't drive the labels.
+    await me.mutation(api.products.update, {
+      productId: shoes,
+      ...(await productArgs(t, { name: "Sandales", sizes: [], colors: [] })),
+      pieces: 0,
+      soldOut: false,
+    });
+    expect(await productRow(t, shoes)).toMatchObject({ pieces: 0, soldOut: false });
     expect(shopId).toBeTruthy();
   });
 });

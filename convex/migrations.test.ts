@@ -125,6 +125,8 @@ describe("migrations:rbacV1", () => {
       colors: [],
       imageIds: [await storeFile(t)],
       soldOut: false,
+      pieces: 3,
+      costPrice: 1000,
     });
     // …plus legacy data that wasn't.
     const old = await legacyUser(t, "old@example.com");

@@ -4,7 +4,7 @@ import { normalizeEmail, passwordProblem } from "./credentials";
 import { announcementProblem } from "./settings";
 import { addDays, isDay, utcDay } from "./days";
 import { imageProblem, MAX_IMAGE_BYTES } from "./images";
-import { formatMoney, minorToInput, parseMoneyToMinor, priceProblem } from "./money";
+import { costPriceProblem, formatMoney, minorToInput, parseMoneyToMinor, priceProblem } from "./money";
 import { allStepsDone, onboardingSteps } from "./onboarding";
 import { normalizeWhatsapp, splitWhatsapp, waDigits } from "./phone";
 import { slugify, slugProblem } from "./slug";
@@ -93,6 +93,14 @@ describe("money", () => {
     expect(formatMoney(2500, "USD", "en")).toBe("$25");
     expect(formatMoney(2550, "USD", "en")).toBe("$25.50");
     expect(formatMoney(2500000, "CDF", "fr")).toMatch(/25\s000/);
+  });
+
+  test("costPriceProblem: 0 or more, whole minor units", () => {
+    expect(costPriceProblem(0)).toBeNull();
+    expect(costPriceProblem(1500)).toBeNull();
+    expect(costPriceProblem(-1)).toBe("notInteger");
+    expect(costPriceProblem(1.5)).toBe("notInteger");
+    expect(costPriceProblem(Number.MAX_SAFE_INTEGER)).toBe("tooHigh");
   });
 
   test("priceProblem", () => {

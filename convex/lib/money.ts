@@ -68,6 +68,17 @@ export function priceProblem(minor: number): "notInteger" | "notPositive" | "too
 }
 
 /**
+ * A product's cost price (what the seller paid; private, CLAUDE.md
+ * "Sales tracking"): a whole number of minor units, 0 or more (a gift or
+ * donated piece costs nothing; above the price = sold at a loss).
+ */
+export function costPriceProblem(minor: number): "notInteger" | "tooHigh" | null {
+  if (!Number.isSafeInteger(minor) || minor < 0) return "notInteger";
+  if (minor > MAX_PRICE_MINOR) return "tooHigh";
+  return null;
+}
+
+/**
  * Rounding steps for computed prices (sale percent off), in minor units,
  * largest first: 100 FC for CDF, whole shillings for KES, cents for USD /
  * EUR. A step is used only when it is at most 5% of the price, so a cheap

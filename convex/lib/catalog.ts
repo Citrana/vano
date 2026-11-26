@@ -25,6 +25,16 @@ export const categoryValidator = v.union(
 );
 export type Category = Infer<typeof categoryValidator>;
 
+/** A product's condition (optional; shown as a small badge, a shop filter). Labels: `Conditions.<key>`. */
+export const CONDITION_KEYS = ["new", "thrift"] as const;
+export const conditionValidator = v.union(v.literal("new"), v.literal("thrift"));
+export type Condition = Infer<typeof conditionValidator>;
+
+/** Who a product is for (optional; a shop filter). Labels: `Audiences.<key>`. */
+export const AUDIENCE_KEYS = ["women", "men", "kids"] as const;
+export const audienceValidator = v.union(v.literal("women"), v.literal("men"), v.literal("kids"));
+export type Audience = Infer<typeof audienceValidator>;
+
 export const LANGUAGES = ["en", "fr"] as const;
 export const languageValidator = v.union(v.literal("en"), v.literal("fr"));
 export type Language = Infer<typeof languageValidator>;

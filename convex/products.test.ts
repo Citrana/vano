@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { api } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
-import { as, insertUser, productArgs, sellerWithShop, storeFile, newTest } from "./lib/test.utils";
+import { as, insertUser, productArgs, sellerWithShop, setSubscription, storeFile, newTest } from "./lib/test.utils";
 
 const setup = newTest;
 
@@ -152,3 +152,108 @@ describe("products.update / setSoldOut / remove", () => {
     expect(leftovers).toEqual({ uploads: [], stats: [] });
   });
 });
+
+describe("product details: pieces, cost price, condition, audience, code", () => {
+  test("pieces and cost price are required (validator), cost 0 is fine, bad values are refused", async () => {
+    const { t, a } = await twoSellers();
+    const noPieces: Record<string, unknown> = await productArgs(t);
+    delete noPieces.pieces;
+    const noCost: Record<string, unknown> = await productArgs(t);
+    delete noCost.costPrice;
+    await expect(a.mutation(api.products.create, noPieces as never)).rejects.toThrow();
+    await expect(a.mutation(api.products.create, noCost as never)).rejects.toThrow();
+    await expect(a.mutation(api.products.create, await productArgs(t, { costPrice: -1 }))).rejects.toThrow(/COST_PRICE_INVALID/);
+    await expect(a.mutation(api.products.create, await productArgs(t, { costPrice: 1.5 }))).rejects.toThrow(/COST_PRICE_INVALID/);
+    const id = await a.mutation(api.products.create, await productArgs(t, { costPrice: 0, pieces: 1 }));
+    expect(await a.query(api.products.getMine, { productId: id })).toMatchObject({ costPrice: 0, pieces: 1 });
+  });
+
+  test("condition, audience and code are optional and saved; the code is normalised", async () => {
+    const { t, a } = await twoSellers();
+    const plain = await a.mutation(api.products.create, await productArgs(t));
+    const row = await t.run((ctx) => ctx.db.get("products", plain));
+    expect([row?.condition, row?.audience, row?.code]).toEqual([undefined, undefined, undefined]);
+    const id = await a.mutation(
+      api.products.create,
+      await productArgs(t, { condition: "thrift", audience: "kids", code: " clo 7 " }),
+    );
+    expect(await a.query(api.products.getMine, { productId: id })).toMatchObject({ condition: "thrift", audience: "kids", code: "CLO-7" });
+    expect((await a.query(api.products.listMine, {}))[0]).toMatchObject({ code: "CLO-7" });
+    await expect(a.mutation(api.products.create, await productArgs(t, { code: "x" }))).rejects.toThrow(/PRODUCT_CODE_INVALID/);
+    // An empty code means none.
+    const empty = await a.mutation(api.products.create, await productArgs(t, { code: "  " }));
+    expect((await t.run((ctx) => ctx.db.get("products", empty)))!.code).toBeUndefined();
+  });
+
+  test("codes are unique per shop (any case); a product keeps its own code; other shops may reuse it", async () => {
+    const { t, a, b } = await twoSellers();
+    const first = await a.mutation(api.products.create, await productArgs(t, { code: "CLO-001" }));
+    await expect(a.mutation(api.products.create, await productArgs(t, { code: "clo-001" }))).rejects.toThrow(/PRODUCT_CODE_TAKEN/);
+    await a.mutation(api.products.update, { productId: first, ...(await productArgs(t, { code: "CLO-001", name: "Renamed" })) });
+    const second = await a.mutation(api.products.create, await productArgs(t, { code: "CLO-002" }));
+    await expect(
+      a.mutation(api.products.update, { productId: second, ...(await productArgs(t, { code: "CLO-001" })) }),
+    ).rejects.toThrow(/PRODUCT_CODE_TAKEN/);
+    await b.mutation(api.products.create, await productArgs(t, { code: "CLO-001" }));
+  });
+
+  test("suggestCode gives the next free code for the category, in the caller's shop only", async () => {
+    const { t, a, b } = await twoSellers();
+    expect(await a.query(api.products.suggestCode, { category: "clothes" })).toBe("CLO-001");
+    await a.mutation(api.products.create, await productArgs(t, { code: "CLO-001" }));
+    await a.mutation(api.products.create, await productArgs(t, { code: "CLO-004" }));
+    expect(await a.query(api.products.suggestCode, { category: "clothes" })).toBe("CLO-005");
+    expect(await a.query(api.products.suggestCode, { category: "shoes" })).toBe("SHO-001");
+    expect(await b.query(api.products.suggestCode, { category: "clothes" })).toBe("CLO-001");
+    await expect(t.query(api.products.suggestCode, { category: "clothes" })).rejects.toThrow(/NOT_AUTHENTICATED/);
+  });
+
+  test("an older product without pieces or cost still shows and lists; saving it needs both", async () => {
+    const { t, a } = await twoSellers();
+    const id = await a.mutation(api.products.create, await productArgs(t, { name: "Old dress" }));
+    await t.run((ctx) => ctx.db.patch("products", id, { pieces: undefined, costPrice: undefined }));
+    const page = await t.query(api.public.shopBySlug, { slug: "shop-a" });
+    if (!page || page.suspended) throw new Error("no shop");
+    expect(page.products.map((p) => p.name)).toEqual(["Old dress"]);
+    expect((await a.query(api.products.listMine, {}))[0]).toMatchObject({ pieces: null });
+    const rest: Record<string, unknown> = await productArgs(t);
+    delete rest.pieces;
+    delete rest.costPrice;
+    await expect(a.mutation(api.products.update, { productId: id, ...rest } as never)).rejects.toThrow();
+    await a.mutation(api.products.update, { productId: id, ...(await productArgs(t, { pieces: 0, costPrice: 900 })) });
+    expect(await t.run((ctx) => ctx.db.get("products", id))).toMatchObject({ pieces: 0, costPrice: 900 });
+  });
+
+  test("the cost price is only for people who can edit products, and never public", async () => {
+    const t = setup();
+    const owner = await sellerWithShop(t, "owner@x.com", { slug: "shop-a" });
+    await setSubscription(t, owner.shopId, { plan: "business", status: "active", periodEnd: Date.now() + 60 * 86_400_000 });
+    const me = as(t, owner.userId);
+    const id = await me.mutation(
+      api.products.create,
+      await productArgs(t, { costPrice: 987_653, condition: "new", audience: "women", code: "CLO-001" }),
+    );
+    expect((await me.query(api.products.getMine, { productId: id }))?.costPrice).toBe(987_653);
+
+    // A team "Seller" sees products but can't edit them: no cost price.
+    const { token } = await me.mutation(api.team.createInvite, { role: "seller", language: "en" });
+    const memberId = await insertUser(t, "member@x.com");
+    await as(t, memberId).mutation(api.team.acceptInvite, { token });
+    const asMember = await as(t, memberId).query(api.products.getMine, { productId: id });
+    expect(asMember).not.toBeNull();
+    expect(asMember?.costPrice).toBeUndefined();
+    await expect(as(t, memberId).query(api.products.suggestCode, { category: "clothes" })).rejects.toThrow(/FORBIDDEN/);
+
+    // Public queries carry the details, never the cost.
+    const page = await t.query(api.public.shopBySlug, { slug: "shop-a" });
+    if (!page || page.suspended) throw new Error("no shop");
+    expect(page.products[0]).toMatchObject({ condition: "new", audience: "women", code: "CLO-001" });
+    expect(page.products[0]).not.toHaveProperty("costPrice");
+    const product = await t.query(api.public.productForPage, { slug: "shop-a", productId: id });
+    if (!product || product.suspended) throw new Error("no product");
+    expect(product.product).toMatchObject({ condition: "new", audience: "women", code: "CLO-001" });
+    expect(JSON.stringify(product)).not.toContain("987653");
+    expect(JSON.stringify(page)).not.toContain("costPrice");
+  });
+});
+
