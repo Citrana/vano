@@ -87,6 +87,8 @@ export function useSaleColumns({
       ),
     },
     { id: "status", header: t("details.status"), mobile: "trailing", cell: (r) => <StatusTag kind="salesRecord" status={r.status} /> },
+    // Who marked it (CLAUDE.md "Team accounts").
+    { id: "recordedBy", header: t("details.recordedBy"), muted: true, hideBelow: "xl", className: "max-w-40 truncate", cell: (r) => r.recordedBy },
     ...customer,
   ]
 }

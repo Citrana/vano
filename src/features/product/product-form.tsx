@@ -23,7 +23,7 @@ import { RequiredFieldsHint } from "@/components/ui/required-fields-hint"
 import { Switch } from "@/components/ui/switch"
 import { TagInput } from "@/components/ui/tag-input"
 import { Textarea } from "@/components/ui/textarea"
-import { useMyBilling } from "@/features/billing/use-billing"
+import { useShopLimits } from "@/features/billing/use-billing"
 import { useUpgradePlanName } from "@/features/billing/use-plan-catalog"
 import { ProductImagesField } from "./product-images-field"
 import { piecesOf, productSchema, type ProductFormValues } from "./schemas"
@@ -73,7 +73,7 @@ export function ProductForm({
   const tc = useTranslations("Categories")
   const tCommon = useTranslations("Common")
   const images = useProductImages(initial?.images, maxImages)
-  const billing = useMyBilling()
+  const billing = useShopLimits()
   const stockPlan = useUpgradePlanName("stockManagement")
   // Counting pieces needs `stockManagement`; the server checks again.
   const canCount = billing ? canShopDo(toPlanLimits(billing.limits), { kind: "feature", feature: "stockManagement" }) === null : false

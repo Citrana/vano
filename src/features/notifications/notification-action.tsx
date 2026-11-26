@@ -24,11 +24,16 @@ export function hasNotificationAction(row: NotificationRow): boolean {
   return ACTION_TYPES.has(row.data.type)
 }
 
-/** "Hide product" / "Show in shop" for a sold-out product's notification. */
+/**
+ * "Hide product" / "Show in shop" for a sold-out product's notification;
+ * only for someone whose role may edit products in the current shop.
+ */
 function useHideProduct(productId: Id<"products">) {
   const t = useTranslations("Notifications.actions")
   const errorMessage = useErrorMessage()
-  const state = useQuery(api.products.visibility, { productId })
+  const viewer = useQuery(api.users.viewer, {})
+  const canEdit = viewer?.permissions.includes("ownProducts.manage") ?? false
+  const state = useQuery(api.products.visibility, canEdit ? { productId } : "skip")
   const setHidden = useMutation(api.products.setHiddenBySeller)
   const [pending, setPending] = useState(false)
   if (!state || state.hiddenByAdmin) return null

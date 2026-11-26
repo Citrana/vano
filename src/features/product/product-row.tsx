@@ -1,6 +1,6 @@
 "use client"
 
-import { useMutation } from "convex/react"
+import { useMutation, useQuery } from "convex/react"
 import {
   EyeIcon,
   EyeOffIcon,
@@ -106,6 +106,9 @@ export function ProductRow({
       .catch((error) => toast.error(errorMessage(error)))
   }
   const sales = useSalesAccess()
+  // A role that only views products (e.g. Seller) gets no edit controls (CLAUDE.md "Team accounts").
+  const viewer = useQuery(api.users.viewer, {})
+  const canEdit = viewer?.permissions.includes("ownProducts.manage") ?? false
   const router = useRouter()
   const tSales = useTranslations("SalesRecords")
   const [recording, setRecording] = useState(false)
@@ -138,13 +141,16 @@ export function ProductRow({
             <p className="text-sm font-semibold tabular-nums">{formatMoney(product.price, currency, locale)}</p>
           </div>
           <div className="-mt-1 -mr-1 flex shrink-0">
-            <Link
-              href={`/dashboard/products/${product._id}`}
-              className={buttonVariants({ variant: "ghost", size: "icon" })}
-              aria-label={`${tCommon("edit")}: ${product.name}`}
-            >
-              <PencilIcon />
-            </Link>
+            {canEdit ? (
+              <Link
+                href={`/dashboard/products/${product._id}`}
+                className={buttonVariants({ variant: "ghost", size: "icon" })}
+                aria-label={`${tCommon("edit")}: ${product.name}`}
+              >
+                <PencilIcon />
+              </Link>
+            ) : null}
+            {canEdit || sales.allowed ? (
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={<Button variant="ghost" size="icon" aria-label={t("moreActions", { name: product.name })} />}
@@ -163,18 +169,23 @@ export function ProductRow({
                     </DropdownMenuItem>
                   )
                 ) : null}
-                {!product.hidden ? (
+                {canEdit && !product.hidden ? (
                   <DropdownMenuItem className="min-h-11" onClick={toggleHidden}>
                     {product.hiddenBySeller ? <EyeIcon /> : <EyeOffIcon />}
                     {product.hiddenBySeller ? t("showInShop") : t("hideFromShop")}
                   </DropdownMenuItem>
                 ) : null}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="min-h-11 text-destructive" onClick={() => setDeleting(true)}>
-                  <Trash2Icon /> {tCommon("delete")}
-                </DropdownMenuItem>
+                {canEdit ? (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="min-h-11 text-destructive" onClick={() => setDeleting(true)}>
+                      <Trash2Icon /> {tCommon("delete")}
+                    </DropdownMenuItem>
+                  </>
+                ) : null}
               </DropdownMenuContent>
             </DropdownMenu>
+            ) : null}
             <DeleteProductDialog productId={product._id} name={product.name} open={deleting} onOpenChange={setDeleting} />
             <RecordSaleDialog productId={product._id} open={recording} onOpenChange={setRecording} />
           </div>
@@ -220,7 +231,7 @@ export function ProductRow({
             </span>
           ) : null}
         </div>
-        {overLimitMode && !product.hidden && (product.overLimit || product.pinned) ? (
+        {canEdit && overLimitMode && !product.hidden && (product.overLimit || product.pinned) ? (
           <Button
             variant="outline"
             size="sm"
@@ -231,6 +242,7 @@ export function ProductRow({
             {product.overLimit ? t("showInShop") : t("stopShowing")}
           </Button>
         ) : null}
+        {canEdit ? (
         <div className="mt-auto flex flex-wrap items-center gap-x-4 self-start">
           {!product.tracked ? (
             <div className="flex items-center gap-2">
@@ -273,6 +285,7 @@ export function ProductRow({
             </span>
           </div>
         </div>
+        ) : null}
       </div>
     </li>
   )

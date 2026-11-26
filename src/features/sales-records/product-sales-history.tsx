@@ -66,8 +66,11 @@ function HistoryContent({ history }: { history: History }) {
           <ol className="flex flex-col gap-1.5 text-sm">
             {history.events.map((e) => (
               <li key={e._id} className="flex justify-between gap-3">
-                <span>{t(`history.kinds.${e.kind}`)}</span>
-                <span className="text-muted-foreground">{labels.dateTime(e.at)}</span>
+                <span className="min-w-0">
+                  {t(`history.kinds.${e.kind}`)}
+                  {e.by ? <span className="text-muted-foreground"> · {t("history.by", { name: e.by })}</span> : null}
+                </span>
+                <span className="shrink-0 text-muted-foreground">{labels.dateTime(e.at)}</span>
               </li>
             ))}
           </ol>

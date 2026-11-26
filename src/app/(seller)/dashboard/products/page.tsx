@@ -11,11 +11,13 @@ export default function ProductsPage() {
   const t = useTranslations("Dashboard")
   const shop = useQuery(api.shops.myShop, {})
   const products = useQuery(api.products.listMine, {})
+  const viewer = useQuery(api.users.viewer, {})
 
-  if (shop === undefined || products === undefined) return <LoadingState />
+  if (shop === undefined || products === undefined || viewer === undefined) return <LoadingState />
   if (shop === null) return null // SellerGate redirects to onboarding
-  // A suspended shop is read-only (the banner explains why).
-  const canEdit = shop.status !== "suspended"
+  // A suspended shop is read-only (the banner explains why); a role that
+  // only views products can't add any (CLAUDE.md "Team accounts").
+  const canEdit = shop.status !== "suspended" && (viewer?.permissions.includes("ownProducts.manage") ?? false)
 
   return (
     <div className="flex flex-col">

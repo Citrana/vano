@@ -6,6 +6,7 @@ import { daysLeft } from "../../../convex/lib/plans"
 import type { NotificationData } from "../../../convex/notifications/types"
 import { displayShopUrl } from "@/lib/site"
 import { usePlanName } from "@/features/billing/use-plan-catalog"
+import { useRoleName } from "@/features/team/role-label"
 
 /**
  * Words a notification in the viewer's language (`Notifications.types.*`).
@@ -13,6 +14,7 @@ import { usePlanName } from "@/features/billing/use-plan-catalog"
  */
 export function useNotificationText(): (data: NotificationData, now: number) => string {
   const t = useTranslations("Notifications")
+  const role = useRoleName()
   const planName = usePlanName()
   const format = useFormatter()
   const field = (f: ProtectedField) => t(`field.${f}`)
@@ -90,6 +92,10 @@ export function useNotificationText(): (data: NotificationData, now: number) => 
         return t("types.report.ready", {
           month: format.dateTime(new Date(`${data.month}-15T12:00:00Z`), { month: "long", year: "numeric", timeZone: "UTC" }),
         })
+      case "team.memberJoined":
+        return t("types.team.memberJoined", { member: data.member, shop: data.shopName, role: role(data.role) })
+      case "team.accessChanged":
+        return t(`types.team.${data.change}`, { shop: data.shopName, role: data.role ? role(data.role) : "" })
     }
   }
 }

@@ -4,7 +4,7 @@ import { useQuery } from "convex/react"
 import { api } from "../../../convex/_generated/api"
 import { canShopDo } from "../../../convex/lib/entitlements"
 import { toPlanLimits } from "../../../convex/lib/planFeatures"
-import { useMyBilling } from "@/features/billing/use-billing"
+import { useShopLimits } from "@/features/billing/use-billing"
 import { useUpgradePlanName } from "@/features/billing/use-plan-catalog"
 
 /**
@@ -15,7 +15,7 @@ import { useUpgradePlanName } from "@/features/billing/use-plan-catalog"
  */
 export function useSalesAccess() {
   const viewer = useQuery(api.users.viewer, {})
-  const billing = useMyBilling()
+  const billing = useShopLimits()
   const plan = useUpgradePlanName("salesReports")
   const ready = viewer !== undefined && billing !== undefined
   const allowed = viewer?.permissions.includes("ownSales.manage") ?? false

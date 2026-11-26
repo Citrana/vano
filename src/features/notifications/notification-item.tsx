@@ -15,6 +15,8 @@ import {
   TagIcon,
   TicketPercentIcon,
   Trash2Icon,
+  UserPlusIcon,
+  UserRoundCogIcon,
   XCircleIcon,
   type LucideIcon,
 } from "lucide-react"
@@ -49,6 +51,8 @@ const ICONS: Record<NotificationType, { icon: LucideIcon; tone: string }> = {
   "discountCode.adminDeleted": { icon: Trash2Icon, tone: "text-destructive" },
   "product.soldOut": { icon: PackageXIcon, tone: "text-muted-foreground" },
   "report.ready": { icon: ChartColumnIcon, tone: "text-success" },
+  "team.memberJoined": { icon: UserPlusIcon, tone: "text-success" },
+  "team.accessChanged": { icon: UserRoundCogIcon, tone: "text-muted-foreground" },
 }
 
 export type NotificationRow = FunctionReturnType<typeof api.notifications.inbox.latest>[number]
