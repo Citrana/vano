@@ -130,7 +130,10 @@
     "INVITE_USED": "This invite link was already used. Ask the shop owner for a new one.",
     "ALREADY_MEMBER": "You're already in this shop's team.",
     "INVITE_OWN_SHOP": "This is your own shop: you already have full access.",
-    "INVITE_RATE_LIMITED": "Too many invites in a short time. Try again in a few minutes."
+    "INVITE_RATE_LIMITED": "Too many invites in a short time. Try again in a few minutes.",
+    "COST_PRICE_INVALID": "Enter a valid cost price (0 or more).",
+    "PRODUCT_CODE_INVALID": "Use 2 to 16 letters, numbers or dashes for the product code.",
+    "PRODUCT_CODE_TAKEN": "Another product already uses this code."
   },
   "Validation": {
     "required": "This field is required.",
@@ -153,8 +156,11 @@
     "reasonLength": "Write a reason of {min} to {max} characters.",
     "daysRange": "Enter a whole number of days from {min} to {max}.",
     "socialInvalid": "Enter a username like @yourshop, or a link to your profile.",
-    "pieces": "Enter a whole number from 0 to 99,999, or leave it empty.",
-    "codeIncomplete": "Enter the 6-digit code."
+    "pieces": "Enter a whole number from 0 to 99,999.",
+    "codeIncomplete": "Enter the 6-digit code.",
+    "piecesCreate": "Enter a whole number from 1 to 99,999.",
+    "costPrice": "Enter a cost price like 10 or 10.50 (0 is fine).",
+    "productCode": "Use 2 to 16 letters, numbers or dashes."
   },
   "Categories": {
     "clothes": "Clothes",
@@ -443,9 +449,21 @@
     "hiddenNotice": "An admin hid this product, so customers can't see it. Contact Vano support if you think this is a mistake.",
     "photosPlanHint": "Your plan allows {max} photos per product.",
     "pieces": "Pieces in stock",
-    "piecesHelp": "Leave empty to not count. Few left shows at {few} or fewer, Sold out at 0, and each recorded sale takes its pieces.",
-    "piecesLocked": "Counting pieces is available on {plan}.",
-    "stockDriven": "Sold out and Few left follow the pieces count."
+    "piecesHelp": "Few left shows at {few} or fewer, Sold out at 0.",
+    "stockDriven": "Sold out and Few left follow the pieces count.",
+    "costPrice": "Cost price",
+    "costPriceHelp": "What you paid per piece. Private: customers never see it.",
+    "piecesFreeNote": "On your plan, Few left and Sold out are set by hand. On {plan}, they follow the pieces count.",
+    "moreDetails": "More details",
+    "moreDetailsHint": "Condition, who it’s for, product code. Optional.",
+    "condition": "Condition",
+    "audience": "For",
+    "code": "Product code",
+    "codeHelp": "Your own reference, e.g. CLO-001. Added to WhatsApp orders, not shown in your shop.",
+    "codePlaceholder": "CLO-001",
+    "suggestCode": "Suggest code",
+    "suggestCodeNeedsCategory": "Choose a category first.",
+    "missingStock": "Add the pieces in stock and the cost price to save this product."
   },
   "TagInput": {
     "add": "Add",
@@ -581,7 +599,9 @@
       "removeFilter": "Remove filter: {label}",
       "chipSearch": "“{q}”",
       "chipSize": "Size {size}",
-      "removeLast": "Undo last filter"
+      "removeLast": "Undo last filter",
+      "condition": "Condition",
+      "audience": "For"
     },
     "discountCode": {
       "prompt": "Have a discount code?",
@@ -602,6 +622,16 @@
         "failed": "Something went wrong. Please try again.",
         "soldOut": "This product is sold out."
       }
+    },
+    "orderRef": "Ref: {code}",
+    "conditions": {
+      "new": "Brand new",
+      "thrift": "Thrift"
+    },
+    "audiences": {
+      "women": "Women",
+      "men": "Men",
+      "kids": "Kids"
     }
   },
   "NotFound": {

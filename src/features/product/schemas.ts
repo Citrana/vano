@@ -1,17 +1,20 @@
 import { z } from "zod"
 import type { useTranslations } from "next-intl"
-import { CATEGORY_KEYS, LIMITS, tagsProblem } from "../../../convex/lib/catalog"
-import { parseMoneyToMinor, priceProblem } from "../../../convex/lib/money"
+import { AUDIENCE_KEYS, CATEGORY_KEYS, CONDITION_KEYS, LIMITS, tagsProblem } from "../../../convex/lib/catalog"
+import { costPriceProblem, parseMoneyToMinor, priceProblem } from "../../../convex/lib/money"
+import { normalizeProductCode, productCodeProblem } from "../../../convex/lib/productCode"
 import { piecesProblem } from "../../../convex/lib/stock"
 
 type TV = ReturnType<typeof useTranslations<"Validation">>
 
 /**
  * Client mirror of `products.create` / `update` rules (same helpers).
- * `price` stays text in the form; `toMinor` converts on submit. Images are
- * validated by the images field (count + uploads finished).
+ * Money stays text in the form; `parseMoneyToMinor` converts on submit.
+ * Pieces and cost price are required on every plan (at least 1 piece for
+ * a new product). Images are validated by the images field (count +
+ * uploads finished).
  */
-export function productSchema(tv: TV, shopCategories: readonly string[]) {
+export function productSchema(tv: TV, shopCategories: readonly string[], options: { creating: boolean }) {
   const tags = z.array(z.string()).refine((list) => tagsProblem(list) === null, tv("tagsInvalid"))
   return z.object({
     name: z
@@ -23,6 +26,10 @@ export function productSchema(tv: TV, shopCategories: readonly string[]) {
       const minor = parseMoneyToMinor(text)
       return minor !== null && priceProblem(minor) === null
     }, tv("priceInvalid")),
+    costPrice: z.string().refine((text) => {
+      const minor = parseMoneyToMinor(text)
+      return minor !== null && costPriceProblem(minor) === null
+    }, tv("costPrice")),
     category: z
       .enum(CATEGORY_KEYS, { error: tv("required") })
       .refine((c) => shopCategories.includes(c), tv("required")),
@@ -33,17 +40,21 @@ export function productSchema(tv: TV, shopCategories: readonly string[]) {
     sizes: tags,
     colors: tags,
     soldOut: z.boolean(),
-    /** Pieces in stock as typed ("" = not counted); lib/stock.ts checks the range. */
+    /** Pieces in stock as typed; lib/stock.ts checks the range. */
     pieces: z
       .string()
       .trim()
-      .refine((v) => v === "" || (/^\d{1,6}$/.test(v) && piecesProblem(Number(v)) === null), tv("pieces")),
+      .refine(
+        (v) => /^\d{1,6}$/.test(v) && piecesProblem(Number(v), options) === null,
+        options.creating ? tv("piecesCreate") : tv("pieces"),
+      ),
+    condition: z.enum(["", ...CONDITION_KEYS]),
+    audience: z.enum(["", ...AUDIENCE_KEYS]),
+    /** "" = no code; lib/productCode.ts checks the normalised value. */
+    code: z
+      .string()
+      .refine((v) => v.trim() === "" || productCodeProblem(normalizeProductCode(v)) === null, tv("productCode")),
   })
-}
-
-/** The typed pieces as a number, or undefined when the field is empty. */
-export function piecesOf(text: string): number | undefined {
-  return text.trim() === "" ? undefined : Number(text.trim())
 }
 
 export type ProductFormValues = z.infer<ReturnType<typeof productSchema>>

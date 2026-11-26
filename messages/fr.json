@@ -130,7 +130,10 @@
     "INVITE_USED": "Ce lien d'invitation a déjà été utilisé. Demandez-en un nouveau au propriétaire.",
     "ALREADY_MEMBER": "Vous faites déjà partie de l'équipe de cette boutique.",
     "INVITE_OWN_SHOP": "C'est votre propre boutique : vous avez déjà tous les accès.",
-    "INVITE_RATE_LIMITED": "Trop d'invitations en peu de temps. Réessayez dans quelques minutes."
+    "INVITE_RATE_LIMITED": "Trop d'invitations en peu de temps. Réessayez dans quelques minutes.",
+    "COST_PRICE_INVALID": "Entrez un prix d’achat valide (0 ou plus).",
+    "PRODUCT_CODE_INVALID": "Utilisez 2 à 16 lettres, chiffres ou tirets pour le code produit.",
+    "PRODUCT_CODE_TAKEN": "Un autre produit utilise déjà ce code."
   },
   "Validation": {
     "required": "Ce champ est obligatoire.",
@@ -153,8 +156,11 @@
     "reasonLength": "Indiquez une raison de {min} à {max} caractères.",
     "daysRange": "Indiquez un nombre entier de jours entre {min} et {max}.",
     "socialInvalid": "Saisissez un nom d’utilisateur comme @votreboutique, ou le lien de votre profil.",
-    "pieces": "Saisissez un nombre entier de 0 à 99 999, ou laissez vide.",
-    "codeIncomplete": "Saisissez le code à 6 chiffres."
+    "pieces": "Entrez un nombre entier de 0 à 99 999.",
+    "codeIncomplete": "Saisissez le code à 6 chiffres.",
+    "piecesCreate": "Entrez un nombre entier de 1 à 99 999.",
+    "costPrice": "Entrez un prix d’achat comme 10 ou 10,50 (0 est accepté).",
+    "productCode": "Utilisez 2 à 16 lettres, chiffres ou tirets."
   },
   "Categories": {
     "clothes": "Vêtements",
@@ -443,9 +449,21 @@
     "hiddenNotice": "Un admin a masqué ce produit : les clients ne peuvent pas le voir. Contactez le support Vano si vous pensez qu'il s'agit d'une erreur.",
     "photosPlanHint": "Votre forfait permet {max} photos par produit.",
     "pieces": "Pièces en stock",
-    "piecesHelp": "Laissez vide pour ne pas compter. Stock faible s'affiche à {few} pièces ou moins, Épuisé à 0, et chaque vente enregistrée retire ses pièces.",
-    "piecesLocked": "Le comptage des pièces est disponible avec {plan}.",
-    "stockDriven": "Épuisé et Stock faible suivent le nombre de pièces."
+    "piecesHelp": "« Plus que quelques-uns » s’affiche à {few} ou moins, « Épuisé » à 0.",
+    "stockDriven": "Épuisé et Stock faible suivent le nombre de pièces.",
+    "costPrice": "Prix d’achat",
+    "costPriceHelp": "Ce que vous avez payé par pièce. Privé : vos clients ne le voient jamais.",
+    "piecesFreeNote": "Avec votre forfait, « Plus que quelques-uns » et « Épuisé » se règlent à la main. Avec {plan}, ils suivent le nombre de pièces.",
+    "moreDetails": "Plus de détails",
+    "moreDetailsHint": "État, pour qui, code produit. Facultatif.",
+    "condition": "État",
+    "audience": "Pour",
+    "code": "Code produit",
+    "codeHelp": "Votre propre référence, par ex. CLO-001. Ajoutée aux commandes WhatsApp, jamais affichée dans votre boutique.",
+    "codePlaceholder": "CLO-001",
+    "suggestCode": "Proposer un code",
+    "suggestCodeNeedsCategory": "Choisissez d’abord une catégorie.",
+    "missingStock": "Ajoutez les pièces en stock et le prix d’achat pour enregistrer ce produit."
   },
   "TagInput": {
     "add": "Ajouter",
@@ -581,7 +599,9 @@
       "removeFilter": "Retirer le filtre : {label}",
       "chipSearch": "« {q} »",
       "chipSize": "Taille {size}",
-      "removeLast": "Annuler le dernier filtre"
+      "removeLast": "Annuler le dernier filtre",
+      "condition": "État",
+      "audience": "Pour"
     },
     "discountCode": {
       "prompt": "Vous avez un code de réduction ?",
@@ -602,6 +622,16 @@
         "failed": "Un problème est survenu. Veuillez réessayer.",
         "soldOut": "Ce produit est épuisé."
       }
+    },
+    "orderRef": "Réf. : {code}",
+    "conditions": {
+      "new": "Neuf",
+      "thrift": "Friperie"
+    },
+    "audiences": {
+      "women": "Femmes",
+      "men": "Hommes",
+      "kids": "Enfants"
     }
   },
   "NotFound": {
