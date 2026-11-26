@@ -48,8 +48,7 @@ describe("guardAuthorize", () => {
     expect(missing.consumeResetSend).toHaveBeenCalledWith(ctx, "a@x.com");
     expect(missing.sleeps).toEqual([RESET_MIN_RESPONSE_MS]);
 
-    let real!: ReturnType<typeof setup>;
-    real = setup(async () => {
+    const real: ReturnType<typeof setup> = setup(async () => {
       real.tick(400); // sending the email
       return null;
     });
@@ -58,8 +57,7 @@ describe("guardAuthorize", () => {
   });
 
   test("reset: a slow send isn't padded further; other errors still surface", async () => {
-    let slow!: ReturnType<typeof setup>;
-    slow = setup(async () => {
+    const slow: ReturnType<typeof setup> = setup(async () => {
       slow.tick(RESET_MIN_RESPONSE_MS + 1);
       throw new Error("EMAIL_SEND_FAILED");
     });
