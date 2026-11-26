@@ -12,6 +12,7 @@ import {
 import { notificationKindValidator } from "./notifications/kinds";
 import { notificationCategoryValidator, notificationDataValidator } from "./notifications/types";
 import { currencyValidator } from "./lib/money";
+import { trialEmailKindValidator } from "./lib/trialEmails";
 import { storedLookValidator } from "./lib/looks/validators";
 import { saleDiscountValidator, saleDisplayValidator, saleTargetValidator } from "./lib/sales/validators";
 import { codeDiscountValidator, codeTargetValidator } from "./lib/discountCodes/validators";
@@ -473,11 +474,14 @@ export default defineSchema({
     /** The paid days inside the period (the upgrade credit counts only these). */
     paidStart: v.optional(v.number()),
     paidEnd: v.optional(v.number()),
+    /** Set when a trial moved to Free (`expireIfDue`); cleared by any later plan change. */
+    trialEndedAt: v.optional(v.number()),
     source: subscriptionSourceValidator,
     updatedAt: v.number(),
   })
     .index("by_shopId", ["shopId"])
     .index("by_status_and_periodEnd", ["status", "periodEnd"])
+    .index("by_status_and_trialEndedAt", ["status", "trialEndedAt"])
     .index("by_plan_and_status_and_periodEnd", ["plan", "status", "periodEnd"])
     .index("by_plan_and_periodEnd", ["plan", "periodEnd"])
     .index("by_periodEnd", ["periodEnd"])
@@ -530,6 +534,22 @@ export default defineSchema({
   })
     .index("by_provider_and_eventId", ["provider", "eventId"])
     .index("by_paymentId", ["paymentId"]),
+
+  /**
+   * Trial reminder emails sent (CLAUDE.md "Emails", convex/lib/trialEmails.ts):
+   * one row per shop × kind × trial end, written in the same transaction
+   * that schedules the email, so a rerun never sends twice. `day` is the
+   * UTC day it was sent, for the daily limit. Purged with the shop.
+   */
+  trialEmails: defineTable({
+    shopId: v.id("shops"),
+    kind: trialEmailKindValidator,
+    trialEnd: v.number(),
+    day: v.string(),
+    sentAt: v.number(),
+  })
+    .index("by_shopId_and_kind_and_trialEnd", ["shopId", "kind", "trialEnd"])
+    .index("by_day", ["day"]),
 
   /** Per shop per UTC day. No personal data. */
   shopDailyStats: defineTable({

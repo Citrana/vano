@@ -100,3 +100,36 @@ export function lowestPlanFor(catalog: PlanCatalog, key: FeatureKey): PlanId | n
 export function localizedIn(text: Localized, locale: string): string {
   return locale === "fr" ? text.fr : text.en;
 }
+
+/** A pricing card line ("Up to 10 products", "WhatsApp orders"). */
+export type CardLine = { key: string; label: string; hint?: string };
+
+/** A plan includes a feature: a flag on, an unlimited or positive limit. */
+export function includedValue(value: FeatureValue): boolean {
+  return value === true || value === null || (typeof value === "number" && value > 0);
+}
+
+/** The card line of a feature for a plan's value, from the admin's pricing text. */
+export function cardLineFor(f: CatalogFeature, value: FeatureValue, locale: string): CardLine {
+  const p = f.pricing;
+  const hint = p.hint ? localizedIn(p.hint, locale) : undefined;
+  let label = localizedIn(p.cardLabel, locale);
+  if (f.kind === "limit") {
+    label =
+      value === null
+        ? localizedIn(p.unlimitedLabel ?? p.cardLabel, locale).replace("{count}", "∞")
+        : label.replace("{count}", String(value));
+  }
+  return { key: f.key, label, hint };
+}
+
+/**
+ * What a plan includes, as its pricing card lines (shown, on-card
+ * features only, in the admin's order). Used by the trial reminder
+ * emails ("what you keep on Free").
+ */
+export function includedCardLines(catalog: PlanCatalog, plan: PlanId, locale: string): CardLine[] {
+  return catalog.features
+    .filter((f) => f.pricing.show && f.pricing.showOnCard && includedValue(f.values[plan]))
+    .map((f) => cardLineFor(f, f.values[plan], locale));
+}

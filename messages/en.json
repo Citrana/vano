@@ -3398,6 +3398,55 @@
       "button": "Accept the invite",
       "expires": "This link works once and expires in {days} days. Sign in or create a free account to join.",
       "ignore": "Not expecting this? You can ignore this email."
+    },
+    "trialSoon": {
+      "subject": "{days} days left on your {plan} trial",
+      "preheader": "What you built so far, and what you keep on {free}.",
+      "heading": "Your {plan} trial ends in {days} days",
+      "intro": "Your {plan} trial ends on {date}. Here's a quick look at your shop.",
+      "builtTitle": "During your trial",
+      "built": {
+        "productsOne": "1 product in your shop",
+        "productsOther": "{count} products in your shop",
+        "viewsOne": "1 visit to your shop",
+        "viewsOther": "{count} visits to your shop",
+        "clicksOne": "1 tap on Order on WhatsApp",
+        "clicksOther": "{count} taps on Order on WhatsApp"
+      },
+      "builtNone": "Your shop is ready whenever you are: add a few products and share your link to get your first visits.",
+      "keepTitle": "What you keep on {free}",
+      "choose": "Pick the plan that fits your shop. Nothing renews by itself: you only pay when you choose.",
+      "button": "Choose a plan",
+      "note": "If you do nothing, your shop moves to {free} after the trial. Nothing is deleted."
+    },
+    "trialLastDays": {
+      "subjectOne": "Your {plan} trial ends tomorrow",
+      "subjectOther": "Your {plan} trial ends in {days} days",
+      "preheader": "Here's what pauses on {free}, and how to keep {plan}.",
+      "headingOne": "Your {plan} trial ends tomorrow",
+      "headingOther": "Your {plan} trial ends in {days} days",
+      "intro": "Your {plan} trial ends on {date}. You keep {plan} for {grace} more days after that, then your shop moves to {free}.",
+      "pauseTitle": "What pauses on {free}",
+      "pause": {
+        "offers": "Offers: sales and discount codes",
+        "looks": "Extra shop looks (your shop shows the free look)",
+        "stats": "Shop stats",
+        "productsOne": "1 product over the {free} limit of {limit} is hidden from your shop",
+        "productsOther": "{count} products over the {free} limit of {limit} are hidden from your shop"
+      },
+      "safe": "Nothing is deleted: everything comes back as soon as you choose a plan.",
+      "buttonPrice": "Keep {plan} ({price}/month)",
+      "button": "Keep {plan}",
+      "note": "Nothing renews by itself: you only pay when you choose."
+    },
+    "trialEnded": {
+      "subject": "You're now on {free}",
+      "preheader": "Your shop and your data are safe. Upgrade anytime.",
+      "heading": "You're now on {free}",
+      "intro": "Your {plan} trial has ended, and your shop is now on {free}. It stays open for your customers.",
+      "safe": "Your data is safe: nothing is deleted. Your products, photos, looks and offers are all kept; the parts {free} doesn't include are only paused.",
+      "upgrade": "You can upgrade anytime, and everything comes back right away.",
+      "button": "Upgrade"
     }
   },
   "TeamRoles": {

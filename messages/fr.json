@@ -3398,6 +3398,55 @@
       "button": "Accepter l'invitation",
       "expires": "Ce lien ne fonctionne qu'une fois et expire dans {days} jours. Connectez-vous ou créez un compte gratuit pour rejoindre l'équipe.",
       "ignore": "Vous ne vous attendiez pas à ce message ? Vous pouvez l'ignorer."
+    },
+    "trialSoon": {
+      "subject": "Plus que {days} jours d'essai {plan}",
+      "preheader": "Ce que vous avez créé, et ce que vous gardez avec {free}.",
+      "heading": "Votre essai {plan} se termine dans {days} jours",
+      "intro": "Votre essai {plan} se termine le {date}. Voici un petit point sur votre boutique.",
+      "builtTitle": "Pendant votre essai",
+      "built": {
+        "productsOne": "1 produit dans votre boutique",
+        "productsOther": "{count} produits dans votre boutique",
+        "viewsOne": "1 visite de votre boutique",
+        "viewsOther": "{count} visites de votre boutique",
+        "clicksOne": "1 clic sur Commander sur WhatsApp",
+        "clicksOther": "{count} clics sur Commander sur WhatsApp"
+      },
+      "builtNone": "Votre boutique vous attend : ajoutez quelques produits et partagez votre lien pour recevoir vos premières visites.",
+      "keepTitle": "Ce que vous gardez avec {free}",
+      "choose": "Choisissez le forfait qui convient à votre boutique. Rien ne se renouvelle tout seul : vous ne payez que si vous le décidez.",
+      "button": "Choisir un forfait",
+      "note": "Si vous ne faites rien, votre boutique passe à {free} après l'essai. Rien n'est supprimé."
+    },
+    "trialLastDays": {
+      "subjectOne": "Votre essai {plan} se termine demain",
+      "subjectOther": "Votre essai {plan} se termine dans {days} jours",
+      "preheader": "Ce qui se met en pause avec {free}, et comment garder {plan}.",
+      "headingOne": "Votre essai {plan} se termine demain",
+      "headingOther": "Votre essai {plan} se termine dans {days} jours",
+      "intro": "Votre essai {plan} se termine le {date}. Vous gardez {plan} encore {grace} jours après, puis votre boutique passe à {free}.",
+      "pauseTitle": "Ce qui se met en pause avec {free}",
+      "pause": {
+        "offers": "Les offres : promotions et codes promo",
+        "looks": "Les styles de boutique en plus (votre boutique affiche le style gratuit)",
+        "stats": "Les statistiques de la boutique",
+        "productsOne": "1 produit au-delà de la limite {free} de {limit} est masqué de votre boutique",
+        "productsOther": "{count} produits au-delà de la limite {free} de {limit} sont masqués de votre boutique"
+      },
+      "safe": "Rien n'est supprimé : tout revient dès que vous choisissez un forfait.",
+      "buttonPrice": "Garder {plan} ({price}/mois)",
+      "button": "Garder {plan}",
+      "note": "Rien ne se renouvelle tout seul : vous ne payez que si vous le décidez."
+    },
+    "trialEnded": {
+      "subject": "Vous êtes maintenant sur {free}",
+      "preheader": "Votre boutique et vos données sont en sécurité. Changez de forfait quand vous voulez.",
+      "heading": "Vous êtes maintenant sur {free}",
+      "intro": "Votre essai {plan} est terminé et votre boutique est maintenant sur {free}. Elle reste ouverte pour vos clients.",
+      "safe": "Vos données sont en sécurité : rien n'est supprimé. Vos produits, photos, styles et offres sont conservés ; ce que {free} n'inclut pas est seulement mis en pause.",
+      "upgrade": "Vous pouvez changer de forfait à tout moment, et tout revient aussitôt.",
+      "button": "Changer de forfait"
     }
   },
   "TeamRoles": {

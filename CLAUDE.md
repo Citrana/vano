@@ -845,6 +845,17 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   a "Get Business" sign-up). Once per account (`users.welcomeEmailSentAt`);
   it never throws (no address or no `SITE_URL` = skipped), so sign-up
   never fails because of it. Links use the `SITE_URL` env var.
+- **Trial reminder emails** (`docs/payments.md` section 14): 7 days left,
+  2 days left and "now on Free", to the owner in the shop's language.
+  Rules **only** in `convex/lib/trialEmails.ts` (`dueTrialEmail`); the
+  daily cron `trialEmailJobs.plan` (06:00 UTC = 09:00 Nairobi) schedules
+  them, at most `TRIAL_EMAILS_PER_DAY` (70), one a minute, most urgent
+  first; each `trialEmailJobs.send` re-checks the live subscription and
+  records the email in `trialEmails` (shop × kind × trial end) in the same
+  transaction, so it goes once. "Now on Free" needs `subscriptions.trialEndedAt`
+  (set by `expireIfDue`). Content comes from real data and the plan config
+  (`includedCardLines`, `shopDowngradeImpact`, `formatPlanPrice`), never
+  hard-coded.
 
 ## Stats
 
@@ -965,6 +976,7 @@ convex/
   emails/           # sendEmail, providers (Resend / log), layout, templates
   verification/     # swappable code senders
   billing.ts billingJobs.ts crons.ts   # seller billing, expiry job
+  trialEmailJobs.ts # trial reminder emails (lib/trialEmails.ts: rules)
   plans.ts planExceptionJobs.ts        # public plan catalogue, exception expiry
   payments/         # provider interface, mock, result handling
   lib/              # seller wrappers, shared rules, test setup

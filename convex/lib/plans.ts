@@ -1,5 +1,5 @@
 import { v, type Infer } from "convex/values";
-import type { Currency } from "./money";
+import { formatMoney, type Currency } from "./money";
 
 /**
  * Vano plans (CLAUDE.md "Billing"): plan ids, validators, statuses and the
@@ -36,6 +36,15 @@ export const grantablePlanValidator = v.union(
 export type GrantablePlanId = Infer<typeof grantablePlanValidator>;
 
 export const PLAN_CURRENCY: Currency = "KES";
+
+/**
+ * Plan prices in shillings. Uses the regional en-KE locale for English
+ * ("Ksh 299"); French keeps "299 KES". Shared by the pricing pages and the
+ * trial reminder emails.
+ */
+export function formatPlanPrice(minor: number, locale: string): string {
+  return formatMoney(minor, PLAN_CURRENCY, locale === "fr" ? "fr" : "en-KE");
+}
 
 /** New shops start a free trial of this plan (its length is in `planConfig`). */
 export const TRIAL_PLAN: PlanId = "pro";

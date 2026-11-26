@@ -91,12 +91,19 @@ describe("trial, grace and expiry", () => {
     expect(inGrace(trial, NOW)).toBe(true);
     expect(effectivePlan(stateAt(trial, NOW))).toBe("pro");
     expect(graceEndOf(trial)).toBe(NOW + days(2));
-    expect(expireIfDue(trial, NOW + days(2))).toEqual({ plan: "free", status: "free", periodStart: NOW + days(2), periodEnd: null });
+    expect(expireIfDue(trial, NOW + days(2))).toEqual({
+      plan: "free",
+      status: "free",
+      periodStart: NOW + days(2),
+      periodEnd: null,
+      trialEndedAt: NOW + days(2),
+    });
     expect(inGrace(trial, NOW + days(2))).toBe(false);
   });
   test("an ended paid plan becomes expired after its grace days", () => {
     expect(expireIfDue(active("business", -2), NOW)).toBeNull();
     expect(expireIfDue(active("business", -3), NOW)).toMatchObject({ plan: "free", status: "expired" });
+    expect(expireIfDue(active("business", -3), NOW)?.trialEndedAt).toBeUndefined();
     expect(effectivePlan({ ...active("business", -1), status: "expired" })).toBe("free");
   });
   test("nothing to do before the end or on free", () => {

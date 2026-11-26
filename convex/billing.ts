@@ -3,15 +3,11 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
-import { downgradeImpactOf } from "./lib/downgradeImpact";
 import { getEntitlements, hiddenFromShop, shopProducts, visibleProductIds } from "./lib/entitlements";
 import { fail } from "./lib/errors";
-import { CODES_MAX } from "./lib/discountCodes/rules";
-import { lookRow } from "./lib/looks/store";
-import { SALES_MAX } from "./lib/sales/rules";
+import { shopDowngradeImpact } from "./lib/shopDowngrade";
 import { currencyValidator } from "./lib/money";
-import { activeExceptions, readPlanConfig } from "./lib/planConfig";
-import { applyExceptions, resolvePlanLimits } from "./lib/planFeatures";
+import { readPlanConfig } from "./lib/planConfig";
 import { limitsValidator, toLimitsResult } from "./lib/planValidators";
 import { pricesOf, quotePurchase, subscriptionOf } from "./lib/subscriptions";
 import {
@@ -267,26 +263,7 @@ export const downgradeImpact = sellerQuery({
   }),
   handler: async (ctx, { plan }) => {
     const shop = await requireOwnShop(ctx);
-    const config = await readPlanConfig(ctx);
-    const { limits: current } = await getEntitlements(ctx, shop);
-    const target = applyExceptions(resolvePlanLimits(config, plan), await activeExceptions(ctx, shop._id));
-    const products = await shopProducts(ctx, shop._id);
-    const liveSales = await ctx.db
-      .query("sales")
-      .withIndex("by_shopId_and_live", (q) => q.eq("shopId", shop._id).eq("live", true))
-      .take(SALES_MAX);
-    const liveCodes = await ctx.db
-      .query("discountCodes")
-      .withIndex("by_shopId_and_live", (q) => q.eq("shopId", shop._id).eq("live", true))
-      .take(CODES_MAX);
-    return downgradeImpactOf({
-      current,
-      target,
-      liveSales: liveSales.length,
-      liveCodes: liveCodes.length,
-      visibleProducts: visibleProductIds(products, current).size,
-      published: (await lookRow(ctx, shop._id))?.published ?? null,
-    });
+    return (await shopDowngradeImpact(ctx, shop, plan)).impact;
   },
 });
 
