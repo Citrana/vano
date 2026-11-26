@@ -686,6 +686,33 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   (`convex/notifications/channel.ts`), registered in `registry.ts` and
   enabled by `NOTIFY_CHANNELS`; `notify` schedules it. Features don't change.
 
+## Emails
+
+- **One way to send**: `sendEmail(ctx, { to, subject, html, text })`
+  (`convex/emails/send.ts`), from a mutation or an action. It only
+  schedules `emails.send.deliver`, so a slow or failing provider never
+  blocks or fails the user's action. Never call a provider directly.
+- Providers implement `EmailProvider` (`convex/emails/provider.ts`: never
+  throw, return `retryable` or not), registered in `emails/registry.ts`.
+  Resend is called with `fetch` (no SDK). Settings are Convex env vars
+  only: `RESEND_API_KEY` + `EMAIL_FROM` (both, or **log mode**: the email
+  is written to the Convex logs, never sent), optional `EMAIL_REPLY_TO`.
+  A missing config never crashes.
+- Temporary failures (network, 429, 5xx) retry up to `EMAIL_MAX_ATTEMPTS`
+  with `EMAIL_RETRY_DELAYS_MS` (`emails/config.ts`) and the same
+  idempotency key, so a retry never sends twice; other errors are logged
+  once. Logs mask addresses (`maskEmail`).
+- One layout, `renderEmail` (`emails/layout.ts`): table layout, inline
+  styles, plum Vano bar, plain-text version, every value escaped, http(s)
+  buttons only. `EMAIL_COLORS` mirrors `globals.css` (tested). A new email
+  = a template in `convex/emails/templates/` (`(language, values) →
+  { subject, html, text }`) + EN/FR texts in `Emails.<name>.*`, read with
+  `emailTexts` / `fill`, in the **recipient's** language.
+- Admin Settings has "Send test email" (`admin/emails.sendTest`,
+  `settings.manage`, rate limited `testEmail`, logged
+  `settings.testEmail`): it goes only to the caller's own address, never
+  to one from the browser. No feature sends emails yet.
+
 ## Stats
 
 - Views and WhatsApp clicks are counted in daily rows (`shopDailyStats`,
@@ -800,6 +827,7 @@ convex/
   changeRequests.ts changeRequestJobs.ts   # protected shop changes
   notifications/    # notification types, inbox, config, outside channels
   notificationJobs.ts                     # ending-soon warnings, cleanup
+  emails/           # sendEmail, providers (Resend / log), layout, templates
   verification/     # swappable code senders
   billing.ts billingJobs.ts crons.ts   # seller billing, expiry job
   plans.ts planExceptionJobs.ts        # public plan catalogue, exception expiry
