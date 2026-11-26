@@ -4,6 +4,7 @@ import type { PaymentStatus } from "../../../convex/payments/types"
 import type { SaleStatus } from "../../../convex/lib/sales/active"
 import type { CodeStatus } from "../../../convex/lib/discountCodes/active"
 import type { RecordStatus } from "../../../convex/lib/salesRecords/validators"
+import type { MemberState } from "../../../convex/lib/team"
 
 /**
  * One color per meaning across every admin list (CLAUDE.md "UI"):
@@ -22,6 +23,8 @@ export type StatusKind =
   | "sale"
   | "discountCode"
   | "salesRecord"
+  | "member"
+  | "invite"
 
 type ActiveStatus = "active" | "suspended"
 
@@ -48,6 +51,9 @@ export const STATUS_TONES = {
     ended: "muted",
   } satisfies Record<CodeStatus, StatusTone>,
   salesRecord: { recorded: "success", reversed: "muted" } satisfies Record<RecordStatus, StatusTone>,
+  /** Team members (CLAUDE.md "Team accounts"): paused = waiting on a plan change. */
+  member: { active: "success", paused: "warning", suspended: "danger" } satisfies Record<MemberState, StatusTone>,
+  invite: { pending: "warning", expired: "muted" } satisfies Record<"pending" | "expired", StatusTone>,
 } as const
 
 export type StatusOf<K extends StatusKind> = keyof (typeof STATUS_TONES)[K] & string

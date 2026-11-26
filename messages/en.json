@@ -123,7 +123,14 @@
     "REPORT_INVALID": "This month isn't valid.",
     "EMAIL_MISSING": "Your account has no email address, so the test email can't be sent.",
     "TEST_EMAIL_RATE_LIMITED": "Too many test emails. Please wait a few minutes and try again.",
-    "EMAIL_SEND_FAILED": "We couldn't send the email right now. Please try again in a moment."
+    "EMAIL_SEND_FAILED": "We couldn't send the email right now. Please try again in a moment.",
+    "PLAN_LIMIT_TEAM": "All your team seats are used. Remove a member or cancel an invite first.",
+    "INVITE_INVALID": "This invite link doesn't work. Ask the shop owner for a new one.",
+    "INVITE_EXPIRED": "This invite link has expired. Ask the shop owner for a new one.",
+    "INVITE_USED": "This invite link was already used. Ask the shop owner for a new one.",
+    "ALREADY_MEMBER": "You're already in this shop's team.",
+    "INVITE_OWN_SHOP": "This is your own shop: you already have full access.",
+    "INVITE_RATE_LIMITED": "Too many invites in a short time. Try again in a few minutes."
   },
   "Validation": {
     "required": "This field is required.",
@@ -234,7 +241,8 @@
       "reports": "Reports",
       "plan": "Plan",
       "team": "Team",
-      "more": "More"
+      "more": "More",
+      "activity": "Activity"
     },
     "groups": {
       "shop": "Shop",
@@ -740,11 +748,13 @@
     },
     "ownShop": {
       "title": "Own shop",
-      "manage": "Create and edit their own shop"
+      "manage": "Create and edit their own shop",
+      "view": "Open their shop's dashboard"
     },
     "ownProducts": {
       "title": "Own products",
-      "manage": "Manage their own products"
+      "manage": "Manage their own products",
+      "view": "View their shop's products"
     },
     "ownStats": {
       "title": "Own statistics",
@@ -775,6 +785,26 @@
     "ownCustomers": {
       "title": "Own customers",
       "view": "See customer names and phone numbers of their sales"
+    },
+    "ownOffers": {
+      "title": "Own offers",
+      "manage": "Manage their shop's offers, discount codes and Promo bar"
+    },
+    "ownLook": {
+      "title": "Own shop look",
+      "manage": "Edit and publish their shop's look"
+    },
+    "ownReports": {
+      "title": "Own reports",
+      "view": "View their shop's sales reports"
+    },
+    "ownTeam": {
+      "title": "Own team",
+      "manage": "Invite and manage their shop's team"
+    },
+    "ownActivity": {
+      "title": "Own activity",
+      "view": "View their shop's activity history"
     }
   },
   "AdminRoles": {
@@ -2202,6 +2232,13 @@
       },
       "report": {
         "ready": "Your {month} report is ready."
+      },
+      "team": {
+        "memberJoined": "{member} joined {shop} as {role}.",
+        "role": "Your role in {shop} is now {role}.",
+        "suspended": "Your access to {shop} was suspended.",
+        "reactivated": "Your access to {shop} is back.",
+        "removed": "You were removed from {shop}'s team."
       }
     },
     "actions": {
@@ -3110,7 +3147,8 @@
       "markedSoldOut": "This sale marked the product sold out.",
       "productDeleted": "This product was deleted. The sale keeps what it was when sold.",
       "edit": "Edit",
-      "reverse": "Reverse sale"
+      "reverse": "Reverse sale",
+      "recordedBy": "Recorded by"
     },
     "edit": {
       "title": "Edit sale",
@@ -3154,7 +3192,8 @@
         "saleEdited": "Sale edited",
         "saleReversed": "Sale reversed",
         "deleted": "Deleted"
-      }
+      },
+      "by": "by {name}"
     },
     "status": {
       "recorded": "Counted",
@@ -3307,6 +3346,246 @@
       "intro": "Enter this code on the Vano screen to choose a new password:",
       "expires": "The code works for {minutes} minutes and only once. After the change, you'll be signed out on your other devices.",
       "ignore": "Didn't ask to reset your password? Ignore this email: your password stays the same."
+    },
+    "teamInvite": {
+      "subject": "{inviter} invited you to join {shop} on Vano",
+      "preheader": "Join the {shop} team as {role}.",
+      "heading": "Join {shop} on Vano",
+      "intro": "{inviter} invited you to help run {shop} on Vano, as {role}.",
+      "roleIntro": "What you'll be able to do:",
+      "roles": {
+        "manager": "Manager",
+        "seller": "Seller",
+        "editor": "Editor",
+        "viewer": "Viewer"
+      },
+      "roleBodies": {
+        "manager": "Everything in the shop: products, offers, the shop look, sales, customers, stats, reports and settings. The plan, billing and the team stay with the owner.",
+        "seller": "Record sales, see customers and view the products.",
+        "editor": "Add and edit products, run offers and discount codes, and design the shop look.",
+        "viewer": "See the shop's stats and sales reports."
+      },
+      "button": "Accept the invite",
+      "expires": "This link works once and expires in {days} days. Sign in or create a free account to join.",
+      "ignore": "Not expecting this? You can ignore this email."
+    }
+  },
+  "TeamRoles": {
+    "owner": {
+      "name": "Owner"
+    },
+    "manager": {
+      "name": "Manager",
+      "description": "Everything in the shop except the plan, billing and the team."
+    },
+    "seller": {
+      "name": "Seller",
+      "description": "Records sales, sees customers and views products."
+    },
+    "editor": {
+      "name": "Editor",
+      "description": "Products, offers and the shop look. No sales or reports."
+    },
+    "viewer": {
+      "name": "Viewer",
+      "description": "Stats and reports only."
+    }
+  },
+  "Team": {
+    "title": "Team",
+    "inviteButton": "Invite a member",
+    "full": "All seats used",
+    "seats": "{used} of {limit} seats used",
+    "ownerNote": "You always have full access",
+    "membersTitle": "Members",
+    "invitesTitle": "Pending invites",
+    "emptyTitle": "No team members yet",
+    "emptyBody": "Invite people to help you run the shop. You choose what each one can do.",
+    "pausedHint": "Paused members keep their place and come back as soon as your plan allows them again.",
+    "linkOnly": "Invite link",
+    "expires": "Expires {date}",
+    "newLink": "New link",
+    "cancelInvite": "Cancel invite",
+    "inviteCancelled": "Invite cancelled",
+    "columns": {
+      "member": "Member",
+      "role": "Role",
+      "joined": "Joined",
+      "status": "Status"
+    },
+    "memberState": {
+      "active": "Active",
+      "paused": "Paused",
+      "suspended": "Suspended"
+    },
+    "inviteState": {
+      "pending": "Waiting",
+      "expired": "Expired"
+    },
+    "lock": {
+      "title": "Team accounts are on {plan}",
+      "body": "Give helpers their own sign-in with just the access they need: sales, products or reports.",
+      "bodyKept": "Your members are paused, not removed. They come back as soon as you upgrade.",
+      "action": "Get {plan}"
+    },
+    "details": {
+      "title": "Team member",
+      "member": "Name",
+      "email": "Email",
+      "status": "Status",
+      "joined": "Joined",
+      "pausedBody": "Paused: your plan doesn't include this seat right now. They come back when it does.",
+      "role": "Role",
+      "roleSaved": "Role changed to {role}",
+      "suspend": "Suspend",
+      "reactivate": "Reactivate",
+      "suspended": "Member suspended",
+      "reactivated": "Member reactivated",
+      "remove": "Remove from team",
+      "suspendHint": "Suspending keeps the member's seat; removing frees it. Both take effect at once.",
+      "removeTitle": "Remove {name}?",
+      "removeBody": "They lose access to this shop right away. Their past sales and activity stay in your history.",
+      "cancel": "Cancel",
+      "removeConfirm": "Remove",
+      "removed": "Member removed"
+    },
+    "invite": {
+      "title": "Invite a member",
+      "body": "Choose what they can do. You can change it any time.",
+      "role": "Role",
+      "email": "Their email (optional)",
+      "emailHelp": "Vano emails them the link. Leave empty to share it yourself.",
+      "language": "Email language",
+      "cancel": "Cancel",
+      "submit": "Create invite link",
+      "linkTitle": "Invite link ready",
+      "linkBody": "Send this link to the person you're inviting. It works once and expires in {days} days.",
+      "done": "Done"
+    },
+    "link": {
+      "emailed": "Vano sent the invite to {email}.",
+      "once": "For your safety, this link is shown only now. You can make a new one from the Team page.",
+      "message": "Join my shop {shop} on Vano: {url}",
+      "whatsapp": "Share on WhatsApp",
+      "copy": "Copy link",
+      "copied": "Copied"
+    },
+    "switcher": {
+      "label": "Current shop: {shop}. Change shop",
+      "title": "Your shops",
+      "state": {
+        "active": "Active",
+        "paused": "Paused",
+        "suspended": "Suspended"
+      },
+      "createOwn": "Create your own shop",
+      "leave": "Leave {shop}",
+      "leaveTitle": "Leave {shop}?",
+      "leaveBody": "You'll lose access to this shop. The owner can invite you again.",
+      "cancel": "Cancel",
+      "leaveConfirm": "Leave shop"
+    },
+    "paused": {
+      "title": "Your access is paused",
+      "body": "{shop}'s plan doesn't include team accounts right now. Your access comes back as soon as the owner upgrades.",
+      "suspendedTitle": "Your access is suspended",
+      "suspendedBody": "The owner of {shop} suspended your access. Contact them if you think it's a mistake.",
+      "createOwn": "Create your own shop"
+    },
+    "noRole": {
+      "title": "Not part of your role",
+      "body": "Your role in this shop doesn't include this page. Ask the shop owner if you need it.",
+      "home": "Go to the dashboard"
+    },
+    "join": {
+      "metaTitle": "Join a shop on Vano",
+      "title": "Join {shop}",
+      "invalidTitle": "This invite link doesn't work",
+      "invalidBody": "It may have been cancelled or replaced. Ask the shop owner for a new link.",
+      "usedTitle": "This invite was already used",
+      "usedBody": "Each invite link works once. Ask the shop owner for a new link.",
+      "expiredTitle": "This invite has expired",
+      "expiredBody": "Ask the shop owner for a new link.",
+      "goDashboard": "Go to Vano",
+      "ownShop": "This is your own shop: you already have full access.",
+      "alreadyMember": "You're already in this team: open the dashboard",
+      "join": "Join {shop}",
+      "signInFirst": "Sign in or create a free account to join.",
+      "createAccount": "Create an account",
+      "signIn": "I already have an account"
+    },
+    "askOwner": "Ask the shop owner to upgrade to {plan}."
+  },
+  "Activity": {
+    "title": "Activity",
+    "subtitle": "Who did what in your shop.",
+    "emptyTitle": "Nothing yet",
+    "emptyBody": "Changes to products, offers, sales and settings will show here, with who made them.",
+    "more": "Show more",
+    "you": "You",
+    "someone": "—",
+    "owner": "owner",
+    "fields": {
+      "name": "the shop name",
+      "slug": "the shop link",
+      "whatsapp": "the WhatsApp number"
+    },
+    "lock": {
+      "title": "Activity history is on {plan}",
+      "body": "See who changed products, offers, sales and settings. Your history is kept and shows after upgrading.",
+      "action": "Get {plan}"
+    },
+    "kinds": {
+      "product": {
+        "created": "added the product {target}",
+        "updated": "edited the product {target}",
+        "deleted": "deleted the product {target}",
+        "soldOut": "marked {target} sold out",
+        "backOnSale": "put {target} back on sale",
+        "hidden": "hid {target} from the shop",
+        "shown": "showed {target} in the shop again",
+        "featured": "featured {target}",
+        "unfeatured": "stopped featuring {target}"
+      },
+      "offer": {
+        "created": "created the offer {target}",
+        "updated": "edited the offer {target}",
+        "paused": "paused the offer {target}",
+        "resumed": "resumed the offer {target}",
+        "deleted": "deleted the offer {target}"
+      },
+      "code": {
+        "created": "created the discount code {target}",
+        "updated": "edited the discount code {target}",
+        "paused": "paused the discount code {target}",
+        "resumed": "resumed the discount code {target}",
+        "deleted": "deleted the discount code {target}"
+      },
+      "sale": {
+        "recorded": "marked {target} as sold",
+        "edited": "edited a sale of {target}",
+        "reversed": "reversed a sale of {target}"
+      },
+      "shop": {
+        "settingsUpdated": "updated the shop settings",
+        "changeRequested": "asked to change {field}"
+      },
+      "look": {
+        "published": "published a new shop look"
+      },
+      "promoBar": {
+        "saved": "saved the Promo bar"
+      },
+      "team": {
+        "invited": "invited a {role}",
+        "inviteRevoked": "cancelled an invite",
+        "joined": "joined the team as {role}",
+        "roleChanged": "changed {target}'s role to {role}",
+        "suspended": "suspended {target}",
+        "reactivated": "reactivated {target}",
+        "removed": "removed {target} from the team",
+        "left": "left the team"
+      }
     }
   }
 }
