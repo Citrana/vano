@@ -24,6 +24,7 @@ import { cleanShopInfo, socialsValidator } from "./lib/shopInfo";
 import { slugProblem } from "./lib/slug";
 import { timeZoneProblem } from "./lib/timeZone";
 import { startFree, startTrial } from "./lib/subscriptions";
+import { sendWelcomeEmail } from "./emails/welcome";
 
 /** Settings the seller edits directly, any time. */
 const settingsInput = v.object({
@@ -177,6 +178,8 @@ export const create = sellerMutation({
     // New shops start the Pro trial, except "Get Business" (CLAUDE.md "Billing").
     if (startPlan === "business") await startFree(ctx, shop);
     else await startTrial(ctx, shop);
+    // Once per account, new shop owners only; never blocks the sign-up.
+    await sendWelcomeEmail(ctx, ctx.user, shop, { trial: startPlan !== "business" });
     return shopId;
   },
 });

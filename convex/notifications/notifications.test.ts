@@ -84,6 +84,9 @@ describe("notify", () => {
     const log = vi.spyOn(console, "log").mockImplementation(() => {});
     const t = newTest();
     const w = await world(t);
+    // The shop's welcome email is written to the log (log mode): not a notification channel.
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
+    log.mockClear();
     await send(t, { type: "plan.activated", plan: "pro", periodEnd: NOW }, { userId: w.amani.userId }, "a");
     await t.finishAllScheduledFunctions(vi.runAllTimers);
     expect(log).not.toHaveBeenCalled();

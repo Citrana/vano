@@ -3238,6 +3238,32 @@
       "heading": "Email sending works",
       "body": "This is a test email sent from the Vano admin settings. If you can read it, emails are set up correctly.",
       "sentAt": "Sent on {date} (UTC)."
+    },
+    "welcome": {
+      "subject": "Welcome to Vano, your shop is ready to set up",
+      "preheader": "Three short steps to get your first orders on WhatsApp.",
+      "heading": "Welcome to Vano!",
+      "intro": "We're so happy you're here. Your shop is open, and a few minutes are enough to make it ready for your customers.",
+      "trialOne": "Your first month on {plan} is free, and no payment method is needed.",
+      "trialOther": "Your first {months} months on {plan} are free, and no payment method is needed.",
+      "stepsIntro": "Your first 3 steps:",
+      "steps": {
+        "shop": {
+          "title": "Set up your shop",
+          "body": "Check your shop name, add a profile photo and your WhatsApp number. Orders arrive on WhatsApp."
+        },
+        "products": {
+          "title": "Add your first products",
+          "body": "Start with 3 to 5 pieces: clear photos, prices, sizes or colors."
+        },
+        "share": {
+          "title": "Share your link",
+          "body": "Post it on your WhatsApp status, in your Instagram or TikTok bio, and send it to your best customers."
+        }
+      },
+      "button": "Go to my dashboard",
+      "lookTip": "Tip: try a different shop look in \"Look\" to match your style.",
+      "help": "Need help? Visit {url}."
     }
   }
 }

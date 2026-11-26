@@ -59,6 +59,8 @@ export default defineSchema({
     isAnonymous: v.optional(v.boolean()),
     roleId: v.optional(v.id("roles")),
     status: v.optional(userStatusValidator),
+    /** When the welcome email was queued (convex/emails/welcome.ts): sent once per account. */
+    welcomeEmailSentAt: v.optional(v.number()),
   })
     .index("email", ["email"])
     .index("phone", ["phone"])
