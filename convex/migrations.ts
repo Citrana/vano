@@ -63,6 +63,15 @@ import { startTrial, subscriptionDoc } from "./lib/subscriptions";
  * plans as they were in code) in `planConfig`, so admins can edit it. An
  * existing configuration is never overwritten. Optional: until it runs,
  * the app reads the same seed. Subscriptions, shops and trials are untouched.
+ *
+ *   npx convex run migrations:emailVerifiedV1 '{"before": <deploy time in ms>}'
+ *   npx convex run migrations:emailVerifiedV1Status
+ *
+ * emailVerifiedV1: sign-up now needs an emailed code (CLAUDE.md "Auth
+ * codes"). Password accounts created before `before` (the deploy that
+ * turned codes on) count as verified, so their owners sign in as before.
+ * Accounts created after it keep waiting for their code. Until it runs, an
+ * older account signing in just gets a code. Idempotent.
  */
 
 const NAME = "rbacV1";
@@ -474,6 +483,63 @@ export const trialProOnlyV1Status = internalQuery({
   }),
   handler: async (ctx) => {
     const run = await findRun(ctx, TRIAL_PRO_ONLY_V1);
+    return { status: run?.status ?? ("not_started" as const), doneAt: run?.doneAt ?? null };
+  },
+});
+
+const EMAIL_VERIFIED_V1 = "emailVerifiedV1";
+
+export const emailVerifiedV1 = internalMutation({
+  args: { before: v.number() },
+  returns: v.union(v.literal("started"), v.literal("already_running"), v.literal("already_done")),
+  handler: async (ctx, { before }) => {
+    // A cutoff in the future would skip the code for brand-new accounts.
+    if (!Number.isFinite(before) || before > Date.now()) throw new Error("`before` must be a past time in ms");
+    const run = await findRun(ctx, EMAIL_VERIFIED_V1);
+    if (run?.status === "done") return "already_done" as const;
+    if (run?.status === "running") return "already_running" as const;
+    await ctx.db.insert("migrations", { name: EMAIL_VERIFIED_V1, status: "running", startedAt: Date.now() });
+    await ctx.scheduler.runAfter(0, internal.migrations.emailVerifiedV1Step, { before, cursor: null });
+    return "started" as const;
+  },
+});
+
+export const emailVerifiedV1Step = internalMutation({
+  args: { before: v.number(), cursor: v.union(v.string(), v.null()) },
+  returns: v.null(),
+  handler: async (ctx, { before, cursor }) => {
+    const page = await ctx.db
+      .query("authAccounts")
+      .withIndex("by_creation_time", (q) => q.lt("_creationTime", before))
+      .paginate({ numItems: BATCH, cursor });
+    for (const account of page.page) {
+      if (account.provider !== "password") continue;
+      if (account.emailVerified === undefined) {
+        await ctx.db.patch("authAccounts", account._id, { emailVerified: account.providerAccountId });
+      }
+      const user = await ctx.db.get("users", account.userId);
+      if (user && user.emailVerificationTime === undefined) {
+        await ctx.db.patch("users", user._id, { emailVerificationTime: before });
+      }
+    }
+    if (!page.isDone) {
+      await ctx.scheduler.runAfter(0, internal.migrations.emailVerifiedV1Step, { before, cursor: page.continueCursor });
+      return null;
+    }
+    const run = await findRun(ctx, EMAIL_VERIFIED_V1);
+    if (run) await ctx.db.patch("migrations", run._id, { status: "done", doneAt: Date.now() });
+    return null;
+  },
+});
+
+export const emailVerifiedV1Status = internalQuery({
+  args: {},
+  returns: v.object({
+    status: v.union(v.literal("not_started"), v.literal("running"), v.literal("done")),
+    doneAt: v.union(v.number(), v.null()),
+  }),
+  handler: async (ctx) => {
+    const run = await findRun(ctx, EMAIL_VERIFIED_V1);
     return { status: run?.status ?? ("not_started" as const), doneAt: run?.doneAt ?? null };
   },
 });

@@ -107,6 +107,27 @@ describe("seed:superAdmin", () => {
     expect(accounts.filter((a) => a.providerAccountId === "seller@example.com")).toHaveLength(1);
   });
 
+  test("a seeded super admin counts as verified: no sign-up code (created or promoted)", async () => {
+    const t = setup();
+    await seed(t, "boss@example.com");
+    // An account that never entered its sign-up code, then promoted.
+    await t.run(async (ctx) => {
+      const userId = await ctx.db.insert("users", { email: "late@example.com" });
+      await ctx.db.insert("authAccounts", { userId, provider: "password", providerAccountId: "late@example.com" });
+    });
+    await seed(t, "late@example.com", { force: true });
+    for (const email of ["boss@example.com", "late@example.com"]) {
+      expect((await userByEmail(t, email))!.emailVerificationTime).toEqual(expect.any(Number));
+      const account = await t.run((ctx) =>
+        ctx.db
+          .query("authAccounts")
+          .withIndex("providerAndAccountId", (q) => q.eq("provider", "password").eq("providerAccountId", email))
+          .unique(),
+      );
+      expect(account!.emailVerified).toBe(email);
+    }
+  });
+
   test("if the only super admin is suspended, a new one can be seeded without force", async () => {
     const t = setup();
     await seed(t, "boss@example.com");
