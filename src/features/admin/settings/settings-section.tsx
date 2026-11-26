@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useErrorMessage } from "@/lib/use-error-message"
 import { useAdminViewer } from "../shell/use-admin-viewer"
 import { settingsSchema, type SettingsFormValues } from "./schemas"
+import { TestEmailCard } from "./test-email-card"
 
 /** /admin/settings: loads the settings, then shows the form. */
 export function SettingsSection() {
@@ -25,10 +26,12 @@ export function SettingsSection() {
   const settings = useQuery(api.admin.settings.get, {})
   const { viewer } = useAdminViewer()
   if (settings === undefined || !viewer) return <><PageTitle title={t("title")} /><LoadingState /></>
+  const canManage = viewer.permissions.includes("settings.manage")
   return (
     <div className="mx-auto max-w-2xl">
       <PageTitle title={t("title")} />
-      <SettingsForm initial={settings} canManage={viewer.permissions.includes("settings.manage")} />
+      <SettingsForm initial={settings} canManage={canManage} />
+      {canManage ? <div className="mt-4"><TestEmailCard /></div> : null}
     </div>
   )
 }

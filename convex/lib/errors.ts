@@ -102,6 +102,8 @@ export const ERROR_CODES = [
   "STOCK_INVALID",
   "STOCK_TRACKED",
   "REPORT_INVALID",
+  "EMAIL_MISSING",
+  "TEST_EMAIL_RATE_LIMITED",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

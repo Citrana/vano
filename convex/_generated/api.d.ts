@@ -14,6 +14,7 @@ import type * as admin_billing from "../admin/billing.js";
 import type * as admin_changeRequests from "../admin/changeRequests.js";
 import type * as admin_dashboard from "../admin/dashboard.js";
 import type * as admin_discountCodes from "../admin/discountCodes.js";
+import type * as admin_emails from "../admin/emails.js";
 import type * as admin_planExceptions from "../admin/planExceptions.js";
 import type * as admin_plans from "../admin/plans.js";
 import type * as admin_products from "../admin/products.js";
@@ -165,6 +166,7 @@ declare const fullApi: ApiFromModules<{
   "admin/changeRequests": typeof admin_changeRequests;
   "admin/dashboard": typeof admin_dashboard;
   "admin/discountCodes": typeof admin_discountCodes;
+  "admin/emails": typeof admin_emails;
   "admin/planExceptions": typeof admin_planExceptions;
   "admin/plans": typeof admin_plans;
   "admin/products": typeof admin_products;
