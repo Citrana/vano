@@ -4,9 +4,11 @@ import { sellerGateTarget, type GateNeed, type GateViewer } from "./gate-target"
 const target = (need: GateNeed, viewer: GateViewer | undefined, auth = { isLoading: false, isAuthenticated: true }) =>
   sellerGateTarget({ need, viewer, ...auth })
 
-const SELLER = ["ownShop.manage", "ownProducts.manage", "ownStats.view"]
+const SELLER = ["ownShop.view", "ownShop.manage", "ownProducts.manage", "ownStats.view"]
 const viewer = (over: Partial<NonNullable<GateViewer>> = {}): GateViewer => ({
   hasShop: true,
+  ownsShop: over.hasShop ?? true,
+  shops: [],
   status: "active",
   isAdmin: false,
   permissions: SELLER,
@@ -53,6 +55,20 @@ describe("sellerGateTarget", () => {
     expect(target("noShop", support)).toBe("/admin")
     const nothing = viewer({ permissions: [], hasShop: false })
     expect(target("shop", nothing)).toBe("noAccess")
+  })
+
+  test("team members (CLAUDE.md \"Team accounts\")", () => {
+    const member = viewer({ ownsShop: false, permissions: ["ownShop.view", "ownSales.manage"], shops: [{ role: "seller" }] })
+    expect(target("shop", member)).toBe("show")
+    // Onboarding stays open: a member may open their own shop.
+    expect(target("noShop", member)).toBe("show")
+    // Only paused / suspended memberships: the paused screen, not onboarding.
+    const paused = viewer({ hasShop: false, ownsShop: false, shops: [{ role: "viewer" }] })
+    expect(target("shop", paused)).toBe("memberPaused")
+  })
+
+  test("guest pages follow a safe next", () => {
+    expect(sellerGateTarget({ need: "guest", viewer: viewer(), isLoading: false, isAuthenticated: true, next: "/join/abc" })).toBe("/join/abc")
   })
 
   test("a suspended account sees the suspended screen on seller pages", () => {
