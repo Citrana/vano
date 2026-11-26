@@ -347,6 +347,41 @@ export const purgeShop = internalMutation({
       return null;
     }
 
+    // Team accounts (CLAUDE.md "Team accounts"): members, invites, activity.
+    const members = await ctx.db
+      .query("shopMembers")
+      .withIndex("by_shopId", (q) => q.eq("shopId", shopId))
+      .take(STATS_PER_BATCH);
+    if (members.length > 0) {
+      for (const row of members) {
+        const user = await ctx.db.get("users", row.userId);
+        if (user?.activeShopId === shopId) await ctx.db.patch("users", user._id, { activeShopId: undefined });
+        await ctx.db.delete("shopMembers", row._id);
+      }
+      await again();
+      return null;
+    }
+    for (const status of ["pending", "accepted", "revoked"] as const) {
+      const invites = await ctx.db
+        .query("shopInvites")
+        .withIndex("by_shopId_and_status", (q) => q.eq("shopId", shopId).eq("status", status))
+        .take(STATS_PER_BATCH);
+      if (invites.length > 0) {
+        for (const row of invites) await ctx.db.delete("shopInvites", row._id);
+        await again();
+        return null;
+      }
+    }
+    const activity = await ctx.db
+      .query("shopActivity")
+      .withIndex("by_shopId_and_at", (q) => q.eq("shopId", shopId))
+      .take(STATS_PER_BATCH);
+    if (activity.length > 0) {
+      for (const row of activity) await ctx.db.delete("shopActivity", row._id);
+      await again();
+      return null;
+    }
+
     const shopStats = await ctx.db
       .query("shopDailyStats")
       .withIndex("by_shopId_and_day", (q) => q.eq("shopId", shopId))

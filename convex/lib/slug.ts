@@ -22,6 +22,8 @@ export const RESERVED_SLUGS: ReadonlySet<string> = new Set([
   "settings",
   // Other app routes and well-known paths.
   "onboarding",
+  // Team invite links (CLAUDE.md "Team accounts").
+  "join",
   "forgot-password",
   "logout",
   "signin",

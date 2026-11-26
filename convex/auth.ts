@@ -8,6 +8,7 @@ import { AUTH_MAX_FAILED_PER_HOUR } from "./lib/authCodes";
 import { guardPasswordFlows } from "./lib/authFlows";
 import { LANGUAGES, type Language } from "./lib/catalog";
 import { normalizeEmail, passwordProblem } from "./lib/credentials";
+import { isInviteToken } from "./lib/team";
 
 /** The screen language sent with a sign-up, if it's one we support. */
 function languageParam(value: unknown): Language | undefined {
@@ -26,8 +27,12 @@ const password = guardPasswordFlows(
       if (email === null) throw new ConvexError({ code: "EMAIL_INVALID" });
       // Only stored when the account is created.
       const language = languageParam(params.language);
-      const profile: { email: string; language?: Language } = { email };
+      const profile: { email: string; language?: Language; pendingInvite?: string } = { email };
       if (language) profile.language = language;
+      // A team invite link the person signs up from (CLAUDE.md "Team
+      // accounts"): lets the sign-up through while public sign-up is
+      // closed; read and cleared by `setUpNewAccount`.
+      if (typeof params.invite === "string" && isInviteToken(params.invite)) profile.pendingInvite = params.invite;
       return profile as { email: string } & Record<string, Value>;
     },
     validatePasswordRequirements(value) {
