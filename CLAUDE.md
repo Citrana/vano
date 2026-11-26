@@ -711,7 +711,14 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 - Admin Settings has "Send test email" (`admin/emails.sendTest`,
   `settings.manage`, rate limited `testEmail`, logged
   `settings.testEmail`): it goes only to the caller's own address, never
-  to one from the browser. No feature sends emails yet.
+  to one from the browser.
+- **Welcome email** (`emails/welcome.ts`, template `welcome.ts`): sent by
+  `shops.create` in the same mutation, so only new shop owners get it
+  (never people joining an existing shop), in the shop's language, with
+  the trial length and plan name from the plan config (no trial line for
+  a "Get Business" sign-up). Once per account (`users.welcomeEmailSentAt`);
+  it never throws (no address or no `SITE_URL` = skipped), so sign-up
+  never fails because of it. Links use the `SITE_URL` env var.
 
 ## Stats
 
