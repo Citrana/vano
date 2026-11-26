@@ -3,10 +3,11 @@ import { paginationOptsValidator, paginationResultValidator } from "convex/serve
 import { v } from "convex/values";
 import { internal } from "../_generated/api";
 import type { Doc, Id } from "../_generated/dataModel";
-import { internalMutation, type MutationCtx } from "../_generated/server";
+import { internalMutation, type MutationCtx, type QueryCtx } from "../_generated/server";
 import { accountMutation, accountQuery, hasPermission, type Access } from "../lib/access";
 import { fail } from "../lib/errors";
-import { isPermission } from "../lib/permissions";
+import { isPermission, type Permission } from "../lib/permissions";
+import { shopAccessFor } from "../lib/shopAccess";
 import { COUNT_CAP, INBOX_PREVIEW } from "./config";
 import { notificationCategoryValidator, notificationDataValidator } from "./types";
 
@@ -22,17 +23,59 @@ const itemValidator = v.object({
   _creationTime: v.number(),
   data: notificationDataValidator,
   read: v.boolean(),
+  /** The shop a team notification is about (opening it switches to that shop). */
+  shopId: v.union(v.id("shops"), v.null()),
 });
 
-/** Whether the caller may still see this row. Unknown permissions = hidden. */
-export function visibleTo(access: Access, row: Doc<"notifications">): boolean {
-  const p = row.requiredPermission;
-  if (p === undefined) return true;
-  return isPermission(p) && hasPermission(access, p);
+/**
+ * Whether the caller may still see a row. Unknown permissions = hidden. A
+ * team notification (`shopId`) needs the permission in THAT shop, so a
+ * changed role, a removal or a paused membership hides old rows too
+ * (CLAUDE.md "Team accounts"). Shop access is computed once per shop.
+ */
+export function visibility(ctx: QueryCtx, access: Access) {
+  const shops = new Map<Id<"shops">, Promise<ReadonlySet<Permission> | null>>();
+  const permissionsIn = (shopId: Id<"shops">) => {
+    let found = shops.get(shopId);
+    if (!found) {
+      found = (async () => {
+        const shop = await ctx.db.get("shops", shopId);
+        return shop ? ((await shopAccessFor(ctx, access, shop))?.permissions ?? null) : null;
+      })();
+      shops.set(shopId, found);
+    }
+    return found;
+  };
+  return async (row: Doc<"notifications">): Promise<boolean> => {
+    const p = row.requiredPermission;
+    if (row.shopId !== undefined) {
+      const permissions = await permissionsIn(row.shopId);
+      return permissions !== null && (p === undefined || (isPermission(p) && permissions.has(p)));
+    }
+    if (p === undefined) return true;
+    return isPermission(p) && hasPermission(access, p);
+  };
+}
+
+async function visibleRows(
+  ctx: QueryCtx,
+  access: Access,
+  rows: readonly Doc<"notifications">[],
+): Promise<Doc<"notifications">[]> {
+  const can = visibility(ctx, access);
+  const out: Doc<"notifications">[] = [];
+  for (const row of rows) if (await can(row)) out.push(row);
+  return out;
 }
 
 function toItem(row: Doc<"notifications">) {
-  return { _id: row._id, _creationTime: row._creationTime, data: row.data, read: row.readAt !== undefined };
+  return {
+    _id: row._id,
+    _creationTime: row._creationTime,
+    data: row.data,
+    read: row.readAt !== undefined,
+    shopId: row.shopId ?? null,
+  };
 }
 
 /** Unread notifications, counted up to `COUNT_CAP` ("99+" past it). */
@@ -46,7 +89,7 @@ export const unreadCount = accountQuery({
       .order("desc")
       // Room for a few hidden rows without missing the cap.
       .take(COUNT_CAP * 2);
-    const count = rows.filter((row) => visibleTo(ctx.access, row)).length;
+    const count = (await visibleRows(ctx, ctx.access, rows)).length;
     return { count: Math.min(count, COUNT_CAP), capped: count > COUNT_CAP };
   },
 });
@@ -61,7 +104,7 @@ export const latest = accountQuery({
       .withIndex("by_userId", (q) => q.eq("userId", ctx.user._id))
       .order("desc")
       .take(INBOX_PREVIEW * 3);
-    return rows.filter((row) => visibleTo(ctx.access, row)).slice(0, INBOX_PREVIEW).map(toItem);
+    return (await visibleRows(ctx, ctx.access, rows)).slice(0, INBOX_PREVIEW).map(toItem);
   },
 });
 
@@ -86,7 +129,7 @@ export const list = accountQuery({
           : unreadOnly
             ? table.withIndex("by_userId_and_readAt", (q) => q.eq("userId", userId).eq("readAt", undefined))
             : table.withIndex("by_userId", (q) => q.eq("userId", userId));
-    const result = await filter(query.order("desc"), (row) => visibleTo(ctx.access, row)).paginate(paginationOpts);
+    const result = await filter(query.order("desc"), visibility(ctx, ctx.access)).paginate(paginationOpts);
     return { ...result, page: result.page.map(toItem) };
   },
 });
@@ -97,7 +140,7 @@ export const markRead = accountMutation({
   returns: v.null(),
   handler: async (ctx, { id }) => {
     const row = await ctx.db.get("notifications", id);
-    if (!row || row.userId !== ctx.user._id || !visibleTo(ctx.access, row)) fail("NOT_FOUND");
+    if (!row || row.userId !== ctx.user._id || !(await visibility(ctx, ctx.access)(row))) fail("NOT_FOUND");
     if (row.readAt === undefined) await ctx.db.patch("notifications", id, { readAt: Date.now() });
     return null;
   },

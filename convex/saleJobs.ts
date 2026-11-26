@@ -33,7 +33,7 @@ export const sync = internalMutation({
     const { limits } = await getEntitlements(ctx, shop, now);
     if (canShopDo(limits, { kind: "feature", feature: "salesPromotions" }) !== null) return null;
 
-    const to = { userId: shop.ownerId };
+    const to = { shop };
     if (kind === "start" && sale.startsAt === at && live) {
       await notify(ctx, {
         data: { type: "sale.started", saleId, name: sale.name },

@@ -74,7 +74,7 @@ async function moderated(ctx: AdminMutationCtx, saleId: Doc<"sales">["_id"], rea
   if (!sale) fail("NOT_FOUND");
   const shop = await ctx.db.get("shops", sale.shopId);
   if (!shop) fail("NOT_FOUND");
-  assertNotOwnShop(ctx.access, shop);
+  await assertNotOwnShop(ctx, ctx.access, shop);
   if (resetReasonProblem(reason) !== null) fail("REASON_INVALID");
   return { sale, shop, reason: reason.trim() };
 }
@@ -102,7 +102,7 @@ export const pause = adminMutation({
     });
     await notify(ctx, {
       data: { type: "sale.adminPaused", saleId: sale._id, name: sale.name, reason },
-      to: { userId: shop.ownerId },
+      to: { shop },
       dedupeKey: `sale.adminPaused:${sale._id}:${now}`,
     });
     return null;
@@ -126,7 +126,7 @@ export const remove = adminMutation({
     });
     await notify(ctx, {
       data: { type: "sale.adminDeleted", name: sale.name, reason },
-      to: { userId: shop.ownerId },
+      to: { shop },
       dedupeKey: `sale.adminDeleted:${sale._id}`,
     });
     return null;

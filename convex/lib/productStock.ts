@@ -101,7 +101,7 @@ export async function applyPieces(
 export async function notifySoldOut(ctx: MutationCtx, shop: Doc<"shops">, product: Doc<"products">, now: number) {
   await notify(ctx, {
     data: { type: "product.soldOut", productId: product._id, name: product.name },
-    to: { userId: shop.ownerId },
+    to: { shop },
     dedupeKey: `product.soldOut:${product._id}:${now}`,
   });
 }

@@ -3,6 +3,7 @@ import { protectedFieldValidator } from "../lib/changeRequests";
 import type { Permission } from "../lib/permissions";
 import { addDays } from "../lib/days";
 import { EXPIRY_WARNING_DAYS, planIdValidator } from "../lib/plans";
+import { teamRoleValidator } from "../lib/team";
 
 /**
  * Every in-app notification type (CLAUDE.md "Notifications"). Pure module:
@@ -151,7 +152,25 @@ const discountCodeAdminDeleted = v.object({
   reason: v.string(),
 });
 
+/** To the shop owner: someone accepted an invite (CLAUDE.md "Team accounts"). */
+const teamMemberJoined = v.object({
+  type: v.literal("team.memberJoined"),
+  shopName: v.string(),
+  member: v.string(),
+  role: teamRoleValidator,
+});
+
+/** To a member: the owner changed their role, suspended, reactivated or removed them. */
+const teamAccessChanged = v.object({
+  type: v.literal("team.accessChanged"),
+  shopName: v.string(),
+  change: v.union(v.literal("role"), v.literal("suspended"), v.literal("reactivated"), v.literal("removed")),
+  role: v.optional(teamRoleValidator),
+});
+
 export const notificationDataValidator = v.union(
+  teamMemberJoined,
+  teamAccessChanged,
   changeRequestSubmitted,
   changeRequestFlagged,
   changeRequestApproved,
@@ -185,6 +204,12 @@ type TypeInfo = {
    * = everyone holding it, checked again on every read.
    */
   audience: "user" | Permission;
+  /**
+   * Shop types sent to the shop's team (`to: { shop }` in `notify`): the
+   * owner and every usable member whose team role has this permission.
+   * Checked again on every read against the reader's access to that shop.
+   */
+  shopPermission?: Permission;
 };
 
 export const NOTIFICATION_TYPES: Record<NotificationType, TypeInfo> = {
@@ -200,16 +225,18 @@ export const NOTIFICATION_TYPES: Record<NotificationType, TypeInfo> = {
   "plan.inGrace": { category: "billing", audience: "user" },
   "plan.trialProOnly": { category: "billing", audience: "user" },
   "admin.endingSoon": { category: "billing", audience: "billing.view" },
-  "look.reset": { category: "shop", audience: "user" },
-  "sale.started": { category: "shop", audience: "user" },
-  "sale.endingSoon": { category: "shop", audience: "user" },
-  "sale.ended": { category: "shop", audience: "user" },
-  "product.soldOut": { category: "shop", audience: "user" },
-  "report.ready": { category: "shop", audience: "user" },
-  "sale.adminPaused": { category: "shop", audience: "user" },
-  "sale.adminDeleted": { category: "shop", audience: "user" },
-  "discountCode.adminPaused": { category: "shop", audience: "user" },
-  "discountCode.adminDeleted": { category: "shop", audience: "user" },
+  "look.reset": { category: "shop", audience: "user", shopPermission: "ownLook.manage" },
+  "sale.started": { category: "shop", audience: "user", shopPermission: "ownOffers.manage" },
+  "sale.endingSoon": { category: "shop", audience: "user", shopPermission: "ownOffers.manage" },
+  "sale.ended": { category: "shop", audience: "user", shopPermission: "ownOffers.manage" },
+  "product.soldOut": { category: "shop", audience: "user", shopPermission: "ownProducts.view" },
+  "report.ready": { category: "shop", audience: "user", shopPermission: "ownReports.view" },
+  "sale.adminPaused": { category: "shop", audience: "user", shopPermission: "ownOffers.manage" },
+  "sale.adminDeleted": { category: "shop", audience: "user", shopPermission: "ownOffers.manage" },
+  "discountCode.adminPaused": { category: "shop", audience: "user", shopPermission: "ownOffers.manage" },
+  "discountCode.adminDeleted": { category: "shop", audience: "user", shopPermission: "ownOffers.manage" },
+  "team.memberJoined": { category: "shop", audience: "user", shopPermission: "ownTeam.manage" },
+  "team.accessChanged": { category: "shop", audience: "user" },
 };
 
 export const NOTIFICATION_TYPE_LIST = Object.keys(NOTIFICATION_TYPES) as NotificationType[];
@@ -252,5 +279,9 @@ export function notificationHref(data: NotificationData): string {
       return `/dashboard/products/${data.productId}`;
     case "report.ready":
       return `/dashboard/reports?month=${data.month}`;
+    case "team.memberJoined":
+      return "/dashboard/team";
+    case "team.accessChanged":
+      return "/dashboard";
   }
 }

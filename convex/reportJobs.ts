@@ -41,7 +41,7 @@ export const monthly = internalMutation({
       if (!hasSale) continue;
       sent += await notify(ctx, {
         data: { type: "report.ready", month },
-        to: { userId: shop.ownerId },
+        to: { shop },
         dedupeKey: `report.ready:${shop._id}:${month}`,
       });
     }
