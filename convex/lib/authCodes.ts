@@ -49,3 +49,22 @@ export const AUTH_CODE_PROVIDER_IDS: Record<AuthCodeKind, string> = {
 export function isCodeShape(value: string): boolean {
   return new RegExp(`^\\d{${CODE_LENGTH}}$`).test(value);
 }
+
+/**
+ * Is this stored code a live password reset code for this email?
+ * (`authCodes.checkResetCode`, before the new password is asked for.)
+ */
+export function resetCodeValid(
+  row: { provider: string; expirationTime: number } | null,
+  account: { providerAccountId: string } | null,
+  email: string,
+  now: number,
+): boolean {
+  return (
+    row !== null &&
+    account !== null &&
+    row.provider === AUTH_CODE_PROVIDER_IDS.reset &&
+    row.expirationTime > now &&
+    account.providerAccountId === email
+  );
+}

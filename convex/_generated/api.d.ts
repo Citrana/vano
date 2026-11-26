@@ -27,6 +27,7 @@ import type * as admin_shops from "../admin/shops.js";
 import type * as admin_users from "../admin/users.js";
 import type * as auth from "../auth.js";
 import type * as authCodeJobs from "../authCodeJobs.js";
+import type * as authCodes from "../authCodes.js";
 import type * as billing from "../billing.js";
 import type * as billingJobs from "../billingJobs.js";
 import type * as changeRequestJobs from "../changeRequestJobs.js";
@@ -186,6 +187,7 @@ declare const fullApi: ApiFromModules<{
   "admin/users": typeof admin_users;
   auth: typeof auth;
   authCodeJobs: typeof authCodeJobs;
+  authCodes: typeof authCodes;
   billing: typeof billing;
   billingJobs: typeof billingJobs;
   changeRequestJobs: typeof changeRequestJobs;

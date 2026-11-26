@@ -2,7 +2,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vi
 import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { CLEANUP_BATCH } from "./authCodeJobs";
-import { AUTH_CODE_TTL_S, AUTH_MAX_FAILED_PER_HOUR, isCodeShape } from "./lib/authCodes";
+import { AUTH_CODE_TTL_S, AUTH_MAX_FAILED_PER_HOUR, isCodeShape, resetCodeValid } from "./lib/authCodes";
 import { newTest, type T } from "./lib/test.utils";
 
 /**
@@ -298,5 +298,82 @@ describe("authCodeJobs.cleanup", () => {
     expect(await t.mutation(internal.authCodeJobs.cleanup, {})).toEqual({ deleted: 5 });
     const left = await t.run((ctx) => ctx.db.query("authVerificationCodes").collect());
     expect(left.map((r) => r.code)).toEqual(["live"]);
+  });
+});
+
+describe("checkResetCode", () => {
+  const check = (t: T, email: string, code: string) => t.mutation(api.authCodes.checkResetCode, { email, code });
+  const wrongFor = (code: string) => (code === "000000" ? "111111" : "000000");
+
+  async function resetRequested(t: T) {
+    await signUp(t);
+    await verify(t, lastCode());
+    await signIn(t, { email: EMAIL, flow: "reset" });
+    return lastCode();
+  }
+
+  test("the right code is ok and still works to change the password", async () => {
+    const t = newTest();
+    const code = await resetRequested(t);
+    expect(await check(t, " Amani@Example.com ", code)).toEqual({ status: "ok" });
+    expect(await check(t, EMAIL, code)).toEqual({ status: "ok" }); // read-only
+    const result = await signIn(t, { email: EMAIL, code, newPassword: "newpassword1", flow: "reset-verification" });
+    expect(result.tokens).not.toBeNull();
+    expect(await check(t, EMAIL, code)).toEqual({ status: "invalid" }); // used up by the reset
+  });
+
+  test("a wrong code, an unknown email and another email's code all read invalid", async () => {
+    const t = newTest();
+    const code = await resetRequested(t);
+    expect(await check(t, EMAIL, wrongFor(code))).toEqual({ status: "invalid" });
+    expect(await check(t, "nobody@example.com", code)).toEqual({ status: "invalid" });
+    expect(await check(t, "nobody@example.com", wrongFor(code))).toEqual({ status: "invalid" });
+  });
+
+  test("a sign-up code isn't a reset code", async () => {
+    const t = newTest();
+    await signUp(t);
+    expect(await check(t, EMAIL, lastCode())).toEqual({ status: "invalid" });
+  });
+
+  test("an expired code is invalid", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const t = newTest();
+    const code = await resetRequested(t);
+    vi.setSystemTime(Date.now() + AUTH_CODE_TTL_S * 1000 + 1000);
+    expect(await check(t, EMAIL, code)).toEqual({ status: "invalid" });
+  });
+
+  test("after too many wrong codes even the right one reads tooMany; right codes don't count", async () => {
+    const t = newTest();
+    const code = await resetRequested(t);
+    for (let i = 0; i < 3; i++) expect(await check(t, EMAIL, code)).toEqual({ status: "ok" });
+    for (let i = 0; i < AUTH_MAX_FAILED_PER_HOUR; i++) {
+      expect(await check(t, EMAIL, wrongFor(code))).toEqual({ status: "invalid" });
+    }
+    expect(await check(t, EMAIL, code)).toEqual({ status: "tooMany" });
+    // Per email: another address isn't locked.
+    expect(await check(t, "other@example.com", code)).toEqual({ status: "invalid" });
+  });
+
+  test("malformed input is invalid without using a try", async () => {
+    const t = newTest();
+    const code = await resetRequested(t);
+    for (let i = 0; i < AUTH_MAX_FAILED_PER_HOUR + 2; i++) {
+      expect(await check(t, EMAIL, "12ab")).toEqual({ status: "invalid" });
+      expect(await check(t, "not-an-email", code)).toEqual({ status: "invalid" });
+    }
+    expect(await check(t, EMAIL, code)).toEqual({ status: "ok" });
+  });
+
+  test("resetCodeValid", () => {
+    const row = { provider: "password-reset", expirationTime: 2000 };
+    const account = { providerAccountId: EMAIL };
+    expect(resetCodeValid(row, account, EMAIL, 1000)).toBe(true);
+    expect(resetCodeValid(row, account, EMAIL, 2000)).toBe(false);
+    expect(resetCodeValid({ ...row, provider: "password-verify" }, account, EMAIL, 1000)).toBe(false);
+    expect(resetCodeValid(row, account, "other@example.com", 1000)).toBe(false);
+    expect(resetCodeValid(null, account, EMAIL, 1000)).toBe(false);
+    expect(resetCodeValid(row, null, EMAIL, 1000)).toBe(false);
   });
 });

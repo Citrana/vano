@@ -1,5 +1,6 @@
 import { HOUR, MINUTE, RateLimiter } from "@convex-dev/rate-limiter";
 import { components } from "../_generated/api";
+import { AUTH_MAX_FAILED_PER_HOUR } from "./authCodes";
 
 /**
  * App rate limits (the component rolls back with the mutation and is safe
@@ -30,4 +31,9 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
    */
   authCodeBurst: { kind: "token bucket", rate: 1, period: MINUTE, capacity: 2 },
   authCodeHourly: { kind: "token bucket", rate: 6, period: HOUR, capacity: 6 },
+  /**
+   * Wrong answers to the reset code check (`authCodes.checkResetCode`), per
+   * email, against guessing: the same budget as Convex Auth's own.
+   */
+  resetCodeCheck: { kind: "token bucket", rate: AUTH_MAX_FAILED_PER_HOUR, period: HOUR, capacity: AUTH_MAX_FAILED_PER_HOUR },
 });
