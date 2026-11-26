@@ -382,6 +382,17 @@ export const purgeShop = internalMutation({
       return null;
     }
 
+    // Trial reminder email records (CLAUDE.md "Emails").
+    const trialEmails = await ctx.db
+      .query("trialEmails")
+      .withIndex("by_shopId_and_kind_and_trialEnd", (q) => q.eq("shopId", shopId))
+      .take(STATS_PER_BATCH);
+    if (trialEmails.length > 0) {
+      for (const row of trialEmails) await ctx.db.delete("trialEmails", row._id);
+      await again();
+      return null;
+    }
+
     const shopStats = await ctx.db
       .query("shopDailyStats")
       .withIndex("by_shopId_and_day", (q) => q.eq("shopId", shopId))

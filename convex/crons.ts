@@ -29,6 +29,10 @@ crons.interval("warn about ending plans", { hours: 24 }, internal.notificationJo
 // hour (not a 24 h interval) maps every run to exactly one local date, DST days included.
 crons.daily("announce monthly reports", { hourUTC: 6, minuteUTC: 0 }, internal.reportJobs.monthly, {});
 
+// Trial reminder emails (7 days left, 2 days left, now on Free), at 09:00 Nairobi
+// (EAT, UTC+3, no daylight saving). CLAUDE.md "Emails", convex/lib/trialEmails.ts.
+crons.daily("send trial reminder emails", { hourUTC: 6, minuteUTC: 0 }, internal.trialEmailJobs.plan, {});
+
 // Expired sign-up / password reset codes are deleted (CLAUDE.md "Auth codes").
 crons.interval("clean up auth codes", { hours: 1 }, internal.authCodeJobs.cleanup, {});
 
