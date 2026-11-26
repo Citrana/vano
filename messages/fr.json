@@ -146,7 +146,8 @@
     "reasonLength": "Indiquez une raison de {min} à {max} caractères.",
     "daysRange": "Indiquez un nombre entier de jours entre {min} et {max}.",
     "socialInvalid": "Saisissez un nom d’utilisateur comme @votreboutique, ou le lien de votre profil.",
-    "pieces": "Saisissez un nombre entier de 0 à 99 999, ou laissez vide."
+    "pieces": "Saisissez un nombre entier de 0 à 99 999, ou laissez vide.",
+    "codeIncomplete": "Saisissez le code à 6 chiffres."
   },
   "Categories": {
     "clothes": "Vêtements",
@@ -185,7 +186,29 @@
     "noAccessBody": "Votre compte ne donne accès ni à une boutique ni à l'administration. Contactez le support Vano.",
     "signupClosedTitle": "Les inscriptions sont fermées",
     "signupClosedBody": "Il n'est pas possible de créer de nouvelles boutiques pour le moment. Revenez plus tard.",
-    "goToLogin": "J'ai déjà un compte"
+    "goToLogin": "J'ai déjà un compte",
+    "forgotLink": "Mot de passe oublié ?",
+    "forgotTitle": "Réinitialisez votre mot de passe",
+    "forgotSubtitle": "Saisissez l'e-mail de votre compte. Nous vous enverrons un code à 6 chiffres.",
+    "sendCode": "Envoyer le code",
+    "tryAgain": "Réessayer",
+    "verifyTitle": "Consultez vos e-mails",
+    "codeSentTo": "Nous avons envoyé un code à 6 chiffres à <strong>{email}</strong>. Il est valable {minutes} minutes.",
+    "codeSentIfExists": "Si un compte existe pour <strong>{email}</strong>, nous lui avons envoyé un code à 6 chiffres. Il est valable {minutes} minutes.",
+    "checkSpam": "Vous ne le trouvez pas ? Regardez dans vos spams.",
+    "codeLabel": "Code",
+    "codeDigit": "Chiffre {n} sur {total}",
+    "verifyButton": "Confirmer l'e-mail",
+    "resend": "Renvoyer le code",
+    "resendIn": "Renvoyer le code dans {time}",
+    "codeSentAgain": "Nouveau code envoyé. Consultez vos e-mails.",
+    "changeEmail": "Utiliser un autre e-mail",
+    "newPassword": "Nouveau mot de passe",
+    "resetButton": "Changer le mot de passe",
+    "passwordChanged": "Mot de passe changé. Vous êtes connecté ici et déconnecté sur vos autres appareils.",
+    "invalidCode": "Ce code n'est pas correct ou a expiré. Vérifiez-le, ou demandez-en un nouveau.",
+    "tooManyTries": "Trop de codes incorrects. Attendez {minutes} minutes, puis demandez un nouveau code.",
+    "backToLogin": "Retour à la connexion"
   },
   "Seller": {
     "settings": "Paramètres de la boutique",

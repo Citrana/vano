@@ -146,7 +146,8 @@
     "reasonLength": "Write a reason of {min} to {max} characters.",
     "daysRange": "Enter a whole number of days from {min} to {max}.",
     "socialInvalid": "Enter a username like @yourshop, or a link to your profile.",
-    "pieces": "Enter a whole number from 0 to 99,999, or leave it empty."
+    "pieces": "Enter a whole number from 0 to 99,999, or leave it empty.",
+    "codeIncomplete": "Enter the 6-digit code."
   },
   "Categories": {
     "clothes": "Clothes",
@@ -185,7 +186,29 @@
     "noAccessBody": "Your account doesn't give access to a shop or to the admin. Contact Vano support.",
     "signupClosedTitle": "Sign-ups are closed",
     "signupClosedBody": "New shops can't be created right now. Please come back later.",
-    "goToLogin": "I already have an account"
+    "goToLogin": "I already have an account",
+    "forgotLink": "Forgot password?",
+    "forgotTitle": "Reset your password",
+    "forgotSubtitle": "Enter the email of your account. We'll send you a 6-digit code.",
+    "sendCode": "Send code",
+    "tryAgain": "Try again",
+    "verifyTitle": "Check your email",
+    "codeSentTo": "We sent a 6-digit code to <strong>{email}</strong>. It works for {minutes} minutes.",
+    "codeSentIfExists": "If an account exists for <strong>{email}</strong>, we sent it a 6-digit code. It works for {minutes} minutes.",
+    "checkSpam": "Can't find it? Check your spam folder.",
+    "codeLabel": "Code",
+    "codeDigit": "Digit {n} of {total}",
+    "verifyButton": "Confirm email",
+    "resend": "Resend code",
+    "resendIn": "Resend code in {time}",
+    "codeSentAgain": "New code sent. Check your email.",
+    "changeEmail": "Use another email",
+    "newPassword": "New password",
+    "resetButton": "Change password",
+    "passwordChanged": "Password changed. You're signed in here and signed out on your other devices.",
+    "invalidCode": "That code isn't right or has expired. Check it, or ask for a new one.",
+    "tooManyTries": "Too many wrong codes. Wait {minutes} minutes, then ask for a new code.",
+    "backToLogin": "Back to sign in"
   },
   "Seller": {
     "settings": "Shop settings",

@@ -22,6 +22,12 @@ export const AUTH_CODE_TTL_MINUTES = AUTH_CODE_TTL_S / 60;
  */
 export const AUTH_MAX_FAILED_PER_HOUR = 5;
 
+/**
+ * After too many wrong codes the screens wait this long before offering a
+ * new code: the bucket gives back one try every 60 / 5 = 12 minutes.
+ */
+export const AUTH_LOCK_WAIT_S = 15 * 60;
+
 /** The screens wait this long before offering "Resend code". */
 export const RESEND_COOLDOWN_S = 60;
 
