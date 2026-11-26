@@ -513,10 +513,12 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   Rules are pure in `shop-filters.ts` (`parseShopFilters`,
   `shopFiltersToQuery`, `limitShopFilters`, `applyShopFilters`,
   `activeFilterChips`). Filters live in the link (`q, cat, sale=1,
-  new=1, sort, size, color, min, max`; prices in major units through the
+  new=1, sort, size, color, cond, for, min, max`; prices in major units through the
   money helpers): the page parses them on the server, `useShopFilters`
   writes them back with `history.replaceState`. Public products carry
-  every size and colour; the card shows `CARD_TAGS_MAX`.
+  every size and colour; the card shows `CARD_TAGS_MAX`. Condition
+  (`cond`) and audience (`for`) are panel groups, shown only when some
+  product uses them (`filterOptions`).
 - `shownLook` gates each part on its own feature (`allLooks`,
   `salesPromotions`, `featuredSections`, `announcementBar`); a preset
   change never drops the sections or the Promo bar (`ownParts`).
@@ -639,7 +641,8 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   (`admin/shops.purgeShop`). It stores a **snapshot** (product name,
   first photo, category, size, colour, currency, normal price per item,
   final price per item, quantity, `total`, `discount`, the `offer` —
-  running sale or code — and `source`), so reports stay right after the
+  running sale or code —, `source` and `unitCost`, the product's cost
+  price, private, never returned by the lists yet), so reports stay right after the
   product is edited or deleted. Never read the product to report a sale.
   The product's real price is never changed.
 - Prices: `suggestedPrice` (best of `saleForProduct` and `evaluateCode`
@@ -655,11 +658,13 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   used by `products.setSoldOut`, `products.update` and recorded sales, so
   every change lands in `productEvents` (the product's history: sold out,
   back on sale, sold, sale edited / reversed, deleted).
-- **Pieces in stock**: optional `products.pieces` (missing = not
-  counted), rules only in `convex/lib/stock.ts` (`stockFlags`,
-  `takePieces`, `FEW_LEFT_MAX` = 3, `isTracked`). Tracked = a count and
-  the `stockManagement` plan feature (`requireCan` to set one; after a
-  downgrade the count is kept but ignored and the manual switches work).
+- **Pieces in stock**: `products.pieces`, **required by the product form
+  on every plan** (at least 1 for a new product, `piecesProblem`; missing
+  only on products saved before, which are never blocked on the shop but
+  must get one on their next save), rules only in `convex/lib/stock.ts`
+  (`stockFlags`, `takePieces`, `FEW_LEFT_MAX` = 3, `isTracked`). Tracked
+  = a count and the `stockManagement` plan feature (without it the count
+  is stored but ignored and the manual switches work, as after a downgrade).
   While tracked: "Few left" at 3 or fewer, "Sold out" at 0, each recorded
   sale takes its quantity (never more: `SALES_RECORD_STOCK`) and stores
   `piecesTaken`; an edit takes or gives back the difference; a reverse
@@ -667,6 +672,21 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   `markedSoldOut` and notifies the seller (`product.soldOut`, with "Hide
   product"). The sale modal has no sold-out switch; untracked products
   don't change when sold.
+- **Product details** (same on every plan): `products.costPrice` is
+  required by the form (minor units, 0 or more, `costPriceProblem`),
+  **private**: never in a public query, returned by `products.getMine`
+  only with `ownProducts.manage`, copied into recorded sales as
+  `unitCost`. Optional `condition` (`new | thrift`) and `audience`
+  (`women | men | kids`), keys in `convex/lib/catalog.ts`, labels
+  `Public.conditions.*` / `Public.audiences.*`: Thrift is the last card
+  badge (`cardBadge`), the product page shows the condition beside the
+  category (`ConditionTag`), both are shop filters. Optional `code`:
+  rules only in `convex/lib/productCode.ts` (normalised upper case,
+  unique per shop through `by_shopId_and_code` → `PRODUCT_CODE_TAKEN`,
+  `suggestProductCode` = category prefix + next running number, served
+  by `products.suggestCode`); shown on seller screens and added to the
+  WhatsApp message (`orderHref` `productCode`), never on the shop page.
+  The form keeps these three under a closed "More details".
 - A sold-out product can't be ordered: `public.productPrice` /
   `shopPrices` return `soldOut` live (the Order buttons turn off on an
   open page), `redeemDiscountCode` / `checkDiscountCode` return
