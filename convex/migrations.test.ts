@@ -254,3 +254,62 @@ describe("migrations:trialProOnlyV1", () => {
     expect(await t.run((ctx) => ctx.db.query("planExceptions").collect())).toMatchObject([{ active: true, feature: "discountCodes" }]);
   });
 });
+
+describe("emailVerifiedV1", () => {
+  async function insertAccount(t: T, email: string, extra: { emailVerified?: string; provider?: string } = {}) {
+    return await t.run(async (ctx) => {
+      const userId = await ctx.db.insert("users", { email });
+      const accountId = await ctx.db.insert("authAccounts", {
+        userId,
+        provider: extra.provider ?? "password",
+        providerAccountId: email,
+        ...(extra.emailVerified ? { emailVerified: extra.emailVerified } : {}),
+      });
+      return { userId, accountId };
+    });
+  }
+
+  async function run(t: T, before: number) {
+    const result = await t.mutation(internal.migrations.emailVerifiedV1, { before });
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
+    return result;
+  }
+
+  test("accounts created before the cutoff count as verified; newer ones still need their code", async () => {
+    const t = newTest();
+    const old = await insertAccount(t, "old@example.com");
+    const other = await insertAccount(t, "oauth@example.com", { provider: "github" });
+    vi.advanceTimersByTime(1000);
+    const cutoff = Date.now();
+    vi.advanceTimersByTime(1000);
+    const fresh = await insertAccount(t, "new@example.com");
+
+    expect(await run(t, cutoff)).toBe("started");
+    const read = (id: Id<"authAccounts">) => t.run((ctx) => ctx.db.get("authAccounts", id));
+    const user = (id: Id<"users">) => t.run((ctx) => ctx.db.get("users", id));
+    expect((await read(old.accountId))!.emailVerified).toBe("old@example.com");
+    expect((await user(old.userId))!.emailVerificationTime).toBe(cutoff);
+    expect((await read(other.accountId))!.emailVerified).toBeUndefined();
+    expect((await read(fresh.accountId))!.emailVerified).toBeUndefined();
+    expect((await user(fresh.userId))!.emailVerificationTime).toBeUndefined();
+    expect(await t.query(internal.migrations.emailVerifiedV1Status, {})).toMatchObject({ status: "done" });
+  });
+
+  test("idempotent and never overwrites a verification", async () => {
+    const t = newTest();
+    const done = await insertAccount(t, "done@example.com", { emailVerified: "done@example.com" });
+    await t.run((ctx) => ctx.db.patch("users", done.userId, { emailVerificationTime: 42 }));
+    vi.advanceTimersByTime(1000);
+    const cutoff = Date.now();
+    await run(t, cutoff);
+    expect(await run(t, cutoff)).toBe("already_done");
+    const u = await t.run((ctx) => ctx.db.get("users", done.userId));
+    expect(u!.emailVerificationTime).toBe(42);
+  });
+
+  test("refuses a cutoff in the future", async () => {
+    const t = newTest();
+    await expect(t.mutation(internal.migrations.emailVerifiedV1, { before: Date.now() + 60_000 })).rejects.toThrow();
+    expect(await t.query(internal.migrations.emailVerifiedV1Status, {})).toMatchObject({ status: "not_started" });
+  });
+});

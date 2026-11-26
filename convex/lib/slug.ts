@@ -22,6 +22,7 @@ export const RESERVED_SLUGS: ReadonlySet<string> = new Set([
   "settings",
   // Other app routes and well-known paths.
   "onboarding",
+  "forgot-password",
   "logout",
   "signin",
   "register",

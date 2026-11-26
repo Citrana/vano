@@ -6,7 +6,8 @@ import { EMAIL_MAX_ATTEMPTS, retryDelay } from "./config";
 import { EMAIL_COLORS, escapeHtml, renderEmail } from "./layout";
 import { activeEmailProviderId, emailMode } from "./registry";
 import { resendProvider } from "./resend";
-import { sendEmail } from "./send";
+import { sendEmail, sendEmailNow } from "./send";
+import { authCodeEmail } from "./templates/authCode";
 import { testEmail } from "./templates/test";
 import { fill } from "./texts";
 
@@ -200,5 +201,70 @@ describe("sendEmail + deliver", () => {
     await t.finishAllScheduledFunctions(vi.runAllTimers);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(console.error).toHaveBeenCalledWith(expect.stringContaining("resend 422"));
+  });
+});
+
+describe("auth code email", () => {
+  test("verify and reset, EN and FR, code in the subject and shown large, escaped", () => {
+    const en = authCodeEmail("en", { kind: "verify", code: "042917", minutes: 15 });
+    expect(en.subject).toBe("042917 is your Vano code");
+    expect(en.html).toContain(">042917</p>");
+    expect(en.html).toContain("letter-spacing:8px");
+    expect(en.text).toMatch(/^042917$/m);
+    expect(en.text).toContain("15 minutes");
+    const fr = authCodeEmail("fr", { kind: "reset", code: "123456", minutes: 15 });
+    expect(fr.subject).toBe("123456 est votre code de réinitialisation Vano");
+    expect(fr.html).toContain('lang="fr"');
+    expect(fr.text).toContain("déconnecté sur vos autres appareils");
+    const odd = authCodeEmail("en", { kind: "verify", code: "<b>", minutes: 15 });
+    expect(odd.html).toContain("&lt;b&gt;");
+    expect(odd.html).not.toContain("<b>");
+  });
+});
+
+describe("sendEmailNow", () => {
+  const ctx = {} as never;
+  const content = { to: " Amani@Gmail.com ", subject: "Hi", html: "<p>Hi</p>", text: "Hi" };
+
+  test("log mode always works", async () => {
+    expect(await sendEmailNow(ctx, content)).toEqual({ ok: true });
+    expect(console.log).toHaveBeenCalledWith(expect.stringContaining("Subject: Hi"));
+  });
+
+  test("retries a temporary failure once, with the same idempotency key", async () => {
+    setEnv(RESEND);
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(503, { message: "down" }))
+      .mockResolvedValueOnce(jsonResponse(200, { id: "msg_1" }));
+    vi.stubGlobal("fetch", fetchMock);
+    expect(await sendEmailNow(ctx, content)).toEqual({ ok: true });
+    const keys = fetchMock.mock.calls.map(([, init]) => (init as RequestInit & { headers: Record<string, string> }).headers["Idempotency-Key"]);
+    expect(keys).toHaveLength(2);
+    expect(keys[0]).toBe(keys[1]);
+  });
+
+  test("reports a failure without throwing; masks the address in logs", async () => {
+    setEnv(RESEND);
+    vi.stubGlobal("fetch", vi.fn(async () => jsonResponse(503, { message: "down" })));
+    const result = await sendEmailNow(ctx, content);
+    expect(result.ok).toBe(false);
+    expect(console.error).toHaveBeenCalledWith(expect.stringContaining(maskEmail("amani@gmail.com")));
+    expect(console.error).not.toHaveBeenCalledWith(expect.stringContaining("amani@gmail.com"));
+  });
+
+  test("a permanent failure isn't retried", async () => {
+    setEnv(RESEND);
+    const fetchMock = vi.fn(async () => jsonResponse(422, { message: "bad from" }));
+    vi.stubGlobal("fetch", fetchMock);
+    expect((await sendEmailNow(ctx, content)).ok).toBe(false);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  test("an invalid address is a failure, nothing is sent", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    expect((await sendEmailNow(ctx, { ...content, to: "nope" })).ok).toBe(false);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

@@ -16,10 +16,15 @@ export function newSalt(): string {
   return hex(crypto.getRandomValues(new Uint8Array(16)));
 }
 
+/** Lowercase hex SHA-256 of a text (how Convex Auth stores its codes too). */
+export async function sha256Hex(text: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return hex(new Uint8Array(digest));
+}
+
 /** Only this hash is stored, never the code. */
 export async function hashCode(code: string, salt: string): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${salt}:${code}`));
-  return hex(new Uint8Array(digest));
+  return await sha256Hex(`${salt}:${code}`);
 }
 
 /** Compares two hex strings in constant time. */

@@ -148,6 +148,17 @@ npx convex run migrations:looksV1          # "started" (or "already_done")
 npx convex run migrations:looksV1Status    # status: "done"
 ```
 
+Email codes: sign-up now asks for a 6-digit code sent by email. Accounts
+created **before** the deploy that turned this on count as verified. Pass
+the deploy time in milliseconds (`date +%s000` right after deploying);
+accounts created after it still need their code. Until it runs, an older
+account signing in just receives a code (nothing breaks):
+
+```bash
+npx convex run migrations:emailVerifiedV1 '{"before": 1795000000000}'   # "started"
+npx convex run migrations:emailVerifiedV1Status                          # status: "done"
+```
+
 ## First super admin
 
 Super admins can't sign up: the first one is created from the terminal.
@@ -214,6 +225,10 @@ npx @convex-dev/auth --prod               # auth keys + SITE_URL on prod (once)
 npx convex env set SITE_URL https://your-domain --prod
 pnpm build && pnpm start                  # or deploy the Next app on Vercel
 ```
+
+Sign-up and "Forgot password?" send 6-digit codes by email, so prod needs
+`SITE_URL`, `RESEND_API_KEY` and `EMAIL_FROM` (without the key, codes are
+only written to the Convex logs and nobody can finish signing up).
 
 On the hosting side (e.g. Vercel), set `NEXT_PUBLIC_CONVEX_URL` (the prod
 deployment URL) and `NEXT_PUBLIC_SITE_URL` (your domain). On Vercel you can

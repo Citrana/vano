@@ -43,6 +43,7 @@ export const superAdmin = internalAction({
       await ctx.runMutation(internal.seed.allowSignup, { email });
       // Same path as sign-up: the Password provider hashes the secret and
       // the auth callback makes the new user an active seller first.
+      // `promote` then marks the address verified (no sign-up code).
       const { user } = await createAccount(ctx, {
         provider: "password",
         account: { id: email, secret: args.password },
@@ -130,7 +131,19 @@ export const promote = internalMutation({
     const others = (await activeSuperAdminIds(ctx, roles.super_admin)).filter((id) => id !== userId);
     if (others.length > 0 && !force) fail("SUPER_ADMIN_EXISTS");
 
-    await ctx.db.patch("users", userId, { roleId: roles.super_admin, status: "active" });
+    await ctx.db.patch("users", userId, {
+      roleId: roles.super_admin,
+      status: "active",
+      // Seeded admins count as verified: no sign-up code (CLAUDE.md "Auth codes").
+      emailVerificationTime: user.emailVerificationTime ?? Date.now(),
+    });
+    const account = await ctx.db
+      .query("authAccounts")
+      .withIndex("userIdAndProvider", (q) => q.eq("userId", userId).eq("provider", "password"))
+      .unique();
+    if (account && account.emailVerified === undefined) {
+      await ctx.db.patch("authAccounts", account._id, { emailVerified: account.providerAccountId });
+    }
     await logAdminAction(ctx, {
       actor: null,
       action: "superAdmin.seed",

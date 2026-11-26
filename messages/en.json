@@ -122,7 +122,8 @@
     "STOCK_TRACKED": "This product's pieces are counted: change the number of pieces instead.",
     "REPORT_INVALID": "This month isn't valid.",
     "EMAIL_MISSING": "Your account has no email address, so the test email can't be sent.",
-    "TEST_EMAIL_RATE_LIMITED": "Too many test emails. Please wait a few minutes and try again."
+    "TEST_EMAIL_RATE_LIMITED": "Too many test emails. Please wait a few minutes and try again.",
+    "EMAIL_SEND_FAILED": "We couldn't send the email right now. Please try again in a moment."
   },
   "Validation": {
     "required": "This field is required.",
@@ -145,7 +146,8 @@
     "reasonLength": "Write a reason of {min} to {max} characters.",
     "daysRange": "Enter a whole number of days from {min} to {max}.",
     "socialInvalid": "Enter a username like @yourshop, or a link to your profile.",
-    "pieces": "Enter a whole number from 0 to 99,999, or leave it empty."
+    "pieces": "Enter a whole number from 0 to 99,999, or leave it empty.",
+    "codeIncomplete": "Enter the 6-digit code."
   },
   "Categories": {
     "clothes": "Clothes",
@@ -184,7 +186,32 @@
     "noAccessBody": "Your account doesn't give access to a shop or to the admin. Contact Vano support.",
     "signupClosedTitle": "Sign-ups are closed",
     "signupClosedBody": "New shops can't be created right now. Please come back later.",
-    "goToLogin": "I already have an account"
+    "goToLogin": "I already have an account",
+    "forgotLink": "Forgot password?",
+    "forgotTitle": "Reset your password",
+    "forgotSubtitle": "Enter the email of your account. We'll send you a 6-digit code.",
+    "sendCode": "Send code",
+    "tryAgain": "Try again",
+    "verifyTitle": "Check your email",
+    "codeSentTo": "We sent a 6-digit code to <strong>{email}</strong>. It works for {minutes} minutes.",
+    "codeSentIfExists": "If an account exists for <strong>{email}</strong>, we sent it a 6-digit code. It works for {minutes} minutes.",
+    "checkSpam": "Can't find it? Check your spam folder.",
+    "codeLabel": "Code",
+    "codeDigit": "Digit {n} of {total}",
+    "verifyButton": "Confirm email",
+    "resend": "Resend code",
+    "resendIn": "Resend code in {time}",
+    "codeSentAgain": "New code sent. Check your email.",
+    "changeEmail": "Use another email",
+    "newPassword": "New password",
+    "resetButton": "Change password",
+    "passwordChanged": "Password changed. You're signed in here and signed out on your other devices.",
+    "invalidCode": "That code isn't right or has expired. Check it, or ask for a new one.",
+    "tooManyTries": "Too many wrong codes. Wait {minutes} minutes, then ask for a new code.",
+    "backToLogin": "Back to sign in",
+    "continue": "Continue",
+    "newPasswordTitle": "Choose a new password",
+    "codeConfirmed": "Code confirmed for <strong>{email}</strong>."
   },
   "Seller": {
     "settings": "Shop settings",
@@ -3264,6 +3291,22 @@
       "button": "Go to my dashboard",
       "lookTip": "Tip: try a different shop look in \"Look\" to match your style.",
       "help": "Need help? Visit {url}."
+    },
+    "verifyCode": {
+      "subject": "{code} is your Vano code",
+      "preheader": "Enter this code to confirm your email. It works for {minutes} minutes.",
+      "heading": "Confirm your email",
+      "intro": "Enter this code on the Vano sign-up screen to confirm your email address:",
+      "expires": "The code works for {minutes} minutes and only once.",
+      "ignore": "Didn't create a Vano account? You can ignore this email."
+    },
+    "resetCode": {
+      "subject": "{code} is your Vano password reset code",
+      "preheader": "Enter this code to choose a new password. It works for {minutes} minutes.",
+      "heading": "Reset your password",
+      "intro": "Enter this code on the Vano screen to choose a new password:",
+      "expires": "The code works for {minutes} minutes and only once. After the change, you'll be signed out on your other devices.",
+      "ignore": "Didn't ask to reset your password? Ignore this email: your password stays the same."
     }
   }
 }

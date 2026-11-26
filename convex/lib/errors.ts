@@ -104,6 +104,7 @@ export const ERROR_CODES = [
   "REPORT_INVALID",
   "EMAIL_MISSING",
   "TEST_EMAIL_RATE_LIMITED",
+  "EMAIL_SEND_FAILED",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
