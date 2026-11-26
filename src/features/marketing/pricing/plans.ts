@@ -1,7 +1,14 @@
-import { formatMoney } from "../../../../convex/lib/money"
-import { localizedIn, planCta, type CatalogFeature, type PlanCatalog, type PlanCta } from "../../../../convex/lib/planCatalog"
-import { PLAN_AREAS, isLower, type FeatureValue, type PlanArea } from "../../../../convex/lib/planFeatures"
-import { PLAN_CURRENCY, type PlanId } from "../../../../convex/lib/plans"
+import {
+  cardLineFor as lineFor,
+  includedValue as included,
+  localizedIn,
+  planCta,
+  type CardLine,
+  type PlanCatalog,
+  type PlanCta,
+} from "../../../../convex/lib/planCatalog"
+import { PLAN_AREAS, isLower, type PlanArea } from "../../../../convex/lib/planFeatures"
+import type { PlanId } from "../../../../convex/lib/plans"
 
 /**
  * Pricing display, DERIVED from the plan catalogue (`plans.catalog`, the
@@ -12,7 +19,7 @@ import { PLAN_CURRENCY, type PlanId } from "../../../../convex/lib/plans"
  * seed).
  */
 
-export type CardLine = { key: string; label: string; hint?: string }
+export type { CardLine }
 
 export type Plan = {
   id: PlanId
@@ -35,21 +42,6 @@ export type CompareGroup = { key: PlanArea; rows: CompareRow[] }
 /** Plans shown on the pricing page and in the seller's plan options. */
 export function visiblePlans(catalog: PlanCatalog) {
   return catalog.plans.filter((p) => p.visible)
-}
-
-const included = (value: FeatureValue) => value === true || value === null || (typeof value === "number" && value > 0)
-
-function lineFor(f: CatalogFeature, value: FeatureValue, locale: string): CardLine {
-  const p = f.pricing
-  const hint = p.hint ? localizedIn(p.hint, locale) : undefined
-  let label = localizedIn(p.cardLabel, locale)
-  if (f.kind === "limit") {
-    label =
-      value === null
-        ? localizedIn(p.unlimitedLabel ?? p.cardLabel, locale).replace("{count}", "∞")
-        : label.replace("{count}", String(value))
-  }
-  return { key: f.key, label, hint }
 }
 
 function yearlyFreeMonths(monthly: number | null, yearly: number | null): number | null {
@@ -143,10 +135,5 @@ export function startingPriceMinor(catalog: PlanCatalog): number | null {
   return prices.length > 0 ? Math.min(...prices) : null
 }
 
-/**
- * Plan prices in shillings. Uses the regional en-KE locale for English
- * ("Ksh 299"); French keeps "299 KES". Still formatted by formatMoney.
- */
-export function formatPlanPrice(minor: number, locale: string): string {
-  return formatMoney(minor, PLAN_CURRENCY, locale === "fr" ? "fr" : "en-KE")
-}
+/** Plan prices in shillings ("Ksh 299" / "299 KES"), shared with the server emails. */
+export { formatPlanPrice } from "../../../../convex/lib/plans"

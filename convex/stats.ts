@@ -5,6 +5,7 @@ import { hasFeature, hiddenFromShop } from "./lib/entitlements";
 import { addDays, isDay, utcDay } from "./lib/days";
 import { LIMITS } from "./lib/catalog";
 import { onShopDayStatsWritten } from "./lib/platformStats";
+import { addDayStats, zeroTotals } from "./lib/statsTotals";
 import { shopCodes } from "./lib/discountCodes/store";
 import { requireOwnShop, sellerQuery } from "./lib/seller";
 import { bumpSaleStats, saleForProduct } from "./lib/sales/store";
@@ -162,17 +163,12 @@ export const summary = sellerQuery({
         q.eq("shopId", shop._id).gte("day", from30).lte("day", end),
       )
       .take(31);
-    const zero = () => ({ shopViews: 0, productViews: 0, whatsappClicks: 0 });
-    const sum = { today: zero(), last7: zero(), last30: zero() };
+    const sum = { today: zeroTotals(), last7: zeroTotals(), last30: zeroTotals() };
     for (const row of days) {
       const buckets = [sum.last30];
       if (row.day >= from7) buckets.push(sum.last7);
       if (row.day === end) buckets.push(sum.today);
-      for (const b of buckets) {
-        b.shopViews += row.shopViews;
-        b.productViews += row.productViews;
-        b.whatsappClicks += row.whatsappClicks;
-      }
+      for (const b of buckets) addDayStats(b, row);
     }
 
     const productRows = await ctx.db
