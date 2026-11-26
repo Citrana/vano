@@ -12,6 +12,11 @@ export function newCode(): string {
   return String(n % 10 ** CODE_LENGTH).padStart(CODE_LENGTH, "0");
 }
 
+/** A random hex token of `bytes` bytes (e.g. a team invite link). */
+export function newToken(bytes: number): string {
+  return hex(crypto.getRandomValues(new Uint8Array(bytes)));
+}
+
 export function newSalt(): string {
   return hex(crypto.getRandomValues(new Uint8Array(16)));
 }

@@ -243,7 +243,7 @@ export const approve = adminMutation({
   returns: v.null(),
   handler: async (ctx, { requestId, overrideCooldown }) => {
     const { request, shop } = await loadPending(ctx, requestId);
-    assertNotOwnShop(ctx.access, shop);
+    await assertNotOwnShop(ctx, ctx.access, shop);
     const now = Date.now();
     const cooling = inCooldown(await lastApprovedAt(ctx, shop._id, request.field), now);
     if (cooling && !overrideCooldown) fail("CHANGE_COOLDOWN");
@@ -300,7 +300,7 @@ export const reject = adminMutation({
   handler: async (ctx, { requestId, reason }) => {
     if (reasonProblem(reason, DECISION_REASON_MIN, DECISION_REASON_MAX) !== null) fail("REASON_INVALID");
     const { request, shop } = await loadPending(ctx, requestId);
-    assertNotOwnShop(ctx.access, shop);
+    await assertNotOwnShop(ctx, ctx.access, shop);
     const cleanReason = reason.trim();
     await ctx.db.patch("shopChangeRequests", request._id, {
       status: "rejected",

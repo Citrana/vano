@@ -297,7 +297,7 @@ export const grant = adminMutation({
     const cleanReason = checkGrantInput(days, reason);
     const shop = await ctx.db.get("shops", shopId);
     if (!shop) fail("NOT_FOUND");
-    assertNotOwnShop(ctx.access, shop);
+    await assertNotOwnShop(ctx, ctx.access, shop);
     const now = Date.now();
     const current = await subscriptionOf(ctx, shop);
     await writeSubscription(ctx, shop, grantState(plan, days, now), {
@@ -319,7 +319,7 @@ export const extend = adminMutation({
     const cleanReason = checkGrantInput(days, reason);
     const shop = await ctx.db.get("shops", shopId);
     if (!shop) fail("NOT_FOUND");
-    assertNotOwnShop(ctx.access, shop);
+    await assertNotOwnShop(ctx, ctx.access, shop);
     const now = Date.now();
     const current = await subscriptionOf(ctx, shop);
     const next = extendState(current, days, now);

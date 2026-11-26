@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as activity from "../activity.js";
 import type * as admin_attention from "../admin/attention.js";
 import type * as admin_audit from "../admin/audit.js";
 import type * as admin_billing from "../admin/billing.js";
@@ -44,7 +45,9 @@ import type * as emails_provider from "../emails/provider.js";
 import type * as emails_registry from "../emails/registry.js";
 import type * as emails_resend from "../emails/resend.js";
 import type * as emails_send from "../emails/send.js";
+import type * as emails_teamInvite from "../emails/teamInvite.js";
 import type * as emails_templates_authCode from "../emails/templates/authCode.js";
+import type * as emails_templates_teamInvite from "../emails/templates/teamInvite.js";
 import type * as emails_templates_test from "../emails/templates/test.js";
 import type * as emails_templates_welcome from "../emails/templates/welcome.js";
 import type * as emails_texts from "../emails/texts.js";
@@ -118,11 +121,14 @@ import type * as lib_salesRecords_rules from "../lib/salesRecords/rules.js";
 import type * as lib_salesRecords_validators from "../lib/salesRecords/validators.js";
 import type * as lib_seller from "../lib/seller.js";
 import type * as lib_settings from "../lib/settings.js";
+import type * as lib_shopAccess from "../lib/shopAccess.js";
+import type * as lib_shopActivity from "../lib/shopActivity.js";
 import type * as lib_shopChanges from "../lib/shopChanges.js";
 import type * as lib_shopInfo from "../lib/shopInfo.js";
 import type * as lib_slug from "../lib/slug.js";
 import type * as lib_stock from "../lib/stock.js";
 import type * as lib_subscriptions from "../lib/subscriptions.js";
+import type * as lib_team from "../lib/team.js";
 import type * as lib_timeZone from "../lib/timeZone.js";
 import type * as migrations from "../migrations.js";
 import type * as notificationJobs from "../notificationJobs.js";
@@ -154,6 +160,8 @@ import type * as shopLookJobs from "../shopLookJobs.js";
 import type * as shopLooks from "../shopLooks.js";
 import type * as shops from "../shops.js";
 import type * as stats from "../stats.js";
+import type * as team from "../team.js";
+import type * as teamJobs from "../teamJobs.js";
 import type * as users from "../users.js";
 import type * as verification_codes from "../verification/codes.js";
 import type * as verification_deliver from "../verification/deliver.js";
@@ -168,6 +176,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  activity: typeof activity;
   "admin/attention": typeof admin_attention;
   "admin/audit": typeof admin_audit;
   "admin/billing": typeof admin_billing;
@@ -204,7 +213,9 @@ declare const fullApi: ApiFromModules<{
   "emails/registry": typeof emails_registry;
   "emails/resend": typeof emails_resend;
   "emails/send": typeof emails_send;
+  "emails/teamInvite": typeof emails_teamInvite;
   "emails/templates/authCode": typeof emails_templates_authCode;
+  "emails/templates/teamInvite": typeof emails_templates_teamInvite;
   "emails/templates/test": typeof emails_templates_test;
   "emails/templates/welcome": typeof emails_templates_welcome;
   "emails/texts": typeof emails_texts;
@@ -278,11 +289,14 @@ declare const fullApi: ApiFromModules<{
   "lib/salesRecords/validators": typeof lib_salesRecords_validators;
   "lib/seller": typeof lib_seller;
   "lib/settings": typeof lib_settings;
+  "lib/shopAccess": typeof lib_shopAccess;
+  "lib/shopActivity": typeof lib_shopActivity;
   "lib/shopChanges": typeof lib_shopChanges;
   "lib/shopInfo": typeof lib_shopInfo;
   "lib/slug": typeof lib_slug;
   "lib/stock": typeof lib_stock;
   "lib/subscriptions": typeof lib_subscriptions;
+  "lib/team": typeof lib_team;
   "lib/timeZone": typeof lib_timeZone;
   migrations: typeof migrations;
   notificationJobs: typeof notificationJobs;
@@ -314,6 +328,8 @@ declare const fullApi: ApiFromModules<{
   shopLooks: typeof shopLooks;
   shops: typeof shops;
   stats: typeof stats;
+  team: typeof team;
+  teamJobs: typeof teamJobs;
   users: typeof users;
   "verification/codes": typeof verification_codes;
   "verification/deliver": typeof verification_deliver;

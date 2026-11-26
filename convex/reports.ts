@@ -35,7 +35,7 @@ async function monthRecords(ctx: QueryCtx, shopId: Id<"shops">, month: string): 
 }
 
 export const month = sellerQuery({
-  permission: "ownSales.manage",
+  permission: "ownReports.view",
   args: { month: v.string() },
   handler: async (ctx, args) => {
     const shop = await requireOwnShop(ctx);

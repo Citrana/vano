@@ -39,6 +39,13 @@ import {
   shopStatusValidator,
   userStatusValidator,
 } from "./lib/permissions";
+import {
+  activityDetailsValidator,
+  activityKindValidator,
+  inviteStatusValidator,
+  memberStatusValidator,
+  teamRoleValidator,
+} from "./lib/team";
 
 export default defineSchema({
   ...authTables,
@@ -80,6 +87,13 @@ export default defineSchema({
     welcomeEmailSentAt: v.optional(v.number()),
     /** The screen language at sign-up, for auth code emails (convex/emails/authCode.ts). */
     language: v.optional(languageValidator),
+    /** The shop the seller screens show (own shop or a team membership; lib/shopAccess.ts). */
+    activeShopId: v.optional(v.id("shops")),
+    /**
+     * An invite token sent with a sign-up (convex/auth.ts), read and cleared
+     * by `setUpNewAccount` so an invite works while sign-up is closed.
+     */
+    pendingInvite: v.optional(v.string()),
   })
     .index("email", ["email"])
     .index("phone", ["phone"])
@@ -306,8 +320,71 @@ export default defineSchema({
    */
   uploads: defineTable({
     storageId: v.id("_storage"),
+    /** Who uploaded it. */
     ownerId: v.id("users"),
+    /**
+     * The shop that owns it: every team member of that shop may attach it.
+     * Missing on rows from before team accounts (then the owner's shop).
+     */
+    shopId: v.optional(v.id("shops")),
   }).index("by_storageId", ["storageId"]),
+
+  /**
+   * Team members of a shop (CLAUDE.md "Team accounts"). The owner is never a
+   * row (`shops.ownerId`). Removing a member deletes the row. "Paused"
+   * (plan without teams, or over the seat limit) is computed, never stored.
+   */
+  shopMembers: defineTable({
+    shopId: v.id("shops"),
+    userId: v.id("users"),
+    role: teamRoleValidator,
+    status: memberStatusValidator,
+    invitedBy: v.id("users"),
+    joinedAt: v.number(),
+  })
+    .index("by_shopId", ["shopId"])
+    .index("by_userId", ["userId"])
+    .index("by_shopId_and_userId", ["shopId", "userId"]),
+
+  /**
+   * One-time invite links. Only the SHA-256 of the token is stored; the
+   * link is shown to the owner once (renewing makes a new one).
+   */
+  shopInvites: defineTable({
+    shopId: v.id("shops"),
+    role: teamRoleValidator,
+    tokenHash: v.string(),
+    /** Where Vano emailed the link, if the owner typed an address. */
+    email: v.optional(v.string()),
+    language: languageValidator,
+    createdBy: v.id("users"),
+    expiresAt: v.number(),
+    status: inviteStatusValidator,
+    acceptedBy: v.optional(v.id("users")),
+    acceptedAt: v.optional(v.number()),
+    /** When it was accepted, revoked or (for cleanup) when it expired. */
+    endedAt: v.optional(v.number()),
+  })
+    .index("by_tokenHash", ["tokenHash"])
+    .index("by_shopId_and_status", ["shopId", "status"])
+    .index("by_status_and_expiresAt", ["status", "expiresAt"])
+    .index("by_status_and_endedAt", ["status", "endedAt"]),
+
+  /**
+   * Who did what in a shop (products, offers, recorded sales, settings,
+   * team), written only by `logShopActivity` (lib/shopActivity.ts).
+   */
+  shopActivity: defineTable({
+    shopId: v.id("shops"),
+    actorId: v.id("users"),
+    kind: activityKindValidator,
+    targetId: v.optional(v.string()),
+    targetLabel: v.string(),
+    details: v.optional(activityDetailsValidator),
+    at: v.number(),
+  })
+    .index("by_shopId_and_at", ["shopId", "at"])
+    .index("by_at", ["at"]),
 
   /** Platform settings: a single document (see convex/lib/settings.ts). */
   platformSettings: defineTable({
@@ -615,6 +692,11 @@ export default defineSchema({
     category: notificationCategoryValidator,
     data: notificationDataValidator,
     requiredPermission: v.optional(permissionValidator),
+    /**
+     * Set for shop notifications sent to the team: `requiredPermission` is
+     * then checked against the reader's access to THIS shop.
+     */
+    shopId: v.optional(v.id("shops")),
     dedupeKey: v.string(),
     readAt: v.optional(v.number()),
   })

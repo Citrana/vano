@@ -26,6 +26,8 @@ import {
 } from "./lib/salesRecords/rules";
 import { recordInputFields, recordStatusValidator, saleSourceValidator } from "./lib/salesRecords/validators";
 import { sortOrderValidator } from "./lib/listOrder";
+import { logShopActivity } from "./lib/shopActivity";
+import { memberLabel } from "./lib/team";
 import {
   requireOwnProduct,
   requireOwnShop,
@@ -69,8 +71,11 @@ async function recordView(
   record: Doc<"salesRecords">,
   withCustomer: boolean,
   urls: Map<string, string | null> = new Map(),
+  labels: Map<string, string> = new Map(),
 ) {
   let photoUrl: string | null = null;
+  // Who marked it (CLAUDE.md "Team accounts"): their name, else their email.
+  if (!labels.has(record.createdBy)) labels.set(record.createdBy, memberLabel(await ctx.db.get("users", record.createdBy)));
   if (record.photoId) {
     if (!urls.has(record.photoId)) urls.set(record.photoId, await urlOf(ctx, record.photoId));
     photoUrl = urls.get(record.photoId) ?? null;
@@ -98,6 +103,7 @@ async function recordView(
     status: record.status,
     reversedAt: record.reversedAt ?? null,
     version: record.version,
+    recordedBy: labels.get(record.createdBy) ?? "—",
   };
 }
 
@@ -245,6 +251,12 @@ export const record = sellerMutation({
       await ctx.db.patch("salesRecords", recordId, { piecesTaken: args.quantity, markedSoldOut: soldOut });
       if (soldOut) await notifySoldOut(ctx, shop, product, now);
     }
+    await logShopActivity(ctx, shop, {
+      actor: ctx.user,
+      kind: "sale.recorded",
+      targetId: recordId,
+      targetLabel: product.name,
+    });
     return recordId;
   },
 });
@@ -281,6 +293,12 @@ export const update = sellerMutation({
       at: now,
       byUserId: ctx.user._id,
       salesRecordId: recordId,
+    });
+    await logShopActivity(ctx, shop, {
+      actor: ctx.user,
+      kind: "sale.edited",
+      targetId: recordId,
+      targetLabel: record.productName,
     });
     return null;
   },
@@ -343,6 +361,12 @@ export const reverse = sellerMutation({
     });
     const by = { byUserId: ctx.user._id, salesRecordId: recordId };
     await recordProductEvent(ctx, recordSubject(record), "saleReversed", { at: now, ...by });
+    await logShopActivity(ctx, shop, {
+      actor: ctx.user,
+      kind: "sale.reversed",
+      targetId: recordId,
+      targetLabel: record.productName,
+    });
     const product = await recordProduct(ctx, record);
     if (!product) return null;
     if (record.piecesTaken !== undefined && (await piecesTracked(ctx, shop, product))) {
@@ -364,7 +388,8 @@ export const reverse = sellerMutation({
  * plan feature: only how many sales are kept.
  */
 export const listMine = sellerQuery({
-  permission: PERMISSION,
+  // The Reports CSV reuses this list (CLAUDE.md "Sales tracking").
+  permission: [PERMISSION, "ownReports.view"],
   args: {
     from: v.optional(v.string()),
     to: v.optional(v.string()),
@@ -424,9 +449,10 @@ export const listMine = sellerQuery({
     for (const r of records) if (!products.has(r.productId)) products.set(r.productId, r.productName);
 
     const urls = new Map<string, string | null>();
+    const labels = new Map<string, string>();
     return {
       locked: false as const,
-      rows: await Promise.all(shown.map((r) => recordView(ctx, r, withCustomer, urls))),
+      rows: await Promise.all(shown.map((r) => recordView(ctx, r, withCustomer, urls, labels))),
       totals: sumRecords(shown),
       products: [...products].map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name)),
       truncated,
@@ -477,12 +503,27 @@ export const productHistory = sellerQuery({
       .order("desc")
       .take(HISTORY_MAX);
     const withCustomer = canSeeCustomers(ctx);
+    const labels = new Map<string, string>();
+    const sales = [];
+    for (const r of records) sales.push(await recordView(ctx, r, withCustomer, new Map(), labels));
+    const eventRows = [];
+    for (const e of events) {
+      if (e.byUserId && !labels.has(e.byUserId)) labels.set(e.byUserId, memberLabel(await ctx.db.get("users", e.byUserId)));
+      eventRows.push({
+        _id: e._id,
+        kind: e.kind,
+        at: e.at,
+        salesRecordId: e.salesRecordId ?? null,
+        /** Who did it (CLAUDE.md "Team accounts"); null for automatic changes. */
+        by: e.byUserId ? (labels.get(e.byUserId) ?? null) : null,
+      });
+    }
     return {
       locked: false as const,
       currency: shop.currency,
       timeZone: shopTimeZone(shop),
-      sales: await Promise.all(records.map((r) => recordView(ctx, r, withCustomer))),
-      events: events.map((e) => ({ _id: e._id, kind: e.kind, at: e.at, salesRecordId: e.salesRecordId ?? null })),
+      sales,
+      events: eventRows,
     };
   },
 });
