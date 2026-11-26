@@ -9,6 +9,8 @@ import { deleteProduct } from "./lib/productWrites";
 import { applyStock, piecesTracked, stockUpdate } from "./lib/productStock";
 import { isTracked, piecesProblem, stockFlags } from "./lib/stock";
 import { canShopDo, getEntitlements, hiddenFromShop, requireCan, shopProducts, visibleProductIds } from "./lib/entitlements";
+import { logShopActivity } from "./lib/shopActivity";
+import type { ActivityKind } from "./lib/team";
 import {
   claimImages,
   deleteFilesNotIn,
@@ -97,7 +99,7 @@ async function stockFromForm(
  * than its plan allows; `pinned` ones are kept visible by the seller.
  */
 export const listMine = sellerQuery({
-  permission: "ownProducts.manage",
+  permission: "ownProducts.view",
   args: {},
   handler: async (ctx) => {
     const shop = await requireOwnShop(ctx);
@@ -129,7 +131,7 @@ export const listMine = sellerQuery({
 
 /** One of the caller's products for the edit form, or null (bad id / not theirs). */
 export const getMine = sellerQuery({
-  permission: "ownProducts.manage",
+  permission: "ownProducts.view",
   args: { productId: v.string() },
   handler: async (ctx, { productId }) => {
     const shop = await requireOwnShop(ctx);
@@ -146,6 +148,16 @@ export const getMine = sellerQuery({
   },
 });
 
+/** One line in the shop's activity history (CLAUDE.md "Team accounts"). */
+async function logProduct(
+  ctx: SellerMutationCtx,
+  shop: Pick<Doc<"shops">, "_id">,
+  kind: ActivityKind,
+  product: Pick<Doc<"products">, "_id" | "name">,
+) {
+  await logShopActivity(ctx, shop, { actor: ctx.user, kind, targetId: product._id, targetLabel: product.name });
+}
+
 export const create = sellerMutation({
   permission: "ownProducts.manage",
   args: productInput.fields,
@@ -161,7 +173,7 @@ export const create = sellerMutation({
     await requireCan(ctx, shop, { kind: "addProduct", products: existing.length });
     await requireCan(ctx, shop, { kind: "setPhotos", count: input.imageIds.length });
     const stock = await stockFromForm(ctx, shop, input, undefined);
-    await claimImages(ctx, input.imageIds);
+    await claimImages(ctx, shop, input.imageIds);
     const productId = await ctx.db.insert("products", {
       ...input,
       soldOut: stock.soldOut,
@@ -171,6 +183,7 @@ export const create = sellerMutation({
       updatedAt: Date.now(),
     });
     await onProductCreated(ctx, (await ctx.db.get("products", productId))!);
+    await logProduct(ctx, shop, "product.created", { _id: productId, name: input.name });
     return productId;
   },
 });
@@ -191,6 +204,7 @@ export const update = sellerMutation({
     const known = new Set<string>(product.imageIds);
     await claimImages(
       ctx,
+      shop,
       input.imageIds.filter((id) => !known.has(id)),
     );
     await deleteFilesNotIn(ctx, product.imageIds, input.imageIds);
@@ -212,6 +226,7 @@ export const update = sellerMutation({
       featured: product.featured,
       updatedAt: now,
     });
+    await logProduct(ctx, shop, "product.updated", { _id: productId, name: input.name });
     return null;
   },
 });
@@ -223,7 +238,9 @@ export const setSoldOut = sellerMutation({
   handler: async (ctx, { productId, soldOut }) => {
     const { shop, product } = await requireOwnProduct(ctx, productId);
     if (await piecesTracked(ctx, shop, product)) fail("STOCK_TRACKED");
+    if (product.soldOut === soldOut) return null;
     await applyStock(ctx, product, soldOut, Date.now(), { byUserId: ctx.user._id });
+    await logProduct(ctx, shop, soldOut ? "product.soldOut" : "product.backOnSale", product);
     return null;
   },
 });
@@ -234,8 +251,10 @@ export const setFeatured = sellerMutation({
   args: { productId: v.id("products"), featured: v.boolean() },
   returns: v.null(),
   handler: async (ctx, { productId, featured }) => {
-    await requireOwnProduct(ctx, productId);
+    const { shop, product } = await requireOwnProduct(ctx, productId);
+    if ((product.featured === true) === featured) return null;
     await ctx.db.patch("products", productId, { featured: featured || undefined });
+    await logProduct(ctx, shop, featured ? "product.featured" : "product.unfeatured", product);
     return null;
   },
 });
@@ -286,16 +305,17 @@ export const setHiddenBySeller = sellerMutation({
   args: { productId: v.id("products"), hidden: v.boolean() },
   returns: v.null(),
   handler: async (ctx, { productId, hidden }) => {
-    const { product } = await requireOwnProduct(ctx, productId);
+    const { shop, product } = await requireOwnProduct(ctx, productId);
     if ((product.hiddenBySeller === true) === hidden) return null;
     await ctx.db.patch("products", productId, { hiddenBySeller: hidden || undefined, updatedAt: Date.now() });
+    await logProduct(ctx, shop, hidden ? "product.hidden" : "product.shown", product);
     return null;
   },
 });
 
 /** Whether the seller hid one of their products (the notification's Hide / Show button); null if gone. */
 export const visibility = sellerQuery({
-  permission: "ownProducts.manage",
+  permission: "ownProducts.view",
   args: { productId: v.string() },
   handler: async (ctx, { productId }) => {
     const shop = await requireOwnShop(ctx);
@@ -312,8 +332,9 @@ export const remove = sellerMutation({
   args: { productId: v.id("products") },
   returns: v.null(),
   handler: async (ctx, { productId }) => {
-    const { product } = await requireOwnProduct(ctx, productId);
+    const { shop, product } = await requireOwnProduct(ctx, productId);
     await deleteProduct(ctx, product, ctx.user._id);
+    await logProduct(ctx, shop, "product.deleted", product);
     return null;
   },
 });

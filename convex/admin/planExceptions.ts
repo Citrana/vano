@@ -108,7 +108,7 @@ export const grant = adminMutation({
 
     const shop = await ctx.db.get("shops", shopId);
     if (!shop) fail("NOT_FOUND");
-    assertNotOwnShop(ctx.access, shop);
+    await assertNotOwnShop(ctx, ctx.access, shop);
 
     // It must give more than the plan already does (else it's pointless).
     const { plan } = await getEntitlements(ctx, shop, now);
@@ -153,7 +153,7 @@ export const revoke = adminMutation({
     const exception = await ctx.db.get("planExceptions", exceptionId);
     if (!exception || !exception.active) fail("NOT_FOUND");
     const shop = await ctx.db.get("shops", exception.shopId);
-    if (shop) assertNotOwnShop(ctx.access, shop);
+    if (shop) await assertNotOwnShop(ctx, ctx.access, shop);
     await ctx.db.patch("planExceptions", exception._id, {
       active: false,
       endedAt: Date.now(),

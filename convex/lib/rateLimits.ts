@@ -35,5 +35,10 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
    * Wrong answers to the reset code check (`authCodes.checkResetCode`), per
    * email, against guessing: the same budget as Convex Auth's own.
    */
+  /**
+   * Team invites created or renewed (CLAUDE.md "Team accounts"), per shop:
+   * a burst of 10, then 30 an hour (each may send an email).
+   */
+  teamInvite: { kind: "token bucket", rate: 30, period: HOUR, capacity: 10 },
   resetCodeCheck: { kind: "token bucket", rate: AUTH_MAX_FAILED_PER_HOUR, period: HOUR, capacity: AUTH_MAX_FAILED_PER_HOUR },
 });

@@ -13,19 +13,33 @@ import { Field } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { classifyAuthError, isCodeSendProblem, type AuthErrorKind } from "./auth-error"
 import { AuthAlert } from "./code-step-parts"
+import { withNext } from "./next-param"
 import { credentialsSchema, type Credentials } from "./schemas"
 import { useAuthErrorMessage } from "./use-auth-error-message"
 import { VerifyEmailStep } from "./verify-email-step"
 
 /**
  * Email + password form for both /login and /signup. `startPlan` (from
- * "Get Business" on the pricing page) is passed on to onboarding.
+ * "Get Business" on the pricing page) is passed on to onboarding. `next`
+ * (a safe internal path, e.g. a team invite) is where to go once signed
+ * in; `invite` (its token) goes with a sign-up so it works while public
+ * sign-up is closed (CLAUDE.md "Team accounts").
  *
  * An account whose email isn't confirmed gets no session: Convex Auth
  * emails a code instead (CLAUDE.md "Auth codes") and the card switches to
  * the code step.
  */
-export function AuthForm({ flow, startPlan }: { flow: "signIn" | "signUp"; startPlan?: "business" }) {
+export function AuthForm({
+  flow,
+  startPlan,
+  next,
+  invite,
+}: {
+  flow: "signIn" | "signUp"
+  startPlan?: "business"
+  next?: string
+  invite?: string
+}) {
   const t = useTranslations("Auth")
   const tv = useTranslations("Validation")
   const locale = useLocale()
@@ -44,14 +58,16 @@ export function AuthForm({ flow, startPlan }: { flow: "signIn" | "signUp"; start
 
   function goOn() {
     // New accounts are always sellers. After a sign-in, the page's guest
-    // gate sends admins to /admin and sellers to /dashboard.
-    if (isSignUp) router.replace(startPlan ? `/onboarding?plan=${startPlan}` : "/onboarding")
+    // gate sends people to `next`, else admins to /admin and sellers to /dashboard.
+    if (next) router.replace(next)
+    else if (isSignUp) router.replace(startPlan ? `/onboarding?plan=${startPlan}` : "/onboarding")
   }
 
   async function onSubmit(values: Credentials) {
     setServerError(null)
     try {
-      const { signingIn } = await signIn("password", { ...values, flow, ...(isSignUp ? { language: locale } : {}) })
+      const extra = isSignUp ? { language: locale, ...(invite ? { invite } : {}) } : {}
+      const { signingIn } = await signIn("password", { ...values, flow, ...extra })
       if (signingIn) goOn()
       else setPending({ ...values, sendError: null })
     } catch (error) {
@@ -124,7 +140,10 @@ export function AuthForm({ flow, startPlan }: { flow: "signIn" | "signUp"; start
       </form>
       <p className="text-center text-sm text-muted-foreground">
         {isSignUp ? t("haveAccount") : t("noAccount")}{" "}
-        <Link href={isSignUp ? "/login" : "/signup"} className="font-medium text-foreground underline underline-offset-4">
+        <Link
+          href={withNext(isSignUp ? "/login" : "/signup", next)}
+          className="font-medium text-foreground underline underline-offset-4"
+        >
           {isSignUp ? t("goLogin") : t("goSignup")}
         </Link>
       </p>

@@ -9,13 +9,14 @@ import { SideNav } from "@/components/shell/nav/side-nav"
 import { ProfileMenu } from "@/components/shell/profile-menu"
 import { Button } from "@/components/ui/button"
 import { NotificationBell } from "@/features/notifications/notification-bell"
+import { ShopSwitcher } from "@/features/team/shop-switcher"
 import { SellerBottomBar } from "./seller-bottom-bar"
 import { SELLER_HOME, SELLER_NAV_GROUPS } from "./seller-nav"
 import { useSellerNav, useSidebarCollapsed } from "./use-seller-nav"
 
 /**
- * Seller frame. Top bar: logo, bell, avatar menu (admin, language, sign
- * out). From `md`: a grouped, collapsible left sidebar. Phones: a bottom
+ * Seller frame. Top bar: logo, shop switcher (team accounts), bell, avatar
+ * menu (admin, language, sign out). From `md`: a grouped, collapsible left sidebar. Phones: a bottom
  * bar + "More" sheet. All three menus come from `SELLER_NAV`.
  *
  * `--bottom-bar` is the bottom bar's height (0 from `md`): sticky footers
@@ -31,7 +32,10 @@ export function SellerShell({ children }: { children: ReactNode }) {
     <div className="flex flex-1 flex-col [--bottom-bar:calc(4rem+env(safe-area-inset-bottom))] md:[--bottom-bar:0px]">
       <header data-print-hide className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
         <div className="flex h-14 items-center justify-between gap-2 px-4">
-          <Brand href={SELLER_HOME} />
+          <div className="flex min-w-0 items-center gap-3">
+            <Brand href={SELLER_HOME} />
+            <ShopSwitcher />
+          </div>
           {viewer ? (
             <div className="flex items-center gap-1">
               <NotificationBell allHref="/dashboard/notifications" />

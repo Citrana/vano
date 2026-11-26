@@ -58,6 +58,11 @@ export type PlanAction =
   | { kind: "setPhotos"; count: number; previousCount?: number }
   /** Keep one more product visible; `pinned` = currently pinned count. */
   | { kind: "pinProduct"; pinned: number }
+  /**
+   * Invite / add one team member; `seats` = members (any status) plus
+   * pending invites. Teams also need the `teamRoles` flag.
+   */
+  | { kind: "addMember"; seats: number }
   | { kind: "feature"; feature: FeatureFlag };
 
 /** Null when allowed, else the error code to show. Pure. */
@@ -75,6 +80,9 @@ export function canShopDo(limits: PlanLimits, action: PlanAction): ErrorCode | n
       return action.count > photoCap(limits, action.previousCount) ? "PLAN_LIMIT_PHOTOS" : null;
     case "pinProduct":
       return action.pinned >= productCap(limits) ? "PLAN_LIMIT_PRODUCTS" : null;
+    case "addMember":
+      if (!limits.features.includes("teamRoles")) return "PLAN_FEATURE_LOCKED";
+      return action.seats >= limits.teamMembers ? "PLAN_LIMIT_TEAM" : null;
     case "feature":
       return limits.features.includes(action.feature) ? null : "PLAN_FEATURE_LOCKED";
   }
@@ -133,6 +141,26 @@ export function visibleProductIds<P extends VisibilityInput>(
       return b._creationTime - a._creationTime;
     });
   return new Set(ranked.slice(0, cap).map((p) => p._id));
+}
+
+type MemberInput = Pick<Doc<"shopMembers">, "_id" | "status" | "joinedAt">;
+
+/**
+ * Which team members can use the shop now (CLAUDE.md "Team accounts"):
+ * none on a plan without `teamRoles`; else the active members who joined
+ * first, up to the plan's `teamMembers` limit. The others are "paused":
+ * kept, never deleted, and back as soon as the plan allows them again.
+ * Computed on every read, like `visibleProductIds`.
+ */
+export function usableMemberIds<M extends MemberInput>(
+  members: readonly M[],
+  limits: PlanLimits,
+): Set<Id<"shopMembers">> {
+  if (!limits.features.includes("teamRoles")) return new Set();
+  const ranked = members
+    .filter((m) => m.status === "active")
+    .sort((a, b) => a.joinedAt - b.joinedAt);
+  return new Set(ranked.slice(0, Math.max(0, limits.teamMembers)).map((m) => m._id));
 }
 
 /** All of the shop's products (bounded by the platform ceiling). */

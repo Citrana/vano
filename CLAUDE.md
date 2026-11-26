@@ -16,13 +16,17 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 - Seller functions are built with `sellerQuery` / `sellerMutation`
   (`convex/lib/seller.ts`) and **declare a `permission`** (`ownShop.manage`,
   `ownProducts.manage`, `ownStats.view`, or a list meaning "any of").
-  They reject signed-out, suspended and unpermitted callers and add
-  `ctx.user` / `ctx.access`. A suspended shop is read-only: every
+  They reject signed-out, suspended and unpermitted callers, resolve the
+  caller's **current shop** (own shop or a team membership, see "Team
+  accounts") and add `ctx.user`, `ctx.access` (shop-scoped permissions)
+  and `ctx.shopAccess`. A suspended shop is read-only: every
   `sellerMutation` throws `SHOP_SUSPENDED`. Load the caller's shop with `requireOwnShop(ctx)` and a
   product with `requireOwnProduct(ctx, id)` — a seller can only read or
-  change **their own** shop and products. A product that isn't yours is
+  change **their current** shop and its products. A product that isn't yours is
   reported as `NOT_FOUND`, never as "forbidden" (don't leak existence).
-- **One shop per user** (`shops.by_ownerId`), enforced in `shops.create`.
+- **One shop owned per user** (`shops.by_ownerId`), enforced in
+  `shops.create` (an `accountMutation` checking the global role); being a
+  team member elsewhere never prevents it.
 - Public functions (`convex/public.ts`, incl. the discount code mutations, the `stats.record*` mutations) never
   return `ownerId` or any personal data, and never accept one.
 - Errors thrown to the UI are `ConvexError` with a code from
@@ -84,7 +88,73 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   with a `permission`; missing it → `FORBIDDEN`. Hiding UI is never enough.
 - Admin writes run the safety rules in `convex/lib/guards.ts` (no
   self-change, last super admin protected, no escalation, built-in roles
-  locked) and call `logAdminAction` in the same mutation.
+  locked) and call `logAdminAction` in the same mutation. "Never on their
+  own shop" (`assertNotOwnShop`) covers shops they own **or** belong to.
+- Seller permissions are fine-grained per area (`ownShop.view/manage`,
+  `ownProducts.view/manage`, `ownOffers`, `ownLook`, `ownSales`,
+  `ownCustomers`, `ownStats`, `ownReports`, `ownBilling`, `ownTeam`,
+  `ownActivity`); the global `seller` role holds them all, a team role a
+  subset (see "Team accounts").
+
+## Team accounts
+
+- Business shops (`teamRoles` plan feature) add people with a **preset
+  role**, defined **only** in `convex/lib/team.ts` (`TEAM_ROLES`): Manager
+  (everything but plan, billing, team), Seller (record sales, customers,
+  view products), Editor (products, offers, shop look), Viewer (stats and
+  reports). The owner is never a `shopMembers` row and always holds every
+  seller permission; `ownBilling.manage` and `ownTeam.manage` are owner
+  only (`OWNER_ONLY`, tested). Never check a role by name: check a
+  permission.
+- **Current shop + shop-scoped permissions** (`convex/lib/shopAccess.ts`):
+  `currentShopAccess` picks `users.activeShopId` while usable, else the
+  owned shop, else the oldest usable membership. Effective permissions =
+  global admin permissions + global seller permissions ∩ the shop role
+  (`effectivePermissions`). `sellerQuery` / `sellerMutation` check the
+  declared permission against them; `users.viewer.permissions` returns the
+  same set, so every UI check follows the role. Another shop's data stays
+  `NOT_FOUND`.
+- Seats: `requireCan({ kind: "addMember", seats })` (members + pending
+  invites vs `teamMembers`, owner not counted) on invite, renew and
+  accept. **Paused** is computed, never stored (`usableMemberIds` in
+  `entitlements.ts`: none without `teamRoles`, else first joined up to the
+  limit), so downgrades pause and upgrades restore with nothing deleted.
+  Suspended (by the owner) is stored on the row; removing deletes the row,
+  effective on the member's next call. Paused / suspended members get the
+  "paused" screen (`MemberPaused`, gate target `memberPaused`).
+- Invites (`convex/team.ts`, owner only): a one-time link `/join/<token>`
+  (32 random bytes; only its SHA-256 is stored; shown once — "New link"
+  rotates it), `INVITE_TTL_DAYS` (7), anyone holding it may accept.
+  Optional email through `sendEmail` (`emails/teamInvite.ts`, template
+  `teamInvite`, owner-picked language), limited by `teamInvite`. A valid
+  invite lets its person sign up while public sign-up is closed (`invite`
+  sign-up param → `users.pendingInvite`, read and cleared in
+  `setUpNewAccount`). Login / signup accept a safe internal `?next=`
+  (`nextParam`). `join` is in `RESERVED_SLUGS`.
+- A person can belong to several shops: the header's `ShopSwitcher`
+  (`team.switchShop`, usable shops only; also "Create your own shop" and
+  "Leave"). Opening a team notification about another shop switches first.
+- Seller pages follow the role through **one rule**, `pagePermission`
+  (`seller-nav.ts`: the menu item's permission, plus stricter
+  `EXTRA_PAGES`), enforced by `SellerPageGuard` in the dashboard layout;
+  buttons check `viewer.permissions`. Plan locks for members use
+  `billing.shopLimits` (`useShopLimits`); a member who can't manage the
+  plan is told to ask the owner (`PlanLockCard`).
+- **Activity history**: `shopActivity`, written **only** by
+  `logShopActivity` (`convex/lib/shopActivity.ts`) in the same mutation
+  (products, offers, codes, recorded sales, settings, look, Promo bar,
+  change requests, team). Logged on every plan; read by `activity.list`
+  (`ownActivity.view`, `teamRoles`, Business), kept
+  `ACTIVITY_RETENTION_DAYS`. Recorded sales show `recordedBy`; product
+  history shows `by`.
+- Notifications to the team: `notify(ctx, { to: { shop } })` sends to the
+  owner and usable members whose role has the type's `shopPermission`
+  (`notifications/types.ts`); the row stores `shopId` and the inbox
+  re-checks access to that shop on every read. Billing / plan types stay
+  owner-only (`{ userId: shop.ownerId }`).
+- `teamJobs.cleanup` (daily) deletes ended invites after `INVITE_KEEP_DAYS`
+  and old activity; `admin/shops.purgeShop` purges members, invites and
+  activity with the shop.
 
 ## Money
 
@@ -114,10 +184,12 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 - The server re-checks every storage id (`imageProblem`: `image/*`,
   ≤ `MAX_IMAGE_BYTES`). A replaced or removed file — or a deleted product's
   files — is deleted from storage in the same mutation.
-- Files are owned: attach them only through `claimImages` and delete them
-  only through `deleteFilesNotIn` (`convex/lib/seller.ts`). The `uploads`
-  table records who first attached each storage id, so a seller can never
-  attach — and later delete — another seller's image.
+- Files are owned by a **shop**: attach them only through
+  `claimImages(ctx, shop, ids)` and delete them only through
+  `deleteFilesNotIn` (`convex/lib/seller.ts`). The `uploads` table records
+  the shop (and uploader) that first attached each storage id, so the
+  shop's team shares its photos and no other shop can attach — and later
+  delete — them (rows without `shopId` belong to their uploader's shop).
 - **UI design assets** (illustrations, brand marks, sample photos, custom
   icons) live in `src/assets/images/` (see its README for folders,
   formats and credits) and are statically imported into `next/image`.
@@ -811,7 +883,7 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   forms with several fields show `<RequiredFieldsHint />`.
 - Components are small and grouped by feature in `src/features/<feature>/`
   (`auth`, `shop`, `product`, `public`, `stats`, `i18n`, `marketing/*`,
-  `shop-looks`, `sales`, `sales-records`, `discount-codes`, `billing`, `change-requests`, `notifications`, `seller-nav`, `admin/*`).
+  `shop-looks`, `sales`, `sales-records`, `discount-codes`, `billing`, `change-requests`, `notifications`, `seller-nav`, `team`, `activity`, `admin/*`).
   Generic primitives live in `src/components/ui/`.
 - Admin pages live under `src/app/admin/` and wrap their content in
   `<RequirePermission permission="…">`. Sidebar sections are defined only
@@ -867,6 +939,7 @@ convex/
   salesRecords.ts        # recorded sales (lib/salesRecords/: rules)
   discountCodes.ts discountCodeJobs.ts   # discount codes (lib/discountCodes/: rules)
   changeRequests.ts changeRequestJobs.ts   # protected shop changes
+  team.ts teamJobs.ts activity.ts          # team accounts, invites, activity history
   notifications/    # notification types, inbox, config, outside channels
   notificationJobs.ts                     # ending-soon warnings, cleanup
   emails/           # sendEmail, providers (Resend / log), layout, templates

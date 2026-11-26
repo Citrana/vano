@@ -30,9 +30,17 @@ export const PERMISSION_GROUPS = {
   plans: ["manage"],
   /** Requests to change a shop's name, link or WhatsApp: see them; approve or reject. */
   changeRequests: ["view", "decide"],
-  /** The seller's own shop — always combined with the ownership checks. */
-  ownShop: ["manage"],
-  ownProducts: ["manage"],
+  /**
+   * The seller's own shop — always combined with the ownership checks.
+   * view: open the dashboard of the current shop (every team role);
+   * manage: shop settings and protected change requests.
+   */
+  ownShop: ["view", "manage"],
+  ownProducts: ["view", "manage"],
+  /** Offers (sales), discount codes and the Promo bar. */
+  ownOffers: ["manage"],
+  /** The shop look editor (draft, publish, event banner). */
+  ownLook: ["manage"],
   ownStats: ["view"],
   /** Their own shop's plan, checkout and payment history. */
   ownBilling: ["manage"],
@@ -40,6 +48,12 @@ export const PERMISSION_GROUPS = {
   ownSales: ["manage"],
   /** See the customer name and phone of their own shop's sales (a future team role may lack it). */
   ownCustomers: ["view"],
+  /** Monthly sales reports and their CSV export. */
+  ownReports: ["view"],
+  /** Invite, change and remove team members (only the shop owner, CLAUDE.md "Team accounts"). */
+  ownTeam: ["manage"],
+  /** The shop's activity history (who did what). */
+  ownActivity: ["view"],
 } as const satisfies Record<string, readonly string[]>;
 
 type Groups = typeof PERMISSION_GROUPS;
@@ -57,10 +71,15 @@ export const ALL_PERMISSIONS: readonly Permission[] = PERMISSION_AREAS.flatMap((
 const SELLER_AREAS: readonly PermissionArea[] = [
   "ownShop",
   "ownProducts",
+  "ownOffers",
+  "ownLook",
   "ownStats",
   "ownBilling",
   "ownSales",
   "ownCustomers",
+  "ownReports",
+  "ownTeam",
+  "ownActivity",
 ];
 
 /** Areas of the seller's own shop; everything else is an admin area. */

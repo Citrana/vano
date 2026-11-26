@@ -12,7 +12,7 @@ import { canShopDo } from "../../../convex/lib/entitlements"
 import { toPlanLimits } from "../../../convex/lib/planFeatures"
 import { EmptyState } from "@/components/states/states"
 import { buttonVariants } from "@/components/ui/button"
-import { useMyBilling } from "@/features/billing/use-billing"
+import { useShopLimits } from "@/features/billing/use-billing"
 import { ProductRow } from "./product-row"
 
 type Shop = NonNullable<FunctionReturnType<typeof api.shops.myShop>>
@@ -20,7 +20,7 @@ type Products = FunctionReturnType<typeof api.products.listMine>
 
 /** The plan's product limit for the shop (null while the plan loads). */
 export function useProductLimit(productCount: number) {
-  const billing = useMyBilling()
+  const billing = useShopLimits()
   const limits = billing ? toPlanLimits(billing.limits) : null
   const atLimit = limits !== null && canShopDo(limits, { kind: "addProduct", products: productCount }) !== null
   return { limit: limits?.products ?? null, atLimit }
@@ -60,7 +60,10 @@ export function ProductsSection({ shop, products, canEdit }: { shop: Shop; produ
   const { limit, atLimit } = useProductLimit(products.length)
   // Queries can't read the clock, so the client passes "today" (UTC).
   const [today] = useState(() => utcDay(Date.now()))
-  const result = useQuery(api.stats.summary, { today })
+  // Views / clicks per product only for a role that sees stats (CLAUDE.md "Team accounts").
+  const viewer = useQuery(api.users.viewer, {})
+  const seesStats = viewer?.permissions.includes("ownStats.view") ?? false
+  const result = useQuery(api.stats.summary, seesStats ? { today } : "skip")
   const summary = result && !result.locked ? result : undefined
   const perProduct = useMemo(() => new Map(summary?.products.map((p) => [p.productId, p]) ?? []), [summary])
   const overLimitCount = products.filter((p) => p.overLimit).length

@@ -12,7 +12,7 @@ import { photoCap, toPlanLimits } from "../../../../../../convex/lib/planFeature
 import { PageTitle } from "@/components/shell/page-title"
 import { EmptyState, LoadingState } from "@/components/states/states"
 import { buttonVariants } from "@/components/ui/button"
-import { useMyBilling } from "@/features/billing/use-billing"
+import { useShopLimits } from "@/features/billing/use-billing"
 import { ProductForm } from "@/features/product/product-form"
 
 export default function NewProductPage() {
@@ -20,7 +20,7 @@ export default function NewProductPage() {
   const td = useTranslations("Dashboard")
   const tc = useTranslations("Common")
   const shop = useQuery(api.shops.myShop, {})
-  const billing = useMyBilling()
+  const billing = useShopLimits()
   const create = useMutation(api.products.create)
   const router = useRouter()
 

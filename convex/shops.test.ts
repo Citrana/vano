@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { api } from "./_generated/api";
+import { SELLER_PERMISSIONS } from "./lib/permissions";
 import {
   as,
   builtInRoles,
@@ -24,19 +25,25 @@ describe("users.viewer", () => {
     expect(await as(t, userId).query(api.users.viewer, {})).toEqual({
       email: "seller@example.com",
       hasShop: false,
+      ownsShop: false,
       status: "active",
       shopStatus: null,
       // Not migrated yet (no role): treated as a seller.
       roleKey: "seller",
       roleName: "Seller",
-      permissions: ["ownShop.manage", "ownProducts.manage", "ownStats.view", "ownBilling.manage", "ownSales.manage", "ownCustomers.view"],
+      permissions: [...SELLER_PERMISSIONS],
       isAdmin: false,
+      shop: null,
+      shops: [],
       announcement: null,
     });
     await as(t, userId).mutation(api.shops.create, shopArgs());
     expect(await as(t, userId).query(api.users.viewer, {})).toMatchObject({
       hasShop: true,
+      ownsShop: true,
       shopStatus: "active",
+      shop: { role: "owner" },
+      shops: [{ role: "owner", state: "active" }],
     });
   });
 
@@ -60,7 +67,7 @@ describe("users.viewer", () => {
 
     expect(await as(t, seller).query(api.users.viewer, {})).toMatchObject({
       roleKey: "seller",
-      permissions: ["ownShop.manage", "ownProducts.manage", "ownStats.view", "ownBilling.manage", "ownSales.manage", "ownCustomers.view"],
+      permissions: [...SELLER_PERMISSIONS],
       isAdmin: false,
     });
     const sa = await as(t, admin).query(api.users.viewer, {});

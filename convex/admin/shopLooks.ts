@@ -104,7 +104,7 @@ export const reset = adminMutation({
   handler: async (ctx, { shopId, scope, reason }) => {
     const shop = await ctx.db.get("shops", shopId);
     if (!shop) fail("NOT_FOUND");
-    assertNotOwnShop(ctx.access, shop);
+    await assertNotOwnShop(ctx, ctx.access, shop);
     if (resetReasonProblem(reason) !== null) fail("REASON_INVALID");
     const cleanReason = reason.trim();
     const row = await lookRow(ctx, shopId);
@@ -149,7 +149,7 @@ export const reset = adminMutation({
     });
     await notify(ctx, {
       data: { type: "look.reset", scope, reason: cleanReason },
-      to: { userId: shop.ownerId },
+      to: { shop },
       dedupeKey: `look.reset:${shopId}:${now}`,
     });
     return null;

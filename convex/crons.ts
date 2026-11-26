@@ -35,4 +35,7 @@ crons.interval("clean up auth codes", { hours: 1 }, internal.authCodeJobs.cleanu
 // Old notifications are deleted (retention in convex/notifications/config.ts).
 crons.interval("clean up notifications", { hours: 24 }, internal.notificationJobs.cleanup, {});
 
+// Old team invites and activity past its retention are deleted (CLAUDE.md "Team accounts").
+crons.interval("clean up team invites and activity", { hours: 24 }, internal.teamJobs.cleanup, {});
+
 export default crons;

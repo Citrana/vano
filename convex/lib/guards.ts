@@ -4,6 +4,7 @@ import { hasPermission, type Access } from "./access";
 import { fail } from "./errors";
 import type { Permission } from "./permissions";
 import { findRoleByKey, permissionsOf } from "./roles";
+import { belongsToShop } from "./shopAccess";
 
 /**
  * Safety rules for admin actions (CLAUDE.md "Roles & permissions"). They
@@ -17,9 +18,12 @@ import { findRoleByKey, permissionsOf } from "./roles";
  * 6. Nobody grants or extends a plan for their own shop.
  */
 
-/** Rule 6: an admin can't change their own shop's plan. */
-export function assertNotOwnShop(access: Access, shop: Doc<"shops">): void {
-  if (shop.ownerId === access.user._id) fail("CANNOT_MODIFY_SELF");
+/**
+ * Rule 6: an admin never acts on a shop they own or belong to as a team
+ * member (any state, CLAUDE.md "Team accounts").
+ */
+export async function assertNotOwnShop(ctx: QueryCtx, access: Access, shop: Doc<"shops">): Promise<void> {
+  if (await belongsToShop(ctx, access.user._id, shop)) fail("CANNOT_MODIFY_SELF");
 }
 
 /** True if every permission in `wanted` is one the caller holds. */

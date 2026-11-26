@@ -73,7 +73,7 @@ export const revealCustomers = adminMutation({
   handler: async (ctx, { shopId, reason }) => {
     const shop = await ctx.db.get("shops", shopId);
     if (!shop) fail("NOT_FOUND");
-    assertNotOwnShop(ctx.access, shop);
+    await assertNotOwnShop(ctx, ctx.access, shop);
     if (resetReasonProblem(reason) !== null) fail("REASON_INVALID");
     const records = await ctx.db
       .query("salesRecords")

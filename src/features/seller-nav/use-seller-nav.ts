@@ -7,7 +7,7 @@ import { api } from "../../../convex/_generated/api"
 import { canShopDo } from "../../../convex/lib/entitlements"
 import { toPlanLimits } from "../../../convex/lib/planFeatures"
 import { visibleNav, type NavCounts } from "@/components/shell/nav/nav-model"
-import { useMyBilling } from "@/features/billing/use-billing"
+import { useShopLimits } from "@/features/billing/use-billing"
 import { useUpgradePlanNames } from "@/features/billing/use-plan-catalog"
 import { SELLER_NAV, type SellerNavBadge, type SellerNavItem } from "./seller-nav"
 
@@ -27,7 +27,7 @@ export function useSellerNavCounts(): NavCounts<SellerNavBadge> {
 export function useSellerNav() {
   const t = useTranslations("Seller")
   const viewer = useQuery(api.users.viewer, {})
-  const billing = useMyBilling()
+  const billing = useShopLimits()
   const upgradePlan = useUpgradePlanNames()
   const counts = useSellerNavCounts()
   const items = visibleNav(viewer?.permissions ?? [], SELLER_NAV)

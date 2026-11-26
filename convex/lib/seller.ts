@@ -5,20 +5,35 @@ import {
 } from "convex-helpers/server/customFunctions";
 import type { Doc, Id } from "../_generated/dataModel";
 import { mutation, query, type MutationCtx, type QueryCtx } from "../_generated/server";
-import { accessWith, type Access, type PermissionArg } from "./access";
+import { loadAccess, requireAnyPermission, type Access, type PermissionArg } from "./access";
 import { fail } from "./errors";
 import { imageProblem } from "./images";
+import { currentShopAccess, findShopByOwner, type ShopAccess } from "./shopAccess";
+
+export { findShopByOwner };
 
 /**
  * The wrappers every seller function uses (CLAUDE.md "Security &
- * ownership"): `sellerQuery({ permission: "ownProducts.manage", args,
- * handler })`. They reject signed-out and suspended callers and callers
- * without the permission, and add `ctx.user` / `ctx.access`. Ownership is
- * still checked by `requireOwnShop` / `requireOwnProduct`.
+ * ownership", "Team accounts"): `sellerQuery({ permission:
+ * "ownProducts.manage", args, handler })`. They reject signed-out and
+ * suspended callers, resolve the caller's CURRENT shop (own shop or a
+ * team membership, lib/shopAccess.ts) and check the permission against
+ * what the caller may do in THAT shop. They add `ctx.user`, `ctx.access`
+ * (effective, shop-scoped permissions) and `ctx.shopAccess` (null before
+ * the caller has any shop). Ownership is still checked by
+ * `requireOwnShop` / `requireOwnProduct`.
  */
+async function sellerAccess(ctx: QueryCtx, { permission }: PermissionArg, now?: number) {
+  const global = await loadAccess(ctx);
+  const shopAccess = await currentShopAccess(ctx, global, now);
+  const access: Access = shopAccess ? { ...global, permissions: shopAccess.permissions } : global;
+  requireAnyPermission(access, permission);
+  return { user: global.user, access, shopAccess };
+}
+
 export const sellerQuery = customQuery(
   query,
-  customCtx((ctx: QueryCtx, extra: PermissionArg) => accessWith(ctx, extra)),
+  customCtx((ctx: QueryCtx, extra: PermissionArg) => sellerAccess(ctx, extra)),
 );
 
 /**
@@ -29,37 +44,26 @@ export const sellerQuery = customQuery(
 export const sellerMutation = customMutation(
   mutation,
   customCtx(async (ctx: MutationCtx, extra: PermissionArg) => {
-    const result = await accessWith(ctx, extra);
-    const shop = await findShopByOwner(ctx, result.user._id);
-    if (shop?.status === "suspended") fail("SHOP_SUSPENDED");
+    const result = await sellerAccess(ctx, extra, Date.now());
+    if (result.shopAccess?.shop.status === "suspended") fail("SHOP_SUSPENDED");
     return result;
   }),
 );
 
-type WithAccess<C> = C & { user: Doc<"users">; access: Access };
+type WithAccess<C> = C & { user: Doc<"users">; access: Access; shopAccess: ShopAccess | null };
 export type SellerQueryCtx = WithAccess<QueryCtx>;
 export type SellerMutationCtx = WithAccess<MutationCtx>;
 
-export async function findShopByOwner(
-  ctx: QueryCtx,
-  ownerId: Id<"users">,
-): Promise<Doc<"shops"> | null> {
-  return await ctx.db
-    .query("shops")
-    .withIndex("by_ownerId", (q) => q.eq("ownerId", ownerId))
-    .unique();
-}
-
-/** The caller's shop; throws NO_SHOP if they haven't created one yet. */
+/** The caller's current shop (fresh copy); throws NO_SHOP if they have none yet. */
 export async function requireOwnShop(ctx: SellerQueryCtx): Promise<Doc<"shops">> {
-  const shop = await findShopByOwner(ctx, ctx.user._id);
+  const shop = ctx.shopAccess ? await ctx.db.get("shops", ctx.shopAccess.shop._id) : null;
   if (!shop) fail("NO_SHOP");
   return shop;
 }
 
 /**
- * A product of the caller's shop. Someone else's product is reported as
- * NOT_FOUND, never as forbidden, so its existence doesn't leak.
+ * A product of the caller's current shop. Someone else's product is
+ * reported as NOT_FOUND, never as forbidden, so its existence doesn't leak.
  */
 export async function requireOwnProduct(
   ctx: SellerQueryCtx,
@@ -72,13 +76,16 @@ export async function requireOwnProduct(
 }
 
 /**
- * Checks each file is an acceptable image and belongs to the caller,
- * claiming files nobody has claimed yet (CLAUDE.md "Images"). Throws
- * IMAGE_INVALID for a missing / non-image / oversized file or one claimed
- * by another seller.
+ * Checks each file is an acceptable image and belongs to `shop`, claiming
+ * files nobody has claimed yet for that shop (CLAUDE.md "Images"): any
+ * team member of the shop may attach the shop's files, nobody else. Rows
+ * from before team accounts have no `shopId` and belong to the shop of
+ * their uploader. Throws IMAGE_INVALID for a missing / non-image /
+ * oversized file or one claimed by another shop.
  */
 export async function claimImages(
-  ctx: SellerMutationCtx,
+  ctx: MutationCtx & { user: Doc<"users"> },
+  shop: Doc<"shops">,
   ids: readonly Id<"_storage">[],
 ): Promise<void> {
   for (const storageId of ids) {
@@ -89,10 +96,11 @@ export async function claimImages(
       .withIndex("by_storageId", (q) => q.eq("storageId", storageId))
       .unique();
     if (upload === null) {
-      await ctx.db.insert("uploads", { storageId, ownerId: ctx.user._id });
-    } else if (upload.ownerId !== ctx.user._id) {
-      fail("IMAGE_INVALID");
+      await ctx.db.insert("uploads", { storageId, ownerId: ctx.user._id, shopId: shop._id });
+      continue;
     }
+    const owned = upload.shopId === undefined ? upload.ownerId === shop.ownerId : upload.shopId === shop._id;
+    if (!owned) fail("IMAGE_INVALID");
   }
 }
 

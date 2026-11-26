@@ -123,7 +123,14 @@
     "REPORT_INVALID": "Ce mois n'est pas valide.",
     "EMAIL_MISSING": "Votre compte n'a pas d'adresse e-mail, l'e-mail de test ne peut donc pas être envoyé.",
     "TEST_EMAIL_RATE_LIMITED": "Trop d'e-mails de test. Attendez quelques minutes et réessayez.",
-    "EMAIL_SEND_FAILED": "Nous n'avons pas pu envoyer l'e-mail pour le moment. Réessayez dans un instant."
+    "EMAIL_SEND_FAILED": "Nous n'avons pas pu envoyer l'e-mail pour le moment. Réessayez dans un instant.",
+    "PLAN_LIMIT_TEAM": "Toutes les places de votre équipe sont prises. Retirez un membre ou annulez une invitation.",
+    "INVITE_INVALID": "Ce lien d'invitation ne fonctionne pas. Demandez-en un nouveau au propriétaire.",
+    "INVITE_EXPIRED": "Ce lien d'invitation a expiré. Demandez-en un nouveau au propriétaire.",
+    "INVITE_USED": "Ce lien d'invitation a déjà été utilisé. Demandez-en un nouveau au propriétaire.",
+    "ALREADY_MEMBER": "Vous faites déjà partie de l'équipe de cette boutique.",
+    "INVITE_OWN_SHOP": "C'est votre propre boutique : vous avez déjà tous les accès.",
+    "INVITE_RATE_LIMITED": "Trop d'invitations en peu de temps. Réessayez dans quelques minutes."
   },
   "Validation": {
     "required": "Ce champ est obligatoire.",
@@ -234,7 +241,8 @@
       "reports": "Rapports",
       "plan": "Forfait",
       "team": "Équipe",
-      "more": "Plus"
+      "more": "Plus",
+      "activity": "Historique"
     },
     "groups": {
       "shop": "Boutique",
@@ -740,11 +748,13 @@
     },
     "ownShop": {
       "title": "Sa boutique",
-      "manage": "Créer et modifier sa propre boutique"
+      "manage": "Créer et modifier sa propre boutique",
+      "view": "Ouvrir le tableau de bord de sa boutique"
     },
     "ownProducts": {
       "title": "Ses produits",
-      "manage": "Gérer ses propres produits"
+      "manage": "Gérer ses propres produits",
+      "view": "Voir les produits de sa boutique"
     },
     "ownStats": {
       "title": "Ses statistiques",
@@ -775,6 +785,26 @@
     "ownCustomers": {
       "title": "Ses clients",
       "view": "Voir les noms et numéros des clients de ses ventes"
+    },
+    "ownOffers": {
+      "title": "Ses offres",
+      "manage": "Gérer les offres, codes promo et la barre promo de sa boutique"
+    },
+    "ownLook": {
+      "title": "Son apparence",
+      "manage": "Modifier et publier l'apparence de sa boutique"
+    },
+    "ownReports": {
+      "title": "Ses rapports",
+      "view": "Voir les rapports de ventes de sa boutique"
+    },
+    "ownTeam": {
+      "title": "Son équipe",
+      "manage": "Inviter et gérer l'équipe de sa boutique"
+    },
+    "ownActivity": {
+      "title": "Son historique",
+      "view": "Voir l'historique d'activité de sa boutique"
     }
   },
   "AdminRoles": {
@@ -2202,6 +2232,13 @@
       },
       "report": {
         "ready": "Votre rapport de {month} est prêt."
+      },
+      "team": {
+        "memberJoined": "{member} a rejoint {shop} en tant que {role}.",
+        "role": "Votre rôle dans {shop} est maintenant {role}.",
+        "suspended": "Votre accès à {shop} a été suspendu.",
+        "reactivated": "Votre accès à {shop} est rétabli.",
+        "removed": "Vous avez été retiré de l'équipe de {shop}."
       }
     },
     "actions": {
@@ -3110,7 +3147,8 @@
       "markedSoldOut": "Cette vente a marqué le produit épuisé.",
       "productDeleted": "Ce produit a été supprimé. La vente garde ce qu'il était au moment de la vente.",
       "edit": "Modifier",
-      "reverse": "Annuler la vente"
+      "reverse": "Annuler la vente",
+      "recordedBy": "Enregistrée par"
     },
     "edit": {
       "title": "Modifier la vente",
@@ -3154,7 +3192,8 @@
         "saleEdited": "Vente modifiée",
         "saleReversed": "Vente annulée",
         "deleted": "Supprimé"
-      }
+      },
+      "by": "par {name}"
     },
     "status": {
       "recorded": "Comptée",
@@ -3307,6 +3346,246 @@
       "intro": "Saisissez ce code sur l'écran Vano pour choisir un nouveau mot de passe :",
       "expires": "Le code est valable {minutes} minutes et une seule fois. Après le changement, vous serez déconnecté sur vos autres appareils.",
       "ignore": "Vous n'avez pas demandé à réinitialiser votre mot de passe ? Ignorez cet e-mail : votre mot de passe reste le même."
+    },
+    "teamInvite": {
+      "subject": "{inviter} vous invite à rejoindre {shop} sur Vano",
+      "preheader": "Rejoignez l'équipe de {shop} en tant que {role}.",
+      "heading": "Rejoignez {shop} sur Vano",
+      "intro": "{inviter} vous invite à l'aider à gérer {shop} sur Vano, en tant que {role}.",
+      "roleIntro": "Ce que vous pourrez faire :",
+      "roles": {
+        "manager": "Gérant",
+        "seller": "Vendeur",
+        "editor": "Éditeur",
+        "viewer": "Lecteur"
+      },
+      "roleBodies": {
+        "manager": "Tout dans la boutique : produits, offres, apparence, ventes, clients, statistiques, rapports et réglages. Le forfait, la facturation et l'équipe restent au propriétaire.",
+        "seller": "Enregistrer des ventes, voir les clients et consulter les produits.",
+        "editor": "Ajouter et modifier des produits, lancer des offres et des codes promo, et créer l'apparence de la boutique.",
+        "viewer": "Voir les statistiques et les rapports de ventes de la boutique."
+      },
+      "button": "Accepter l'invitation",
+      "expires": "Ce lien ne fonctionne qu'une fois et expire dans {days} jours. Connectez-vous ou créez un compte gratuit pour rejoindre l'équipe.",
+      "ignore": "Vous ne vous attendiez pas à ce message ? Vous pouvez l'ignorer."
+    }
+  },
+  "TeamRoles": {
+    "owner": {
+      "name": "Propriétaire"
+    },
+    "manager": {
+      "name": "Gérant",
+      "description": "Tout dans la boutique sauf le forfait, la facturation et l'équipe."
+    },
+    "seller": {
+      "name": "Vendeur",
+      "description": "Enregistre les ventes, voit les clients et consulte les produits."
+    },
+    "editor": {
+      "name": "Éditeur",
+      "description": "Produits, offres et apparence. Pas de ventes ni de rapports."
+    },
+    "viewer": {
+      "name": "Lecteur",
+      "description": "Statistiques et rapports uniquement."
+    }
+  },
+  "Team": {
+    "title": "Équipe",
+    "inviteButton": "Inviter un membre",
+    "full": "Toutes les places sont prises",
+    "seats": "{used} place(s) sur {limit} utilisée(s)",
+    "ownerNote": "Vous gardez toujours tous les accès",
+    "membersTitle": "Membres",
+    "invitesTitle": "Invitations en attente",
+    "emptyTitle": "Pas encore de membres",
+    "emptyBody": "Invitez des personnes pour vous aider à gérer la boutique. Vous choisissez ce que chacune peut faire.",
+    "pausedHint": "Les membres en pause gardent leur place et reviennent dès que votre forfait le permet.",
+    "linkOnly": "Lien d'invitation",
+    "expires": "Expire le {date}",
+    "newLink": "Nouveau lien",
+    "cancelInvite": "Annuler l'invitation",
+    "inviteCancelled": "Invitation annulée",
+    "columns": {
+      "member": "Membre",
+      "role": "Rôle",
+      "joined": "Arrivé le",
+      "status": "Statut"
+    },
+    "memberState": {
+      "active": "Actif",
+      "paused": "En pause",
+      "suspended": "Suspendu"
+    },
+    "inviteState": {
+      "pending": "En attente",
+      "expired": "Expirée"
+    },
+    "lock": {
+      "title": "Les comptes d'équipe sont inclus dans {plan}",
+      "body": "Donnez à vos aides leur propre connexion avec seulement les accès utiles : ventes, produits ou rapports.",
+      "bodyKept": "Vos membres sont en pause, pas supprimés. Ils reviennent dès que vous changez de forfait.",
+      "action": "Passer à {plan}"
+    },
+    "details": {
+      "title": "Membre de l'équipe",
+      "member": "Nom",
+      "email": "E-mail",
+      "status": "Statut",
+      "joined": "Arrivé le",
+      "pausedBody": "En pause : votre forfait n'inclut pas cette place pour le moment. Le membre revient dès qu'elle l'est.",
+      "role": "Rôle",
+      "roleSaved": "Rôle changé en {role}",
+      "suspend": "Suspendre",
+      "reactivate": "Réactiver",
+      "suspended": "Membre suspendu",
+      "reactivated": "Membre réactivé",
+      "remove": "Retirer de l'équipe",
+      "suspendHint": "Suspendre garde la place du membre ; retirer la libère. Les deux s'appliquent tout de suite.",
+      "removeTitle": "Retirer {name} ?",
+      "removeBody": "Le membre perd l'accès à cette boutique tout de suite. Ses ventes et actions passées restent dans votre historique.",
+      "cancel": "Annuler",
+      "removeConfirm": "Retirer",
+      "removed": "Membre retiré"
+    },
+    "invite": {
+      "title": "Inviter un membre",
+      "body": "Choisissez ce que la personne pourra faire. Vous pourrez le changer à tout moment.",
+      "role": "Rôle",
+      "email": "Son e-mail (facultatif)",
+      "emailHelp": "Vano lui envoie le lien par e-mail. Laissez vide pour le partager vous-même.",
+      "language": "Langue de l'e-mail",
+      "cancel": "Annuler",
+      "submit": "Créer le lien d'invitation",
+      "linkTitle": "Lien d'invitation prêt",
+      "linkBody": "Envoyez ce lien à la personne invitée. Il ne fonctionne qu'une fois et expire dans {days} jours.",
+      "done": "Terminé"
+    },
+    "link": {
+      "emailed": "Vano a envoyé l'invitation à {email}.",
+      "once": "Pour votre sécurité, ce lien n'est affiché que maintenant. Vous pourrez en créer un nouveau depuis la page Équipe.",
+      "message": "Rejoins ma boutique {shop} sur Vano : {url}",
+      "whatsapp": "Partager sur WhatsApp",
+      "copy": "Copier le lien",
+      "copied": "Copié"
+    },
+    "switcher": {
+      "label": "Boutique actuelle : {shop}. Changer de boutique",
+      "title": "Vos boutiques",
+      "state": {
+        "active": "Active",
+        "paused": "En pause",
+        "suspended": "Suspendu"
+      },
+      "createOwn": "Créer votre propre boutique",
+      "leave": "Quitter {shop}",
+      "leaveTitle": "Quitter {shop} ?",
+      "leaveBody": "Vous perdrez l'accès à cette boutique. Le propriétaire pourra vous réinviter.",
+      "cancel": "Annuler",
+      "leaveConfirm": "Quitter la boutique"
+    },
+    "paused": {
+      "title": "Votre accès est en pause",
+      "body": "Le forfait de {shop} n'inclut pas les comptes d'équipe pour le moment. Votre accès revient dès que le propriétaire change de forfait.",
+      "suspendedTitle": "Votre accès est suspendu",
+      "suspendedBody": "Le propriétaire de {shop} a suspendu votre accès. Contactez-le si vous pensez qu'il s'agit d'une erreur.",
+      "createOwn": "Créer votre propre boutique"
+    },
+    "noRole": {
+      "title": "Pas inclus dans votre rôle",
+      "body": "Votre rôle dans cette boutique n'inclut pas cette page. Demandez au propriétaire si vous en avez besoin.",
+      "home": "Aller au tableau de bord"
+    },
+    "join": {
+      "metaTitle": "Rejoindre une boutique sur Vano",
+      "title": "Rejoindre {shop}",
+      "invalidTitle": "Ce lien d'invitation ne fonctionne pas",
+      "invalidBody": "Il a peut-être été annulé ou remplacé. Demandez un nouveau lien au propriétaire.",
+      "usedTitle": "Cette invitation a déjà été utilisée",
+      "usedBody": "Chaque lien ne fonctionne qu'une fois. Demandez un nouveau lien au propriétaire.",
+      "expiredTitle": "Cette invitation a expiré",
+      "expiredBody": "Demandez un nouveau lien au propriétaire.",
+      "goDashboard": "Aller sur Vano",
+      "ownShop": "C'est votre propre boutique : vous avez déjà tous les accès.",
+      "alreadyMember": "Vous faites déjà partie de l'équipe : ouvrir le tableau de bord",
+      "join": "Rejoindre {shop}",
+      "signInFirst": "Connectez-vous ou créez un compte gratuit pour rejoindre l'équipe.",
+      "createAccount": "Créer un compte",
+      "signIn": "J'ai déjà un compte"
+    },
+    "askOwner": "Demandez au propriétaire de la boutique de passer à {plan}."
+  },
+  "Activity": {
+    "title": "Historique",
+    "subtitle": "Qui a fait quoi dans votre boutique.",
+    "emptyTitle": "Rien pour le moment",
+    "emptyBody": "Les changements de produits, d'offres, de ventes et de réglages s'afficheront ici, avec leur auteur.",
+    "more": "Voir plus",
+    "you": "Vous",
+    "someone": "—",
+    "owner": "propriétaire",
+    "fields": {
+      "name": "le nom de la boutique",
+      "slug": "le lien de la boutique",
+      "whatsapp": "le numéro WhatsApp"
+    },
+    "lock": {
+      "title": "L'historique d'activité est inclus dans {plan}",
+      "body": "Voyez qui a modifié les produits, offres, ventes et réglages. Votre historique est gardé et s'affiche après le changement de forfait.",
+      "action": "Passer à {plan}"
+    },
+    "kinds": {
+      "product": {
+        "created": "a ajouté le produit {target}",
+        "updated": "a modifié le produit {target}",
+        "deleted": "a supprimé le produit {target}",
+        "soldOut": "a marqué {target} épuisé",
+        "backOnSale": "a remis {target} en vente",
+        "hidden": "a masqué {target} de la boutique",
+        "shown": "a de nouveau affiché {target} dans la boutique",
+        "featured": "a mis {target} en avant",
+        "unfeatured": "a retiré {target} de la mise en avant"
+      },
+      "offer": {
+        "created": "a créé l'offre {target}",
+        "updated": "a modifié l'offre {target}",
+        "paused": "a mis en pause l'offre {target}",
+        "resumed": "a relancé l'offre {target}",
+        "deleted": "a supprimé l'offre {target}"
+      },
+      "code": {
+        "created": "a créé le code promo {target}",
+        "updated": "a modifié le code promo {target}",
+        "paused": "a mis en pause le code promo {target}",
+        "resumed": "a relancé le code promo {target}",
+        "deleted": "a supprimé le code promo {target}"
+      },
+      "sale": {
+        "recorded": "a marqué {target} comme vendu",
+        "edited": "a modifié une vente de {target}",
+        "reversed": "a annulé une vente de {target}"
+      },
+      "shop": {
+        "settingsUpdated": "a modifié les réglages de la boutique",
+        "changeRequested": "a demandé à changer {field}"
+      },
+      "look": {
+        "published": "a publié une nouvelle apparence"
+      },
+      "promoBar": {
+        "saved": "a enregistré la barre promo"
+      },
+      "team": {
+        "invited": "a invité un {role}",
+        "inviteRevoked": "a annulé une invitation",
+        "joined": "a rejoint l'équipe en tant que {role}",
+        "roleChanged": "a changé le rôle de {target} en {role}",
+        "suspended": "a suspendu {target}",
+        "reactivated": "a réactivé {target}",
+        "removed": "a retiré {target} de l'équipe",
+        "left": "a quitté l'équipe"
+      }
     }
   }
 }

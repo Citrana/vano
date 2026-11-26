@@ -20,6 +20,21 @@ export function useMyBilling(): MyBilling | null | undefined {
   return allowed ? billing : null
 }
 
+export type ShopLimits = FunctionReturnType<typeof api.billing.shopLimits>
+
+/**
+ * The current shop's limits and product usage, for every team member:
+ * undefined while loading, null when the caller has no shop yet. Use it
+ * for plan locks (`canShopDo`); `useMyBilling` is the owner's billing.
+ */
+export function useShopLimits(): ShopLimits | null | undefined {
+  const viewer = useQuery(api.users.viewer, {})
+  const allowed = (viewer?.hasShop ?? false) && (viewer?.permissions.includes("ownShop.view") ?? false)
+  const limits = useQuery(api.billing.shopLimits, allowed ? {} : "skip")
+  if (viewer === undefined) return undefined
+  return allowed ? limits : null
+}
+
 /**
  * The time when the component mounted. Day counts are computed from it so
  * rendering stays pure (Convex queries don't read the clock either).

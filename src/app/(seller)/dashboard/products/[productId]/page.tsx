@@ -11,7 +11,7 @@ import { photoCap, toPlanLimits } from "../../../../../../convex/lib/planFeature
 import { PageTitle } from "@/components/shell/page-title"
 import { EmptyState, LoadingState } from "@/components/states/states"
 import { buttonVariants } from "@/components/ui/button"
-import { useMyBilling } from "@/features/billing/use-billing"
+import { useShopLimits } from "@/features/billing/use-billing"
 import { ProductForm } from "@/features/product/product-form"
 import { MarkSoldButton } from "@/features/sales-records/mark-sold-button"
 import { ProductSalesHistory } from "@/features/sales-records/product-sales-history"
@@ -22,7 +22,7 @@ export default function EditProductPage() {
   const { productId } = useParams<{ productId: string }>()
   const shop = useQuery(api.shops.myShop, {})
   const product = useQuery(api.products.getMine, { productId })
-  const billing = useMyBilling()
+  const billing = useShopLimits()
   const update = useMutation(api.products.update)
   const router = useRouter()
 

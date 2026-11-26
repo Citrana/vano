@@ -15,6 +15,7 @@ import { bannerUrls, lookRow, publicLookFor } from "./lib/looks/store";
 import { liveSaleSummary, liveSalesFor } from "./lib/sales/store";
 import { storedLookValidator, type StoredLook } from "./lib/looks/validators";
 import { claimImages, deleteFilesNotIn, requireOwnShop, sellerMutation, sellerQuery } from "./lib/seller";
+import { logShopActivity } from "./lib/shopActivity";
 
 /**
  * The seller's "Shop look" editor (CLAUDE.md "Shop looks"). Edits are
@@ -55,7 +56,8 @@ export async function syncLookSchedules(
 }
 
 export const mine = sellerQuery({
-  permission: "ownShop.manage",
+  // The Offers page previews sales with the shop's look too.
+  permission: ["ownLook.manage", "ownOffers.manage"],
   args: {},
   handler: async (ctx) => {
     const shop = await requireOwnShop(ctx);
@@ -108,7 +110,7 @@ export const mine = sellerQuery({
 });
 
 export const saveDraft = sellerMutation({
-  permission: "ownShop.manage",
+  permission: "ownLook.manage",
   args: { look: storedLookValidator },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -120,7 +122,7 @@ export const saveDraft = sellerMutation({
     const look = withPublishedBar(cleaned, row?.published);
 
     const used = lookImageIds(look);
-    await claimImages(ctx, used);
+    await claimImages(ctx, shop, used);
     await deleteFilesNotIn(ctx, lookImageIds(row?.draft), [...used, ...lookImageIds(row?.published)]);
 
     const now = Date.now();
@@ -134,7 +136,7 @@ export const saveDraft = sellerMutation({
 });
 
 export const publish = sellerMutation({
-  permission: "ownShop.manage",
+  permission: "ownLook.manage",
   args: {},
   returns: v.null(),
   handler: async (ctx) => {
@@ -167,12 +169,13 @@ export const publish = sellerMutation({
       resetByAdminAt: undefined,
       ...(await syncLookSchedules(ctx, row, draft, now)),
     });
+    await logShopActivity(ctx, shop, { actor: ctx.user, kind: "look.published", targetLabel: shop.name });
     return null;
   },
 });
 
 export const discardDraft = sellerMutation({
-  permission: "ownShop.manage",
+  permission: "ownLook.manage",
   args: {},
   returns: v.null(),
   handler: async (ctx) => {
@@ -191,7 +194,7 @@ export const discardDraft = sellerMutation({
  * real sale text) and the plan state. Nothing personal, no storage ids.
  */
 export const promoBar = sellerQuery({
-  permission: "ownShop.manage",
+  permission: "ownOffers.manage",
   args: {},
   handler: async (ctx) => {
     const shop = await requireOwnShop(ctx);
@@ -219,7 +222,7 @@ export const promoBar = sellerQuery({
  * readable colours; removing it (null) works on every plan.
  */
 export const savePromoBar = sellerMutation({
-  permission: "ownShop.manage",
+  permission: "ownOffers.manage",
   args: { bar: v.union(announcementFacetValidator, v.null()) },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -254,6 +257,7 @@ export const savePromoBar = sellerMutation({
       draft: row.draft ? withBar(row.draft) : undefined,
       ...(await syncLookSchedules(ctx, row, published, now)),
     });
+    await logShopActivity(ctx, shop, { actor: ctx.user, kind: "promoBar.saved", targetLabel: shop.name });
     return null;
   },
 });
@@ -272,7 +276,7 @@ function endedAt(look: StoredLook | undefined, now: number): StoredLook | undefi
  * Stays saved; the seller can pick new dates and publish again.
  */
 export const endPromoNow = sellerMutation({
-  permission: "ownShop.manage",
+  permission: "ownLook.manage",
   args: {},
   returns: v.null(),
   handler: async (ctx) => {

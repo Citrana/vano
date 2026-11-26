@@ -6,12 +6,27 @@ providers, checkout, the scheduled jobs or billing admin updates this file
 in the same commit, with a dated entry in the change log below
 (see CLAUDE.md "Billing").
 
-**Last updated: 2026-11-25 16:06 CAT (UTC+02:00)**
+**Last updated: 2026-11-26 16:56 CAT (UTC+02:00)**
 
 ## Change log
 
 Newest first. Format: `YYYY-MM-DD HH:MM TZ — what changed (files)`.
 
+- **2026-11-26 16:56 CAT (UTC+02:00)**: team accounts (CLAUDE.md "Team
+  accounts"). The `teamRoles` flag (seed: Business and Enterprise,
+  unchanged) gates teams, and the `teamMembers` limit (seed: 0 / 0 / 5 /
+  20, editable on `/admin/plans`, raisable by a shop exception) is now
+  checked by a new plan action, `requireCan({ kind: "addMember", seats })`
+  (`PLAN_FEATURE_LOCKED` without `teamRoles`, else `PLAN_LIMIT_TEAM` when
+  members + pending invites reach the limit; the owner isn't counted), on
+  invite, renew and accept. A downgrade or a lower limit never deletes a
+  member: `usableMemberIds` (pure, `entitlements.ts`) keeps the active
+  members who joined first up to the limit and the rest are **paused**
+  (computed, no job), back at once on upgrade. The team's UI reads limits
+  from the new `billing.shopLimits` (any member); `billing.mine` stays the
+  owner's (`ownBilling.manage`, never in a team role). Files:
+  `convex/lib/entitlements.ts`, `convex/lib/shopAccess.ts`,
+  `convex/team.ts`, `convex/billing.ts`.
 - **2026-11-25 16:06 CAT (UTC+02:00)**: the `stockManagement` flag (area
   `products`, seed: Business and Enterprise, unchanged) is now
   `enforced: true` for pieces in stock (CLAUDE.md "Sales tracking"):
@@ -512,12 +527,14 @@ subscription row is on the trial from its creation date.
 | `addProduct` | count < plan limit (unlimited → platform ceiling, `TOO_MANY_PRODUCTS`) | `PLAN_LIMIT_PRODUCTS` |
 | `setPhotos` | count ≤ `photoCap(limits, previousCount)` (a product over the limit keeps its photos, never gains more) | `PLAN_LIMIT_PHOTOS` |
 | `pinProduct` | pinned count < plan limit | `PLAN_LIMIT_PRODUCTS` |
+| `addMember` | `teamRoles` on, then members + pending invites < `teamMembers` | `PLAN_FEATURE_LOCKED` / `PLAN_LIMIT_TEAM` |
 | `feature` | flag in `limits.features` (e.g. `shopStats`) | `PLAN_FEATURE_LOCKED` |
 
 - In mutations use `requireCan(ctx, shop, action)`. In queries use
   `hasFeature` / `getEntitlements(ctx, shop)` (stored status; queries don't
-  read the clock). In the UI use the pure `canShopDo` with `billing.mine`
-  data (the server checks again).
+  read the clock). In the UI use the pure `canShopDo` with the `limits`
+  from `billing.shopLimits` (`useShopLimits`, every team member) — the
+  server checks again.
 - **Downgrade / expiry never deletes or changes data.** Public visibility
   is computed by `visibleProductIds`: admin-hidden products are excluded,
   then pinned products (most recently pinned first), then the newest, up
@@ -539,6 +556,11 @@ subscription row is on the trial from its creation date.
   shown while the plan lacks `salesPromotions` (normal prices return at
   once). The Sales page shows "Available on Pro"; sales can still be
   paused or deleted, not created, edited, duplicated or resumed.
+- Team members: kept after a downgrade, **paused** (computed by
+  `usableMemberIds`: none without `teamRoles`, else the first-joined
+  active members up to `teamMembers`). A paused member sees a short
+  "Your access is paused" screen; the owner's Team page shows the lock
+  card and the members as paused. Upgrading brings them back at once.
 - Stats are still recorded on Free; `stats.summary` returns
   `{ locked: true }` and the dashboard shows an upgrade card.
 - A new paid feature = a key in `FEATURES` (`planFeatures.ts`, `enforced:

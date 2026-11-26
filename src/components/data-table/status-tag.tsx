@@ -23,6 +23,8 @@ const NAMESPACE = {
   sale: "Sales.status",
   discountCode: "DiscountCodes.status",
   salesRecord: "SalesRecords.status",
+  member: "Team.memberState",
+  invite: "Team.inviteState",
 } as const
 
 /** A small status tag; the same status always has the same color on every admin page. */

@@ -2,6 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { isSupportedCountry, type CountryCode } from "libphonenumber-js";
 import { v, type Infer } from "convex/values";
 import { query } from "./_generated/server";
+import { accountMutation, requirePermission } from "./lib/access";
 import { categoryValidator, languageValidator, LIMITS } from "./lib/catalog";
 import { cleanShopName } from "./lib/changeRequests";
 import { fail } from "./lib/errors";
@@ -25,6 +26,7 @@ import { slugProblem } from "./lib/slug";
 import { timeZoneProblem } from "./lib/timeZone";
 import { startFree, startTrial } from "./lib/subscriptions";
 import { sendWelcomeEmail } from "./emails/welcome";
+import { logShopActivity } from "./lib/shopActivity";
 
 /** Settings the seller edits directly, any time. */
 const settingsInput = v.object({
@@ -141,12 +143,15 @@ export const checkSlug = query({
   },
 });
 
-/** The caller's shop (with logo URL), or null before onboarding. */
+/**
+ * The caller's current shop (own shop or a team membership, with logo
+ * URL), or null before onboarding.
+ */
 export const myShop = sellerQuery({
-  permission: "ownShop.manage",
+  permission: "ownShop.view",
   args: {},
   handler: async (ctx) => {
-    const shop = await findShopByOwner(ctx, ctx.user._id);
+    const shop = ctx.shopAccess?.shop ?? null;
     if (!shop) return null;
     return {
       ...shop,
@@ -163,17 +168,21 @@ export const myShop = sellerQuery({
  * Business right away. The flag can only remove the trial, never add
  * anything, so it's safe to take from the client.
  */
-export const create = sellerMutation({
-  permission: "ownShop.manage",
+export const create = accountMutation({
   args: { ...shopInput.fields, startPlan: v.optional(v.literal("business")) },
   returns: v.id("shops"),
   handler: async (ctx, { startPlan, ...args }) => {
+    // The global role decides who may open a shop: being a team member
+    // elsewhere (with a narrower role there) never prevents it.
+    requirePermission(ctx.access, "ownShop.manage");
     if (await findShopByOwner(ctx, ctx.user._id)) fail("SHOP_EXISTS");
     const input = cleanShopInput(args);
     if ((await slugHolder(ctx, input.slug)) !== null) fail("SLUG_TAKEN");
-    if (input.logoId) await claimImages(ctx, [input.logoId]);
     const shopId = await ctx.db.insert("shops", { ...input, ownerId: ctx.user._id });
     const shop = (await ctx.db.get("shops", shopId))!;
+    if (input.logoId) await claimImages(ctx, shop, [input.logoId]);
+    // The seller screens switch to the new shop.
+    await ctx.db.patch("users", ctx.user._id, { activeShopId: shopId });
     await onShopCreated(ctx, shop);
     // New shops start the Pro trial, except "Get Business" (CLAUDE.md "Billing").
     if (startPlan === "business") await startFree(ctx, shop);
@@ -219,7 +228,7 @@ export const update = sellerMutation({
     }
 
     if (input.logoId && input.logoId !== shop.logoId) {
-      await claimImages(ctx, [input.logoId]);
+      await claimImages(ctx, shop, [input.logoId]);
     }
     await deleteFilesNotIn(
       ctx,
@@ -231,6 +240,7 @@ export const update = sellerMutation({
     // so protected fields, status and onboarding progress are untouched.
     // The time zone is never cleared: not sent = kept.
     await ctx.db.patch("shops", shop._id, { ...input, timeZone: input.timeZone ?? shop.timeZone });
+    await logShopActivity(ctx, shop, { actor: ctx.user, kind: "shop.settingsUpdated", targetLabel: shop.name });
     return null;
   },
 });

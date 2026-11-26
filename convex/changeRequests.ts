@@ -29,6 +29,7 @@ import {
 } from "./lib/shopChanges";
 import { hashCode, newCode, newSalt, sameHash } from "./verification/codes";
 import { activeSender, verificationTestMode } from "./verification/registry";
+import { logShopActivity } from "./lib/shopActivity";
 
 /**
  * Seller side of protected shop changes (CLAUDE.md "Protected shop
@@ -175,7 +176,14 @@ export const create = sellerMutation({
         : { type: "changeRequest.submitted", requestId, shopName: shop.name, field },
       to: { permission: "changeRequests.view" },
       dedupeKey: `cr.submitted:${requestId}`,
-      exclude: [shop.ownerId],
+      exclude: [shop.ownerId, ctx.user._id],
+    });
+    await logShopActivity(ctx, shop, {
+      actor: ctx.user,
+      kind: "shop.changeRequested",
+      targetId: requestId,
+      targetLabel: shop.name,
+      details: { field },
     });
     await logAdminAction(ctx, {
       actor: ctx.user,

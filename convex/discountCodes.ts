@@ -12,7 +12,15 @@ import { affectedProducts } from "./lib/sales/active";
 import { discountProblem } from "./lib/sales/discount";
 import { pickerProducts } from "./lib/sales/store";
 import { pickerProductValidator, type SaleTarget } from "./lib/sales/validators";
-import { requireOwnShop, sellerMutation, sellerQuery, type SellerQueryCtx } from "./lib/seller";
+import {
+  requireOwnShop,
+  sellerMutation,
+  sellerQuery,
+  type SellerMutationCtx,
+  type SellerQueryCtx,
+} from "./lib/seller";
+import { logShopActivity } from "./lib/shopActivity";
+import type { ActivityKind } from "./lib/team";
 
 /**
  * The seller's discount codes (CLAUDE.md "Discount codes"). A code gives
@@ -23,7 +31,7 @@ import { requireOwnShop, sellerMutation, sellerQuery, type SellerQueryCtx } from
  * the `live` flag and schedules `discountCodeJobs.sync` at start / end.
  */
 
-const PERMISSION = "ownProducts.manage" as const;
+const PERMISSION = "ownOffers.manage" as const;
 
 const codeFields = {
   _id: v.id("discountCodes"),
@@ -180,6 +188,17 @@ async function cleanCodeInput(
   return { code, discount: input.discount, target, startsAt, endsAt: input.endsAt, maxUses: input.maxUses };
 }
 
+/** One line in the shop's activity history (CLAUDE.md "Team accounts"). */
+async function logCode(
+  ctx: SellerMutationCtx,
+  shopId: Id<"shops">,
+  kind: ActivityKind,
+  codeId: Id<"discountCodes">,
+  code: string,
+) {
+  await logShopActivity(ctx, { _id: shopId }, { actor: ctx.user, kind, targetId: codeId, targetLabel: code });
+}
+
 export const create = sellerMutation({
   permission: PERMISSION,
   args: codeInputFields,
@@ -200,6 +219,7 @@ export const create = sellerMutation({
       updatedAt: now,
     });
     await writeCodeLiveAndSchedule(ctx, (await ctx.db.get("discountCodes", codeId))!, now);
+    await logCode(ctx, shop._id, "code.created", codeId, fields.code);
     return codeId;
   },
 });
@@ -221,6 +241,7 @@ export const update = sellerMutation({
     const fields = await cleanCodeInput(ctx, shop, input, now, code);
     await ctx.db.patch("discountCodes", codeId, { ...fields, version: code.version + 1, updatedAt: now });
     await writeCodeLiveAndSchedule(ctx, (await ctx.db.get("discountCodes", codeId))!, now);
+    await logCode(ctx, shop._id, "code.updated", codeId, fields.code);
     return null;
   },
 });
@@ -235,6 +256,7 @@ export const pause = sellerMutation({
     const now = Date.now();
     await ctx.db.patch("discountCodes", codeId, { paused: true, version: code.version + 1, updatedAt: now });
     await writeCodeLiveAndSchedule(ctx, (await ctx.db.get("discountCodes", codeId))!, now);
+    await logCode(ctx, code.shopId, "code.paused", codeId, code.code);
     return null;
   },
 });
@@ -259,6 +281,7 @@ export const resume = sellerMutation({
       updatedAt: now,
     });
     await writeCodeLiveAndSchedule(ctx, (await ctx.db.get("discountCodes", codeId))!, now);
+    await logCode(ctx, shop._id, "code.resumed", codeId, code.code);
     return null;
   },
 });
@@ -270,6 +293,7 @@ export const remove = sellerMutation({
   handler: async (ctx, { codeId }) => {
     const { code } = await requireOwnCode(ctx, codeId);
     await deleteCode(ctx, code);
+    await logCode(ctx, code.shopId, "code.deleted", codeId, code.code);
     return null;
   },
 });

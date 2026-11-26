@@ -29,8 +29,10 @@ export const message = internalQuery({
       data: notification.data,
       recipient: {
         email: user.email ?? null,
+        // A team member without a shop of their own: no WhatsApp number,
+        // their sign-up language (CLAUDE.md "Team accounts").
         whatsappNumber: shop?.whatsappNumber ?? null,
-        language: shop?.language ?? "en",
+        language: shop?.language ?? user.language ?? "en",
       },
     };
   },

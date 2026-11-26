@@ -28,7 +28,7 @@ describe("adminGateTarget", () => {
   })
 
   test("non-admins go to the dashboard, or get noAccess if they can't sell", () => {
-    const seller = viewer({ isAdmin: false, permissions: ["ownShop.manage"] })
+    const seller = viewer({ isAdmin: false, permissions: ["ownShop.view", "ownShop.manage"] })
     expect(adminGateTarget({ ...signedIn, viewer: seller })).toBe("/dashboard")
     expect(adminGateTarget({ ...signedIn, viewer: viewer({ isAdmin: false, permissions: [] }) })).toBe("noAccess")
   })

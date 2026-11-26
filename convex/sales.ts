@@ -16,7 +16,15 @@ import {
   saleTargetValidator,
   type SaleTarget,
 } from "./lib/sales/validators";
-import { requireOwnShop, sellerMutation, sellerQuery, type SellerQueryCtx } from "./lib/seller";
+import {
+  requireOwnShop,
+  sellerMutation,
+  sellerQuery,
+  type SellerMutationCtx,
+  type SellerQueryCtx,
+} from "./lib/seller";
+import { logShopActivity } from "./lib/shopActivity";
+import type { ActivityKind } from "./lib/team";
 
 /**
  * The seller's sales (CLAUDE.md "Sales"). A sale adds a temporary price
@@ -28,7 +36,7 @@ import { requireOwnShop, sellerMutation, sellerQuery, type SellerQueryCtx } from
  * if nobody opens the app.
  */
 
-const PERMISSION = "ownProducts.manage" as const;
+const PERMISSION = "ownOffers.manage" as const;
 
 const saleFields = {
   _id: v.id("sales"),
@@ -206,6 +214,11 @@ function cleanSaleInput(
   };
 }
 
+/** One line in the shop's activity history (CLAUDE.md "Team accounts"). */
+async function logOffer(ctx: SellerMutationCtx, shopId: Id<"shops">, kind: ActivityKind, saleId: Id<"sales">, name: string) {
+  await logShopActivity(ctx, { _id: shopId }, { actor: ctx.user, kind, targetId: saleId, targetLabel: name });
+}
+
 export const create = sellerMutation({
   permission: PERMISSION,
   args: saleInputFields,
@@ -226,6 +239,7 @@ export const create = sellerMutation({
       updatedAt: now,
     });
     await writeLiveAndSchedule(ctx, (await ctx.db.get("sales", saleId))!, now);
+    await logOffer(ctx, shop._id, "offer.created", saleId, fields.name);
     return saleId;
   },
 });
@@ -249,6 +263,7 @@ export const update = sellerMutation({
     const fields = cleanSaleInput(shop, await shopProducts(ctx, shop._id), input, now, keepStart);
     await ctx.db.patch("sales", saleId, { ...fields, version: sale.version + 1, updatedAt: now });
     await writeLiveAndSchedule(ctx, (await ctx.db.get("sales", saleId))!, now);
+    await logOffer(ctx, shop._id, "offer.updated", saleId, fields.name);
     return null;
   },
 });
@@ -284,6 +299,7 @@ export const duplicate = sellerMutation({
       updatedAt: now,
     });
     await writeLiveAndSchedule(ctx, (await ctx.db.get("sales", copyId))!, now);
+    await logOffer(ctx, shop._id, "offer.created", copyId, name.trim());
     return copyId;
   },
 });
@@ -298,6 +314,7 @@ export const pause = sellerMutation({
     const now = Date.now();
     await ctx.db.patch("sales", saleId, { paused: true, version: sale.version + 1, updatedAt: now });
     await writeLiveAndSchedule(ctx, (await ctx.db.get("sales", saleId))!, now);
+    await logOffer(ctx, sale.shopId, "offer.paused", saleId, sale.name);
     return null;
   },
 });
@@ -322,6 +339,7 @@ export const resume = sellerMutation({
       updatedAt: now,
     });
     await writeLiveAndSchedule(ctx, (await ctx.db.get("sales", saleId))!, now);
+    await logOffer(ctx, shop._id, "offer.resumed", saleId, sale.name);
     return null;
   },
 });
@@ -333,6 +351,7 @@ export const remove = sellerMutation({
   handler: async (ctx, { saleId }) => {
     const { sale } = await requireOwnSale(ctx, saleId);
     await deleteSale(ctx, sale);
+    await logOffer(ctx, sale.shopId, "offer.deleted", saleId, sale.name);
     return null;
   },
 });

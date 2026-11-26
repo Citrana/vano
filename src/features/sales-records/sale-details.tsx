@@ -85,6 +85,7 @@ function SaleSummary({ sale }: { sale: Details }) {
           <span className="text-base font-bold tabular-nums">{labels.money(sale.total)}</span>
         </DetailItem>
         <DetailItem label={t("details.soldAt")}>{labels.dateTime(sale.soldAt)}</DetailItem>
+        <DetailItem label={t("details.recordedBy")}>{sale.recordedBy}</DetailItem>
         <DetailItem label={t("details.quantity")}>{sale.quantity}</DetailItem>
         <DetailItem label={t("details.unitPrice")}>{labels.money(sale.finalUnitPrice)}</DetailItem>
         <DetailItem label={t("details.normalPrice")}>{labels.money(sale.normalUnitPrice)}</DetailItem>

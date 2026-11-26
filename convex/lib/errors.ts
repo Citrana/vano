@@ -105,6 +105,13 @@ export const ERROR_CODES = [
   "EMAIL_MISSING",
   "TEST_EMAIL_RATE_LIMITED",
   "EMAIL_SEND_FAILED",
+  "PLAN_LIMIT_TEAM",
+  "INVITE_INVALID",
+  "INVITE_EXPIRED",
+  "INVITE_USED",
+  "ALREADY_MEMBER",
+  "INVITE_OWN_SHOP",
+  "INVITE_RATE_LIMITED",
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

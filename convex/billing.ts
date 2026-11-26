@@ -131,6 +131,37 @@ export const mine = sellerQuery({
   },
 });
 
+/**
+ * The current shop's resolved limits and product usage, for every team
+ * member (`canShopDo` locks in the UI); plan dates and payments stay in
+ * `mine`, which only the owner reads (CLAUDE.md "Team accounts").
+ */
+export const shopLimits = sellerQuery({
+  permission: "ownShop.view",
+  args: {},
+  returns: v.object({
+    effectivePlan: planIdValidator,
+    limits: limitsValidator,
+    usage: v.object({ products: v.number(), overLimit: v.number(), pinned: v.number() }),
+  }),
+  handler: async (ctx) => {
+    const shop = await requireOwnShop(ctx);
+    const { plan, limits } = await getEntitlements(ctx, shop);
+    const products = await shopProducts(ctx, shop._id);
+    const visible = visibleProductIds(products, limits);
+    const listed = products.filter((p) => !hiddenFromShop(p));
+    return {
+      effectivePlan: plan,
+      limits: toLimitsResult(limits),
+      usage: {
+        products: products.length,
+        overLimit: listed.filter((p) => !visible.has(p._id)).length,
+        pinned: listed.filter((p) => p.pinnedAt !== undefined).length,
+      },
+    };
+  },
+});
+
 /** The caller's payment history, newest first. */
 export const payments = sellerQuery({
   permission: PERMISSION,
