@@ -20,4 +20,6 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
    */
   discountCodeVisitor: { kind: "token bucket", rate: 10, period: HOUR, capacity: 5 },
   discountCodeShop: { kind: "token bucket", rate: 100, period: HOUR, capacity: 30 },
+  /** Admin "Send test email" (CLAUDE.md "Emails"), per admin: a burst of 3, then 10 an hour. */
+  testEmail: { kind: "token bucket", rate: 10, period: HOUR, capacity: 3 },
 });

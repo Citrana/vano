@@ -120,7 +120,9 @@
     "SALES_RECORD_STOCK": "Il ne reste pas assez de pièces pour cette vente.",
     "STOCK_INVALID": "Saisissez un nombre de pièces de 0 à 99 999, ou laissez vide.",
     "STOCK_TRACKED": "Les pièces de ce produit sont comptées : changez plutôt le nombre de pièces.",
-    "REPORT_INVALID": "Ce mois n'est pas valide."
+    "REPORT_INVALID": "Ce mois n'est pas valide.",
+    "EMAIL_MISSING": "Votre compte n'a pas d'adresse e-mail, l'e-mail de test ne peut donc pas être envoyé.",
+    "TEST_EMAIL_RATE_LIMITED": "Trop d'e-mails de test. Attendez quelques minutes et réessayez."
   },
   "Validation": {
     "required": "Ce champ est obligatoire.",
@@ -983,7 +985,8 @@
       "delete": "A supprimé un rôle"
     },
     "settings": {
-      "update": "A modifié les paramètres"
+      "update": "A modifié les paramètres",
+      "testEmail": "A envoyé un e-mail de test"
     },
     "superAdmin": {
       "seed": "A créé un super admin (terminal)"
@@ -1104,7 +1107,14 @@
     "clear": "Effacer l'annonce",
     "save": "Enregistrer les paramètres",
     "saved": "Paramètres enregistrés.",
-    "readOnly": "Vous pouvez voir ces paramètres mais pas les modifier."
+    "readOnly": "Vous pouvez voir ces paramètres mais pas les modifier.",
+    "testEmailTitle": "E-mails",
+    "testEmailHelp": "Envoie un e-mail de test à votre propre adresse pour vérifier que l'envoi fonctionne.",
+    "testEmailResend": "Envoi avec Resend depuis {from}.",
+    "testEmailLog": "Aucune clé e-mail n'est définie : les e-mails sont écrits dans les logs Convex au lieu d'être envoyés.",
+    "testEmailButton": "Envoyer un e-mail de test",
+    "testEmailSent": "E-mail de test envoyé à {to}. Il peut mettre une minute à arriver.",
+    "testEmailLogged": "E-mail de test écrit dans les logs Convex (mode log)."
   },
   "Announcement": {
     "label": "Annonce de Vano"
@@ -3215,6 +3225,19 @@
       "offer": "Offre",
       "customerName": "Client",
       "customerPhone": "Téléphone du client"
+    }
+  },
+  "Emails": {
+    "layout": {
+      "tagline": "Des boutiques en ligne pour la mode",
+      "footer": "Vous recevez cet e-mail parce que vous avez un compte Vano."
+    },
+    "test": {
+      "subject": "E-mail de test Vano",
+      "preheader": "L'envoi d'e-mails fonctionne.",
+      "heading": "L'envoi d'e-mails fonctionne",
+      "body": "Ceci est un e-mail de test envoyé depuis les paramètres admin de Vano. Si vous pouvez le lire, les e-mails sont bien configurés.",
+      "sentAt": "Envoyé le {date} (UTC)."
     }
   }
 }

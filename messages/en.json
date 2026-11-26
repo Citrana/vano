@@ -120,7 +120,9 @@
     "SALES_RECORD_STOCK": "There aren't enough pieces left for this sale.",
     "STOCK_INVALID": "Enter a number of pieces from 0 to 99,999, or leave it empty.",
     "STOCK_TRACKED": "This product's pieces are counted: change the number of pieces instead.",
-    "REPORT_INVALID": "This month isn't valid."
+    "REPORT_INVALID": "This month isn't valid.",
+    "EMAIL_MISSING": "Your account has no email address, so the test email can't be sent.",
+    "TEST_EMAIL_RATE_LIMITED": "Too many test emails. Please wait a few minutes and try again."
   },
   "Validation": {
     "required": "This field is required.",
@@ -983,7 +985,8 @@
       "delete": "Deleted a role"
     },
     "settings": {
-      "update": "Changed the settings"
+      "update": "Changed the settings",
+      "testEmail": "Sent a test email"
     },
     "superAdmin": {
       "seed": "Created a super admin (terminal)"
@@ -1104,7 +1107,14 @@
     "clear": "Clear announcement",
     "save": "Save settings",
     "saved": "Settings saved.",
-    "readOnly": "You can view these settings but not change them."
+    "readOnly": "You can view these settings but not change them.",
+    "testEmailTitle": "Emails",
+    "testEmailHelp": "Sends a test email to your own address to check that email sending works.",
+    "testEmailResend": "Sending with Resend from {from}.",
+    "testEmailLog": "No email key is set: emails are written to the Convex logs instead of being sent.",
+    "testEmailButton": "Send test email",
+    "testEmailSent": "Test email sent to {to}. It can take a minute to arrive.",
+    "testEmailLogged": "Test email written to the Convex logs (log mode)."
   },
   "Announcement": {
     "label": "Announcement from Vano"
@@ -3215,6 +3225,19 @@
       "offer": "Offer",
       "customerName": "Customer",
       "customerPhone": "Customer phone"
+    }
+  },
+  "Emails": {
+    "layout": {
+      "tagline": "Online shops for fashion businesses",
+      "footer": "You received this email because you have a Vano account."
+    },
+    "test": {
+      "subject": "Vano test email",
+      "preheader": "Email sending works.",
+      "heading": "Email sending works",
+      "body": "This is a test email sent from the Vano admin settings. If you can read it, emails are set up correctly.",
+      "sentAt": "Sent on {date} (UTC)."
     }
   }
 }
