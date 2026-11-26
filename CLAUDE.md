@@ -32,6 +32,34 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   reference project (Convex Auth + `proxy.ts` upstream bug
   get-convex/convex-auth#271). The real boundary is always server-side.
 
+## Auth codes
+
+- Email verification and password reset use Convex Auth's own
+  `Password({ verify, reset })` flows, never a parallel system: a 6-digit
+  code by email (`authCodeProvider` in `convex/emails/authCode.ts`,
+  `newCode`), stored hashed, expired and used up by Convex Auth.
+  Rules live **only** in `convex/lib/authCodes.ts` (15-minute codes, 5
+  wrong tries an hour per email — Convex Auth's sign-in bucket, shared
+  with wrong passwords —, 60 s resend wait, 15-minute lock wait).
+- Sign-up gives **no session** until the code is entered (same screen,
+  `VerifyEmailStep`); an unverified account signing in gets a new code.
+  Resend = sign in again with the password. `reset-verification` changes
+  the password, verifies the email and signs out other sessions.
+- `guardPasswordFlows` (`convex/lib/authFlows.ts`) wraps the provider's
+  `authorize`: a `reset` never reveals whether an account exists (same
+  answer, send limit taken for every address, `RESET_MIN_RESPONSE_MS`),
+  and `email-verification` must carry a code. Don't bypass it.
+- Code emails are sent while the person waits (`sendEmailNow`), in the
+  account's language (`users.language` from sign-up, else its shop's,
+  else English), limited by `authCodeBurst` / `authCodeHourly`; a failed
+  send is `EMAIL_SEND_FAILED` and the screen offers a retry.
+- Accounts from before codes count as verified (`migrations:emailVerifiedV1
+  { before }`); `seed:superAdmin` marks its account verified. Expired codes
+  are deleted hourly (`authCodeJobs.cleanup`).
+- The code input (`code-input.tsx`, pure rules in `code-input-logic.ts`):
+  numeric keyboard, `one-time-code`, auto-advance, paste fills all.
+  Screens share `useCodeStep` (resend wait, wrong-try lock, errors).
+
 ## Roles & permissions
 
 - Every user has one role; a role is a set of permissions. Permissions
@@ -692,6 +720,8 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   (`convex/emails/send.ts`), from a mutation or an action. It only
   schedules `emails.send.deliver`, so a slow or failing provider never
   blocks or fails the user's action. Never call a provider directly.
+  The one exception is `sendEmailNow` (same file, actions only), for auth
+  codes, where the person waits on screen for the result (see "Auth codes").
 - Providers implement `EmailProvider` (`convex/emails/provider.ts`: never
   throw, return `retryable` or not), registered in `emails/registry.ts`.
   Resend is called with `fetch` (no SDK). Settings are Convex env vars
@@ -824,7 +854,8 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 ```
 convex/
   schema.ts         # all tables
-  auth.ts auth.config.ts http.ts   # Convex Auth (Password, sign-up enabled)
+  auth.ts auth.config.ts http.ts   # Convex Auth (Password, sign-up enabled, email codes)
+  authCodeJobs.ts   # deletes expired sign-up / reset codes
   users.ts shops.ts products.ts files.ts public.ts stats.ts
   shopLooks.ts      # shop look draft / publish (lib/looks/: model, presets, contrast, sections)
   productJobs.ts    # ends "Back in stock"
