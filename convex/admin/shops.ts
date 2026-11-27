@@ -382,6 +382,19 @@ export const purgeShop = internalMutation({
       return null;
     }
 
+    // Lower plans the seller chose (docs/payments.md section 15).
+    for (const status of ["scheduled", "kept", "replaced"] as const) {
+      const changes = await ctx.db
+        .query("planChanges")
+        .withIndex("by_shopId_and_status", (q) => q.eq("shopId", shopId).eq("status", status))
+        .take(STATS_PER_BATCH);
+      if (changes.length > 0) {
+        for (const row of changes) await ctx.db.delete("planChanges", row._id);
+        await again();
+        return null;
+      }
+    }
+
     // Trial reminder email records (CLAUDE.md "Emails").
     const trialEmails = await ctx.db
       .query("trialEmails")

@@ -79,6 +79,23 @@ describe("layout", () => {
     expect(escapeHtml("'")).toBe("&#39;");
   });
 
+  test("details rows: escaped label / value table, plain lines in the text version", () => {
+    const { html, text } = renderEmail({
+      language: "en",
+      preheader: "",
+      heading: "Receipt",
+      paragraphs: ["Thanks"],
+      details: [
+        { label: "Plan", value: "Pro" },
+        { label: "Reference", value: "<ref>" },
+      ],
+    });
+    expect(html).toContain("&lt;ref&gt;");
+    expect(html).not.toContain("<ref>");
+    expect(text).toContain("Thanks\n\nPlan: Pro\nReference: <ref>\n");
+    expect(renderEmail({ language: "en", preheader: "", heading: "h", paragraphs: [] }).html).not.toContain("Reference");
+  });
+
   test("helpers", () => {
     expect(fill("Hi {name}, {missing}", { name: "Amani" })).toBe("Hi Amani, {missing}");
     expect(maskEmail("amani@gmail.com")).toBe("a•••@gmail.com");

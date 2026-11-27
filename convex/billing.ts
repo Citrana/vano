@@ -3,13 +3,25 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
+import { sendDowngradeEmail } from "./emails/planEmails";
+import { logAdminAction } from "./lib/audit";
 import { getEntitlements, hiddenFromShop, shopProducts, visibleProductIds } from "./lib/entitlements";
 import { fail } from "./lib/errors";
 import { shopDowngradeImpact } from "./lib/shopDowngrade";
 import { currencyValidator } from "./lib/money";
 import { readPlanConfig } from "./lib/planConfig";
 import { limitsValidator, toLimitsResult } from "./lib/planValidators";
-import { pricesOf, quotePurchase, subscriptionOf } from "./lib/subscriptions";
+import { isPendingChange } from "./lib/planEmails";
+import {
+  dayOrNull,
+  graceEndOf,
+  planChangeKind,
+  pricesOf,
+  quotePurchase,
+  stateAt,
+  subscriptionOf,
+  type SubscriptionState,
+} from "./lib/subscriptions";
 import {
   PLAN_CURRENCY,
   paidPlanValidator,
@@ -67,6 +79,20 @@ function toRow(p: Doc<"payments">) {
   };
 }
 
+/** The shop's chosen lower plan while it still applies (`isPendingChange`: same plan end, plan still running). */
+async function pendingChange(
+  ctx: QueryCtx,
+  shopId: Id<"shops">,
+  state: SubscriptionState,
+): Promise<Doc<"planChanges"> | null> {
+  const rows = await ctx.db
+    .query("planChanges")
+    .withIndex("by_shopId_and_status", (q) => q.eq("shopId", shopId).eq("status", "scheduled"))
+    .order("desc")
+    .take(5);
+  return rows.find((row) => isPendingChange(row, state)) ?? null;
+}
+
 async function openPayments(ctx: QueryCtx, shopId: Id<"shops">): Promise<Doc<"payments">[]> {
   const out: Doc<"payments">[] = [];
   for (const status of ["created", "pending"] as const) {
@@ -99,10 +125,16 @@ export const mine = sellerQuery({
     usage: v.object({ products: v.number(), overLimit: v.number(), pinned: v.number() }),
     payments: v.object({ available: v.boolean(), testMode: v.boolean() }),
     openPaymentId: v.union(v.id("payments"), v.null()),
+    /** A lower plan the seller chose, still waiting for the current plan's end ("Keep my plan"). */
+    pendingChange: v.union(
+      v.null(),
+      v.object({ _id: v.id("planChanges"), toPlan: planIdValidator, effectiveAt: v.number() }),
+    ),
   }),
   handler: async (ctx) => {
     const shop = await requireOwnShop(ctx);
     const { plan, status, limits, state } = await getEntitlements(ctx, shop);
+    const change = await pendingChange(ctx, shop._id, state);
     const products = await shopProducts(ctx, shop._id);
     const visible = visibleProductIds(products, limits);
     const listed = products.filter((p) => !hiddenFromShop(p));
@@ -123,6 +155,7 @@ export const mine = sellerQuery({
       },
       payments: { available: activeProvider() !== null, testMode: mockEnabled() },
       openPaymentId: open[0]?._id ?? null,
+      pendingChange: change ? { _id: change._id, toPlan: change.toPlan, effectiveAt: change.effectiveAt } : null,
     };
   },
 });
@@ -327,5 +360,81 @@ export const mockSimulate = sellerMutation({
     // Still being handed to the provider: nothing to simulate yet.
     if (!payment.providerRef) fail("PAYMENT_NOT_OPEN");
     return await applyEvent(ctx, "mock", mockEvent(payment._id, outcome));
+  },
+});
+
+/**
+ * The seller chooses a lower plan or Free (the downgrade dialog). Nothing
+ * is charged and nothing changes now: the current plan runs to its end and
+ * nothing renews by itself. The choice is recorded (`planChanges`) so the
+ * billing page can show it with "Keep my plan", and the owner gets one
+ * confirmation email per change (docs/payments.md section 15). Choosing the
+ * same plan again returns the same change (no second email); another lower
+ * plan replaces it.
+ */
+export const scheduleDowngrade = sellerMutation({
+  permission: PERMISSION,
+  args: { plan: planIdValidator },
+  returns: v.id("planChanges"),
+  handler: async (ctx, { plan }) => {
+    const shop = await requireOwnShop(ctx);
+    const now = Date.now();
+    const state = stateAt(await subscriptionOf(ctx, shop), now);
+    const freeAt = graceEndOf(state);
+    if (planChangeKind(state, plan, now) !== "downgrade" || state.periodEnd === null || freeAt === null) {
+      fail("PLAN_INVALID");
+    }
+
+    const current = await pendingChange(ctx, shop._id, state);
+    if (current?.toPlan === plan) return current._id;
+    if (current) await ctx.db.patch("planChanges", current._id, { status: "replaced" });
+
+    const changeId = await ctx.db.insert("planChanges", {
+      shopId: shop._id,
+      userId: ctx.user._id,
+      fromPlan: state.plan,
+      toPlan: plan,
+      effectiveAt: state.periodEnd,
+      freeAt,
+      status: "scheduled",
+    });
+    await logAdminAction(ctx, {
+      actor: ctx.user,
+      action: "subscription.downgradeScheduled",
+      targetType: "subscription",
+      targetId: shop._id,
+      targetLabel: shop.name,
+      details: { plan: state.plan, toPlan: plan, periodEnd: dayOrNull(state.periodEnd) },
+    });
+    await sendDowngradeEmail(ctx, { change: (await ctx.db.get("planChanges", changeId))!, shop, now });
+    return changeId;
+  },
+});
+
+/**
+ * "Keep my plan" (billing page, the confirmation email's button): cancels
+ * the chosen lower plan. Another shop's change, or one that no longer
+ * applies, is NOT_FOUND.
+ */
+export const keepPlan = sellerMutation({
+  permission: PERMISSION,
+  args: { changeId: v.id("planChanges") },
+  returns: v.null(),
+  handler: async (ctx, { changeId }) => {
+    const shop = await requireOwnShop(ctx);
+    const now = Date.now();
+    const change = await ctx.db.get("planChanges", changeId);
+    if (!change || change.shopId !== shop._id) fail("NOT_FOUND");
+    if (!isPendingChange(change, stateAt(await subscriptionOf(ctx, shop), now))) fail("NOT_FOUND");
+    await ctx.db.patch("planChanges", changeId, { status: "kept", keptAt: now });
+    await logAdminAction(ctx, {
+      actor: ctx.user,
+      action: "subscription.downgradeKept",
+      targetType: "subscription",
+      targetId: shop._id,
+      targetLabel: shop.name,
+      details: { plan: change.fromPlan, toPlan: change.toPlan },
+    });
+    return null;
   },
 });

@@ -7,6 +7,7 @@ import {
   internalQuery,
   type MutationCtx,
 } from "../_generated/server";
+import { sendPaymentReceipt } from "../emails/planEmails";
 import { logAdminAction, type AuditAction } from "../lib/audit";
 import { minorToInput } from "../lib/money";
 import { notify } from "../lib/notify";
@@ -175,6 +176,9 @@ export async function applyEvent(
     periodEndAfter: next.periodEnd ?? undefined,
   });
   await logPayment(ctx, payment, "payment.succeeded");
+  // The receipt goes only here: once per confirmed payment (appliedAt), never
+  // for failed results or admin changes. It never throws (planEmails.ts).
+  await sendPaymentReceipt(ctx, { payment, shop, previous: current, next, now });
   return "applied";
 }
 

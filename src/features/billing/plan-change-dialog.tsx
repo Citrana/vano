@@ -219,6 +219,9 @@ function DowngradeBody({
   const locale = useLocale()
   const date = useLongDate()
   const impact = useQuery(api.billing.downgradeImpact, { plan: target })
+  const scheduleDowngrade = useMutation(api.billing.scheduleDowngrade)
+  const errorMessage = useErrorMessage()
+  const [pending, setPending] = useState(false)
 
   const current = planName(state.plan)
   const name = planName(target)
@@ -226,9 +229,17 @@ function DowngradeBody({
   const freeOn = graceEndOf(state) ?? end
   const price = catalog.plans.find((p) => p.id === target)?.monthlyMinor ?? null
 
-  function switchPlan() {
-    toast.success(t("switchDone", { plan: current, date: date(end) }))
-    onClose()
+  // Recorded on the server (shown on the billing page, confirmation email); nothing changes now.
+  async function switchPlan() {
+    setPending(true)
+    try {
+      await scheduleDowngrade({ plan: target })
+      toast.success(t("switchDone", { plan: current, date: date(end) }))
+      onClose()
+    } catch (error) {
+      toast.error(errorMessage(error))
+      setPending(false)
+    }
   }
 
   return (
@@ -264,7 +275,7 @@ function DowngradeBody({
       </section>
 
       <DialogFooter className="sticky -bottom-5 -mx-5 -mb-5 items-center border-t bg-popover px-5 pt-3 pb-5">
-        <Button variant="link" className="text-muted-foreground underline" onClick={switchPlan}>
+        <Button variant="link" className="text-muted-foreground underline" onClick={switchPlan} disabled={pending}>
           {t("switchTo", { plan: name })}
         </Button>
         <Button onClick={onClose}>{t("keep", { plan: current })}</Button>

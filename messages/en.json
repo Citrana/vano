@@ -1083,7 +1083,9 @@
       "trialEnded": "Trial ended (moved to Free)",
       "expired": "Plan expired (moved to Free)",
       "grant": "Granted a plan",
-      "extend": "Extended a plan"
+      "extend": "Extended a plan",
+      "downgradeScheduled": "Chose a lower plan",
+      "downgradeKept": "Kept the plan (lower plan cancelled)"
     },
     "payment": {
       "started": "Started a payment",
@@ -2052,6 +2054,13 @@
       "keep": "Keep {plan}",
       "switchTo": "Switch to {plan}",
       "switchDone": "Done. Nothing changes until {date}: your {plan} plan runs until then."
+    },
+    "pendingChange": {
+      "title": "Moving to {plan} on {date}",
+      "body": "You keep {current} until then. Nothing is charged, and nothing is deleted.",
+      "keep": "Keep my plan",
+      "keeping": "Keeping…",
+      "kept": "Done. You're keeping {plan}."
     }
   },
   "Checkout": {
@@ -3447,6 +3456,64 @@
       "safe": "Your data is safe: nothing is deleted. Your products, photos, looks and offers are all kept; the parts {free} doesn't include are only paused.",
       "upgrade": "You can upgrade anytime, and everything comes back right away.",
       "button": "Upgrade"
+    },
+    "planReceipt": {
+      "subjectUpgrade": "Receipt: you're now on {plan}",
+      "subjectRenewal": "Receipt: {plan} renewed until {end}",
+      "preheaderUpgrade": "We received {amount}. {plan} is active until {end}.",
+      "preheaderRenewal": "We received {amount}. {plan} now runs until {end}.",
+      "headingUpgrade": "Welcome to {plan}",
+      "headingRenewal": "{plan} is renewed",
+      "introUpgrade": "Thank you! We received your payment and your shop is now on {plan}.",
+      "introRenewal": "Thank you! We received your payment and {plan} has been extended.",
+      "trialKept": "Your free trial days were kept: your paid days start when the trial ends.",
+      "trialEnded": "Your free trial ended today because {plan} starts now.",
+      "rows": {
+        "plan": "Plan",
+        "amount": "Amount paid",
+        "credit": "Credit for unused {plan} days",
+        "date": "Payment date",
+        "reference": "Payment reference",
+        "paidFrom": "Paid from",
+        "end": "New end date"
+      },
+      "unlocksTitle": "Now unlocked",
+      "button": "See my plan",
+      "keep": "Keep this email as your receipt.",
+      "noRenew": "Nothing renews by itself: you only pay when you choose.",
+      "timeZone": "Dates are in Nairobi time (EAT)."
+    },
+    "planDowngrade": {
+      "subject": "Confirmed: your shop moves to {target} on {date}",
+      "preheader": "No payment was taken. You keep {plan} until {date}.",
+      "heading": "Your plan change is confirmed",
+      "intro": "You chose to move from {plan} to {target}. This is not a payment: nothing was charged.",
+      "effective": "Nothing changes today. You keep {plan} until {date}, and the change takes effect then.",
+      "paidNote": "When {plan} ends, your shop moves to {free}. Get {target} ({price} for {days} days) from your billing page whenever you're ready.",
+      "paidNoteNoPrice": "When {plan} ends, your shop moves to {free}. Get {target} from your billing page whenever you're ready.",
+      "rows": {
+        "current": "Current plan",
+        "until": "{plan} stays until",
+        "free": "Your shop moves to {free} on"
+      },
+      "pauseTitle": "What will pause",
+      "pause": {
+        "nothing": "Nothing you use right now will pause.",
+        "salesOne": "1 running sale stops (normal prices come back)",
+        "salesOther": "{count} running sales stop (normal prices come back)",
+        "codesOne": "1 discount code stops working",
+        "codesOther": "{count} discount codes stop working",
+        "productsOne": "1 product is hidden from your shop (over the limit)",
+        "productsOther": "{count} products are hidden from your shop (over the limit)",
+        "look": "Your shop look goes back to Classic",
+        "sections": "Your sections and layout go back to the simple grid",
+        "eventBanner": "Your event banner stops showing",
+        "promoBar": "Your Promo bar stops showing"
+      },
+      "safe": "Your data is kept: products, photos, sales and settings are never deleted, and everything comes back when you choose a plan again.",
+      "button": "Keep my plan",
+      "changedMind": "Changed your mind? Tap Keep my plan before {date} and nothing changes.",
+      "timeZone": "Dates are in Nairobi time (EAT)."
     }
   },
   "TeamRoles": {

@@ -108,3 +108,15 @@ export function grantDaysProblem(days: number): "range" | null {
 export function daysLeft(end: number, now: number): number {
   return Math.max(0, Math.ceil((end - now) / DAY_MS));
 }
+
+/**
+ * A lower plan the seller chose (`planChanges`, docs/payments.md section 15):
+ * scheduled until the plan ends, kept ("Keep my plan") or replaced by
+ * another choice.
+ */
+export const planChangeStatusValidator = v.union(
+  v.literal("scheduled"),
+  v.literal("kept"),
+  v.literal("replaced"),
+);
+export type PlanChangeStatus = Infer<typeof planChangeStatusValidator>;

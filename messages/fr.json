@@ -1083,7 +1083,9 @@
       "trialEnded": "Essai terminé (passage au forfait Gratuit)",
       "expired": "Forfait expiré (passage au forfait Gratuit)",
       "grant": "Forfait offert",
-      "extend": "Forfait prolongé"
+      "extend": "Forfait prolongé",
+      "downgradeScheduled": "A choisi un forfait inférieur",
+      "downgradeKept": "A gardé le forfait (passage annulé)"
     },
     "payment": {
       "started": "Paiement commencé",
@@ -2052,6 +2054,13 @@
       "keep": "Garder {plan}",
       "switchTo": "Passer à {plan}",
       "switchDone": "C'est noté. Rien ne change avant le {date} : votre forfait {plan} reste actif jusque-là."
+    },
+    "pendingChange": {
+      "title": "Passage à {plan} le {date}",
+      "body": "Vous gardez {current} jusque-là. Rien n'est facturé et rien n'est supprimé.",
+      "keep": "Garder mon forfait",
+      "keeping": "En cours…",
+      "kept": "C'est noté. Vous gardez {plan}."
     }
   },
   "Checkout": {
@@ -3447,6 +3456,64 @@
       "safe": "Vos données sont en sécurité : rien n'est supprimé. Vos produits, photos, styles et offres sont conservés ; ce que {free} n'inclut pas est seulement mis en pause.",
       "upgrade": "Vous pouvez changer de forfait à tout moment, et tout revient aussitôt.",
       "button": "Changer de forfait"
+    },
+    "planReceipt": {
+      "subjectUpgrade": "Reçu : vous êtes maintenant sur {plan}",
+      "subjectRenewal": "Reçu : {plan} renouvelé jusqu'au {end}",
+      "preheaderUpgrade": "Nous avons reçu {amount}. {plan} est actif jusqu'au {end}.",
+      "preheaderRenewal": "Nous avons reçu {amount}. {plan} est maintenant actif jusqu'au {end}.",
+      "headingUpgrade": "Bienvenue sur {plan}",
+      "headingRenewal": "{plan} est renouvelé",
+      "introUpgrade": "Merci ! Nous avons bien reçu votre paiement et votre boutique est maintenant sur {plan}.",
+      "introRenewal": "Merci ! Nous avons bien reçu votre paiement et {plan} a été prolongé.",
+      "trialKept": "Vos jours d'essai gratuit sont conservés : vos jours payés commencent à la fin de l'essai.",
+      "trialEnded": "Votre essai gratuit s'est terminé aujourd'hui, car {plan} commence maintenant.",
+      "rows": {
+        "plan": "Forfait",
+        "amount": "Montant payé",
+        "credit": "Crédit pour les jours {plan} non utilisés",
+        "date": "Date du paiement",
+        "reference": "Référence du paiement",
+        "paidFrom": "Payé depuis",
+        "end": "Nouvelle date de fin"
+      },
+      "unlocksTitle": "Maintenant débloqué",
+      "button": "Voir mon forfait",
+      "keep": "Gardez cet e-mail comme reçu.",
+      "noRenew": "Rien ne se renouvelle tout seul : vous ne payez que si vous le décidez.",
+      "timeZone": "Les dates sont à l'heure de Nairobi (EAT)."
+    },
+    "planDowngrade": {
+      "subject": "Confirmé : votre boutique passe à {target} le {date}",
+      "preheader": "Aucun paiement n'a été pris. Vous gardez {plan} jusqu'au {date}.",
+      "heading": "Votre changement de forfait est confirmé",
+      "intro": "Vous avez choisi de passer de {plan} à {target}. Ce n'est pas un paiement : rien n'a été facturé.",
+      "effective": "Rien ne change aujourd'hui. Vous gardez {plan} jusqu'au {date}, et le changement prend effet à cette date.",
+      "paidNote": "Quand {plan} se termine, votre boutique passe au forfait {free}. Prenez {target} ({price} pour {days} jours) depuis votre page de facturation quand vous êtes prêt.",
+      "paidNoteNoPrice": "Quand {plan} se termine, votre boutique passe au forfait {free}. Prenez {target} depuis votre page de facturation quand vous êtes prêt.",
+      "rows": {
+        "current": "Forfait actuel",
+        "until": "{plan} reste actif jusqu'au",
+        "free": "Votre boutique passe en {free} le"
+      },
+      "pauseTitle": "Ce qui sera mis en pause",
+      "pause": {
+        "nothing": "Rien de ce que vous utilisez en ce moment ne sera mis en pause.",
+        "salesOne": "1 solde en cours s'arrête (les prix normaux reviennent)",
+        "salesOther": "{count} soldes en cours s'arrêtent (les prix normaux reviennent)",
+        "codesOne": "1 code promo cesse de fonctionner",
+        "codesOther": "{count} codes promo cessent de fonctionner",
+        "productsOne": "1 produit est masqué dans votre boutique (au-delà de la limite)",
+        "productsOther": "{count} produits sont masqués dans votre boutique (au-delà de la limite)",
+        "look": "Le style de votre boutique revient à Classique",
+        "sections": "Vos sections et votre mise en page reviennent à la grille simple",
+        "eventBanner": "Votre bannière d'événement ne s'affiche plus",
+        "promoBar": "Votre barre promo ne s'affiche plus"
+      },
+      "safe": "Vos données sont conservées : produits, photos, ventes et réglages ne sont jamais supprimés, et tout revient quand vous choisissez à nouveau un forfait.",
+      "button": "Garder mon forfait",
+      "changedMind": "Vous avez changé d'avis ? Appuyez sur Garder mon forfait avant le {date} et rien ne change.",
+      "timeZone": "Les dates sont à l'heure de Nairobi (EAT)."
     }
   },
   "TeamRoles": {

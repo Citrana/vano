@@ -11,13 +11,21 @@ import { EmptyState, LoadingState } from "@/components/states/states"
 import { buttonVariants } from "@/components/ui/button"
 import { CurrentPlanCard } from "@/features/billing/current-plan-card"
 import { PaymentHistory } from "@/features/billing/payment-history"
+import { PendingChangeCard } from "@/features/billing/pending-change-card"
 import { PlanOptions } from "@/features/billing/plan-options"
 import { startPlanParam } from "@/features/billing/start-plan"
 import { useMyBilling, useNow } from "@/features/billing/use-billing"
 
-export default function BillingPage({ searchParams }: { searchParams: Promise<{ upgrade?: string | string[] }> }) {
+export default function BillingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ upgrade?: string | string[]; keep?: string | string[] }>
+}) {
+  const params = use(searchParams)
   // "Get Business" (pricing page / sign-up) opens the Business payment dialog.
-  const upgrade = startPlanParam(use(searchParams).upgrade)
+  const upgrade = startPlanParam(params.upgrade)
+  // "Keep my plan" in the downgrade confirmation email.
+  const keep = typeof params.keep === "string" ? params.keep : null
   const t = useTranslations("Billing")
   const te = useTranslations("Errors")
   const shop = useQuery(api.shops.myShop, {})
@@ -42,6 +50,7 @@ export default function BillingPage({ searchParams }: { searchParams: Promise<{ 
           </Link>
         </div>
       ) : null}
+      <PendingChangeCard billing={billing} highlighted={keep !== null && keep === billing.pendingChange?._id} />
       <CurrentPlanCard billing={billing} now={now} />
       <PlanOptions billing={billing} shopName={shop.name} now={now} initialPlan={upgrade ?? null} />
       <PaymentHistory testMode={billing.payments.testMode} />
