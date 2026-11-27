@@ -29,6 +29,8 @@ export type EmailBody = {
   paragraphs: string[];
   /** Short titled bullet lists under the paragraphs ("what you keep", "what pauses"). Empty lists are skipped. */
   lists?: { title: string; items: string[] }[];
+  /** Label / value rows in a bordered box (receipts: plan, amount, date, reference). */
+  details?: { label: string; value: string }[];
   /** A one-time code shown large under the paragraphs (sign-up and reset codes). */
   code?: string;
   /** A short numbered list under the paragraphs ("first steps"). */
@@ -76,6 +78,17 @@ export function renderEmail(body: EmailBody): { html: string; text: string } {
         `</table>`,
     )
     .join("");
+  const details = body.details?.length
+    ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;border:1px solid ${c.border};border-radius:12px;border-collapse:separate;">` +
+      body.details
+        .map(
+          (row, i) =>
+            `<tr><td valign="top" style="padding:10px 12px;${i > 0 ? `border-top:1px solid ${c.border};` : ""}font-size:14px;line-height:20px;color:${c.muted};">${escapeHtml(row.label)}</td>` +
+            `<td valign="top" align="right" style="padding:10px 12px;${i > 0 ? `border-top:1px solid ${c.border};` : ""}font-size:14px;line-height:20px;font-weight:700;color:${c.ink};text-align:right;">${escapeHtml(row.value)}</td></tr>`,
+        )
+        .join("") +
+      `</table>`
+    : "";
   const code = body.code
     ? `<p style="margin:0 0 20px;padding:16px;border:1px solid ${c.border};border-radius:12px;background:${c.cream};text-align:center;font-family:'SFMono-Regular', Menlo, Consolas, monospace;font-size:32px;line-height:40px;font-weight:800;letter-spacing:8px;color:${c.ink};">${escapeHtml(body.code)}</p>`
     : "";
@@ -123,7 +136,7 @@ export function renderEmail(body: EmailBody): { html: string; text: string } {
 </td></tr>
 <tr><td style="background:${c.card};border:1px solid ${c.border};border-top:0;border-radius:0 0 16px 16px;padding:28px 24px 20px;">
 <h1 style="margin:0 0 16px;font-size:22px;line-height:28px;font-weight:800;color:${c.ink};">${escapeHtml(body.heading)}</h1>
-${paragraphs}${lists}${code}${steps}${button}${notes}
+${paragraphs}${details}${lists}${code}${steps}${button}${notes}
 </td></tr>
 <tr><td style="padding:20px 24px;text-align:center;font-size:12px;line-height:18px;color:${c.muted};">
 <p style="margin:0 0 4px;font-weight:700;color:${c.plum};">Vano · ${escapeHtml(t.tagline)}</p>
@@ -139,6 +152,7 @@ ${paragraphs}${lists}${code}${steps}${button}${notes}
     body.heading,
     "",
     ...body.paragraphs.flatMap((p) => [p, ""]),
+    ...(body.details?.length ? [...body.details.map((row) => `${row.label}: ${row.value}`), ""] : []),
     ...(body.lists ?? [])
       .filter((list) => list.items.length > 0)
       .flatMap((list) => [list.title, ...list.items.map((item) => `- ${item}`), ""]),
