@@ -1,8 +1,9 @@
-import type { Id } from "../_generated/dataModel";
-import type { MutationCtx } from "../_generated/server";
+import type { Doc, Id } from "../_generated/dataModel";
+import type { MutationCtx, QueryCtx } from "../_generated/server";
 import { fail } from "./errors";
-import { onUserCreated } from "./platformStats";
-import { ensureBuiltInRoles } from "./roles";
+import { onUserCreated, onUserDeleted } from "./platformStats";
+import { ensureBuiltInRoles, findRoleByKey } from "./roles";
+import { revokeSessions } from "./sessions";
 import { readSettings } from "./settings";
 import { inviteStateAt, isInviteToken } from "./team";
 import { sha256Hex } from "../verification/codes";
@@ -87,4 +88,67 @@ export async function assertCanStartSession(
 ): Promise<void> {
   const user = await ctx.db.get("users", userId);
   if (user?.status === "suspended") fail("ACCOUNT_SUSPENDED");
+}
+
+/** The user's email + password login (Convex Auth `authAccounts`), if any. */
+export async function passwordAccountOf(
+  ctx: QueryCtx,
+  userId: Id<"users">,
+): Promise<Doc<"authAccounts"> | null> {
+  return await ctx.db
+    .query("authAccounts")
+    .withIndex("userIdAndProvider", (q) => q.eq("userId", userId).eq("provider", "password"))
+    .unique();
+}
+
+/**
+ * True when the login exists but its email was never confirmed with the
+ * sign-up code (`emailVerified`, what Convex Auth checks before a session).
+ * Such an account may belong to someone who registered another person's
+ * address: it must never be promoted or marked verified (CLAUDE.md "Roles &
+ * permissions"). A user with no login at all can't sign in, so it's not one.
+ */
+export function isUnverifiedLogin(account: Doc<"authAccounts"> | null): boolean {
+  return account !== null && account.emailVerified === undefined;
+}
+
+/**
+ * Deletes an unverified account so the seed can recreate the address
+ * (`seed:superAdmin` with `replaceUnverified`). Refuses (SEED_ACCOUNT_IN_USE)
+ * anything that looks used: a verified login, an owned shop, a team
+ * membership or a role other than seller. Removes its codes, logins,
+ * sessions and user row, and keeps the platform stats in step.
+ */
+export async function deleteUnverifiedAccount(ctx: MutationCtx, userId: Id<"users">): Promise<Doc<"users">> {
+  const user = await ctx.db.get("users", userId);
+  if (!user) fail("NOT_FOUND");
+  const account = await passwordAccountOf(ctx, userId);
+  if (!isUnverifiedLogin(account)) fail("SEED_ACCOUNT_IN_USE", "The account is verified: it is not replaced.");
+  const seller = await findRoleByKey(ctx, "seller");
+  const ownsShop = await ctx.db
+    .query("shops")
+    .withIndex("by_ownerId", (q) => q.eq("ownerId", userId))
+    .first();
+  const membership = await ctx.db
+    .query("shopMembers")
+    .withIndex("by_userId", (q) => q.eq("userId", userId))
+    .first();
+  if (ownsShop || membership || (user.roleId !== undefined && user.roleId !== seller?._id)) {
+    fail("SEED_ACCOUNT_IN_USE", "The unverified account owns a shop, belongs to a team or has a role: remove that first.");
+  }
+
+  for await (const login of ctx.db
+    .query("authAccounts")
+    .withIndex("userIdAndProvider", (q) => q.eq("userId", userId))) {
+    for await (const code of ctx.db
+      .query("authVerificationCodes")
+      .withIndex("accountId", (q) => q.eq("accountId", login._id))) {
+      await ctx.db.delete("authVerificationCodes", code._id);
+    }
+    await ctx.db.delete("authAccounts", login._id);
+  }
+  await revokeSessions(ctx, userId);
+  await onUserDeleted(ctx, user);
+  await ctx.db.delete("users", userId);
+  return user;
 }

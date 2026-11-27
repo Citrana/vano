@@ -73,7 +73,8 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   else English), limited by `authCodeBurst` / `authCodeHourly`; a failed
   send is `EMAIL_SEND_FAILED` and the screen offers a retry.
 - Accounts from before codes count as verified (`migrations:emailVerifiedV1
-  { before }`); `seed:superAdmin` marks its account verified. Expired codes
+  { before }`); `seed:superAdmin` marks verified only the account it has
+  just created (see "Roles & permissions"). Expired codes
   are deleted hourly (`authCodeJobs.cleanup`).
 - The code input (`code-input.tsx`, pure rules in `code-input-logic.ts`):
   numeric keyboard, `one-time-code`, auto-advance, paste fills all.
@@ -90,6 +91,14 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   `SELLER_PERMISSIONS`. Neither can be renamed, edited or deleted.
 - Public sign-up always creates an active seller. Super admins are created
   only by `seed:superAdmin` (internal action, run from the terminal).
+  It **never promotes an unverified login** (`isUnverifiedLogin` in
+  `convex/lib/accounts.ts`: it may be someone squatting the address):
+  refused, or deleted and recreated with `replaceUnverified`
+  (`deleteUnverifiedAccount`, refused if the account is in use). A verified
+  account changes only with `promoteExisting`, which resets its password
+  (`modifyAccountCredentials`) and signs it out everywhere
+  (`revokeSessions`, `convex/lib/sessions.ts`). The password argument is
+  never silently ignored; every run returns what it did.
 - Admins can close public sign-up (`platformSettings`). It's enforced in
   `setUpNewAccount` (the account is never created); the seed command gets
   a one-time `signupBypasses` row created by internal code only.
@@ -99,7 +108,7 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   with a `permission`; missing it → `FORBIDDEN`. Hiding UI is never enough.
 - Admin writes run the safety rules in `convex/lib/guards.ts` (no
   self-change, last super admin protected, no escalation, built-in roles
-  locked) and call `logAdminAction` in the same mutation. "Never on their
+  locked, no admin role for an unverified login: `ACCOUNT_NOT_VERIFIED`) and call `logAdminAction` in the same mutation. "Never on their
   own shop" (`assertNotOwnShop`) covers shops they own **or** belong to.
 - Seller permissions are fine-grained per area (`ownShop.view/manage`,
   `ownProducts.view/manage`, `ownOffers`, `ownLook`, `ownSales`,

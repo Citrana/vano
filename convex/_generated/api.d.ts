@@ -126,6 +126,7 @@ import type * as lib_salesRecords_report from "../lib/salesRecords/report.js";
 import type * as lib_salesRecords_rules from "../lib/salesRecords/rules.js";
 import type * as lib_salesRecords_validators from "../lib/salesRecords/validators.js";
 import type * as lib_seller from "../lib/seller.js";
+import type * as lib_sessions from "../lib/sessions.js";
 import type * as lib_settings from "../lib/settings.js";
 import type * as lib_shopAccess from "../lib/shopAccess.js";
 import type * as lib_shopActivity from "../lib/shopActivity.js";
@@ -304,6 +305,7 @@ declare const fullApi: ApiFromModules<{
   "lib/salesRecords/rules": typeof lib_salesRecords_rules;
   "lib/salesRecords/validators": typeof lib_salesRecords_validators;
   "lib/seller": typeof lib_seller;
+  "lib/sessions": typeof lib_sessions;
   "lib/settings": typeof lib_settings;
   "lib/shopAccess": typeof lib_shopAccess;
   "lib/shopActivity": typeof lib_shopActivity;

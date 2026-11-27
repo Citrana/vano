@@ -174,19 +174,28 @@ npx convex run seed:superAdmin '{"email":"you@example.com","password":"a-strong-
   pass `force`):
   `npx convex run seed:superAdmin '{"email":"...","password":"...","force":true}'`
 
-It sets up the built-in roles (Super admin, Seller) if they don't exist yet
-and prints one of:
+It sets up the built-in roles (Super admin, Seller) if they don't exist yet.
+An email that already has an account is **never changed silently**:
 
-| Result | Meaning |
-|---|---|
-| `created` | New account created as an active super admin. Log in at `/login`. |
-| `promoted` | The email already had an account; it is now a super admin. **Its password is unchanged.** |
-| `already_super_admin` | Nothing changed. Safe to run again. |
+| The email… | Without a flag | With the flag |
+|---|---|---|
+| has no account | `created`: new super admin with your password. | — |
+| has an account whose email was **never verified** (someone signed up and never entered the code; it may not be the real owner) | Refused (`SEED_UNVERIFIED_ACCOUNT`). Nothing is promoted or marked verified. | `"replaceUnverified": true` deletes that account and creates a fresh one with your password: `replaced_unverified`. Refused if that account owns a shop or belongs to a team. |
+| has a **verified** account | Refused (`SEED_EXISTING_ACCOUNT`); your password is not used. | `"promoteExisting": true` resets its password to yours, signs it out everywhere and makes it super admin: `promoted`. |
+| is already an active super admin | `already_super_admin`, nothing changes (the password is **not** changed). | `"promoteExisting": true` resets the password and signs it out everywhere. |
+
+The command prints `result`, `passwordReset`, `sessionsRevoked` and a
+`message` saying exactly what happened. A suspended super admin is
+reactivated with `promoteExisting`; if the only super admin is suspended, a
+new email works without `force`.
 
 The command can only be run from the terminal or the Convex dashboard, never
-from the app. If the only super admin is suspended, running it again
-(for them, or for a new email) works without `force`. Each run is recorded in
-the admin activity history as "system".
+from the app (every function in `convex/seed.ts` is internal). Each run is
+recorded in the admin activity history as "system".
+
+Caution: `migrations:emailVerifiedV1 { before }` marks every account created
+before `before` as verified. Use the time of the deploy that introduced
+sign-up codes, never a later one.
 
 Tip: the password lands in your shell history. Start the command with a
 space (zsh/bash skip it when `HIST_IGNORE_SPACE` / `HISTCONTROL=ignorespace`

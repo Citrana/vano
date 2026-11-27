@@ -40,6 +40,10 @@ export const ERROR_CODES = [
   "ROLE_NAME_TAKEN",
   "PERMISSION_ESCALATION",
   "SUPER_ADMIN_EXISTS",
+  "SEED_UNVERIFIED_ACCOUNT",
+  "SEED_EXISTING_ACCOUNT",
+  "SEED_ACCOUNT_IN_USE",
+  "ACCOUNT_NOT_VERIFIED",
   "ANNOUNCEMENT_INVALID",
   "PLAN_INVALID",
   "PLAN_LIMIT_PRODUCTS",
@@ -119,8 +123,13 @@ export const ERROR_CODES = [
 
 export type ErrorCode = (typeof ERROR_CODES)[number];
 
-export function fail(code: ErrorCode): never {
-  throw new ConvexError({ code });
+/**
+ * Throws `code` for the UI. `message` is an optional plain-English note for
+ * operator commands run from the terminal (e.g. `seed:superAdmin`): the UI
+ * never shows it, it maps the code (`Errors.<code>`).
+ */
+export function fail(code: ErrorCode, message?: string): never {
+  throw new ConvexError(message === undefined ? { code } : { code, message });
 }
 
 /** Reads the code back from an error caught on the client. */
