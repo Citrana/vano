@@ -32,37 +32,55 @@ export async function assignSellerRoleIfMissing(
 }
 
 /**
- * While public sign-up is closed, refuses a new account unless the
- * terminal seed command left a one-time permission for its email (used up
- * here). Throwing aborts the transaction, so the account is never created.
+ * Whether a new account may be created for `email` (CLAUDE.md "Roles &
+ * permissions"): public sign-up is open, or a valid team invite comes with
+ * it, or the terminal seed command left a live one-time permission for it.
+ * Read-only: shared by `assertSignupAllowed` (account creation) and the
+ * sign-up guard (`authSignup.signupState`), which must give the same
+ * answer for registered and new emails. Returns the bypass row to use up.
  */
-async function assertSignupAllowed(
-  ctx: MutationCtx,
+export async function signupAllowed(
+  ctx: QueryCtx,
   email: string | undefined,
-  pendingInvite: string | undefined,
-): Promise<void> {
-  if ((await readSettings(ctx)).signupEnabled) return;
+  invite: string | undefined,
+  now: number,
+): Promise<{ allowed: false } | { allowed: true; bypass: Doc<"signupBypasses"> | null }> {
+  if ((await readSettings(ctx)).signupEnabled) return { allowed: true, bypass: null };
   // A valid team invite lets that person in (CLAUDE.md "Team accounts").
   // It isn't used up here: joining is still `team.acceptInvite`.
-  if (pendingInvite !== undefined && (await inviteStillValid(ctx, pendingInvite))) return;
+  if (invite !== undefined && (await inviteStillValid(ctx, invite, now))) return { allowed: true, bypass: null };
   const bypass = email
     ? await ctx.db
         .query("signupBypasses")
         .withIndex("by_email", (q) => q.eq("email", email))
         .first()
     : null;
-  if (!bypass || bypass.expiresAt < Date.now()) fail("SIGNUP_DISABLED");
-  await ctx.db.delete("signupBypasses", bypass._id);
+  return bypass && bypass.expiresAt >= now ? { allowed: true, bypass } : { allowed: false };
 }
 
-async function inviteStillValid(ctx: MutationCtx, token: string): Promise<boolean> {
+/**
+ * While public sign-up is closed, refuses a new account (`signupAllowed`)
+ * and uses up the seed command's one-time permission. Throwing aborts the
+ * transaction, so the account is never created.
+ */
+async function assertSignupAllowed(
+  ctx: MutationCtx,
+  email: string | undefined,
+  pendingInvite: string | undefined,
+): Promise<void> {
+  const result = await signupAllowed(ctx, email, pendingInvite, Date.now());
+  if (!result.allowed) fail("SIGNUP_DISABLED");
+  if (result.bypass) await ctx.db.delete("signupBypasses", result.bypass._id);
+}
+
+async function inviteStillValid(ctx: QueryCtx, token: string, now: number): Promise<boolean> {
   if (!isInviteToken(token)) return false;
   const tokenHash = await sha256Hex(token);
   const invite = await ctx.db
     .query("shopInvites")
     .withIndex("by_tokenHash", (q) => q.eq("tokenHash", tokenHash))
     .unique();
-  return invite !== null && inviteStateAt(invite, Date.now()) === "valid";
+  return invite !== null && inviteStateAt(invite, now) === "valid";
 }
 
 /**

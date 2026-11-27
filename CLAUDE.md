@@ -58,16 +58,34 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   with wrong passwords —, 60 s resend wait, 15-minute lock wait).
 - Sign-up gives **no session** until the code is entered (same screen,
   `VerifyEmailStep`); an unverified account signing in gets a new code.
-  Resend = sign in again with the password. Reset is email → code → new
+  Resend = the same request again (`AuthForm` passes it to
+  `VerifyEmailStep`): after a sign-up, sign up again; after a sign-in,
+  sign in again. Reset is email → code → new
   password: the code is checked first by `authCodes.checkResetCode`
   (read-only, result returned not thrown, per-email `resetCodeCheck`
   bucket, unknown email = `invalid`); `reset-verification` then checks it
   again, uses it up, changes the password, verifies the email and signs
   out other sessions.
 - `guardPasswordFlows` (`convex/lib/authFlows.ts`) wraps the provider's
-  `authorize`: a `reset` never reveals whether an account exists (same
-  answer, send limit taken for every address, `RESET_MIN_RESPONSE_MS`),
-  and `email-verification` must carry a code. Don't bypass it.
+  `authorize`. **No flow ever reveals whether an email has an account**;
+  don't bypass it:
+  - `signUp`: an email that already has an account gets exactly the
+    new-email answer (no session, the code step), padded to
+    `SIGNUP_MIN_RESPONSE_MS`; its owner gets the "You already have a Vano
+    account" email (`sendAccountExistsEmail`, template `accountExists`,
+    Log in + Reset password, owner's language, same send budget and errors
+    as a code). Signing up again on your own unverified account (password
+    matches) is a resend. Every attempt first takes the per-email
+    `signupAttempt` budget (Convex Auth gives no client IP, so no per-IP
+    limit), and closed sign-up is checked before anything is looked up
+    (`signupAllowed` in `lib/accounts.ts`, via `authSignup.signupState`).
+    Never add an "account already exists" message.
+  - `email-verification` must carry a code; a wrong code and an email
+    with no account both read `CODE_INVALID`.
+  - `signIn`: wrong password, unknown email and a locked account all read
+    `INVALID_CREDENTIALS`; failures take at least `SIGNIN_FAILURE_MIN_MS`.
+  - `reset`: same answer, send limit taken for every address,
+    `RESET_MIN_RESPONSE_MS`.
 - Code emails are sent while the person waits (`sendEmailNow`), in the
   account's language (`users.language` from sign-up, else its shop's,
   else English), limited by `authCodeBurst` / `authCodeHourly`; a failed

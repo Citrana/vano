@@ -62,6 +62,7 @@
     "SEED_EXISTING_ACCOUNT": "An account already uses this email.",
     "SEED_ACCOUNT_IN_USE": "This account is in use and can't be replaced.",
     "ACCOUNT_NOT_VERIFIED": "This person hasn't confirmed their email yet, so they can't get an admin role.",
+    "INVALID_CREDENTIALS": "Wrong email or password.",
     "ANNOUNCEMENT_INVALID": "Write the announcement in both English and French (at most 280 characters each), or leave both empty.",
     "UNKNOWN": "Something went wrong. Try again.",
     "PLAN_INVALID": "This plan can't be chosen here.",
@@ -198,7 +199,6 @@
     "goSignup": "Create one",
     "goLogin": "Sign in",
     "invalidCredentials": "Wrong email or password.",
-    "accountExists": "An account with this email already exists. Sign in instead.",
     "noAccessTitle": "No access",
     "noAccessBody": "Your account doesn't give access to a shop or to the admin. Contact Vano support.",
     "signupClosedTitle": "Sign-ups are closed",
@@ -3390,6 +3390,16 @@
       "intro": "Enter this code on the Vano screen to choose a new password:",
       "expires": "The code works for {minutes} minutes and only once. After the change, you'll be signed out on your other devices.",
       "ignore": "Didn't ask to reset your password? Ignore this email: your password stays the same."
+    },
+    "accountExists": {
+      "subject": "You already have a Vano account",
+      "preheader": "Someone tried to sign up with this email. Log in or reset your password.",
+      "heading": "You already have a Vano account",
+      "intro": "Someone just tried to create a Vano account with this email address, but you already have one.",
+      "whatNext": "If it was you, log in instead. Forgot your password? You can choose a new one.",
+      "loginButton": "Log in",
+      "resetButton": "Reset password",
+      "ignore": "Didn't try to sign up? You can ignore this email: your account hasn't changed."
     },
     "teamInvite": {
       "subject": "{inviter} invited you to join {shop} on Vano",

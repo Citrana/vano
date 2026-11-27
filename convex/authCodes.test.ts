@@ -3,7 +3,8 @@ import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { CLEANUP_BATCH } from "./authCodeJobs";
 import { AUTH_CODE_TTL_S, AUTH_MAX_FAILED_PER_HOUR, isCodeShape, resetCodeValid } from "./lib/authCodes";
-import { newTest, type T } from "./lib/test.utils";
+import { newTest, sellerWithShop, type T } from "./lib/test.utils";
+import { sha256Hex } from "./verification/codes";
 
 /**
  * End to end through Convex Auth's real `auth:signIn` action
@@ -21,6 +22,11 @@ async function pem(): Promise<string> {
   const b64 = btoa(String.fromCharCode(...der)).replace(/(.{64})/g, "$1\n");
   return `-----BEGIN PRIVATE KEY-----\n${b64}\n-----END PRIVATE KEY-----`;
 }
+
+// The guard pads sign-ups and failed codes / sign-ins to a minimum time
+// (lib/authFlows.ts), with real timers here: tests that make several
+// attempts need longer than the default 5 s.
+vi.setConfig({ testTimeout: 30_000 });
 
 let privateKey = "";
 beforeAll(async () => {
@@ -195,6 +201,160 @@ describe("sign-up verification", () => {
     vi.stubGlobal("fetch", vi.fn(async () => new Response("{}", { status: 500 })));
     const t = newTest();
     await expect(signUp(t)).rejects.toThrow(/EMAIL_SEND_FAILED/);
+  });
+});
+
+describe("sign-up never reveals whether an email has an account", () => {
+  const notices = () => emails().filter((m) => m.includes("You already have a Vano account") || m.includes("Vous avez déjà un compte Vano"));
+  const hasCode = (mail: string) => /^\d{6}$/m.test(mail);
+  const users = (t: T) => t.run(async (ctx) => (await ctx.db.query("users").collect()).length);
+
+  async function registered(t: T) {
+    await signUp(t);
+    await verify(t, lastCode());
+    logs = [];
+  }
+
+  test("a registered email gets the new-email answer; its owner gets an email instead of a code", async () => {
+    const t = newTest();
+    await registered(t);
+    const before = await account(t);
+
+    // Same answer as a brand-new email (no session, the code step).
+    expect(await signUp(t, { password: "someone-else" })).toEqual({ tokens: null });
+    expect(await signIn(t, { email: "new@example.com", password: PASSWORD, flow: "signUp" })).toEqual({ tokens: null });
+
+    const notice = notices();
+    expect(notice).toHaveLength(1);
+    expect(hasCode(notice[0])).toBe(false);
+    expect(notice[0]).toContain("http://localhost:3000/login");
+    expect(notice[0]).toContain("http://localhost:3000/forgot-password?email=amani%40example.com");
+    // Nothing about the account changed: same login, same password.
+    expect(await users(t)).toBe(2);
+    expect((await account(t))!.secret).toBe(before!.secret);
+    expect((await signIn(t, { email: EMAIL, password: PASSWORD, flow: "signIn" })).tokens).not.toBeNull();
+  });
+
+  test("a wrong code reads the same for a registered email and a new one", async () => {
+    const t = newTest();
+    await registered(t);
+    await signUp(t, { password: "someone-else" });
+    await signIn(t, { email: "new@example.com", password: PASSWORD, flow: "signUp" });
+    await expect(verify(t, "000000")).rejects.toThrow(/CODE_INVALID/);
+    await expect(verify(t, "000000", "new@example.com")).rejects.toThrow(/CODE_INVALID/);
+    // And for an email nobody used at all.
+    await expect(verify(t, "000000", "nobody@example.com")).rejects.toThrow(/CODE_INVALID/);
+  });
+
+  test("the notice is in the owner's language, not the screen's", async () => {
+    const t = newTest();
+    await signUp(t, { language: "fr" });
+    await verify(t, lastCode());
+    logs = [];
+    await signUp(t, { language: "en", password: "someone-else" });
+    expect(notices()[0]).toContain("Vous avez déjà un compte Vano");
+  });
+
+  test("Resend on your own pending sign-up (signing up again) sends a new code", async () => {
+    const t = newTest();
+    await signUp(t);
+    expect(await signUp(t)).toEqual({ tokens: null });
+    expect(emails()).toHaveLength(2);
+    expect(hasCode(emails()[1])).toBe(true);
+    expect(notices()).toHaveLength(0);
+    expect((await verify(t, lastCode())).tokens).not.toBeNull();
+  });
+
+  test("signing up over someone else's pending account sends its owner the notice, not a code", async () => {
+    const t = newTest();
+    await signUp(t);
+    logs = [];
+    expect(await signUp(t, { password: "someone-else" })).toEqual({ tokens: null });
+    expect(notices()).toHaveLength(1);
+    expect(emails().some(hasCode)).toBe(false);
+  });
+
+  test("the send limit gives a registered and a new address the same number of emails", async () => {
+    const attempts = async (t: T, email: string) => {
+      const out: string[] = [];
+      for (let i = 0; i < 3; i++) {
+        try {
+          await signIn(t, { email, password: "someone-else", flow: "signUp" });
+          out.push("ok");
+        } catch (error) {
+          out.push(String(error).includes("CODE_RATE_LIMITED") ? "limited" : "other");
+        }
+      }
+      return out;
+    };
+    // Registered: its own sign-up code already used one email of the budget.
+    const known = newTest();
+    await signUp(known);
+    await verify(known, lastCode());
+    expect(await attempts(known, EMAIL)).toEqual(["ok", "limited", "limited"]);
+    expect(emails()).toHaveLength(2); // the sign-up code + one notice
+
+    logs = [];
+    const fresh = newTest();
+    expect(await attempts(fresh, EMAIL)).toEqual(["ok", "ok", "limited"]);
+    expect(emails()).toHaveLength(2); // a code + a resend
+  });
+
+  test("sign-up attempts are limited per address even when nothing is sent", async () => {
+    const t = newTest();
+    await t.run((ctx) => ctx.db.insert("platformSettings", { signupEnabled: false }));
+    for (let i = 0; i < 5; i++) await expect(signUp(t)).rejects.toThrow(/SIGNUP_DISABLED/);
+    await expect(signUp(t)).rejects.toThrow(/CODE_RATE_LIMITED/);
+  });
+
+  test("closed sign-up: registered and new emails get the same refusal; an invite lets both through alike", async () => {
+    const t = newTest();
+    await registered(t);
+    const { userId, shopId } = await sellerWithShop(t, "owner@example.com");
+    const token = "b".repeat(64);
+    const tokenHash = await sha256Hex(token);
+    await t.run((ctx) =>
+      ctx.db.insert("shopInvites", {
+        shopId,
+        role: "viewer",
+        tokenHash,
+        language: "en",
+        createdBy: userId,
+        expiresAt: Date.now() + 86_400_000,
+        status: "pending",
+      }),
+    );
+    await t.run((ctx) => ctx.db.insert("platformSettings", { signupEnabled: false }));
+    logs = [];
+
+    await expect(signUp(t, { password: "someone-else" })).rejects.toThrow(/SIGNUP_DISABLED/);
+    await expect(signIn(t, { email: "new@example.com", password: PASSWORD, flow: "signUp" })).rejects.toThrow(
+      /SIGNUP_DISABLED/,
+    );
+    // No code and no notice (the shop owner's welcome email isn't counted).
+    expect(notices()).toHaveLength(0);
+    expect(emails().filter(hasCode)).toHaveLength(0);
+
+    expect(await signUp(t, { password: "someone-else", invite: token })).toEqual({ tokens: null });
+    expect(await signIn(t, { email: "new@example.com", password: PASSWORD, flow: "signUp", invite: token })).toEqual({
+      tokens: null,
+    });
+    expect(notices()).toHaveLength(1);
+    expect(emails().filter(hasCode)).toHaveLength(1);
+  });
+});
+
+describe("sign-in errors stay generic", () => {
+  test("a wrong password and an unknown email read the same INVALID_CREDENTIALS", async () => {
+    const t = newTest();
+    await signUp(t);
+    await verify(t, lastCode());
+    await expect(signIn(t, { email: EMAIL, password: "wrong-password", flow: "signIn" })).rejects.toThrow(
+      /INVALID_CREDENTIALS/,
+    );
+    await expect(signIn(t, { email: "nobody@example.com", password: "wrong-password", flow: "signIn" })).rejects.toThrow(
+      /INVALID_CREDENTIALS/,
+    );
   });
 });
 

@@ -37,6 +37,20 @@ export const RESEND_COOLDOWN_S = 60;
  */
 export const RESET_MIN_RESPONSE_MS = 1200;
 
+/**
+ * A sign-up takes at least this long, whether the email is new or already
+ * has an account, so the response time doesn't tell which (new: account +
+ * code email; existing: a "you already have an account" email).
+ */
+export const SIGNUP_MIN_RESPONSE_MS = 1500;
+
+/**
+ * A failed sign-in takes at least this long, so an unknown email (no
+ * password to check) doesn't answer faster than a wrong password.
+ * Successful sign-ins aren't slowed.
+ */
+export const SIGNIN_FAILURE_MIN_MS = 800;
+
 export type AuthCodeKind = "verify" | "reset";
 
 /** Convex Auth provider ids of the two code senders. */

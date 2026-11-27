@@ -36,6 +36,8 @@ export type EmailBody = {
   /** A short numbered list under the paragraphs ("first steps"). */
   steps?: { title: string; body: string }[];
   button?: { label: string; url: string };
+  /** A second, outlined button beside the main one (e.g. "Reset password" next to "Log in"). */
+  secondaryButton?: { label: string; url: string };
   /** Smaller grey lines under the button (dates, "ignore this if…"). */
   notes?: string[];
 };
@@ -58,6 +60,7 @@ export function renderEmail(body: EmailBody): { html: string; text: string } {
   const t = emailTexts(body.language).layout;
   const c = EMAIL_COLORS;
   const url = body.button ? safeUrl(body.button.url) : null;
+  const secondaryUrl = body.secondaryButton ? safeUrl(body.secondaryButton.url) : null;
 
   const paragraphs = body.paragraphs
     .map((p) => `<p style="margin:0 0 16px;font-size:16px;line-height:24px;color:${c.ink};">${escapeHtml(p)}</p>`)
@@ -107,11 +110,23 @@ export function renderEmail(body: EmailBody): { html: string; text: string } {
         .join("") +
       `</table>`
     : "";
-  const button =
+  const primaryCell =
     body.button && url
-      ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 24px;"><tr><td style="border-radius:10px;background:${c.plum};">` +
+      ? `<td style="border-radius:10px;background:${c.plum};">` +
         `<a href="${escapeHtml(url)}" style="display:inline-block;padding:14px 24px;font-family:${FONT};font-size:16px;font-weight:700;line-height:20px;color:#ffffff;text-decoration:none;border-radius:10px;">${escapeHtml(body.button.label)}</a>` +
-        `</td></tr></table>`
+        `</td>`
+      : "";
+  const secondaryCell =
+    body.secondaryButton && secondaryUrl
+      ? `<td style="border-radius:10px;border:1px solid ${c.plum};background:${c.card};">` +
+        `<a href="${escapeHtml(secondaryUrl)}" style="display:inline-block;padding:13px 23px;font-family:${FONT};font-size:16px;font-weight:700;line-height:20px;color:${c.plum};text-decoration:none;border-radius:10px;">${escapeHtml(body.secondaryButton.label)}</a>` +
+        `</td>`
+      : "";
+  const button =
+    primaryCell || secondaryCell
+      ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 24px;"><tr>` +
+        [primaryCell, secondaryCell].filter(Boolean).join(`<td style="width:12px;"></td>`) +
+        `</tr></table>`
       : "";
   const notes = (body.notes ?? [])
     .map((n) => `<p style="margin:0 0 8px;font-size:13px;line-height:20px;color:${c.muted};">${escapeHtml(n)}</p>`)
@@ -159,6 +174,7 @@ ${paragraphs}${details}${lists}${code}${steps}${button}${notes}
     ...(body.code ? [body.code, ""] : []),
     ...(body.steps ?? []).flatMap((step, i) => [`${i + 1}. ${step.title}`, `   ${step.body}`, ""]),
     ...(body.button && url ? [`${body.button.label}: ${url}`, ""] : []),
+    ...(body.secondaryButton && secondaryUrl ? [`${body.secondaryButton.label}: ${secondaryUrl}`, ""] : []),
     ...(body.notes ?? []),
     ...(body.notes?.length ? [""] : []),
     "--",

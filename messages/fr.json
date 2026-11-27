@@ -62,6 +62,7 @@
     "SEED_EXISTING_ACCOUNT": "Un compte utilise déjà cet e-mail.",
     "SEED_ACCOUNT_IN_USE": "Ce compte est utilisé et ne peut pas être remplacé.",
     "ACCOUNT_NOT_VERIFIED": "Cette personne n'a pas encore confirmé son e-mail : elle ne peut pas recevoir de rôle admin.",
+    "INVALID_CREDENTIALS": "E-mail ou mot de passe incorrect.",
     "ANNOUNCEMENT_INVALID": "Écrivez l'annonce en anglais et en français (280 caractères maximum chacune), ou laissez les deux vides.",
     "UNKNOWN": "Un problème est survenu. Réessayez.",
     "PLAN_INVALID": "Ce forfait ne peut pas être choisi ici.",
@@ -198,7 +199,6 @@
     "goSignup": "Créer un compte",
     "goLogin": "Se connecter",
     "invalidCredentials": "E-mail ou mot de passe incorrect.",
-    "accountExists": "Un compte existe déjà avec cet e-mail. Connectez-vous.",
     "noAccessTitle": "Aucun accès",
     "noAccessBody": "Votre compte ne donne accès ni à une boutique ni à l'administration. Contactez le support Vano.",
     "signupClosedTitle": "Les inscriptions sont fermées",
@@ -3390,6 +3390,16 @@
       "intro": "Saisissez ce code sur l'écran Vano pour choisir un nouveau mot de passe :",
       "expires": "Le code est valable {minutes} minutes et une seule fois. Après le changement, vous serez déconnecté sur vos autres appareils.",
       "ignore": "Vous n'avez pas demandé à réinitialiser votre mot de passe ? Ignorez cet e-mail : votre mot de passe reste le même."
+    },
+    "accountExists": {
+      "subject": "Vous avez déjà un compte Vano",
+      "preheader": "Quelqu'un a essayé de s'inscrire avec cet e-mail. Connectez-vous ou réinitialisez votre mot de passe.",
+      "heading": "Vous avez déjà un compte Vano",
+      "intro": "Quelqu'un vient d'essayer de créer un compte Vano avec cette adresse e-mail, mais vous en avez déjà un.",
+      "whatNext": "Si c'était vous, connectez-vous plutôt. Mot de passe oublié ? Vous pouvez en choisir un nouveau.",
+      "loginButton": "Se connecter",
+      "resetButton": "Réinitialiser le mot de passe",
+      "ignore": "Vous n'avez pas essayé de vous inscrire ? Ignorez cet e-mail : votre compte n'a pas changé."
     },
     "teamInvite": {
       "subject": "{inviter} vous invite à rejoindre {shop} sur Vano",
