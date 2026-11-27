@@ -30,6 +30,7 @@ import {
 } from "./payments/types";
 import { exceptionEndValidator, featureValueValidator, planConfigFields } from "./lib/planValidators";
 import {
+  planChangeStatusValidator,
   planIdValidator,
   subscriptionSourceValidator,
   subscriptionStatusValidator,
@@ -515,6 +516,8 @@ export default defineSchema({
     completedAt: v.optional(v.number()),
     appliedAt: v.optional(v.number()),
     periodEndAfter: v.optional(v.number()),
+    /** The receipt email was scheduled (convex/emails/planEmails.ts), in the transaction that applied the payment. */
+    receiptEmailAt: v.optional(v.number()),
   })
     .index("by_shopId", ["shopId"])
     .index("by_shopId_and_status", ["shopId", "status"])
@@ -534,6 +537,27 @@ export default defineSchema({
   })
     .index("by_provider_and_eventId", ["provider", "eventId"])
     .index("by_paymentId", ["paymentId"]),
+
+  /**
+   * A lower plan (or Free) the seller chose (`billing.scheduleDowngrade`,
+   * docs/payments.md section 15). Nothing changes now: the current plan runs
+   * to `effectiveAt` (its end), and nothing renews by itself. It counts only
+   * while the plan still has that end (`isPendingChange`); "Keep my plan"
+   * marks it `kept`, choosing another lower plan `replaced`. `emailSentAt`
+   * makes the confirmation email go once. Purged with the shop.
+   */
+  planChanges: defineTable({
+    shopId: v.id("shops"),
+    userId: v.id("users"),
+    fromPlan: planIdValidator,
+    toPlan: planIdValidator,
+    effectiveAt: v.number(),
+    /** When the shop moves to Free (end + grace days). */
+    freeAt: v.number(),
+    status: planChangeStatusValidator,
+    keptAt: v.optional(v.number()),
+    emailSentAt: v.optional(v.number()),
+  }).index("by_shopId_and_status", ["shopId", "status"]),
 
   /**
    * Trial reminder emails sent (CLAUDE.md "Emails", convex/lib/trialEmails.ts):
