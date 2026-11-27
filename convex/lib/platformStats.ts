@@ -46,6 +46,10 @@ export async function onUserCreated(ctx: MutationCtx, user: Doc<"users">) {
   await usersByCreation.insertIfDoesNotExist(ctx, user);
 }
 
+export async function onUserDeleted(ctx: MutationCtx, user: Doc<"users">) {
+  await usersByCreation.deleteIfExists(ctx, user);
+}
+
 export async function onShopCreated(ctx: MutationCtx, shop: Doc<"shops">) {
   await shopsByCreation.insertIfDoesNotExist(ctx, shop);
 }

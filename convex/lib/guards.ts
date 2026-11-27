@@ -1,8 +1,9 @@
 import type { Doc } from "../_generated/dataModel";
 import type { QueryCtx } from "../_generated/server";
 import { hasPermission, type Access } from "./access";
+import { isUnverifiedLogin, passwordAccountOf } from "./accounts";
 import { fail } from "./errors";
-import type { Permission } from "./permissions";
+import { ADMIN_PERMISSIONS, type Permission } from "./permissions";
 import { findRoleByKey, permissionsOf } from "./roles";
 import { belongsToShop } from "./shopAccess";
 
@@ -16,6 +17,8 @@ import { belongsToShop } from "./shopAccess";
  * 4. No escalation: you can only hand out permissions you hold yourself.
  * 5. Built-in roles can't be edited or deleted; a role in use can't be deleted.
  * 6. Nobody grants or extends a plan for their own shop.
+ * 7. No admin role for an account whose email was never confirmed (it may
+ *    belong to someone who registered another person's address).
  */
 
 /**
@@ -24,6 +27,12 @@ import { belongsToShop } from "./shopAccess";
  */
 export async function assertNotOwnShop(ctx: QueryCtx, access: Access, shop: Doc<"shops">): Promise<void> {
   if (await belongsToShop(ctx, access.user._id, shop)) fail("CANNOT_MODIFY_SELF");
+}
+
+/** True when the role opens any part of /admin. */
+function grantsAdmin(role: Doc<"roles">): boolean {
+  const permissions = permissionsOf(role);
+  return ADMIN_PERMISSIONS.some((p) => permissions.includes(p));
 }
 
 /** True if every permission in `wanted` is one the caller holds. */
@@ -65,6 +74,10 @@ export async function assertCanChangeUser(
 
   if (change.role && !canGrant(access, permissionsOf(change.role))) {
     fail("PERMISSION_ESCALATION");
+  }
+
+  if (change.role && grantsAdmin(change.role) && isUnverifiedLogin(await passwordAccountOf(ctx, target._id))) {
+    fail("ACCOUNT_NOT_VERIFIED");
   }
 
   const losesSuperAdmin =

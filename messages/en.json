@@ -58,6 +58,10 @@
     "ROLE_NAME_TAKEN": "A role with this name already exists.",
     "PERMISSION_ESCALATION": "You can only give permissions you have yourself.",
     "SUPER_ADMIN_EXISTS": "A super admin already exists.",
+    "SEED_UNVERIFIED_ACCOUNT": "An unverified account already uses this email.",
+    "SEED_EXISTING_ACCOUNT": "An account already uses this email.",
+    "SEED_ACCOUNT_IN_USE": "This account is in use and can't be replaced.",
+    "ACCOUNT_NOT_VERIFIED": "This person hasn't confirmed their email yet, so they can't get an admin role.",
     "ANNOUNCEMENT_INVALID": "Write the announcement in both English and French (at most 280 characters each), or leave both empty.",
     "UNKNOWN": "Something went wrong. Try again.",
     "PLAN_INVALID": "This plan can't be chosen here.",
@@ -1076,7 +1080,8 @@
       "testEmail": "Sent a test email"
     },
     "superAdmin": {
-      "seed": "Created a super admin (terminal)"
+      "seed": "Created a super admin (terminal)",
+      "replaceUnverified": "Removed an unverified account to seed a super admin (terminal)"
     },
     "subscription": {
       "activated": "Activated a plan",

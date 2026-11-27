@@ -256,6 +256,38 @@ describe("admin.users.assignRole", () => {
     await as(t, manager).mutation(api.admin.users.assignRole, { userId: w.amani, roleId: viewerRole });
   });
 
+  test("no admin role for an account whose email was never verified", async () => {
+    const t = newTest();
+    const w = await world(t);
+    // Someone signed up with this address and never entered the code.
+    const squatter = await insertUserWithRole(t, "colleague@vano.app", w.ids.seller);
+    await t.run((ctx) =>
+      ctx.db.insert("authAccounts", { userId: squatter, provider: "password", providerAccountId: "colleague@vano.app" }),
+    );
+    await expect(
+      as(t, w.admin).mutation(api.admin.users.assignRole, { userId: squatter, roleId: w.support }),
+    ).rejects.toThrow(/ACCOUNT_NOT_VERIFIED/);
+    await expect(
+      as(t, w.admin).mutation(api.admin.users.assignRole, { userId: squatter, roleId: w.ids.super_admin }),
+    ).rejects.toThrow(/ACCOUNT_NOT_VERIFIED/);
+    expect((await t.run((ctx) => ctx.db.get("users", squatter)))?.roleId).toBe(w.ids.seller);
+
+    // A role with no admin permission is still fine.
+    const noAdmin = await insertRole(t, "Shopkeeper", ["ownShop.view"]);
+    await as(t, w.admin).mutation(api.admin.users.assignRole, { userId: squatter, roleId: noAdmin });
+
+    // Once verified, the admin role can be given.
+    await t.run(async (ctx) => {
+      const account = await ctx.db
+        .query("authAccounts")
+        .withIndex("userIdAndProvider", (q) => q.eq("userId", squatter).eq("provider", "password"))
+        .unique();
+      await ctx.db.patch("authAccounts", account!._id, { emailVerified: "colleague@vano.app" });
+    });
+    await as(t, w.admin).mutation(api.admin.users.assignRole, { userId: squatter, roleId: w.support });
+    expect((await t.run((ctx) => ctx.db.get("users", squatter)))?.roleId).toBe(w.support);
+  });
+
   test("not yourself; unknown role; needs users.assignRole", async () => {
     const t = newTest();
     const w = await world(t);

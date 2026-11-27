@@ -1,7 +1,7 @@
 import { paginationOptsValidator, paginationResultValidator, type PaginationResult } from "convex/server";
 import { v } from "convex/values";
 import type { Doc, Id } from "../_generated/dataModel";
-import type { MutationCtx, QueryCtx } from "../_generated/server";
+import type { QueryCtx } from "../_generated/server";
 import { adminMutation, adminQuery } from "../lib/access";
 import { sortOrderValidator, type SortOrder } from "../lib/listOrder";
 import { logAdminAction } from "../lib/audit";
@@ -9,6 +9,7 @@ import { fail } from "../lib/errors";
 import { assertCanChangeUser } from "../lib/guards";
 import { roleKeyValidator, userStatusValidator } from "../lib/permissions";
 import { findShopByOwner } from "../lib/seller";
+import { revokeSessions } from "../lib/sessions";
 
 /**
  * Admin users section (CLAUDE.md "Roles & permissions"). Reads need
@@ -174,20 +175,6 @@ export const get = adminQuery({
     };
   },
 });
-
-/** Signs the user out everywhere: their sessions and refresh tokens. */
-async function revokeSessions(ctx: MutationCtx, userId: Id<"users">): Promise<void> {
-  for await (const session of ctx.db
-    .query("authSessions")
-    .withIndex("userId", (q) => q.eq("userId", userId))) {
-    for await (const token of ctx.db
-      .query("authRefreshTokens")
-      .withIndex("sessionId", (q) => q.eq("sessionId", session._id))) {
-      await ctx.db.delete("authRefreshTokens", token._id);
-    }
-    await ctx.db.delete("authSessions", session._id);
-  }
-}
 
 /**
  * Suspends or reactivates a user. Safety rules: not yourself, only a super

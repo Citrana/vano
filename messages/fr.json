@@ -58,6 +58,10 @@
     "ROLE_NAME_TAKEN": "Un rôle porte déjà ce nom.",
     "PERMISSION_ESCALATION": "Vous ne pouvez donner que les autorisations que vous avez vous-même.",
     "SUPER_ADMIN_EXISTS": "Un super admin existe déjà.",
+    "SEED_UNVERIFIED_ACCOUNT": "Un compte non vérifié utilise déjà cet e-mail.",
+    "SEED_EXISTING_ACCOUNT": "Un compte utilise déjà cet e-mail.",
+    "SEED_ACCOUNT_IN_USE": "Ce compte est utilisé et ne peut pas être remplacé.",
+    "ACCOUNT_NOT_VERIFIED": "Cette personne n'a pas encore confirmé son e-mail : elle ne peut pas recevoir de rôle admin.",
     "ANNOUNCEMENT_INVALID": "Écrivez l'annonce en anglais et en français (280 caractères maximum chacune), ou laissez les deux vides.",
     "UNKNOWN": "Un problème est survenu. Réessayez.",
     "PLAN_INVALID": "Ce forfait ne peut pas être choisi ici.",
@@ -1076,7 +1080,8 @@
       "testEmail": "A envoyé un e-mail de test"
     },
     "superAdmin": {
-      "seed": "A créé un super admin (terminal)"
+      "seed": "A créé un super admin (terminal)",
+      "replaceUnverified": "A supprimé un compte non vérifié pour créer un super admin (terminal)"
     },
     "subscription": {
       "activated": "Forfait activé",
