@@ -1,8 +1,9 @@
 import { Password } from "@convex-dev/auth/providers/Password";
 import { convexAuth } from "@convex-dev/auth/server";
 import { ConvexError, type Value } from "convex/values";
-import type { MutationCtx } from "./_generated/server";
-import { authCodeProvider, consumeAuthCodeSend } from "./emails/authCode";
+import { internal } from "./_generated/api";
+import type { ActionCtx, MutationCtx } from "./_generated/server";
+import { authCodeProvider, consumeAuthCodeSend, passwordMatches, sendAccountExistsEmail } from "./emails/authCode";
 import { assertCanStartSession, setUpNewAccount } from "./lib/accounts";
 import { AUTH_MAX_FAILED_PER_HOUR } from "./lib/authCodes";
 import { guardPasswordFlows } from "./lib/authFlows";
@@ -43,7 +44,19 @@ const password = guardPasswordFlows(
     verify: authCodeProvider("verify"),
     reset: authCodeProvider("reset"),
   }),
-  { consumeResetSend: consumeAuthCodeSend },
+  {
+    consumeResetSend: consumeAuthCodeSend,
+    // Sign-up never reveals an existing account (CLAUDE.md "Auth codes").
+    signup: {
+      consumeAttempt: async (ctx, email) => {
+        await ctx.runMutation(internal.authSignup.consumeAttempt, { email });
+      },
+      state: async (ctx, email, invite) =>
+        await ctx.runQuery(internal.authSignup.signupState, { email, invite, now: Date.now() }),
+      passwordMatches: async (ctx, email, password) => await passwordMatches(ourActionCtx(ctx), email, password),
+      sendAccountExists: async (ctx, email) => await sendAccountExistsEmail(ctx, email),
+    },
+  },
 );
 
 /**
@@ -51,6 +64,7 @@ const password = guardPasswordFlows(
  * our deployment's mutation ctx at runtime, so it's narrowed once here.
  */
 const ourCtx = (ctx: unknown) => ctx as MutationCtx;
+const ourActionCtx = (ctx: unknown) => ctx as ActionCtx;
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   providers: [password],

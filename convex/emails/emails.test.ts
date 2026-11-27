@@ -7,6 +7,7 @@ import { EMAIL_COLORS, escapeHtml, renderEmail } from "./layout";
 import { activeEmailProviderId, emailMode } from "./registry";
 import { resendProvider } from "./resend";
 import { sendEmail, sendEmailNow } from "./send";
+import { accountExistsEmail } from "./templates/accountExists";
 import { authCodeEmail } from "./templates/authCode";
 import { testEmail } from "./templates/test";
 import { fill } from "./texts";
@@ -218,6 +219,60 @@ describe("sendEmail + deliver", () => {
     await t.finishAllScheduledFunctions(vi.runAllTimers);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(console.error).toHaveBeenCalledWith(expect.stringContaining("resend 422"));
+  });
+});
+
+describe("layout: secondary button", () => {
+  test("sits beside the main button, outlined, escaped, http(s) only, and in the text version", () => {
+    const both = renderEmail({
+      language: "en",
+      preheader: "p",
+      heading: "h",
+      paragraphs: [],
+      button: { label: "Log in", url: "https://vano.app/login" },
+      secondaryButton: { label: "Reset <now>", url: "https://vano.app/forgot-password?email=a%40b.c&x=1" },
+    });
+    expect(both.html).toContain("Reset &lt;now&gt;");
+    expect(both.html).toContain('href="https://vano.app/forgot-password?email=a%40b.c&amp;x=1"');
+    expect(both.html).toContain(`border:1px solid ${EMAIL_COLORS.plum}`);
+    expect(both.html.indexOf("Log in")).toBeLessThan(both.html.indexOf("Reset &lt;now&gt;"));
+    expect(both.text).toContain("Log in: https://vano.app/login");
+    expect(both.text).toContain("Reset <now>: https://vano.app/forgot-password?email=a%40b.c&x=1");
+
+    const unsafe = renderEmail({
+      language: "en",
+      preheader: "p",
+      heading: "h",
+      paragraphs: [],
+      secondaryButton: { label: "Bad", url: "javascript:alert(1)" },
+    });
+    expect(unsafe.html).not.toContain("javascript:");
+    expect(unsafe.text).not.toContain("javascript:");
+  });
+});
+
+describe("account exists email", () => {
+  const urls = { loginUrl: "https://vano.app/login", resetUrl: "https://vano.app/forgot-password?email=a%40b.c" };
+
+  test("EN and FR, Log in and Reset password buttons, no code", () => {
+    const en = accountExistsEmail("en", urls);
+    expect(en.subject).toBe("You already have a Vano account");
+    expect(en.html).toContain("Log in");
+    expect(en.html).toContain("Reset password");
+    expect(en.text).toContain("Log in: https://vano.app/login");
+    expect(en.text).toContain("Reset password: https://vano.app/forgot-password?email=a%40b.c");
+    expect(en.text).not.toMatch(/^\d{6}$/m);
+
+    const fr = accountExistsEmail("fr", urls);
+    expect(fr.subject).toBe("Vous avez déjà un compte Vano");
+    expect(fr.text).toContain("Se connecter: https://vano.app/login");
+    expect(fr.text).toContain("Réinitialiser le mot de passe:");
+  });
+
+  test("without SITE_URL links it still explains, with no buttons", () => {
+    const mail = accountExistsEmail("en", { loginUrl: null, resetUrl: null });
+    expect(mail.html).not.toContain("<a ");
+    expect(mail.text).toContain("log in instead");
   });
 });
 

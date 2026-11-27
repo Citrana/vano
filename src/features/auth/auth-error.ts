@@ -5,26 +5,29 @@ export type AuthFlow = "signIn" | "signUp" | "email-verification" | "reset" | "r
 export type AuthErrorKind =
   | { kind: "code"; code: NonNullable<ReturnType<typeof errorCodeOf>> }
   | { kind: "invalidCredentials" }
-  | { kind: "accountExists" }
   | { kind: "invalidCode" }
   | { kind: "unknown" }
 
 /**
- * Convex Auth reports sign-in failures with plain messages
- * ("InvalidSecret", "InvalidAccountId", "Account … already exists",
- * "Could not verify code", "Invalid code"); our own checks throw
- * ConvexError codes. A wrong, expired, used or locked code all read the
- * same (Convex Auth doesn't tell them apart).
+ * The server guard (convex/lib/authFlows.ts) turns Convex Auth's sign-in
+ * and code failures into one code each: INVALID_CREDENTIALS (wrong
+ * password, unknown email, locked) and CODE_INVALID (wrong, expired, used
+ * or locked code, or an email with no account), so nothing reveals whether
+ * an account exists and production's redacted messages still read right.
+ * Convex Auth's plain messages are still recognised as a fallback. Sign-up
+ * never fails because an account exists (the owner gets an email instead).
  */
 export function classifyAuthError(error: unknown, flow: AuthFlow): AuthErrorKind {
+  const codeFlow = flow === "email-verification" || flow === "reset-verification"
   const code = errorCodeOf(error)
+  if (code === "INVALID_CREDENTIALS") return { kind: "invalidCredentials" }
+  if (code === "CODE_INVALID" && codeFlow) return { kind: "invalidCode" }
   if (code) return { kind: "code", code }
   const message = error instanceof Error ? error.message : String(error)
-  if (/already exists/i.test(message)) return { kind: "accountExists" }
   if (flow === "signIn" && /InvalidSecret|InvalidAccountId|TooManyFailedAttempts|Invalid credentials/i.test(message)) {
     return { kind: "invalidCredentials" }
   }
-  if ((flow === "email-verification" || flow === "reset-verification") && /Could not verify code|Invalid code/i.test(message)) {
+  if (codeFlow && /Could not verify code|Invalid code/i.test(message)) {
     return { kind: "invalidCode" }
   }
   return { kind: "unknown" }

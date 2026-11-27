@@ -41,4 +41,12 @@ export const rateLimiter = new RateLimiter(components.rateLimiter, {
    */
   teamInvite: { kind: "token bucket", rate: 30, period: HOUR, capacity: 10 },
   resetCodeCheck: { kind: "token bucket", rate: AUTH_MAX_FAILED_PER_HOUR, period: HOUR, capacity: AUTH_MAX_FAILED_PER_HOUR },
+  /**
+   * Sign-up attempts per email address, new or already registered (the
+   * guard in lib/authFlows.ts), before anything is looked up or sent: a
+   * burst of 5, then 10 an hour. Convex Auth gives actions no client IP,
+   * so there is no per-IP limit; the code / notice emails also use
+   * `authCodeBurst` / `authCodeHourly` for the same address.
+   */
+  signupAttempt: { kind: "token bucket", rate: 10, period: HOUR, capacity: 5 },
 });

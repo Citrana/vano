@@ -15,19 +15,20 @@ import { useCodeStep } from "./use-code-step"
 
 /**
  * After sign-up (or signing in to an account that never confirmed its
- * email): the 6-digit code from the email, on the same card. A new code
- * is asked for by signing in again with the same password, kept in
- * memory only for this.
+ * email): the 6-digit code from the email, on the same card. `resend` asks
+ * for a new code the way the person arrived (CLAUDE.md "Auth codes"):
+ * after a sign-up it signs up again, so an email that already has an
+ * account looks exactly like a new one; after a sign-in it signs in again.
  */
 export function VerifyEmailStep({
   email,
-  password,
+  resend,
   sendError,
   onVerified,
   onBack,
 }: {
   email: string
-  password: string
+  resend: () => Promise<void>
   sendError: AuthErrorKind | null
   onVerified: () => void
   onBack: () => void
@@ -35,13 +36,7 @@ export function VerifyEmailStep({
   const t = useTranslations("Auth")
   const tv = useTranslations("Validation")
   const { signIn } = useAuthActions()
-  const step = useCodeStep({
-    flow: "email-verification",
-    sendError,
-    resend: async () => {
-      await signIn("password", { email, password, flow: "signIn" })
-    },
-  })
+  const step = useCodeStep({ flow: "email-verification", sendError, resend })
   const form = useForm<CodeValues>({ resolver: zodResolver(codeSchema(tv)), defaultValues: { code: "" } })
   const { errors, isSubmitting } = form.formState
 

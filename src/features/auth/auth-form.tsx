@@ -27,7 +27,9 @@ import { VerifyEmailStep } from "./verify-email-step"
  *
  * An account whose email isn't confirmed gets no session: Convex Auth
  * emails a code instead (CLAUDE.md "Auth codes") and the card switches to
- * the code step.
+ * the code step. A sign-up with an email that already has an account gets
+ * the same code step (its owner gets an email instead of a code), so the
+ * screen never reveals whether an account exists.
  */
 export function AuthForm({
   flow,
@@ -63,11 +65,16 @@ export function AuthForm({
     else if (isSignUp) router.replace(startPlan ? `/onboarding?plan=${startPlan}` : "/onboarding")
   }
 
+  /** The same request again: a sign-up is answered alike for new and registered emails. */
+  function submitCredentials(values: Credentials) {
+    const extra = isSignUp ? { language: locale, ...(invite ? { invite } : {}) } : {}
+    return signIn("password", { ...values, flow, ...extra })
+  }
+
   async function onSubmit(values: Credentials) {
     setServerError(null)
     try {
-      const extra = isSignUp ? { language: locale, ...(invite ? { invite } : {}) } : {}
-      const { signingIn } = await signIn("password", { ...values, flow, ...extra })
+      const { signingIn } = await submitCredentials(values)
       if (signingIn) goOn()
       else setPending({ ...values, sendError: null })
     } catch (error) {
@@ -83,7 +90,9 @@ export function AuthForm({
       <Card className="w-full max-w-sm gap-6">
         <VerifyEmailStep
           email={pending.email}
-          password={pending.password}
+          resend={async () => {
+            await submitCredentials({ email: pending.email, password: pending.password })
+          }}
           sendError={pending.sendError}
           onVerified={goOn}
           onBack={() => {

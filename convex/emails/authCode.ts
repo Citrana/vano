@@ -1,5 +1,5 @@
 import { Email } from "@convex-dev/auth/providers/Email";
-import type { EmailConfig } from "@convex-dev/auth/server";
+import { retrieveAccount, type EmailConfig } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { internal } from "../_generated/api";
 import { internalMutation, internalQuery, type ActionCtx } from "../_generated/server";
@@ -15,6 +15,7 @@ import { fail } from "../lib/errors";
 import { rateLimiter } from "../lib/rateLimits";
 import { newCode } from "../verification/codes";
 import { sendEmailNow } from "./send";
+import { accountExistsEmail } from "./templates/accountExists";
 import { authCodeEmail } from "./templates/authCode";
 
 /**
@@ -89,6 +90,47 @@ export async function sendAuthCode(
     ...authCodeEmail(language, { kind, code, minutes: AUTH_CODE_TTL_MINUTES }),
   });
   if (!sent.ok) fail("EMAIL_SEND_FAILED");
+}
+
+/**
+ * Sent instead of a sign-up code when the email already has an account
+ * (CLAUDE.md "Auth codes"): same send budget, same language rule and the
+ * same wait as a code email, and a failed send is EMAIL_SEND_FAILED like a
+ * code, so the sign-up screen can't tell the two apart. Links use
+ * `SITE_URL` (without it, the email goes out without buttons).
+ */
+export async function sendAccountExistsEmail(
+  ctx: Pick<ActionCtx, "runQuery" | "runMutation">,
+  rawEmail: string,
+): Promise<void> {
+  const email = normalizeEmail(rawEmail);
+  if (email === null) fail("EMAIL_INVALID");
+  await consumeAuthCodeSend(ctx, email);
+  const language = await ctx.runQuery(internal.emails.authCode.languageFor, { email });
+  const site = process.env.SITE_URL?.replace(/\/+$/, "") || null;
+  const sent = await sendEmailNow(ctx as ActionCtx, {
+    to: email,
+    ...accountExistsEmail(language, {
+      loginUrl: site ? `${site}/login` : null,
+      resetUrl: site ? `${site}/forgot-password?${new URLSearchParams({ email })}` : null,
+    }),
+  });
+  if (!sent.ok) fail("EMAIL_SEND_FAILED");
+}
+
+/**
+ * True when `password` opens the (unverified) account for `email`: the
+ * person signing up again on their own pending account, i.e. a resend.
+ * Only ever asked for unverified accounts, so a verified owner's sign-in
+ * tries are never used up by someone else's sign-up.
+ */
+export async function passwordMatches(ctx: ActionCtx, email: string, password: string): Promise<boolean> {
+  try {
+    await retrieveAccount(ctx, { provider: "password", account: { id: email, secret: password } });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**

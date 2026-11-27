@@ -8,8 +8,19 @@ describe("classifyAuthError", () => {
     expect(classifyAuthError(error, "signUp")).toEqual({ kind: "code", code: "EMAIL_SEND_FAILED" })
   })
 
-  test("Convex Auth messages", () => {
-    expect(classifyAuthError(new Error("Account amani@x.com already exists"), "signUp")).toEqual({ kind: "accountExists" })
+  test("the guard's single codes for credentials and codes", () => {
+    const credentials = new ConvexError({ code: "INVALID_CREDENTIALS" })
+    expect(classifyAuthError(credentials, "signIn")).toEqual({ kind: "invalidCredentials" })
+    const code = new ConvexError({ code: "CODE_INVALID" })
+    expect(classifyAuthError(code, "email-verification")).toEqual({ kind: "invalidCode" })
+    expect(classifyAuthError(code, "reset-verification")).toEqual({ kind: "invalidCode" })
+  })
+
+  test("sign-up never maps to an \"account exists\" message", () => {
+    expect(classifyAuthError(new Error("Account amani@x.com already exists"), "signUp")).toEqual({ kind: "unknown" })
+  })
+
+  test("Convex Auth messages (fallback)", () => {
     expect(classifyAuthError(new Error("InvalidSecret"), "signIn")).toEqual({ kind: "invalidCredentials" })
     expect(classifyAuthError(new Error("Could not verify code"), "email-verification")).toEqual({ kind: "invalidCode" })
     expect(classifyAuthError(new Error("Invalid code"), "reset-verification")).toEqual({ kind: "invalidCode" })

@@ -15,8 +15,6 @@ export function useAuthErrorMessage() {
           return te(result.code)
         case "invalidCredentials":
           return t("invalidCredentials")
-        case "accountExists":
-          return t("accountExists")
         case "invalidCode":
           return t("invalidCode")
         default:
