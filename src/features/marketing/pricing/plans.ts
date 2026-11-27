@@ -1,4 +1,5 @@
 import {
+  addedFeatures,
   cardLineFor as lineFor,
   includedValue as included,
   localizedIn,
@@ -94,17 +95,8 @@ export function buildPlanCards(
   })
 }
 
-/**
- * What moving from `from` to `to` unlocks: the card lines `to` gives more
- * of (a flag on, a higher limit), in the admin's pricing order. The
- * upgrade dialog shows the first few.
- */
-export function addedFeatures(catalog: PlanCatalog, from: PlanId, to: PlanId, locale: string): CardLine[] {
-  return catalog.features
-    .filter((f) => f.pricing.show && f.pricing.showOnCard)
-    .filter((f) => included(f.values[to]) && isLower(f.values[to], f.values[from]))
-    .map((f) => lineFor(f, f.values[to], locale))
-}
+/** What moving up unlocks (the upgrade dialog, the receipt email): one rule in the plan catalogue. */
+export { addedFeatures }
 
 /** "Compare all features": rows grouped by area, in the admin's order. */
 export function buildComparison(catalog: PlanCatalog, locale: string): CompareGroup[] {

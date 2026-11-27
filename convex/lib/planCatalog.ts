@@ -2,6 +2,7 @@ import type { Currency } from "./money";
 import {
   FEATURE_KEYS,
   featureDef,
+  isLower,
   resolvedValue,
   type FeatureKey,
   type FeaturePricing,
@@ -132,4 +133,16 @@ export function includedCardLines(catalog: PlanCatalog, plan: PlanId, locale: st
   return catalog.features
     .filter((f) => f.pricing.show && f.pricing.showOnCard && includedValue(f.values[plan]))
     .map((f) => cardLineFor(f, f.values[plan], locale));
+}
+
+/**
+ * What moving from `from` to `to` unlocks: the card lines `to` gives more
+ * of (a flag on, a higher limit), in the admin's pricing order. The
+ * upgrade dialog shows the first few; the upgrade receipt email lists them.
+ */
+export function addedFeatures(catalog: PlanCatalog, from: PlanId, to: PlanId, locale: string): CardLine[] {
+  return catalog.features
+    .filter((f) => f.pricing.show && f.pricing.showOnCard)
+    .filter((f) => includedValue(f.values[to]) && isLower(f.values[to], f.values[from]))
+    .map((f) => cardLineFor(f, f.values[to], locale));
 }
