@@ -845,6 +845,15 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
   a "Get Business" sign-up). Once per account (`users.welcomeEmailSentAt`);
   it never throws (no address or no `SITE_URL` = skipped), so sign-up
   never fails because of it. Links use the `SITE_URL` env var.
+- **Plan emails** (`docs/payments.md` section 15): the upgrade / renewal
+  receipt, sent **only** by `applyEvent` when it applies a confirmed payment
+  (`payments.receiptEmailAt`), and the downgrade / switch-to-Free
+  confirmation, sent by `billing.scheduleDowngrade` (one `planChanges` row
+  per change, `emailSentAt`, "Keep my plan" = `billing.keepPlan`). To the
+  owner in the shop's language; never for failed payments or admin
+  changes. Rules in `convex/lib/planEmails.ts` (dates in Nairobi time,
+  `formatBillingDate`), senders in `convex/emails/planEmails.ts` (never
+  throw); names and prices from the plan config, phones through `maskPhone`.
 - **Trial reminder emails** (`docs/payments.md` section 14): 7 days left,
   2 days left and "now on Free", to the owner in the shop's language.
   Rules **only** in `convex/lib/trialEmails.ts` (`dueTrialEmail`); the

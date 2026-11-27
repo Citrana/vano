@@ -6,12 +6,33 @@ providers, checkout, the scheduled jobs or billing admin updates this file
 in the same commit, with a dated entry in the change log below
 (see CLAUDE.md "Billing").
 
-**Last updated: 2026-11-26 20:53 CAT (UTC+02:00)**
+**Last updated: 2026-11-27 07:40 CAT (UTC+02:00)**
 
 ## Change log
 
 Newest first. Format: `YYYY-MM-DD HH:MM TZ — what changed (files)`.
 
+- **2026-11-27 07:40 CAT (UTC+02:00)**: **plan emails** to the shop
+  owner, in the shop's language (section 15). `applyEvent` sends the
+  upgrade / renewal receipt in the transaction that applies a confirmed
+  payment (only the "applied" branch) and stamps the new
+  `payments.receiptEmailAt`; failed, cancelled, expired and pending results
+  and admin grants / extensions send nothing. Choosing a lower plan or Free
+  is now recorded: new `billing.scheduleDowngrade` (the downgrade dialog's
+  "Switch to …"), `billing.keepPlan` ("Keep my plan") and
+  `billing.mine.pendingChange`, backed by the new `planChanges` table, and
+  the owner gets one confirmation email per change. Downgrades still change
+  nothing now and nothing renews by itself. `addedFeatures` moved to
+  `convex/lib/planCatalog.ts` (shared by the upgrade dialog and the
+  receipt). New audit actions `subscription.downgradeScheduled` /
+  `subscription.downgradeKept`. No price, limit or plan rule changed.
+  Files: `convex/payments/core.ts`, `convex/billing.ts`,
+  `convex/lib/planEmails.ts`, `convex/emails/planEmails.ts`,
+  `convex/emails/templates/planEmails.ts`, `convex/emails/layout.ts`,
+  `convex/schema.ts`, `convex/lib/plans.ts`, `convex/lib/audit.ts`,
+  `convex/admin/shops.ts`, `src/features/billing/plan-change-dialog.tsx`,
+  `src/features/billing/pending-change-card.tsx`, the billing page,
+  `messages/*.json`.
 - **2026-11-26 20:53 CAT (UTC+02:00)**: **trial reminder emails** to the
   shop owner, in the shop's language (section 14). `expireIfDue` now
   stamps `subscriptions.trialEndedAt` (= the grace end) when a trial moves
@@ -375,10 +396,21 @@ counted from its creation date.
 | `status` | `created` → `pending` → one final state: `succeeded`, `failed`, `cancelled`, `expired` |
 | `pendingReportedAt` | The provider said "still processing" |
 | `appliedAt`, `periodEndAfter` | Set **in the same transaction** that extended the plan |
+| `receiptEmailAt` | The receipt email was scheduled, in that same transaction (section 15) |
 | `failureCode`, `completedAt` | Outcome details |
 
 Payments are **kept when a shop is deleted** (financial history); the
 subscription row is deleted with the shop.
+
+### `planChanges`
+
+A lower plan (or Free) the seller chose (`billing.scheduleDowngrade`):
+`fromPlan`, `toPlan`, `effectiveAt` (the current plan's end), `freeAt`
+(end + grace days), `status` (`scheduled`, `kept` by "Keep my plan",
+`replaced` by another choice), `emailSentAt`. It changes nothing on the
+subscription; it counts only while the plan still has that end
+(`isPendingChange`), so a payment or the move to Free closes it without a
+write. Deleted with the shop.
 
 ### `paymentEvents`
 
@@ -759,3 +791,36 @@ and `templates/trialReminders.ts`.
 - **Failures**: each email is its own scheduled mutation, so one failing
   never affects another; delivery retries are `sendEmail`'s.
 - Records are deleted with the shop (`admin/shops.purgeShop`).
+
+## 15. Plan emails
+
+Emails to the shop **owner** (`shops.ownerId`) in the shop's language,
+through `sendEmail` and the shared layout (CLAUDE.md "Emails"). Pure rules
+in `convex/lib/planEmails.ts`, senders in `convex/emails/planEmails.ts`,
+content in `templates/planEmails.ts`, texts in `Emails.planReceipt.*` /
+`Emails.planDowngrade.*`.
+
+| Email | Sent by | Content | Button |
+|---|---|---|---|
+| Upgrade receipt | `applyEvent`, "applied" branch | plan, amount paid (and the Pro credit when there was one), payment date, payment reference (`providerRef`), new end date, what the plan now unlocks (`addedFeatures`), "your trial ended" when a trial moved up | See my plan |
+| Renewal receipt | same | same rows, no unlocks; "your trial days were kept" when paid during the trial | See my plan |
+| Downgrade / switch to Free | `billing.scheduleDowngrade` | not a payment, takes effect on the end date, the date the shop moves to Free, what pauses (`shopDowngradeImpact`), data is kept, the lower paid plan's real price | Keep my plan (`/dashboard/billing?keep=<id>`) |
+
+- **Kind**: `receiptKind` runs `quotePurchase` on the state before the
+  payment: trial → same plan = renewal, trial days kept; trial → Business
+  = upgrade, trial ended; a payment that landed as a "downgrade" extended
+  the current plan = renewal.
+- **Once**: a receipt only in the transaction that sets `appliedAt`, plus
+  `payments.receiptEmailAt` as a second guard; a confirmation only when a
+  new `planChanges` row is inserted (the same choice again returns it),
+  with `emailSentAt`.
+- **Never**: for failed, cancelled, expired or pending payments, for
+  duplicate events, or for admin grants / extensions (`admin/billing.ts`
+  doesn't call the senders; the hook is not in `writeSubscription`).
+- **Values**: plan names and prices from the plan config
+  (`readPlanConfig`, `formatPlanPrice`); dates in Nairobi time
+  (`BILLING_TIME_ZONE`, `formatBillingDate`); a payer phone, if a provider
+  stores one later, is shown only through `maskPhone`.
+- **Failures**: the senders never throw (no owner, no address or no
+  `SITE_URL` = skipped, logged with a masked address); delivery runs later
+  with `sendEmail`'s retries, so the payment or the change always goes through.
