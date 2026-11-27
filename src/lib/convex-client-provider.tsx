@@ -1,5 +1,7 @@
 "use client"
 
+// First, before any form schema runs: no eval probe under the CSP.
+import "./zod-config"
 import { ConvexAuthProvider } from "@convex-dev/auth/react"
 import { ConvexReactClient } from "convex/react"
 import { type ReactNode } from "react"

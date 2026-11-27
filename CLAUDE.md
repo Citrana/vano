@@ -35,6 +35,17 @@ later — do not relax them for convenience. The MVP has **no AI and no 3D**.
 - Route protection for seller pages is client-side (`AuthGate`), like the
   reference project (Convex Auth + `proxy.ts` upstream bug
   get-convex/convex-auth#271). The real boundary is always server-side.
+- **Security headers** are defined only in `src/lib/security-headers.ts`:
+  the static ones (nosniff, Referrer-Policy, Permissions-Policy,
+  X-Frame-Options, HSTS in production) applied by `next.config.ts`
+  (`poweredByHeader: false`), the Content-Security-Policy by `src/proxy.ts`
+  with a fresh nonce per request (headers only, no auth there). Convex
+  origins come from env (`NEXT_PUBLIC_CONVEX_URL`, optional
+  `CONVEX_STORAGE_ORIGIN`). A new external origin the browser loads
+  (script, image, fetch / websocket) is added there; scripts never get
+  `'unsafe-inline'`, and `style-src` never gets a nonce. Zod runs
+  `jitless` on the client (`src/lib/zod-config.ts`, imported first by
+  `ConvexClientProvider`) so it never probes eval.
 
 ## Auth codes
 
